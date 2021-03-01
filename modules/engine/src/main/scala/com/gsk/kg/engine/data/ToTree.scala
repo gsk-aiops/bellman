@@ -55,10 +55,15 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case DAG.Filter(funcs, expr) =>
             Node("Filter", funcs.map(_.toTree).toStream #::: Stream(expr))
           case DAG.Join(l, r) => Node("Join", Stream(l, r))
-          case DAG.OffsetLimit(offset, limit, r) =>
+          case DAG.Offset(offset, r) =>
             Node(
-              "OffsetLimit",
-              Stream(Leaf(offset.toString), Leaf(limit.toString), r)
+              "Offset",
+              Stream(Leaf(offset.toString), r)
+            )
+          case DAG.Limit(limit, r) =>
+            Node(
+              "Limit",
+              Stream(Leaf(limit.toString), r)
             )
           case DAG.Distinct(r) => Node("Distinct", Stream(r))
           case DAG.Noop(str)   => Leaf(s"Noop($str)")
