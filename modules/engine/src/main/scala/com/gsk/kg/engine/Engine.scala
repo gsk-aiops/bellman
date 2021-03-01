@@ -40,7 +40,7 @@ object Engine {
       case DAG.Union(l, r)                   => l.union(r).pure[M]
       case DAG.Filter(funcs, expr)           => notImplemented("Filter")
       case DAG.Join(l, r)                    => notImplemented("Join")
-      case DAG.OffsetLimit(offset, limit, r) => notImplemented("OffsetLimit")
+      case DAG.OffsetLimit(offset, limit, r) => evaluateOffsetLimit(offset, limit, r)
       case DAG.Distinct(r)                   => notImplemented("Distinct")
       case DAG.Noop(str)                     => notImplemented("Noop")
     }
@@ -58,6 +58,9 @@ object Engine {
       .runA(dataframe)
       .map(_.dataframe)
   }
+
+  private def evaluateOffsetLimit(offset: Option[Long], limit: Option[Long], r: Multiset): M[Multiset] =
+    M.liftF(r.offsetLimit(offset, limit))
 
   private def evaluateConstruct[T](
       bgp: Expr.BGP,
