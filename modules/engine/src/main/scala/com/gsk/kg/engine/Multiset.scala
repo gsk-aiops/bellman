@@ -133,13 +133,39 @@ final case class Multiset(
         .withColumn(binding.s, column)
     )
 
+  /**
+    * A limited solutions sequence has at most given, fixed number of members.
+    * The limit solution sequence S = (S0, S1, ..., Sn) is
+    * limit(S, m) =
+    * (S0, S1, ..., Sm-1) if n > m
+    * (S0, S1, ..., Sn) if n <= m-1
+    * @param limit
+    * @return
+    */
   def limit(limit: Long): Result[Multiset] = limit match {
     case l if l < 0 =>
-      EngineError.UnexpectedNegativeLimit("Negative limit: $l").asLeft
+      EngineError.UnexpectedNegative("Negative limit: $l").asLeft
     case l if l > Int.MaxValue.toLong =>
       EngineError.NumericTypesDoNotMatch(s"$l to big to be converted to an Int").asLeft
     case l =>
       this.copy(dataframe = dataframe.limit(l.toInt)).asRight
+  }
+
+  /**
+    * An offset solution sequence with respect to another solution sequence S, is one which starts at a given index of S.
+    * For solution sequence S = (S0, S1, ..., Sn), the offset solution sequence
+    * offset(S, k), k >= 0 is
+    * (Sk, Sk+1, ..., Sn) if n >= k
+    * (), the empty sequence, if k > n
+    * @param offset
+    * @return
+    */
+  def offset(offset: Long): Result[Multiset] = if (offset < 0) {
+    EngineError.UnexpectedNegative(s"Negative offset: $offset").asLeft
+  } else {
+    val rdd = dataframe.rdd.zipWithIndex.filter { case (_, idx) => idx >= offset }.map(_._1)
+    val df = dataframe.sqlContext.sparkSession.createDataFrame(rdd, dataframe.schema)
+    this.copy(dataframe = df).asRight
   }
 
 }
