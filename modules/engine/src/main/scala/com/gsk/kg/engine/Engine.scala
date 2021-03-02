@@ -40,7 +40,7 @@ object Engine {
       case DAG.Union(l, r)             => l.union(r).pure[M]
       case DAG.Filter(funcs, expr)     => notImplemented("Filter")
       case DAG.Join(l, r)              => notImplemented("Join")
-      case DAG.Offset(offset, r)       => notImplemented("Offset")
+      case DAG.Offset(offset, r)       => evaluateOffset(offset, r)
       case DAG.Limit(limit, r)         => evaluateLimit(limit, r)
       case DAG.Distinct(r)             => notImplemented("Distinct")
       case DAG.Noop(str)               => notImplemented("Noop")
@@ -59,6 +59,9 @@ object Engine {
       .runA(dataframe)
       .map(_.dataframe)
   }
+
+  private def evaluateOffset(offset: Long, r: Multiset): M[Multiset] =
+    M.liftF(r.offset(offset))
 
   private def evaluateLimit(limit: Long, r: Multiset): M[Multiset] =
     M.liftF(r.limit(limit))
