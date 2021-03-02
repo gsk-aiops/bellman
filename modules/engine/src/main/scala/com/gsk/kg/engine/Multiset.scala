@@ -133,15 +133,13 @@ final case class Multiset(
         .withColumn(binding.s, column)
     )
 
-  def offsetLimit(offset: Option[Long], limit: Option[Long]): Result[Multiset] = limit match {
-    case Some(l) if l < 0 =>
+  def limit(limit: Long): Result[Multiset] = limit match {
+    case l if l < 0 =>
       EngineError.UnexpectedNegativeLimit("Negative limit: $l").asLeft
-    case Some(l) if l > Int.MaxValue.toLong =>
+    case l if l > Int.MaxValue.toLong =>
       EngineError.NumericTypesDoNotMatch(s"$l to big to be converted to an Int").asLeft
-    case Some(l) =>
+    case l =>
       this.copy(dataframe = dataframe.limit(l.toInt)).asRight
-    case None =>
-      this.asRight // An optimization could be done on DAG level when None returning the rest of the algebra
   }
 
 }

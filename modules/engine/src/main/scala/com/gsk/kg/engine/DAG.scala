@@ -3,7 +3,7 @@ package com.gsk.kg.engine
 import higherkindness.droste._
 import higherkindness.droste.data.Fix
 import higherkindness.droste.macros.deriveTraverse
-import higherkindness.droste.syntax.embed._
+import higherkindness.droste.syntax.all._
 import higherkindness.droste.util.DefaultTraverse
 
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
@@ -47,11 +47,8 @@ object DAG {
   final case class Union[A](l: A, r: A) extends DAG[A]
   final case class Filter[A](funcs: List[Expression], expr: A) extends DAG[A]
   final case class Join[A](l: A, r: A) extends DAG[A]
-  final case class OffsetLimit[A](
-      offset: Option[Long],
-      limit: Option[Long],
-      r: A
-  ) extends DAG[A]
+  final case class Offset[A](offset: Long, r: A) extends DAG[A]
+  final case class Limit[A](limit: Long, r: A) extends DAG[A]
   final case class Distinct[A](r: A) extends DAG[A]
   final case class Noop[A](trace: String) extends DAG[A]
 
@@ -76,8 +73,10 @@ object DAG {
         case DAG.Filter(funcs, expr) =>
           f(expr).map(filter(funcs, _))
         case DAG.Join(l, r) => (f(l), f(r)).mapN(join)
-        case DAG.OffsetLimit(offset, limit, r) =>
-          f(r).map(offsetLimit(offset, limit, _))
+        case DAG.Offset(o, r) =>
+          f(r).map(offset(o, _))
+        case DAG.Limit(l, r) =>
+          f(r).map(limit(l, _))
         case DAG.Distinct(r) => f(r).map(distinct)
         case DAG.Noop(str)   => noop(str).pure[G]
       }
@@ -101,8 +100,10 @@ object DAG {
   def filter[A](funcs: List[Expression], expr: A): DAG[A] =
     Filter[A](funcs, expr)
   def join[A](l: A, r: A): DAG[A] = Join[A](l, r)
-  def offsetLimit[A](offset: Option[Long], limit: Option[Long], r: A): DAG[A] =
-    OffsetLimit[A](offset, limit, r)
+  def offset[A](offset: Long, r: A): DAG[A] =
+    Offset[A](offset, r)
+  def limit[A](limit: Long, r: A): DAG[A] =
+    Limit[A](limit, r)
   def distinct[A](r: A): DAG[A] = Distinct[A](r)
   def noop[A](trace: String): DAG[A] = Noop[A](trace)
 
@@ -133,11 +134,14 @@ object DAG {
   def filterR[T: Embed[DAG, *]](funcs: List[Expression], expr: T): T =
     filter[T](funcs, expr).embed
   def joinR[T: Embed[DAG, *]](l: T, r: T): T = join[T](l, r).embed
-  def offsetLimitR[T: Embed[DAG, *]](
-      offset: Option[Long],
-      limit: Option[Long],
+  def offsetR[T: Embed[DAG, *]](
+      o: Long,
       r: T
-  ): T = offsetLimit[T](offset, limit, r).embed
+  ): T = offset[T](o, r).embed
+  def limitR[T: Embed[DAG, *]](
+      l: Long,
+      r: T
+  ): T = limit[T](l, r).embed
   def distinctR[T: Embed[DAG, *]](r: T): T = distinct[T](r).embed
   def noopR[T: Embed[DAG, *]](trace: String): T = noop[T](trace).embed
 
@@ -147,7 +151,7 @@ object DAG {
     * @param query
     * @return
     */
-  def fromQuery[T: Embed[DAG, *]]: Query => T = {
+  def fromQuery[T: Basis[DAG, *]]: Query => T = {
     case Query.Describe(vars, r) =>
       describeR(vars.toList, fromExpr[T].apply(r))
     case Query.Ask(r) => askR(fromExpr[T].apply(r))
@@ -156,24 +160,27 @@ object DAG {
     case Query.Select(vars, r) => projectR(vars.toList, fromExpr[T].apply(r))
   }
 
-  def fromExpr[T: Embed[DAG, *]]: Expr => T = scheme.cata(transExpr.algebra)
+  def fromExpr[T: Basis[DAG, *]]: Expr => T = scheme.cata(transExpr.algebra)
 
-  def transExpr[T: Embed[DAG, *]]: Trans[ExprF, DAG, T] =
+  def transExpr[T](implicit T: Basis[DAG, T]): Trans[ExprF, DAG, T] =
     Trans {
-      case ExtendF(bindTo, bindFrom, r)   => bind(bindTo, bindFrom, r)
-      case FilteredLeftJoinF(l, r, f)     => leftJoin(l, r, f.toList)
-      case UnionF(l, r)                   => union(l, r)
-      case BGPF(triples)                  => bgp(triples.toList.map(fromExpr))
-      case OpNilF()                       => noop("OpNilF not supported yet")
-      case GraphF(g, e)                   => scan(g.s, e)
-      case JoinF(l, r)                    => join(l, r)
-      case LeftJoinF(l, r)                => leftJoin(l, r, Nil)
-      case ProjectF(vars, r)              => project(vars.toList, r)
-      case TripleF(s, p, o)               => triple(s, p, o)
-      case DistinctF(r)                   => distinct(r)
-      case OffsetLimitF(offset, limit, r) => offsetLimit(offset, limit, r)
-      case FilterF(funcs, expr)           => filter(funcs.toList, expr)
-      case TabUnitF()                     => noop("TabUnitF not supported yet")
+      case ExtendF(bindTo, bindFrom, r)      => bind(bindTo, bindFrom, r)
+      case FilteredLeftJoinF(l, r, f)        => leftJoin(l, r, f.toList)
+      case UnionF(l, r)                      => union(l, r)
+      case BGPF(triples)                     => bgp(triples.toList.map(fromExpr))
+      case OpNilF()                          => noop("OpNilF not supported yet")
+      case GraphF(g, e)                      => scan(g.s, e)
+      case JoinF(l, r)                       => join(l, r)
+      case LeftJoinF(l, r)                   => leftJoin(l, r, Nil)
+      case ProjectF(vars, r)                 => project(vars.toList, r)
+      case TripleF(s, p, o)                  => triple(s, p, o)
+      case DistinctF(r)                      => distinct(r)
+      case OffsetLimitF(None, None, r)       => T.coalgebra(r)
+      case OffsetLimitF(None, Some(l), r)    => limit(l, r)
+      case OffsetLimitF(Some(o), None, r)    => offset(o, r)
+      case OffsetLimitF(Some(o), Some(l), r) => offset(o, limit(l, r).embed)
+      case FilterF(funcs, expr)              => filter(funcs.toList, expr)
+      case TabUnitF()                        => noop("TabUnitF not supported yet")
     }
 
 }

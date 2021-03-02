@@ -34,15 +34,16 @@ object Engine {
       case DAG.Project(variables, r) => r.select(variables: _*).pure[M]
       case DAG.Bind(variable, expression, r) =>
         evaluateBind(variable, expression, r)
-      case DAG.Triple(s, p, o)               => evaluateTriple(s, p, o)
-      case DAG.BGP(triples)                  => Foldable[List].fold(triples).pure[M]
-      case DAG.LeftJoin(l, r, filters)       => notImplemented("LeftJoin")
-      case DAG.Union(l, r)                   => l.union(r).pure[M]
-      case DAG.Filter(funcs, expr)           => notImplemented("Filter")
-      case DAG.Join(l, r)                    => notImplemented("Join")
-      case DAG.OffsetLimit(offset, limit, r) => evaluateOffsetLimit(offset, limit, r)
-      case DAG.Distinct(r)                   => notImplemented("Distinct")
-      case DAG.Noop(str)                     => notImplemented("Noop")
+      case DAG.Triple(s, p, o)         => evaluateTriple(s, p, o)
+      case DAG.BGP(triples)            => Foldable[List].fold(triples).pure[M]
+      case DAG.LeftJoin(l, r, filters) => notImplemented("LeftJoin")
+      case DAG.Union(l, r)             => l.union(r).pure[M]
+      case DAG.Filter(funcs, expr)     => notImplemented("Filter")
+      case DAG.Join(l, r)              => notImplemented("Join")
+      case DAG.Offset(offset, r)       => notImplemented("Offset")
+      case DAG.Limit(limit, r)         => evaluateLimit(limit, r)
+      case DAG.Distinct(r)             => notImplemented("Distinct")
+      case DAG.Noop(str)               => notImplemented("Noop")
     }
 
   def evaluate[T: Basis[DAG, *]](
@@ -59,8 +60,8 @@ object Engine {
       .map(_.dataframe)
   }
 
-  private def evaluateOffsetLimit(offset: Option[Long], limit: Option[Long], r: Multiset): M[Multiset] =
-    M.liftF(r.offsetLimit(offset, limit))
+  private def evaluateLimit(limit: Long, r: Multiset): M[Multiset] =
+    M.liftF(r.limit(limit))
 
   private def evaluateConstruct[T](
       bgp: Expr.BGP,
