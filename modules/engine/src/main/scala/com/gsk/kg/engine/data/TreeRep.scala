@@ -10,17 +10,17 @@ import cats.Eval
   *
   * ported from scalaz.Tree
   */
-sealed trait TreeRep {
+sealed trait TreeRep[A] {
 
   import TreeRep._
 
   /** The label at the root of this tree. */
-  def rootLabel: String
+  def rootLabel: A
 
   /** The child nodes of this tree. */
-  def subForest: Stream[TreeRep]
+  def subForest: Stream[TreeRep[A]]
 
-  def drawTree: String = {
+  def drawTree(implicit ev: Show[A]): String = {
     val reversedLines: Vector[StringBuilder] = draw.run
     val first = new StringBuilder(reversedLines.head.toString.reverse)
     val rest = reversedLines.tail
@@ -33,13 +33,13 @@ sealed trait TreeRep {
     * Uses reversed StringBuilders for performance, because they are
     * prepended to.
     **/
-  private def draw: Trampoline[Vector[StringBuilder]] = {
+  private def draw(implicit ev: Show[A]): Trampoline[Vector[StringBuilder]] = {
     import Trampoline._
     val branch = " -+" // "+- ".reverse
     val stem = " -`" // "`- ".reverse
     val trunk = "  |" // "|  ".reverse
 
-    def drawSubTrees(s: Stream[TreeRep]): Trampoline[Vector[StringBuilder]] = s match {
+    def drawSubTrees(s: Stream[TreeRep[A]]): Trampoline[Vector[StringBuilder]] = s match {
       case ts if ts.isEmpty       =>
         done(Vector.empty[StringBuilder])
       case t #:: ts if ts.isEmpty =>
@@ -64,7 +64,7 @@ sealed trait TreeRep {
     }
 
     drawSubTrees(subForest).map { subtrees =>
-      new StringBuilder(rootLabel.reverse) +: subtrees
+      new StringBuilder(ev.show(rootLabel).reverse) +: subtrees
     }
   }
 }
@@ -72,19 +72,19 @@ sealed trait TreeRep {
 object TreeRep {
 
 
-  final case class Node(root: String, forest: Stream[TreeRep]) extends TreeRep {
+  final case class Node[A](root: A, forest: Stream[TreeRep[A]]) extends TreeRep[A] {
 
-    override def rootLabel: String = root
+    override def rootLabel: A = root
 
-    override def subForest: Stream[TreeRep] = forest
+    override def subForest: Stream[TreeRep[A]] = forest
 
   }
 
-  final case class Leaf(root: String) extends TreeRep {
+  final case class Leaf[A](root: A) extends TreeRep[A] {
 
-    override def rootLabel: String = root
+    override def rootLabel: A = root
 
-    override def subForest: Stream[TreeRep] = Stream.empty
+    override def subForest: Stream[TreeRep[A]] = Stream.empty
 
   }
 
