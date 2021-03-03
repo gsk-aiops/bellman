@@ -14,7 +14,7 @@ import com.gsk.kg.sparqlparser.Expr
   * render them nicely wit the drawTree method.
   */
 trait ToTree[T] {
-  def toTree(t: T): TreeRep
+  def toTree(t: T): TreeRep[String]
 }
 
 object ToTree extends LowPriorityToTreeInstances0 {
@@ -22,14 +22,14 @@ object ToTree extends LowPriorityToTreeInstances0 {
   def apply[T](implicit T: ToTree[T]): ToTree[T] = T
 
   implicit class ToTreeOps[T](private val t: T)(implicit T: ToTree[T]) {
-    def toTree: TreeRep = ToTree[T].toTree(t)
+    def toTree: TreeRep[String] = ToTree[T].toTree(t)
   }
 
   implicit def dagToTree[T: Basis[DAG, *]]: ToTree[T] =
     new ToTree[T] {
-      def toTree(tree: T): TreeRep = {
+      def toTree(tree: T): TreeRep[String] = {
         import TreeRep._
-        val alg = Algebra[DAG, TreeRep] {
+        val alg = Algebra[DAG, TreeRep[String]] {
           case DAG.Describe(vars, r) =>
             Node("Describe", vars.map(_.s.toTree).toStream #::: Stream(r))
           case DAG.Ask(r) => Node("Ask", Stream(r))
@@ -77,9 +77,9 @@ object ToTree extends LowPriorityToTreeInstances0 {
 
   implicit def expressionfToTree[T: Basis[ExpressionF, *]]: ToTree[T] =
     new ToTree[T] {
-      def toTree(tree: T): TreeRep = {
+      def toTree(tree: T): TreeRep[String] = {
         import TreeRep._
-        val alg = Algebra[ExpressionF, TreeRep] {
+        val alg = Algebra[ExpressionF, TreeRep[String]] {
           case ExpressionF.EQUALS(l, r)    => Node("EQUALS", Stream(l, r))
           case ExpressionF.GT(l, r)        => Node("GT", Stream(l, r))
           case ExpressionF.LT(l, r)        => Node("LT", Stream(l, r))
@@ -120,7 +120,7 @@ trait LowPriorityToTreeInstances0 {
   // Instance of ToTree for anything that has a Show
   implicit def showToTree[T: Show]: ToTree[T] =
     new ToTree[T] {
-      def toTree(t: T): TreeRep = TreeRep.Leaf(Show[T].show(t))
+      def toTree(t: T): TreeRep[String] = TreeRep.Leaf(Show[T].show(t))
     }
 
 }
