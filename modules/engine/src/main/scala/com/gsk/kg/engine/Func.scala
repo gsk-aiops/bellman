@@ -70,7 +70,7 @@ object Func {
     * @return
     */
   def iri(col: Column): Column =
-    col
+    concat(concat("<", col), ">")
 
   /**
     * synonym for [[Func.iri]]

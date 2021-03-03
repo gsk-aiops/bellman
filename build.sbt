@@ -13,6 +13,7 @@ lazy val Versions = Map(
   "spark"              -> "2.4.0",
   "spark-testing-base" -> "2.4.5_0.14.0",
   "jackson"            -> "2.12.1",
+  "sansa"              -> "0.7.1"
 )
 
 inThisBuild(List(
@@ -30,7 +31,7 @@ inThisBuild(List(
 ))
 
 lazy val buildSettings = Seq(
-  scalaVersion := Versions("scala212"),
+  scalaVersion := Versions("scala211"),
   crossScalaVersions :=  List(Versions("scala211"), Versions("scala212")),
   sonatypeProjectHosting := Some(GitHubHosting("gsk-aiops", "bellman-algebra-parser", "johnhuntergskatgmail.com")),
   sonatypeProfileName := "com.github.gsk-aiops",
@@ -83,6 +84,7 @@ lazy val `bellman-algebra-parser` = project
     ),
   )
 
+
 lazy val `bellman-spark-engine` = project
   .in(file("modules/engine"))
   .settings(moduleName := "bellman-spark-engine")
@@ -94,6 +96,9 @@ lazy val `bellman-spark-engine` = project
       "org.apache.spark"  %% "spark-sql"          % Versions("spark") % Provided,
       "com.holdenkarau"   %% "spark-testing-base" % Versions("spark-testing-base") % Test
     ),
+    libraryDependencies ++= on(2, 11)(
+      "net.sansa-stack" %% "sansa-rdf-spark" % Versions("sansa") % Test
+    ).value,
     dependencyOverrides ++= Seq(
       "com.fasterxml.jackson.core" % "jackson-databind" % Versions("jackson"),
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % Versions("jackson"),
@@ -102,3 +107,11 @@ lazy val `bellman-spark-engine` = project
   .dependsOn(`bellman-algebra-parser`)
 
 addCommandAlias("ci-test", ";scalastyle ;+test")
+
+def on[A](major: Int, minor: Int)(a: A): Def.Initialize[Seq[A]] =
+  Def.setting {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some(v) if v == (major, minor) => Seq(a)
+      case _                              => Nil
+    }
+  }
