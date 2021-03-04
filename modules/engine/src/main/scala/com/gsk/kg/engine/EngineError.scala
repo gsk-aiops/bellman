@@ -7,4 +7,5 @@ object EngineError {
   case class UnknownFunction(fn: String) extends EngineError
   case class UnexpectedNegative(description: String) extends EngineError
   case class NumericTypesDoNotMatch(description: String) extends EngineError
+  case class FunctionError(description: String) extends EngineError
 }

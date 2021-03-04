@@ -1,21 +1,11 @@
 package com.gsk.kg.engine
 
 import com.gsk.kg.sparql.syntax.all._
-import com.gsk.kg.sparqlparser.Expr._
-import com.gsk.kg.sparqlparser.Conditional._
-import com.gsk.kg.sparqlparser.BuildInFunc._
-import com.gsk.kg.sparqlparser.StringVal._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import com.gsk.kg.sparqlparser.QueryConstruct
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
-import org.scalatest.BeforeAndAfterAll
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.Row
-import com.gsk.kg.sparqlparser.Query
-import org.apache.jena.riot.RDFDataMgr
-import org.apache.jena.rdf.model.Model
 import org.apache.jena.riot.lang.CollectorStreamTriples
 import org.apache.jena.riot.RDFParser
 
@@ -439,6 +429,66 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     result.right.get.collect.toSet shouldEqual Set(
       Row("\"nodeA\"", "\"otherThingy\"")
     )
+  }
+
+  it should "query a real DF with REPLACE function and obtain expected results" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("example", "<http://xmlns.com/foaf/0.1/lit>", "abcd"),
+      ("example", "<http://xmlns.com/foaf/0.1/lit>", "abaB"),
+      ("example", "<http://xmlns.com/foaf/0.1/lit>", "bbBB"),
+      ("example", "<http://xmlns.com/foaf/0.1/lit>", "aaaa")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT   ?lit ?lit2
+        |WHERE    {
+        |  ?x foaf:lit ?lit .
+        |  BIND(REPLACE(?lit, "b", "Z") AS ?lit2)
+        |}
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 4
+    result.right.get.collect.toSet shouldEqual Set(
+      Row("\"abcd\"", "\"aZcd\""),
+      Row("\"abaB\"", "\"aZaB\""),
+      Row("\"bbBB\"", "\"ZZBB\""),
+      Row("\"aaaa\"", "\"aaaa\"")
+    )
+  }
+
+  // TODO: Capture Spark exceptions on the Left projection once the query trigger the Spark action
+  // this can be done probably at the Engine level
+  it should "query a real DF with REPLACE function and obtain an expected error, " +
+    "because the pattern matches the zero-length string" ignore {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("example", "<http://xmlns.com/foaf/0.1/lit>", "abracadabra")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT   ?lit ?lit2
+        |WHERE    {
+        |  ?x foaf:lit ?lit .
+        |  BIND(REPLACE(?lit, ".*?", "$1") AS ?lit2)
+        |}
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Left[_, _]]
+    result.left.get shouldEqual EngineError.FunctionError(s"Error on REPLACE function: No group 1")
   }
 
   private def readNTtoDF(path: String) = {

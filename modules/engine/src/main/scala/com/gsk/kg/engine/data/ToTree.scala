@@ -96,7 +96,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
             Node("STRAFTER", Stream(s, Leaf(f.toString)))
           case ExpressionF.ISBLANK(s) => Node("ISBLANK", Stream(s))
           case ExpressionF.REPLACE(st, pattern, by) =>
-            Node("REPLACE", Stream(st, pattern, by))
+            Node("REPLACE", Stream(st, Leaf(pattern), Leaf(by)))
 
           case ExpressionF.STRING(s)   => Leaf(s"STRING($s)")
           case ExpressionF.NUM(s)      => Leaf(s"NUM($s)")
