@@ -413,6 +413,34 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     result.right.get.collect.toSet shouldEqual Set.empty
   }
 
+  it should "support blank nodes in queries" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+       ("nodeA", "<http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass>", "thisIsTheBlankNode"),
+       ("thisIsTheBlankNode", "<http://gsk-kg.rdip.gsk.com/dm/1.0/predClass>", "otherThingy")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+        |
+        |SELECT ?de ?et
+        |
+        |WHERE {
+        |  ?de dm:predEntityClass _:a .
+        |  _:a dm:predClass ?et
+        |}LIMIT 10
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.toSet shouldEqual Set(
+      Row("\"nodeA\"", "\"otherThingy\"")
+    )
+  }
+
   private def readNTtoDF(path: String) = {
     import sqlContext.implicits._
     import scala.collection.JavaConverters._
