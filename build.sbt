@@ -13,6 +13,8 @@ lazy val Versions = Map(
   "spark"              -> "2.4.0",
   "spark-testing-base" -> "2.4.5_0.14.0",
   "jackson"            -> "2.12.1",
+  "scalacheck"         -> "1.15.2",
+  "scalatestplus"      -> "3.2.5.0",
 )
 
 inThisBuild(List(
@@ -92,7 +94,9 @@ lazy val `bellman-spark-engine` = project
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.spark"  %% "spark-sql"          % Versions("spark") % Provided,
-      "com.holdenkarau"   %% "spark-testing-base" % Versions("spark-testing-base") % Test
+      "com.holdenkarau"   %% "spark-testing-base" % Versions("spark-testing-base") % Test,
+      "org.scalacheck"    %% "scalacheck"         % Versions("scalacheck") % Test,
+      "org.scalatestplus" %% "scalacheck-1-15"    % Versions("scalatestplus") % Test,
     ),
     dependencyOverrides ++= Seq(
       "com.fasterxml.jackson.core" % "jackson-databind" % Versions("jackson"),
