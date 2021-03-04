@@ -2,7 +2,6 @@ package com.gsk.kg.engine
 
 import com.gsk.kg.engine._
 
-import cats.data.State
 import cats.implicits._
 
 import higherkindness.droste._
@@ -44,7 +43,7 @@ object ExpressionF {
   final case class STR[A](s: A) extends ExpressionF[A]
   final case class STRAFTER[A](s: A, f: String) extends ExpressionF[A]
   final case class ISBLANK[A](s: A) extends ExpressionF[A]
-  final case class REPLACE[A](st: A, pattern: A, by: A) extends ExpressionF[A]
+  final case class REPLACE[A](st: A, pattern: String, by: String) extends ExpressionF[A]
   final case class STRING[A](s: String) extends ExpressionF[A]
   final case class NUM[A](s: String) extends ExpressionF[A]
   final case class VARIABLE[A](s: String) extends ExpressionF[A]
@@ -65,7 +64,8 @@ object ExpressionF {
       case BuildInFunc.STR(s)                   => STR(s)
       case BuildInFunc.STRAFTER(s, StringVal.STRING(f,_))           => STRAFTER(s, f)
       case BuildInFunc.ISBLANK(s)               => ISBLANK(s)
-      case BuildInFunc.REPLACE(st, pattern, by) => REPLACE(st, pattern, by)
+      case BuildInFunc.REPLACE(st, StringVal.STRING(pattern, _), StringVal.STRING(by, _)) =>
+        REPLACE(st, pattern, by)
       case BuildInFunc.REGEX(l, r)          => REGEX(l, r)
       case BuildInFunc.STRSTARTS(l, r)      => STRSTARTS(l, r)
       case StringVal.STRING(s,_)               => STRING(s)
@@ -135,7 +135,7 @@ object ExpressionF {
       case STR(s)                   => s.pure[M]
       case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
       case ISBLANK(s)               => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("ISBLANK").asLeft[Column])
-      case REPLACE(st, pattern, by) => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("REPLACE").asLeft[Column])
+      case REPLACE(st, pattern, by) => Func.replace(st, pattern, by).pure[M]
 
       case STRING(s)   => lit(s).pure[M]
       case NUM(s)      => lit(s).pure[M]

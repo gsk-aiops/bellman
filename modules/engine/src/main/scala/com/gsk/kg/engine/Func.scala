@@ -1,17 +1,36 @@
 package com.gsk.kg.engine
 
-import cats.syntax.either._
-
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
-import com.gsk.kg.sparqlparser.BuildInFunc
-import com.gsk.kg.sparqlparser.BuildInFunc._
-import com.gsk.kg.sparqlparser.StringVal
-import com.gsk.kg.sparqlparser.Expression
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-import com.gsk.kg.sparqlparser.StringVal.STRING
 
 object Func {
+
+  /**
+    * Implementation of SparQL REPLACE (without flags) on Spark dataframes.
+    *
+    * =Examples=
+    *
+    * | Function call                              | Result                     |
+    * |:-------------------------------------------|:---------------------------|
+    * | replace("abracadabra", "bra", "*")         | "a*cada*"                  |
+    * | replace("abracadabra", "a.*a", "*")        | "*"                        |
+    * | replace("abracadabra", "a.*?a", "*")       | "*c*bra"                   |
+    * | replace("abracadabra", "a", "")            | "brcdbr"                   |
+    * | replace("abracadabra", "a(.)", "a$1$1")    | "abbraccaddabbra"          |
+    * | replace("abracadabra", ".*?", "$1")        | error (zero length string) |
+    * | replace("AAAA", "A+", "b")                 | "b"                        |
+    * | replace("AAAA", "A+?", "b")                | "bbbb"                     |
+    * | replace("darted", "^(.*?)d(.*)$", "$1c$2") | "carted"                   |
+    *
+    * @see https://www.w3.org/TR/sparql11-query/#func-replace
+    * @see https://www.w3.org/TR/xpath-functions/#func-replace
+    * @param col
+    * @param pattern
+    * @param by
+    * @return
+    */
+  def replace(col: Column, pattern: String, by: String): Column =
+    regexp_replace(col, pattern, by)
 
   /**
     * Implementation of SparQL STRAFTER on Spark dataframes.
