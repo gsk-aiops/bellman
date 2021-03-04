@@ -4,6 +4,7 @@ import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.Query._
 import com.gsk.kg.sparqlparser.StringVal._
 import org.scalatest.flatspec.AnyFlatSpec
+import scala.collection.mutable
 
 class QueryConstructSpec extends AnyFlatSpec {
 
@@ -87,5 +88,38 @@ class QueryConstructSpec extends AnyFlatSpec {
       case Construct(vars, bgp, Project(Seq(VARIABLE("?name"), VARIABLE("?person")),Filter(funcs,expr))) => succeed
       case _ => fail
     }
+  }
+
+  "Query with blank nodes" should "be supported in the QueryConstruct" in {
+    val query =
+      """
+        |PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+        |
+        |SELECT ?de ?et
+        |
+        |WHERE {
+        |  ?de dm:predEntityClass _:a .
+        |  _:a dm:predClass ?et
+        |} LIMIT 10
+        |""".stripMargin
+
+    val x = QueryConstruct.parse(query)
+
+    x match {
+      case Select(
+        mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
+        OffsetLimit(
+          None,
+          Some(10),
+          Project(
+            mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
+            BGP(
+              mutable.ArrayBuffer(
+                Triple(VARIABLE("?de"),URIVAL("<http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass>"),VARIABLE("??0")),
+                Triple(VARIABLE("??0"),URIVAL("<http://gsk-kg.rdip.gsk.com/dm/1.0/predClass>"),VARIABLE("?et"))))))) =>
+        succeed
+      case _ => fail
+    }
+
   }
 }
