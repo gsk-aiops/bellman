@@ -184,4 +184,4 @@ object DAG {
     }
 
 }
-// scalastyle:on scalastyle:off number.of.methods
+// scalastyle:on number.of.methods

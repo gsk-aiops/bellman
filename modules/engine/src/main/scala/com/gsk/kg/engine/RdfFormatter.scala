@@ -29,11 +29,11 @@ object RdfFormatter {
 
   def formatField(field: Any): Any =
     Option(field).map(_.toString match {
-	    case RDFUri(uri) => uri
+      case RDFUri(uri) => uri
       case RDFBlank(blank) => blank
       case RDFNum(num) => num
       case str => s""""$str""""
-    }).getOrElse("null")
+    }).getOrElse(null) // scalastyle:off
 
   object RDFUri {
     def unapply(str: String): Option[String] =

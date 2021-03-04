@@ -14,7 +14,7 @@ lazy val Versions = Map(
   "spark-testing-base" -> "2.4.5_0.14.0",
   "jackson"            -> "2.12.1",
   "scalacheck"         -> "1.15.2",
-  "scalatestplus"      -> "3.2.5.0",
+  "scalatestplus"      -> "3.2.3.0",
 )
 
 inThisBuild(List(

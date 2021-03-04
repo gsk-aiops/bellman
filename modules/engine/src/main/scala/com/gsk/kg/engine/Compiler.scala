@@ -31,7 +31,8 @@ object Compiler {
     parser >>>
       transformToGraph >>>
       optimizer >>>
-      engine(df)
+      engine(df) >>>
+      rdfFormatter
 
 
   def transformToGraph[T: Basis[DAG, *]]: Phase[Query, T] =
@@ -57,5 +58,7 @@ object Compiler {
     Arrow[Phase].lift(QueryConstruct.parse)
 
   def optimizer[T: Basis[DAG, *]]: Phase[T, T] = Arrow[Phase].id
+
+  def rdfFormatter: Phase[DataFrame, DataFrame] = Arrow[Phase].lift(RdfFormatter.formatDataFrame)
 
 }

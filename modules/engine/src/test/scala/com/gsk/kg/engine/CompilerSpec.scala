@@ -46,7 +46,15 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-    Compiler.compile(df, query).right.get.collect() shouldEqual df.collect()
+    Compiler.compile(df, query).right.get.collect() shouldEqual Array(
+    Row(
+      "\"test\"",
+      "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+      "<http://id.gsk.com/dm/1.0/Document>"
+    ),
+    Row("\"test\"", "<http://id.gsk.com/dm/1.0/docSource>", "\"source\"")
+  )
+
   }
 
   it should "execute a query with two dependent BGPs" in {
@@ -64,7 +72,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """
 
     Compiler.compile(df, query).right.get.collect() shouldEqual Array(
-      Row("test", "source")
+      Row("\"test\"", "\"source\"")
     )
   }
 
@@ -84,8 +92,8 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """
 
     Compiler.compile(df, query).right.get.collect() shouldEqual Array(
-      Row("test", "<http://id.gsk.com/dm/1.0/Document>"),
-      Row("test", "source")
+      Row("\"test\"", "<http://id.gsk.com/dm/1.0/Document>"),
+      Row("\"test\"", "\"source\"")
     )
   }
 
@@ -105,8 +113,8 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """
 
     Compiler.compile(df, query).right.get.collect() shouldEqual Array(
-      Row("test", "<http://id.gsk.com/dm/1.0/Document>", null, null),
-      Row(null, null, "test", "source")
+      Row("\"test\"", "<http://id.gsk.com/dm/1.0/Document>", null, null),
+      Row(null, null, "\"test\"", "\"source\"")
     )
   }
 
@@ -125,7 +133,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     Compiler.compile(df, query).right.get.collect() shouldEqual Array(
       Row(
-        "test",
+        "\"test\"",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
         "<http://id.gsk.com/dm/1.0/Document>"
       )
@@ -153,24 +161,24 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     Compiler.compile(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
-        "doesmatch",
+        "\"doesmatch\"",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
         "<http://id.gsk.com/dm/1.0/Document>"
       ),
       Row(
-        "doesmatchaswell",
+        "\"doesmatchaswell\"",
         "<http://id.gsk.com/dm/1.0/docSource>",
-        "potato"
+        "\"potato\""
       ),
       Row(
-        "test",
+        "\"test\"",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
         "<http://id.gsk.com/dm/1.0/Document>"
       ),
       Row(
-        "test",
+        "\"test\"",
         "<http://id.gsk.com/dm/1.0/docSource>",
-        "source"
+        "\"source\""
       )
     )
   }
@@ -201,14 +209,14 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     Compiler.compile(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
-        "test",
+        "\"test\"",
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
         "<http://id.gsk.com/dm/1.0/Document>"
       ),
       Row(
-        "test",
+        "\"test\"",
         "<http://id.gsk.com/dm/1.0/docSource>",
-        "source"
+        "\"source\""
       )
     )
 
@@ -273,17 +281,17 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     result shouldBe a[Right[_, _]]
     result.right.get.collect.length shouldEqual 2
-    result.right.get.collect.toSet shouldEqual Set(Row("Anthony"), Row("Perico"))
+    result.right.get.collect.toSet shouldEqual Set(Row("\"Anthony\""), Row("\"Perico\""))
   }
 
   it should "query a real DF with limit equal to 0 and obtain no results" in {
     import sqlContext.implicits._
 
     val df: DataFrame = List(
-      ("a", "b", "c"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry")
+      ("\"a\"", "\"b\"", "\"c\""),
+      ("\"team\"", "<http://xmlns.com/foaf/0.1/name>", "\"Anthony\""),
+      ("\"team\"", "<http://xmlns.com/foaf/0.1/name>", "\"Perico\""),
+      ("\"team\"", "<http://xmlns.com/foaf/0.1/name>", "\"Henry\"")
     ).toDF("s", "p", "o")
 
     val query =
@@ -350,7 +358,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     result shouldBe a[Right[_, _]]
     result.right.get.collect.length shouldEqual 2
-    result.right.get.collect.toSet shouldEqual Set(Row("Perico"), Row("Henry"))
+    result.right.get.collect.toSet shouldEqual Set(Row("\"Perico\""), Row("\"Henry\""))
   }
 
   it should "query a real DF with offset equal to 0 and obtain same elements as the original set" in {
@@ -376,7 +384,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     result shouldBe a[Right[_, _]]
     result.right.get.collect.length shouldEqual 3
-    result.right.get.collect.toSet shouldEqual Set(Row("Anthony"), Row("Perico"), Row("Henry"))
+    result.right.get.collect.toSet shouldEqual Set(Row("\"Anthony\""), Row("\"Perico\""), Row("\"Henry\""))
   }
 
   it should "query a real DF with offset greater than the number of elements of the dataframe and obtain an empty set" in {
