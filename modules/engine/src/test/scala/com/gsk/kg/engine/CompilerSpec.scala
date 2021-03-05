@@ -37,14 +37,13 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """
 
     Compiler.compile(df, query).right.get.collect() shouldEqual Array(
-    Row(
-      "\"test\"",
-      "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-      "<http://id.gsk.com/dm/1.0/Document>"
-    ),
-    Row("\"test\"", "<http://id.gsk.com/dm/1.0/docSource>", "\"source\"")
-  )
-
+      Row(
+        "\"test\"",
+        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+        "<http://id.gsk.com/dm/1.0/Document>"
+      ),
+      Row("\"test\"", "<http://id.gsk.com/dm/1.0/docSource>", "\"source\"")
+    )
   }
 
   it should "execute a query with two dependent BGPs" in {
@@ -489,6 +488,43 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     result shouldBe a[Left[_, _]]
     result.left.get shouldEqual EngineError.FunctionError(s"Error on REPLACE function: No group 1")
+  }
+
+  // TODO: Remove ignore when OPTIONAL (#87) and FILTER (#83) are implemented
+  it should "query a real DF with ISBLANK function and obtain expected results" ignore {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("_:a", "a:annotates", "<http://www.w3.org/TR/rdf-sparql-query/>"),
+      ("_:a", "dc:creator", "Alice B. Toeclips"),
+      ("_:b", "a:annotates", "<http://www.w3.org/TR/rdf-sparql-query/>"),
+      ("_:b", "dc:creator", "_:c"),
+      ("_:c", "foaf:given", "Bob"),
+      ("_:c", "foaf:family", "Smith")
+    ).toDF("s", "p", "o")
+
+    val query = {
+    """
+      |PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+      |PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+      |PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+      |
+      |SELECT ?given ?family
+      |WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
+      |  ?annot  dc:creator   ?c .
+      |  OPTIONAL { ?c  foaf:given   ?given ; foaf:family  ?family } .
+      |  FILTER isBlank(?c)
+      |}
+      |""".stripMargin
+    }
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 1
+    result.right.get.collect.toSet shouldEqual Set(
+      Row("\"Bob\"", "\"Smith\"")
+    )
   }
 
   private def readNTtoDF(path: String) = {
