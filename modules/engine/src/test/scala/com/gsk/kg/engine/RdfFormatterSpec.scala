@@ -33,11 +33,18 @@ class RdfFormatterSpec
     }
   }
 
+  "RDFDataTypeLit" should "match literal with data type correctly" in {
+    forAll(dataTypeLiteralGen) { dtl =>
+      RDFDataTypeLiteral.unapply(dtl) shouldBe a[Some[_]]
+    }
+  }
+
   "formatField" should "not raises exceptions when formatting" in {
     val gen = Gen.oneOf(
       uriGen.map(_.toString()),
       blankGen,
-      numberGen.map(_.toString())
+      numberGen.map(_.toString()),
+      dataTypeLiteralGen
     )
 
     forAll(gen) { str =>
