@@ -88,15 +88,15 @@ Construct
 |  |  |
 |  |  +- ?Document
 |  |  |
-|  |  +- <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
+|  |  +- http://www.w3.org/1999/02/22-rdf-syntax-ns#type
 |  |  |
-|  |  `- <http://lit-search-api/node/Document>
+|  |  `- http://lit-search-api/node/Document
 |  |
 |  `- Triple
 |     |
 |     +- ?Document
 |     |
-|     +- <http://lit-search-api/property/docID>
+|     +- http://lit-search-api/property/docID
 |     |
 |     `- ?docid
 |
@@ -130,9 +130,9 @@ Construct
             |
             +- ?d
             |
-            +- <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
+            +- http://www.w3.org/1999/02/22-rdf-syntax-ns#type
             |
-            `- <http://gsk-kg.rdip.gsk.com/dm/1.0/Document>""".trim
+            `- http://gsk-kg.rdip.gsk.com/dm/1.0/Document""".trim
   }
 
 }

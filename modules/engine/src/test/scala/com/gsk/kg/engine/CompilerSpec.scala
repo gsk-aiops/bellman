@@ -18,10 +18,10 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
   val dfList = List(
     (
       "test",
-      "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-      "<http://id.gsk.com/dm/1.0/Document>"
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+      "http://id.gsk.com/dm/1.0/Document"
     ),
-    ("test", "<http://id.gsk.com/dm/1.0/docSource>", "source")
+    ("test", "http://id.gsk.com/dm/1.0/docSource", "source")
   )
 
   "Compiler" should "perform query operations in the dataframe" in {
@@ -39,10 +39,10 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Compiler.compile(df, query).right.get.collect() shouldEqual Array(
       Row(
         "\"test\"",
-        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-        "<http://id.gsk.com/dm/1.0/Document>"
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://id.gsk.com/dm/1.0/Document"
       ),
-      Row("\"test\"", "<http://id.gsk.com/dm/1.0/docSource>", "\"source\"")
+      Row("\"test\"", "http://id.gsk.com/dm/1.0/docSource", "\"source\"")
     )
   }
 
@@ -81,7 +81,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """
 
     Compiler.compile(df, query).right.get.collect() shouldEqual Array(
-      Row("\"test\"", "<http://id.gsk.com/dm/1.0/Document>"),
+      Row("\"test\"", "http://id.gsk.com/dm/1.0/Document"),
       Row("\"test\"", "\"source\"")
     )
   }
@@ -102,7 +102,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       """
 
     Compiler.compile(df, query).right.get.collect() shouldEqual Array(
-      Row("\"test\"", "<http://id.gsk.com/dm/1.0/Document>", null, null),
+      Row("\"test\"", "http://id.gsk.com/dm/1.0/Document", null, null),
       Row(null, null, "\"test\"", "\"source\"")
     )
   }
@@ -123,8 +123,8 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Compiler.compile(df, query).right.get.collect() shouldEqual Array(
       Row(
         "\"test\"",
-        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-        "<http://id.gsk.com/dm/1.0/Document>"
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://id.gsk.com/dm/1.0/Document"
       )
     )
   }
@@ -133,8 +133,8 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val positive = List(
-        ("doesmatch", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://id.gsk.com/dm/1.0/Document>"),
-        ("doesmatchaswell", "<http://id.gsk.com/dm/1.0/docSource>", "potato")
+        ("doesmatch", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://id.gsk.com/dm/1.0/Document"),
+        ("doesmatchaswell", "http://id.gsk.com/dm/1.0/docSource", "potato")
       )
     val df: DataFrame = (positive ++ dfList).toDF("s", "p", "o")
 
@@ -151,22 +151,22 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Compiler.compile(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
         "\"doesmatch\"",
-        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-        "<http://id.gsk.com/dm/1.0/Document>"
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://id.gsk.com/dm/1.0/Document"
       ),
       Row(
         "\"doesmatchaswell\"",
-        "<http://id.gsk.com/dm/1.0/docSource>",
+        "http://id.gsk.com/dm/1.0/docSource",
         "\"potato\""
       ),
       Row(
         "\"test\"",
-        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-        "<http://id.gsk.com/dm/1.0/Document>"
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://id.gsk.com/dm/1.0/Document"
       ),
       Row(
         "\"test\"",
-        "<http://id.gsk.com/dm/1.0/docSource>",
+        "http://id.gsk.com/dm/1.0/docSource",
         "\"source\""
       )
     )
@@ -177,8 +177,8 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val negative = List(
-        ("doesntmatch", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "http://id.gsk.com/dm/1.0/Document>"),
-        ("doesntmatcheither", "<http://id.gsk.com/dm/1.0/docSource>", "potato")
+        ("doesntmatch", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://id.gsk.com/dm/1.0/Document"),
+        ("doesntmatcheither", "http://id.gsk.com/dm/1.0/docSource", "potato")
       )
 
     val df: DataFrame = (negative ++ dfList).toDF("s", "p", "o")
@@ -199,12 +199,12 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     Compiler.compile(df, query).right.get.collect().toSet shouldEqual Set(
       Row(
         "\"test\"",
-        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
-        "<http://id.gsk.com/dm/1.0/Document>"
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://id.gsk.com/dm/1.0/Document"
       ),
       Row(
         "\"test\"",
-        "<http://id.gsk.com/dm/1.0/docSource>",
+        "http://id.gsk.com/dm/1.0/docSource",
         "\"source\""
       )
     )
@@ -216,7 +216,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     * TODO(pepegar): In order to make this test pass we need the
     * results to be RDF compliant (mainly, wrapping values correctly)
     */
-  it should "query a real DF with a real query" ignore {
+  it should "query a real DF with a real query" in {
     val query = """
       PREFIX  schema: <http://schema.org/>
       PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
@@ -252,9 +252,9 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = List(
       ("a", "b", "c"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry")
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Henry")
     ).toDF("s", "p", "o")
 
     val query =
@@ -278,9 +278,9 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = List(
       ("\"a\"", "\"b\"", "\"c\""),
-      ("\"team\"", "<http://xmlns.com/foaf/0.1/name>", "\"Anthony\""),
-      ("\"team\"", "<http://xmlns.com/foaf/0.1/name>", "\"Perico\""),
-      ("\"team\"", "<http://xmlns.com/foaf/0.1/name>", "\"Henry\"")
+      ("\"team\"", "http://xmlns.com/foaf/0.1/name", "\"Anthony\""),
+      ("\"team\"", "http://xmlns.com/foaf/0.1/name", "\"Perico\""),
+      ("\"team\"", "http://xmlns.com/foaf/0.1/name", "\"Henry\"")
     ).toDF("s", "p", "o")
 
     val query =
@@ -304,9 +304,9 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = List(
       ("a", "b", "c"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry")
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Henry")
     ).toDF("s", "p", "o")
 
     val query =
@@ -329,9 +329,9 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = List(
       ("a", "b", "c"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry")
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Henry")
     ).toDF("s", "p", "o")
 
     val query =
@@ -355,9 +355,9 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = List(
       ("a", "b", "c"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry")
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Henry")
     ).toDF("s", "p", "o")
 
     val query =
@@ -381,9 +381,9 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val df: DataFrame = List(
       ("a", "b", "c"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico"),
-      ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry")
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Henry")
     ).toDF("s", "p", "o")
 
     val query =
@@ -406,8 +406,8 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val df: DataFrame = List(
-       ("nodeA", "<http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass>", "thisIsTheBlankNode"),
-       ("thisIsTheBlankNode", "<http://gsk-kg.rdip.gsk.com/dm/1.0/predClass>", "otherThingy")
+       ("nodeA", "http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass", "thisIsTheBlankNode"),
+       ("thisIsTheBlankNode", "http://gsk-kg.rdip.gsk.com/dm/1.0/predClass", "otherThingy")
     ).toDF("s", "p", "o")
 
     val query =
@@ -434,10 +434,10 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val df: DataFrame = List(
-      ("example", "<http://xmlns.com/foaf/0.1/lit>", "abcd"),
-      ("example", "<http://xmlns.com/foaf/0.1/lit>", "abaB"),
-      ("example", "<http://xmlns.com/foaf/0.1/lit>", "bbBB"),
-      ("example", "<http://xmlns.com/foaf/0.1/lit>", "aaaa")
+      ("example", "http://xmlns.com/foaf/0.1/lit", "abcd"),
+      ("example", "http://xmlns.com/foaf/0.1/lit", "abaB"),
+      ("example", "http://xmlns.com/foaf/0.1/lit", "bbBB"),
+      ("example", "http://xmlns.com/foaf/0.1/lit", "aaaa")
     ).toDF("s", "p", "o")
 
     val query =
@@ -470,7 +470,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val df: DataFrame = List(
-      ("example", "<http://xmlns.com/foaf/0.1/lit>", "abracadabra")
+      ("example", "http://xmlns.com/foaf/0.1/lit", "abracadabra")
     ).toDF("s", "p", "o")
 
     val query =
@@ -495,9 +495,9 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val df: DataFrame = List(
-      ("_:a", "a:annotates", "<http://www.w3.org/TR/rdf-sparql-query/>"),
+      ("_:a", "a:annotates", "http://www.w3.org/TR/rdf-sparql-query/"),
       ("_:a", "dc:creator", "Alice B. Toeclips"),
-      ("_:b", "a:annotates", "<http://www.w3.org/TR/rdf-sparql-query/>"),
+      ("_:b", "a:annotates", "http://www.w3.org/TR/rdf-sparql-query/"),
       ("_:b", "dc:creator", "_:c"),
       ("_:c", "foaf:given", "Bob"),
       ("_:c", "foaf:family", "Smith")
@@ -531,10 +531,10 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val df: DataFrame = List(
-      ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"),
-      ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"0.22\"^^xsd:float"),
-      ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"foo\"^^xsd:string"),
-      ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"true\"^^xsd:boolean")
+      ("example", "http://xmlns.com/foaf/0.1/lit", "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float"),
+      ("example", "http://xmlns.com/foaf/0.1/lit", "\"0.22\"^^xsd:float"),
+      ("example", "http://xmlns.com/foaf/0.1/lit", "\"foo\"^^xsd:string"),
+      ("example", "http://xmlns.com/foaf/0.1/lit", "\"true\"^^xsd:boolean")
     ).toDF("s", "p", "o")
 
     val query =
@@ -553,7 +553,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     result shouldBe a[Right[_, _]]
     result.right.get.collect().length shouldEqual 4
     result.right.get.collect().toSet shouldEqual Set(
-      Row("\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"),
+      Row("\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float"),
       Row("\"0.22\"^^xsd:float"),
       Row("\"foo\"^^xsd:string"),
       Row("\"true\"^^xsd:boolean")

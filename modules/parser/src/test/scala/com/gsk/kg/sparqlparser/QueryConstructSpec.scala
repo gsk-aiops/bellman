@@ -115,8 +115,8 @@ class QueryConstructSpec extends AnyFlatSpec {
             mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
             BGP(
               mutable.ArrayBuffer(
-                Triple(VARIABLE("?de"),URIVAL("<http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass>"),VARIABLE("??0")),
-                Triple(VARIABLE("??0"),URIVAL("<http://gsk-kg.rdip.gsk.com/dm/1.0/predClass>"),VARIABLE("?et"))))))) =>
+                Triple(VARIABLE("?de"),URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass"),VARIABLE("??0")),
+                Triple(VARIABLE("??0"),URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predClass"),VARIABLE("?et"))))))) =>
         succeed
       case _ => fail
     }

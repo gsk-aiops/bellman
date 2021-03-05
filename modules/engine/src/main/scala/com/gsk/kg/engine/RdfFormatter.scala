@@ -50,7 +50,7 @@ object RdfFormatter {
       if (str.startsWith("<") && str.endsWith(">")) {
         Some(str)
       } else if(Try(new URI(str).isAbsolute) == Success(true)) {
-        Some(s"<$str>")
+        Some(str)
       } else {
         None
       }
