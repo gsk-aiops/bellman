@@ -11,6 +11,33 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
   override implicit def enableHiveSupport: Boolean = false
 
+  "Func.isBlank" should {
+
+    "return whether a node is a blank node or not" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "_:a",
+        "a:a",
+        "_:1",
+        "1:1",
+        "foaf:name",
+        "_:name"
+      ).toDF("text")
+
+      val result = df.select(Func.isBlank(df("text"))).collect
+
+      result shouldEqual Array(
+        Row(true),
+        Row(false),
+        Row(true),
+        Row(false),
+        Row(false),
+        Row(true)
+      )
+    }
+  }
+
   "Func.replace" should {
 
     "replace when pattern occurs" in {

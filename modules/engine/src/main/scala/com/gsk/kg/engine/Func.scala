@@ -5,6 +5,10 @@ import org.apache.spark.sql.functions.{concat => cc, _}
 
 object Func {
 
+  def isBlank(col: Column): Column =
+    when(regexp_extract(col, "^_:.*$", 0) =!= "", true)
+      .otherwise(false)
+
   /**
     * Implementation of SparQL REPLACE (without flags) on Spark dataframes.
     *
