@@ -504,18 +504,18 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     ).toDF("s", "p", "o")
 
     val query = {
-    """
-      |PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
-      |PREFIX dc:     <http://purl.org/dc/elements/1.1/>
-      |PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
-      |
-      |SELECT ?given ?family
-      |WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
-      |  ?annot  dc:creator   ?c .
-      |  OPTIONAL { ?c  foaf:given   ?given ; foaf:family  ?family } .
-      |  FILTER isBlank(?c)
-      |}
-      |""".stripMargin
+      """
+        |PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>
+        |PREFIX dc:     <http://purl.org/dc/elements/1.1/>
+        |PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT ?given ?family
+        |WHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .
+        |  ?annot  dc:creator   ?c .
+        |  OPTIONAL { ?c  foaf:given   ?given ; foaf:family  ?family } .
+        |  FILTER isBlank(?c)
+        |}
+        |""".stripMargin
     }
 
     val result = Compiler.compile(df, query)
@@ -524,6 +524,39 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     result.right.get.collect.length shouldEqual 1
     result.right.get.collect.toSet shouldEqual Set(
       Row("\"Bob\"", "\"Smith\"")
+    )
+  }
+
+  it should "format data type literals correctly" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"),
+      ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"0.22\"^^xsd:float"),
+      ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"foo\"^^xsd:string"),
+      ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"true\"^^xsd:boolean")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+        |PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+        |
+        |SELECT   ?lit
+        |WHERE    {
+        |  ?x foaf:lit ?lit .
+        |}
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect().length shouldEqual 4
+    result.right.get.collect().toSet shouldEqual Set(
+      Row("\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"),
+      Row("\"0.22\"^^xsd:float"),
+      Row("\"foo\"^^xsd:string"),
+      Row("\"true\"^^xsd:boolean")
     )
   }
 
