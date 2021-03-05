@@ -10,7 +10,8 @@ import java.net.URI
 class RdfFormatterSpec
     extends AnyFlatSpec
     with ScalaCheckDrivenPropertyChecks
-    with Matchers {
+    with Matchers
+    with CommonGenerators {
 
   import RdfFormatter._
 
@@ -61,38 +62,5 @@ class RdfFormatterSpec
         formatField(str) shouldEqual expected
       }
   }
-
-  private val numberGen: Gen[Number] = Arbitrary.arbNumber.arbitrary
-
-  private val blankGen: Gen[String] = Gen.alphaNumStr.map(s => "_:" + s)
-
-  private val uriGen: Gen[URI] =
-    for {
-      scheme <- Gen.oneOf("http", "https", "ftp")
-      host <- Gen.oneOf("gsk.com", "gsk-id", "dbpedia") //String host,
-      port <- Gen.option(Gen.choose(1025, 65535))
-      path <- path
-      query <- query
-      fragment <- Gen.option(Gen.alphaNumStr)
-    } yield new URI(
-      scheme + "://" +
-        host +
-        port.map(p => s":$p").getOrElse("") + "/" +
-        path + "?" +
-        query +
-        fragment.map(f => s"#$f").getOrElse("")
-    )
-
-  private val path: Gen[String] =
-    for {
-      n <- Gen.choose(0, 10)
-      paths <- Gen.listOfN(n, Gen.alphaStr)
-    } yield paths.mkString("/")
-
-  private val query: Gen[String] =
-    for {
-      n <- Gen.choose(0, 10)
-      paths <- Gen.listOfN(n, Gen.zip(Gen.alphaStr, Gen.alphaStr))
-    } yield paths.map({ case (k, v) => s"$k=$v" }).mkString("&")
 
 }
