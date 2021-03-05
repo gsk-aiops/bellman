@@ -32,8 +32,18 @@ object RdfFormatter {
       case RDFUri(uri) => uri
       case RDFBlank(blank) => blank
       case RDFNum(num) => num
+      case RDFDataTypeLiteral(lit) => lit
       case str => s""""$str""""
     }).getOrElse(null) // scalastyle:off
+
+  object RDFDataTypeLiteral {
+    def unapply(str: String): Option[String] =
+      if (str.contains("^^")) {
+        Some(str.replace("\".", ""))
+      } else {
+        None
+      }
+  }
 
   object RDFUri {
     def unapply(str: String): Option[String] =
