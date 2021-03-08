@@ -560,6 +560,135 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
+  it should "query a real DF with FILTER and obtain expected results when only one condition" in {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("a", "b", "c"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Henry"),
+      ("_:", "http://xmlns.com/foaf/0.1/name", "Blank")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?name
+        |WHERE   {
+        |   ?x foaf:name ?name .
+        |   FILTER isBlank(?x)
+        |}
+        |
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 1
+    result.right.get.collect.toSet shouldEqual Set(Row("\"Blank\""))
+  }
+
+  // TODO: Un-ignore when binary logical operations implemented
+  it should "query a real DF with FILTER and obtain expected results when multiple conditions" ignore {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("a", "b", "c"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Henry"),
+      ("_:", "http://xmlns.com/foaf/0.1/name", "Blank"),
+      ("_:", "http://xmlns.com/foaf/0.1/name", "http://test-uri/blank")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?name
+        |WHERE   {
+        |   ?x foaf:name ?name .
+        |   FILTER (isBlank(?x) && isURI(?x))
+        |}
+        |
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 1
+    result.right.get.collect.toSet shouldEqual Set(Row("\"Blank\""))
+  }
+
+  it should "query a real DF with FILTER and obtain expected results when condition has embedded functions" in {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("a", "b", "c"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Henry"),
+      ("a:", "http://xmlns.com/foaf/0.1/name", "Blank")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?name
+        |WHERE   {
+        |   ?x foaf:name ?name .
+        |   FILTER (isBlank( replace (?x, "a", "_") ) )
+        |}
+        |
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 1
+    result.right.get.collect.toSet shouldEqual Set(Row("\"Blank\""))
+  }
+
+  it should "query a real DF with FILTER and obtain expected results when double filter" in {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("a", "b", "c"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("_:a", "http://xmlns.com/foaf/0.1/name", "_:b"),
+      ("foaf:c", "http://xmlns.com/foaf/0.1/name", "_:d"),
+      ("_:e", "http://xmlns.com/foaf/0.1/name", "foaf:f")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?x ?name
+        |WHERE   {
+        |   ?x foaf:name ?name .
+        |   FILTER isBlank(?x)
+        |   FILTER isBlank(?name)
+        |}
+        |
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 1
+    result.right.get.collect.toSet shouldEqual Set(
+      Row("_:a", "_:b")
+    )
+  }
+
   private def readNTtoDF(path: String) = {
     import sqlContext.implicits._
     import scala.collection.JavaConverters._
