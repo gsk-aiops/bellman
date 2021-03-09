@@ -739,6 +739,54 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
+  it should "generate multiple blank nodes on CONSTRUCT" in {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("_:a", "http://xmlns.com/foaf/0.1/givenname", "Alice"),
+      ("_:a", "http://xmlns.com/foaf/0.1/firstname", "Alice"),
+      ("_:a", "http://xmlns.com/foaf/0.1/surname", "Smith"),
+      ("_:a", "http://xmlns.com/foaf/0.1/family_name", "Smith"),
+      ("_:b", "http://xmlns.com/foaf/0.1/givenname", "Bob"),
+      ("_:b", "http://xmlns.com/foaf/0.1/firstnane", "Bob"),
+      ("_:b", "http://xmlns.com/foaf/0.1/surname", "Tables"),
+      ("_:b", "http://xmlns.com/foaf/0.1/family_name", "Tables")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |PREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>
+        |
+        |CONSTRUCT { ?x  vcard:N _:v .
+        |            _:v vcard:givenName ?gname .
+        |            _:v vcard:familyName ?fname }
+        |WHERE
+        | {
+        |    ?x foaf:firstname ?gname .
+        |    ?x foaf:givenname ?gname .
+        |    ?x foaf:surname   ?fname .
+        |    ?x foaf:family_name ?fname .
+        | }
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result.right.get.show()
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 6
+    result.right.get.collect.toSet shouldEqual Set(
+      Row("_:a", "vcard:N", "_:"),
+      Row("_:", "vcard:givenName", "Alice"),
+      Row("_:", "vcard:familyName", "Smith"),
+      Row("_:b", "vcard:N", "_:"),
+      Row("_:", "vcard:givenName", "Bob"),
+      Row("_:", "vcard:familyName", "Tables")
+    )
+  }
+
   private def readNTtoDF(path: String) = {
     import sqlContext.implicits._
     import scala.collection.JavaConverters._
