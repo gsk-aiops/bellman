@@ -531,7 +531,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val df: DataFrame = List(
-      ("example", "http://xmlns.com/foaf/0.1/lit", "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float"),
+      ("example", "http://xmlns.com/foaf/0.1/lit", "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"),
       ("example", "http://xmlns.com/foaf/0.1/lit", "\"0.22\"^^xsd:float"),
       ("example", "http://xmlns.com/foaf/0.1/lit", "\"foo\"^^xsd:string"),
       ("example", "http://xmlns.com/foaf/0.1/lit", "\"true\"^^xsd:boolean")
@@ -553,7 +553,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     result shouldBe a[Right[_, _]]
     result.right.get.collect().length shouldEqual 4
     result.right.get.collect().toSet shouldEqual Set(
-      Row("\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float"),
+      Row("\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"),
       Row("\"0.22\"^^xsd:float"),
       Row("\"foo\"^^xsd:string"),
       Row("\"true\"^^xsd:boolean")
@@ -686,6 +686,56 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     result.right.get.collect.length shouldEqual 1
     result.right.get.collect.toSet shouldEqual Set(
       Row("_:a", "_:b")
+    )
+  }
+
+  // TODO: Un-ignore when implemented EQUALS and GT
+  it should "query a real DF with FILTER and obtain expected results when complex filter" ignore {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice"),
+      ("_:a", "http://example.org/stats#hits", "\"2349\"^^xsd:integer"),
+      ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob"),
+      ("_:b", "http://example.org/stats#hits", "\"105\"^^xsd:integer"),
+      ("_:c", "http://xmlns.com/foaf/0.1/name", "Eve"),
+      ("_:c", "http://example.org/stats#hits", "\"181\"^^xsd:integer")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+        |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        |PREFIX site: <http://example.org/stats#>
+        |
+        |CONSTRUCT
+        |{
+        |   ?x foaf:name ?name .
+        |   ?y site:hits ?hits
+        |}
+        |WHERE
+        |{
+        |   {
+        |     ?x foaf:name ?name .
+        |     FILTER (?name = "Bob")
+        |   }
+        |   UNION
+        |   {
+        |     ?y site:hits ?hits
+        |     FILTER (?hits > 1000)
+        |   }
+        |   FILTER (isBlank(?x) || isBlank(?y))
+        |}
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 2
+    result.right.get.collect.toSet shouldEqual Set(
+      Row("_:a", "foaf:name", "\"Bob\""),
+      Row("_:b", "site:hits", "\"2349\"^^xsd:integer")
     )
   }
 
