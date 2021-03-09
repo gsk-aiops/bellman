@@ -5,12 +5,11 @@ import higherkindness.droste.data.Fix
 import higherkindness.droste.macros.deriveTraverse
 import higherkindness.droste.syntax.all._
 import higherkindness.droste.util.DefaultTraverse
-
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import com.gsk.kg.sparqlparser.StringVal
-
 import cats.Traverse
 import cats.Applicative
+import cats.data.NonEmptyList
 import cats.implicits._
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
@@ -45,7 +44,7 @@ object DAG {
   final case class LeftJoin[A](l: A, r: A, filters: List[Expression])
       extends DAG[A]
   final case class Union[A](l: A, r: A) extends DAG[A]
-  final case class Filter[A](funcs: List[Expression], expr: A) extends DAG[A]
+  final case class Filter[A](funcs: NonEmptyList[Expression], expr: A) extends DAG[A]
   final case class Join[A](l: A, r: A) extends DAG[A]
   final case class Offset[A](offset: Long, r: A) extends DAG[A]
   final case class Limit[A](limit: Long, r: A) extends DAG[A]
@@ -97,7 +96,7 @@ object DAG {
   def leftJoin[A](l: A, r: A, filters: List[Expression]): DAG[A] =
     LeftJoin[A](l, r, filters)
   def union[A](l: A, r: A): DAG[A] = Union[A](l, r)
-  def filter[A](funcs: List[Expression], expr: A): DAG[A] =
+  def filter[A](funcs: NonEmptyList[Expression], expr: A): DAG[A] =
     Filter[A](funcs, expr)
   def join[A](l: A, r: A): DAG[A] = Join[A](l, r)
   def offset[A](offset: Long, r: A): DAG[A] =
@@ -131,7 +130,7 @@ object DAG {
       filters: List[Expression]
   ): T = leftJoin[T](l, r, filters).embed
   def unionR[T: Embed[DAG, *]](l: T, r: T): T = union[T](l, r).embed
-  def filterR[T: Embed[DAG, *]](funcs: List[Expression], expr: T): T =
+  def filterR[T: Embed[DAG, *]](funcs: NonEmptyList[Expression], expr: T): T =
     filter[T](funcs, expr).embed
   def joinR[T: Embed[DAG, *]](l: T, r: T): T = join[T](l, r).embed
   def offsetR[T: Embed[DAG, *]](
@@ -179,7 +178,7 @@ object DAG {
       case OffsetLimitF(None, Some(l), r)    => limit(l, r)
       case OffsetLimitF(Some(o), None, r)    => offset(o, r)
       case OffsetLimitF(Some(o), Some(l), r) => offset(o, limit(l, r).embed)
-      case FilterF(funcs, expr)              => filter(funcs.toList, expr)
+      case FilterF(funcs, expr)              => filter(NonEmptyList.fromListUnsafe(funcs.toList), expr)
       case TabUnitF()                        => noop("TabUnitF not supported yet")
     }
 

@@ -53,7 +53,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
             Node("LeftJoin", Stream(l, r) #::: filters.map(_.toTree).toStream)
           case DAG.Union(l, r) => Node("Union", Stream(l, r))
           case DAG.Filter(funcs, expr) =>
-            Node("Filter", funcs.map(_.toTree).toStream #::: Stream(expr))
+            Node("Filter", funcs.map(_.toTree).toList.toStream #::: Stream(expr))
           case DAG.Join(l, r) => Node("Join", Stream(l, r))
           case DAG.Offset(offset, r) =>
             Node(
