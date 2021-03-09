@@ -1,18 +1,16 @@
 package com.gsk.kg.engine
 
 import cats.Foldable
+import cats.data.NonEmptyList
 import cats.instances.all._
+import cats.syntax.EitherSyntax
 import cats.syntax.either._
 import cats.syntax.applicative._
-
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{Column, DataFrame, SQLContext}
 import org.apache.spark.sql.functions._
-
 import com.gsk.kg.engine._
 import com.gsk.kg.sparqlparser._
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
-
 import higherkindness.droste._
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.engine.Multiset._
@@ -38,7 +36,7 @@ object Engine {
       case DAG.BGP(triples)            => Foldable[List].fold(triples).pure[M]
       case DAG.LeftJoin(l, r, filters) => notImplemented("LeftJoin")
       case DAG.Union(l, r)             => l.union(r).pure[M]
-      case DAG.Filter(funcs, expr)     => notImplemented("Filter")
+      case DAG.Filter(funcs, expr)     => evaluateFilter(funcs, expr)
       case DAG.Join(l, r)              => notImplemented("Join")
       case DAG.Offset(offset, r)       => evaluateOffset(offset, r)
       case DAG.Limit(limit, r)         => evaluateLimit(limit, r)
@@ -58,6 +56,21 @@ object Engine {
     eval(dag)
       .runA(dataframe)
       .map(_.dataframe)
+  }
+
+  private def evaluateFilter(funcs: NonEmptyList[Expression], expr: Multiset): M[Multiset] = {
+
+    val compiledFuncs: NonEmptyList[DataFrame => Result[Column]] = funcs.map(ExpressionF.compile[Expression])
+
+    M.liftF[Result, DataFrame, Multiset] {
+      compiledFuncs.foldLeft(expr.asRight: Result[Multiset]) { case (eitherAcc, f) =>
+        for {
+          acc <- eitherAcc
+          filterCol <- f(acc.dataframe)
+          result <- expr.filter(filterCol).map(r => expr.copy(dataframe = r.dataframe intersect acc.dataframe ))
+        } yield result
+      }
+    }
   }
 
   private def evaluateOffset(offset: Long, r: Multiset): M[Multiset] =

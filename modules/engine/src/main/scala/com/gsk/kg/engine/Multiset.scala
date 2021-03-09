@@ -168,6 +168,11 @@ final case class Multiset(
     this.copy(dataframe = df).asRight
   }
 
+  def filter(col: Column): Result[Multiset] = {
+    val filtered = dataframe.filter(col)
+    this.copy(dataframe = filtered).asRight
+  }
+
 }
 
 object Multiset {

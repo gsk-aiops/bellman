@@ -531,7 +531,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     import sqlContext.implicits._
 
     val df: DataFrame = List(
-      ("example", "http://xmlns.com/foaf/0.1/lit", "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float"),
+      ("example", "http://xmlns.com/foaf/0.1/lit", "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"),
       ("example", "http://xmlns.com/foaf/0.1/lit", "\"0.22\"^^xsd:float"),
       ("example", "http://xmlns.com/foaf/0.1/lit", "\"foo\"^^xsd:string"),
       ("example", "http://xmlns.com/foaf/0.1/lit", "\"true\"^^xsd:boolean")
@@ -553,10 +553,189 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     result shouldBe a[Right[_, _]]
     result.right.get.collect().length shouldEqual 4
     result.right.get.collect().toSet shouldEqual Set(
-      Row("\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float"),
+      Row("\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"),
       Row("\"0.22\"^^xsd:float"),
       Row("\"foo\"^^xsd:string"),
       Row("\"true\"^^xsd:boolean")
+    )
+  }
+
+  it should "query a real DF with FILTER and obtain expected results when only one condition" in {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("a", "b", "c"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Henry"),
+      ("_:", "http://xmlns.com/foaf/0.1/name", "Blank")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?name
+        |WHERE   {
+        |   ?x foaf:name ?name .
+        |   FILTER isBlank(?x)
+        |}
+        |
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 1
+    result.right.get.collect.toSet shouldEqual Set(Row("\"Blank\""))
+  }
+
+  // TODO: Un-ignore when binary logical operations implemented
+  it should "query a real DF with FILTER and obtain expected results when multiple conditions" ignore {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("a", "b", "c"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Henry"),
+      ("_:", "http://xmlns.com/foaf/0.1/name", "Blank"),
+      ("_:", "http://xmlns.com/foaf/0.1/name", "http://test-uri/blank")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?name
+        |WHERE   {
+        |   ?x foaf:name ?name .
+        |   FILTER (isBlank(?x) && isURI(?x))
+        |}
+        |
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 1
+    result.right.get.collect.toSet shouldEqual Set(Row("\"Blank\""))
+  }
+
+  it should "query a real DF with FILTER and obtain expected results when condition has embedded functions" in {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("a", "b", "c"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Henry"),
+      ("a:", "http://xmlns.com/foaf/0.1/name", "Blank")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?name
+        |WHERE   {
+        |   ?x foaf:name ?name .
+        |   FILTER (isBlank( replace (?x, "a", "_") ) )
+        |}
+        |
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 1
+    result.right.get.collect.toSet shouldEqual Set(Row("\"Blank\""))
+  }
+
+  it should "query a real DF with FILTER and obtain expected results when double filter" in {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("a", "b", "c"),
+      ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
+      ("_:a", "http://xmlns.com/foaf/0.1/name", "_:b"),
+      ("foaf:c", "http://xmlns.com/foaf/0.1/name", "_:d"),
+      ("_:e", "http://xmlns.com/foaf/0.1/name", "foaf:f")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?x ?name
+        |WHERE   {
+        |   ?x foaf:name ?name .
+        |   FILTER isBlank(?x)
+        |   FILTER isBlank(?name)
+        |}
+        |
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 1
+    result.right.get.collect.toSet shouldEqual Set(
+      Row("_:a", "_:b")
+    )
+  }
+
+  // TODO: Un-ignore when implemented EQUALS and GT
+  it should "query a real DF with FILTER and obtain expected results when complex filter" ignore {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice"),
+      ("_:a", "http://example.org/stats#hits", "\"2349\"^^xsd:integer"),
+      ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob"),
+      ("_:b", "http://example.org/stats#hits", "\"105\"^^xsd:integer"),
+      ("_:c", "http://xmlns.com/foaf/0.1/name", "Eve"),
+      ("_:c", "http://example.org/stats#hits", "\"181\"^^xsd:integer")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+        |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        |PREFIX site: <http://example.org/stats#>
+        |
+        |CONSTRUCT
+        |{
+        |   ?x foaf:name ?name .
+        |   ?y site:hits ?hits
+        |}
+        |WHERE
+        |{
+        |   {
+        |     ?x foaf:name ?name .
+        |     FILTER (?name = "Bob")
+        |   }
+        |   UNION
+        |   {
+        |     ?y site:hits ?hits
+        |     FILTER (?hits > 1000)
+        |   }
+        |   FILTER (isBlank(?x) || isBlank(?y))
+        |}
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 2
+    result.right.get.collect.toSet shouldEqual Set(
+      Row("_:a", "foaf:name", "\"Bob\""),
+      Row("_:b", "site:hits", "\"2349\"^^xsd:integer")
     )
   }
 

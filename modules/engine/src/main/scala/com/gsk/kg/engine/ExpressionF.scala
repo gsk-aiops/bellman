@@ -134,7 +134,7 @@ object ExpressionF {
       case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]
       case STR(s)                   => s.pure[M]
       case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
-      case ISBLANK(s)               => Func.isBlank(s).pure[M] //M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("ISBLANK").asLeft[Column])
+      case ISBLANK(s)               => Func.isBlank(s).pure[M]
       case REPLACE(st, pattern, by) => Func.replace(st, pattern, by).pure[M]
 
       case STRING(s)   => lit(s).pure[M]
