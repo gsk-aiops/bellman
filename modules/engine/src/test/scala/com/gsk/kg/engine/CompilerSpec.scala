@@ -739,6 +739,85 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
+  it should "apply default ordering CONSTRUCT queries" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+        ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("negative", "negative", "negative")
+      ).toDF("s", "p", "o")
+
+
+    val query = """
+      PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+
+      CONSTRUCT {
+       ?d a dm:Document .
+       ?d dm:docSource ?src .
+      }
+      WHERE{
+       ?d a dm:Document .
+       ?d dm:docSource ?src .
+      }
+      """
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 6
+    result.right.get.collect shouldEqual Array(
+        Row("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        Row("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        Row("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        Row("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        Row("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        Row("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document")
+      )
+  }
+
+  it should "make sense in the LIMIT cause when there's no ORDER BY" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+        ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        ("negative", "negative", "negative")
+      ).toDF("s", "p", "o")
+
+
+    val query = """
+      PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+
+      CONSTRUCT {
+       ?d a dm:Document .
+       ?d dm:docSource ?src .
+      }
+      WHERE{
+       ?d a dm:Document .
+       ?d dm:docSource ?src .
+      }
+      LIMIT 1
+      """
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 2
+    result.right.get.collect shouldEqual Array(
+      Row("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+      Row("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document")
+    )
+  }
+
   private def readNTtoDF(path: String) = {
     import sqlContext.implicits._
     import scala.collection.JavaConverters._
