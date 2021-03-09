@@ -34,7 +34,7 @@ object Engine {
         evaluateBind(variable, expression, r)
       case DAG.Triple(s, p, o)         => evaluateTriple(s, p, o)
       case DAG.BGP(triples)            => Foldable[List].fold(triples).pure[M]
-      case DAG.LeftJoin(l, r, filters) => notImplemented("LeftJoin")
+      case DAG.LeftJoin(l, r, filters) => evaluateLeftJoin(l, r, filters)
       case DAG.Union(l, r)             => l.union(r).pure[M]
       case DAG.Filter(funcs, expr)     => evaluateFilter(funcs, expr)
       case DAG.Join(l, r)              => notImplemented("Join")
@@ -56,6 +56,14 @@ object Engine {
     eval(dag)
       .runA(dataframe)
       .map(_.dataframe)
+  }
+
+  private def evaluateLeftJoin(l: Multiset, r: Multiset, filters: List[Expression]): M[Multiset] = {
+    if (filters.isEmpty) {
+      M.liftF[Result, DataFrame, Multiset](l.leftJoin(r))
+    } else {
+      evaluateFilter(NonEmptyList.fromListUnsafe(filters), r).flatMapF(l.leftJoin)
+    }
   }
 
   private def evaluateFilter(funcs: NonEmptyList[Expression], expr: Multiset): M[Multiset] = {
