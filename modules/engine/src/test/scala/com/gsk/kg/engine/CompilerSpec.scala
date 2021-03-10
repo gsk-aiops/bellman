@@ -490,17 +490,16 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     result.left.get shouldEqual EngineError.FunctionError(s"Error on REPLACE function: No group 1")
   }
 
-  // TODO: Remove ignore when OPTIONAL (#87) and FILTER (#83) are implemented
-  it should "query a real DF with ISBLANK function and obtain expected results" ignore {
+  it should "query a real DF with ISBLANK function and obtain expected results" in {
     import sqlContext.implicits._
 
     val df: DataFrame = List(
-      ("_:a", "a:annotates", "http://www.w3.org/TR/rdf-sparql-query/"),
-      ("_:a", "dc:creator", "Alice B. Toeclips"),
-      ("_:b", "a:annotates", "http://www.w3.org/TR/rdf-sparql-query/"),
-      ("_:b", "dc:creator", "_:c"),
-      ("_:c", "foaf:given", "Bob"),
-      ("_:c", "foaf:family", "Smith")
+      ("_:a", "http://www.w3.org/2000/10/annotation-ns#annotates", "http://www.w3.org/TR/rdf-sparql-query/"),
+      ("_:a", "http://purl.org/dc/elements/1.1/creator", "Alice B. Toeclips"),
+      ("_:b", "http://www.w3.org/2000/10/annotation-ns#annotates", "http://www.w3.org/TR/rdf-sparql-query/"),
+      ("_:b", "http://purl.org/dc/elements/1.1/creator", "_:c"),
+      ("_:c", "http://xmlns.com/foaf/0.1/given", "Bob"),
+      ("_:c", "http://xmlns.com/foaf/0.1/family", "Smith")
     ).toDF("s", "p", "o")
 
     val query = {
@@ -686,6 +685,44 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     result.right.get.collect.length shouldEqual 1
     result.right.get.collect.toSet shouldEqual Set(
       Row("_:a", "_:b")
+    )
+  }
+
+  it should "query a real DF with FILTER and obtain expected results when filter over all select statement" in {
+
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("http://example.org/Network", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Main"),
+      ("http://example.org/ATM", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Network"),
+      ("http://example.org/ARPANET", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Network"),
+      ("http://example.org/Software", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Main"),
+      ("_:Linux", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Software"),
+      ("http://example.org/Windows", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Software"),
+      ("http://example.org/XP", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Windows"),
+      ("http://example.org/Win7", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Windows"),
+      ("http://example.org/Win8", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Windows"),
+      ("http://example.org/Ubuntu20", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "_:Linux")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX : <http://example.org/>
+        |PREFIX rdf: <http://www.w3.org/2000/01/rdf-schema#>
+        |
+        |SELECT ?parent
+        |WHERE {
+        |   :Win8 rdf:subClassOf ?parent .
+        |   FILTER (!isBlank(?parent))
+        |}
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 1
+    result.right.get.collect.toSet shouldEqual Set(
+      Row("http://example.org/Windows")
     )
   }
 
