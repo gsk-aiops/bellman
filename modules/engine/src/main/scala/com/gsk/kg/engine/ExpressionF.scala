@@ -128,7 +128,7 @@ object ExpressionF {
       case LT(l, r)        => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("LT").asLeft[Column])
       case OR(l, r)        => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("OR").asLeft[Column])
       case AND(l, r)       => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("AND").asLeft[Column])
-      case NEGATE(s)       => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("NEGATE").asLeft[Column])
+      case NEGATE(s)       => Func.negate(s).pure[M]
 
       case URI(s)                   => Func.iri(s).pure[M]
       case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]

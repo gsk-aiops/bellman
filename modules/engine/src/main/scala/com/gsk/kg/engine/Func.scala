@@ -5,6 +5,19 @@ import org.apache.spark.sql.functions.{concat => cc, _}
 
 object Func {
 
+  /**
+    * Negates all rows of a column
+    * @param s
+    * @return
+    */
+  def negate(s: Column): Column =
+    not(s)
+
+  /**
+    * Returns a column with 'true' or 'false' rows indicating whether a column has blank nodes
+    * @param col
+    * @return
+    */
   def isBlank(col: Column): Column =
     when(regexp_extract(col, "^_:.*$", 0) =!= "", true)
       .otherwise(false)
