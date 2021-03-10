@@ -168,9 +168,28 @@ final case class Multiset(
     this.copy(dataframe = df).asRight
   }
 
+  /**
+    * Filter restrict the set of solutions according to a given expression.
+    * @param col
+    * @return
+    */
   def filter(col: Column): Result[Multiset] = {
     val filtered = dataframe.filter(col)
     this.copy(dataframe = filtered).asRight
+  }
+
+  /**
+    * A left join returns all values from the left relation and the matched values from the right relation,
+    * or appends NULL if there is no match. It is also referred to as a left outer join.
+    * @param r
+    * @return
+    */
+  def leftJoin(r: Multiset): Result[Multiset] = {
+    val cols: Seq[String] = (this.bindings intersect r.bindings).toSeq.map(_.s)
+    this.copy(
+      bindings = this.bindings union r.bindings,
+      dataframe = this.dataframe.join(r.dataframe, cols, "left")
+    ).asRight
   }
 
 }

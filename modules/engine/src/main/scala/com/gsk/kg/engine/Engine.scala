@@ -3,21 +3,14 @@ package com.gsk.kg.engine
 import cats.Foldable
 import cats.data.NonEmptyList
 import cats.instances.all._
-import cats.syntax.EitherSyntax
 import cats.syntax.either._
 import cats.syntax.applicative._
 import org.apache.spark.sql.{Column, DataFrame, SQLContext}
-import org.apache.spark.sql.functions._
-import com.gsk.kg.engine._
 import com.gsk.kg.sparqlparser._
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import higherkindness.droste._
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.engine.Multiset._
-import com.gsk.kg.engine.Predicate.None
-import com.gsk.kg.sparqlparser.Query
-import com.gsk.kg.sparqlparser.Query.Construct
-import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
 import com.gsk.kg.sparqlparser.Expression
 
@@ -34,7 +27,7 @@ object Engine {
         evaluateBind(variable, expression, r)
       case DAG.Triple(s, p, o)         => evaluateTriple(s, p, o)
       case DAG.BGP(triples)            => Foldable[List].fold(triples).pure[M]
-      case DAG.LeftJoin(l, r, filters) => notImplemented("LeftJoin")
+      case DAG.LeftJoin(l, r, filters) => evaluateLeftJoin(l, r, filters)
       case DAG.Union(l, r)             => l.union(r).pure[M]
       case DAG.Filter(funcs, expr)     => evaluateFilter(funcs, expr)
       case DAG.Join(l, r)              => notImplemented("Join")
@@ -56,6 +49,14 @@ object Engine {
     eval(dag)
       .runA(dataframe)
       .map(_.dataframe)
+  }
+
+  private def evaluateLeftJoin(l: Multiset, r: Multiset, filters: List[Expression]): M[Multiset] = {
+    NonEmptyList.fromList(filters).map { nelFilters =>
+      evaluateFilter(nelFilters, r).flatMapF(l.leftJoin)
+    }.getOrElse {
+      M.liftF(l.leftJoin(r))
+    }
   }
 
   private def evaluateFilter(funcs: NonEmptyList[Expression], expr: Multiset): M[Multiset] = {
