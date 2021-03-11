@@ -918,6 +918,38 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
+  it should "query a real DF with negated (!) isBlank" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice"),
+      ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:alice@work.example"),
+      ("_:b", "http://xmlns.com/foaf/0.1/name", "_:bob"),
+      ("_:b", "http://xmlns.com/foaf/0.1/mbox", "mailto:bob@work.example")
+    ).toDF("s", "p", "o")
+
+
+    val query =
+      """
+        |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT ?name ?mbox
+        |WHERE {
+        |   ?x foaf:name ?name ;
+        |      foaf:mbox  ?mbox .
+        |   FILTER (!isBlank(?name))
+        |}
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 1
+    result.right.get.collect shouldEqual Array(
+      Row("\"Alice\"", "mailto:alice@work.example")
+    )
+  }
+
   private def readNTtoDF(path: String) = {
     import sqlContext.implicits._
     import scala.collection.JavaConverters._

@@ -2,7 +2,7 @@ package com.gsk.kg.engine
 
 import org.scalatest.matchers.should.Matchers
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{AnalysisException, Row}
 import org.scalatest.wordspec.AnyWordSpec
 
 class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
@@ -10,6 +10,41 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
   override implicit def reuseContextIfPossible: Boolean = true
 
   override implicit def enableHiveSupport: Boolean = false
+
+  "Func.negate" should {
+
+    "return the input boolean column negated" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        true,
+        false
+      ).toDF("boolean")
+
+      val result = df.select(Func.negate(df("boolean"))).collect
+
+      result shouldEqual Array(
+        Row(false),
+        Row(true)
+      )
+    }
+
+    "fail when the input column contain values that are not boolean values" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "a",
+        null
+      ).toDF("boolean")
+
+      val caught = intercept[AnalysisException] {
+        df.select(Func.negate(df("boolean"))).collect
+      }
+
+      caught.getMessage should contain
+        "cannot resolve '(NOT `boolean`)' due to data type mismatch"
+    }
+  }
 
   "Func.isBlank" should {
 
