@@ -1016,6 +1016,48 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
+  it should "work correctly with blank nodes in templates" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+        ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce")
+      ).toDF("s", "p", "o")
+
+
+    val query = """
+      PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+
+      CONSTRUCT {
+       _:asdf a dm:Document .
+       _:asdf dm:docSource ?src .
+      }
+      WHERE{
+       ?d a dm:Document .
+       ?d dm:docSource ?src .
+      }
+      """
+
+    val result = Compiler.compile(df, query)
+
+    val arrayResult = result.right.get.collect
+    result shouldBe a[Right[_, _]]
+    arrayResult should have size(6)
+    arrayResult.map(_.get(0)).distinct
+    arrayResult.map(row => (row.get(1), row.get(2))) shouldEqual Array(
+      ("http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+      ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+      ("http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+      ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+      ("http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+      ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document")
+    )
+  }
+
   private def readNTtoDF(path: String) = {
     import sqlContext.implicits._
     import scala.collection.JavaConverters._

@@ -30,6 +30,14 @@ sealed trait StringVal extends StringLike {
     case StringVal.BLANK(s) => false
     case StringVal.BOOL(_) => false
   }
+  def isBlank: Boolean = this match {
+    case StringVal.STRING(s,_) => false
+    case StringVal.NUM(s) => false
+    case StringVal.VARIABLE(s) => false
+    case StringVal.URIVAL(s) => false
+    case StringVal.BLANK(s) => true
+    case StringVal.BOOL(_) => false
+  }
 }
 
 object BuildInFunc {
