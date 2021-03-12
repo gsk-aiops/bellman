@@ -56,6 +56,16 @@ object Engine {
       .map(_.dataframe)
   }
 
+  implicit val spoEncoder: Encoder[Row] = RowEncoder(
+    StructType(
+      List(
+        StructField("s", StringType),
+        StructField("p", StringType),
+        StructField("o", StringType)
+      )
+    )
+  )
+
   private def evaluateDistinct(r: Multiset): M[Multiset] = {
     M.liftF(r.distinct)
   }
@@ -109,16 +119,6 @@ object Engine {
 
     val acc: DataFrame =
       List.empty[(String, String, String)].toDF("s", "p", "o")
-
-    implicit val encoder: Encoder[Row] = RowEncoder(
-      StructType(
-        List(
-          StructField("s", StringType),
-          StructField("p", StringType),
-          StructField("o", StringType)
-        )
-      )
-    )
 
     // Extracting the triples to something that can be serialized in
     // Spark jobs

@@ -1087,10 +1087,8 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
     val result = Compiler.compile(df, query)
     val resultDF = result.right.get
-
-    resultDF.show(false)
-
     val arrayResult = resultDF.collect
+
     result shouldBe a[Right[_, _]]
     arrayResult should have size(9)
     arrayResult.map(_.get(0)).distinct should have size(6)
