@@ -1016,7 +1016,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
-  it should "work correctly with blank nodes in templates" in {
+  it should "work correctly with blank nodes in templates with a single blank label" in {
     import sqlContext.implicits._
 
     val df: DataFrame = List(
@@ -1047,7 +1047,7 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     val arrayResult = result.right.get.collect
     result shouldBe a[Right[_, _]]
     arrayResult should have size(6)
-    arrayResult.map(_.get(0)).distinct
+    arrayResult.map(_.get(0)).distinct should have size(3)
     arrayResult.map(row => (row.get(1), row.get(2))) shouldEqual Array(
       ("http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
       ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
@@ -1056,6 +1056,44 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       ("http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
       ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document")
     )
+  }
+
+  it should "work correctly with blank nodes in templates with more than one blank label" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+        ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+        ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
+        ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce")
+      ).toDF("s", "p", "o")
+
+
+    val query = """
+      PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+
+      CONSTRUCT {
+       _:asdf a dm:Document .
+       _:asdf dm:linksInSomeWay _:qwer .
+       _:qwer dm:source ?src .
+      }
+      WHERE{
+       ?d a dm:Document .
+       ?d dm:docSource ?src .
+      }
+      """
+
+    val result = Compiler.compile(df, query)
+    val resultDF = result.right.get
+
+    resultDF.show(false)
+
+    val arrayResult = resultDF.collect
+    result shouldBe a[Right[_, _]]
+    arrayResult should have size(9)
+    arrayResult.map(_.get(0)).distinct should have size(6)
   }
 
   private def readNTtoDF(path: String) = {
