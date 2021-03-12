@@ -33,7 +33,7 @@ object Engine {
       case DAG.Join(l, r)              => notImplemented("Join")
       case DAG.Offset(offset, r)       => evaluateOffset(offset, r)
       case DAG.Limit(limit, r)         => evaluateLimit(limit, r)
-      case DAG.Distinct(r)             => notImplemented("Distinct")
+      case DAG.Distinct(r)             => evaluateDistinct(r)
       case DAG.Noop(str)               => notImplemented("Noop")
     }
 
@@ -49,6 +49,10 @@ object Engine {
     eval(dag)
       .runA(dataframe)
       .map(_.dataframe)
+  }
+
+  private def evaluateDistinct(r: Multiset): M[Multiset] = {
+    M.liftF(r.distinct)
   }
 
   private def evaluateLeftJoin(l: Multiset, r: Multiset, filters: List[Expression]): M[Multiset] = {
