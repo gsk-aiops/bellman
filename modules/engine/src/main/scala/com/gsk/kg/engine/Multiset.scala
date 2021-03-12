@@ -192,6 +192,16 @@ final case class Multiset(
     ).asRight
   }
 
+  /**
+    * Eliminates duplicates from the dataframe that matches the same variable binding
+    * @return
+    */
+  def distinct: Result[Multiset] = {
+    this.copy(
+      dataframe = this.dataframe.distinct()
+    ).asRight
+  }
+
 }
 
 object Multiset {

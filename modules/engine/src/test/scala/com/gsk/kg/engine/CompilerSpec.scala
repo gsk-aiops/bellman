@@ -987,6 +987,35 @@ class CompilerSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     )
   }
 
+  it should "query a real DF with DISTINCT and obtain expected results" in {
+    import sqlContext.implicits._
+
+    val df: DataFrame = List(
+      ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice"),
+      ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob"),
+      ("_:c", "http://xmlns.com/foaf/0.1/name", "Alice")
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT DISTINCT ?name
+        |WHERE  {
+        |   ?x foaf:name  ?name
+        |}
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 2
+    result.right.get.collect.toSet shouldEqual Set(
+      Row("\"Alice\""),
+      Row("\"Bob\"")
+    )
+  }
+
   private def readNTtoDF(path: String) = {
     import sqlContext.implicits._
     import scala.collection.JavaConverters._
