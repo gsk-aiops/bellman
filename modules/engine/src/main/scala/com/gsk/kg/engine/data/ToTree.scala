@@ -7,6 +7,8 @@ import higherkindness.droste.Algebra
 import cats.instances.all._
 import cats.Show
 import com.gsk.kg.sparqlparser.Expr
+import scala.collection.immutable.Nil
+import cats.syntax.nonEmptyTraverse
 
 /**
   * Typeclass that allows you converting values of type T to
@@ -112,6 +114,16 @@ object ToTree extends LowPriorityToTreeInstances0 {
         t(tree)
       }
 
+    }
+
+  implicit def listToTree[A: ToTree]: ToTree[List[A]] =
+    new ToTree[List[A]] {
+      def toTree(t: List[A]): TreeRep[String] =
+        t match {
+	        case Nil => TreeRep.Leaf("List.empty")
+	        case nonempty =>
+            TreeRep.Node("List", nonempty.map(_.toTree).toStream)
+        }
     }
 }
 
