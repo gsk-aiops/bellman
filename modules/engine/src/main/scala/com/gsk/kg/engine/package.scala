@@ -20,5 +20,6 @@ package object engine {
     * on the input type [[A]] and the output type [[B]].
     */
   type Phase[A, B] = Kleisli[M, A, B]
+  val Phase = Kleisli
 
 }

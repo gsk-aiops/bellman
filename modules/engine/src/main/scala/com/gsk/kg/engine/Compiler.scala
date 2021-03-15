@@ -5,6 +5,7 @@ import cats.implicits._
 import cats.data.Kleisli
 import com.gsk.kg.sparqlparser.QueryConstruct
 import com.gsk.kg.sparqlparser.Query
+import com.gsk.kg.engine.optimizer.Optimizer
 import cats.arrow.Arrow
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.DataFrame
@@ -57,7 +58,8 @@ object Compiler {
   val parser: Phase[String, Query] =
     Arrow[Phase].lift(QueryConstruct.parse)
 
-  def optimizer[T: Basis[DAG, *]]: Phase[T, T] = Arrow[Phase].id
+  def optimizer[T: Basis[DAG, *]]: Phase[T, T] =
+    Optimizer.optimize
 
   def rdfFormatter: Phase[DataFrame, DataFrame] = Arrow[Phase].lift(RdfFormatter.formatDataFrame)
 
