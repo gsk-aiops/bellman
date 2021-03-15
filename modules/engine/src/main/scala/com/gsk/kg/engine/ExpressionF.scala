@@ -1,15 +1,11 @@
 package com.gsk.kg.engine
 
 import com.gsk.kg.engine._
-
 import cats.implicits._
-
 import higherkindness.droste._
 import higherkindness.droste.syntax.all._
 import higherkindness.droste.macros.deriveTraverse
-
 import org.apache.spark.sql.functions._
-
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.Conditional
 import com.gsk.kg.sparqlparser.BuildInFunc
@@ -35,6 +31,8 @@ object ExpressionF {
   final case class STRSTARTS[A](l: A, r: A) extends ExpressionF[A]
   final case class GT[A](l: A, r: A) extends ExpressionF[A]
   final case class LT[A](l: A, r: A) extends ExpressionF[A]
+  final case class GTE[A](l: A, r: A) extends ExpressionF[A]
+  final case class LTE[A](l: A, r: A) extends ExpressionF[A]
   final case class OR[A](l: A, r: A) extends ExpressionF[A]
   final case class AND[A](l: A, r: A) extends ExpressionF[A]
   final case class NEGATE[A](s: A) extends ExpressionF[A]
@@ -56,6 +54,8 @@ object ExpressionF {
       case Conditional.EQUALS(l, r)         => EQUALS(l, r)
       case Conditional.GT(l, r)             => GT(l, r)
       case Conditional.LT(l, r)             => LT(l, r)
+      case Conditional.GTE(l, r)            => GTE(l, r)
+      case Conditional.LTE(l, r)            => LTE(l, r)
       case Conditional.OR(l, r)             => OR(l, r)
       case Conditional.AND(l, r)            => AND(l, r)
       case Conditional.NEGATE(s)            => NEGATE(s)
@@ -81,6 +81,8 @@ object ExpressionF {
       case EQUALS(l, r)    => Conditional.EQUALS(l, r)
       case GT(l, r)        => Conditional.GT(l, r)
       case LT(l, r)        => Conditional.LT(l, r)
+      case GTE(l, r)       => Conditional.GTE(l, r)
+      case LTE(l, r)       => Conditional.LTE(l, r)
       case OR(l, r)        => Conditional.OR(l, r)
       case AND(l, r)       => Conditional.AND(l, r)
       case NEGATE(s)       => Conditional.NEGATE(s)
@@ -121,13 +123,15 @@ object ExpressionF {
 
   def compile[T](t: T)(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
     val algebraM: AlgebraM[M, ExpressionF, Column] = AlgebraM.apply[M, ExpressionF, Column] {
-      case EQUALS(l, r)    => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("EQUALS").asLeft[Column])
+      case EQUALS(l, r)    => Func.equals(l, r).pure[M]
       case REGEX(l, r)     => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("REGEX").asLeft[Column])
       case STRSTARTS(l, r) => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("STRSTARTS").asLeft[Column])
-      case GT(l, r)        => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("GT").asLeft[Column])
-      case LT(l, r)        => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("LT").asLeft[Column])
-      case OR(l, r)        => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("OR").asLeft[Column])
-      case AND(l, r)       => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("AND").asLeft[Column])
+      case GT(l, r)        => Func.gt(l, r).pure[M]
+      case LT(l, r)        => Func.lt(l, r).pure[M]
+      case GTE(l, r)       => Func.gte(l, r).pure[M]
+      case LTE(l, r)       => Func.lte(l, r).pure[M]
+      case OR(l, r)        => Func.or(l, r).pure[M]
+      case AND(l, r)       => Func.and(l, r).pure[M]
       case NEGATE(s)       => Func.negate(s).pure[M]
 
       case URI(s)                   => Func.iri(s).pure[M]

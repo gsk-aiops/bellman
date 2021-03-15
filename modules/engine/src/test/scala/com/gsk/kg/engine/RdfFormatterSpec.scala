@@ -43,7 +43,7 @@ class RdfFormatterSpec
     val gen = Gen.oneOf(
       uriGen.map(_.toString()),
       blankGen,
-      numberGen.map(_.toString()),
+      numberGen,
       dataTypeLiteralGen
     )
 
@@ -58,8 +58,8 @@ class RdfFormatterSpec
     ("test", "\"test\""),
     ("<http://test.com>", "<http://test.com>"),
     ("http://test.com", "http://test.com"),
-    ("1", "1"),
-    ("1.333", "1.333"),
+    ("1", 1),
+    ("1.333", 1.333F),
     ("_:potato", "_:potato")
   )
 

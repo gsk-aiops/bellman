@@ -32,6 +32,7 @@ object RdfFormatter {
       case RDFUri(uri) => uri
       case RDFBlank(blank) => blank
       case RDFNum(num) => num
+      case RDFBoolean(bool) => bool
       case RDFDataTypeLiteral(lit) => lit
       case str => s""""$str""""
     }).getOrElse(null) // scalastyle:off
@@ -65,11 +66,19 @@ object RdfFormatter {
   }
 
   object RDFNum {
-    def unapply(str: String): Option[String] =
+    def unapply(str: String): Option[Any] =
       Try(Integer.parseInt(str))
         .recoverWith { case _ => Try(java.lang.Float.parseFloat(str)) }
-        .map(_.toString)
         .toOption
+  }
+
+  object RDFBoolean {
+    def unapply(str: String): Option[Boolean] =
+      str match {
+        case "true" => Some(true)
+        case "false" => Some(false)
+        case _ => None
+      }
   }
 
 }

@@ -6,6 +6,69 @@ import org.apache.spark.sql.functions.{concat => cc, _}
 object Func {
 
   /**
+    * Performs logical binary operation '==' over two columns
+    * @param l
+    * @param r
+    * @return
+    */
+  def equals(l: Column, r: Column): Column =
+    l === r
+
+  /**
+    * Peforms logical binary operation '>' over two columns
+    * @param l
+    * @param r
+    * @return
+    */
+  def gt(l: Column, r: Column): Column =
+    l > r
+
+  /**
+    * Performs logical binary operation '<' over two columns
+    * @param l
+    * @param r
+    * @return
+    */
+  def lt(l: Column, r: Column): Column =
+    l < r
+
+  /**
+    * Performs logical binary operation '<=' over two columns
+    * @param l
+    * @param r
+    * @return
+    */
+  def gte(l: Column, r: Column): Column =
+    l >= r
+
+  /**
+    * Performs logical binary operation '>=' over two columns
+    * @param l
+    * @param r
+    * @return
+    */
+  def lte(l: Column, r: Column): Column =
+    l <= r
+
+  /**
+    * Performs logical binary operation 'or' over two columns
+    * @param l
+    * @param r
+    * @return
+    */
+  def or(l: Column, r: Column): Column =
+    l || r
+
+  /**
+    * Performs logical binary operation 'and' over two columns
+    * @param r
+    * @param l
+    * @return
+    */
+  def and(l: Column, r: Column): Column =
+    l && r
+
+  /**
     * Negates all rows of a column
     * @param s
     * @return

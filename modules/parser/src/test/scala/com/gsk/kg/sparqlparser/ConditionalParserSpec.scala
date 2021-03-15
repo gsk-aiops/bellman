@@ -16,6 +16,14 @@ class ConditionalParserSpec extends AnyFlatSpec{
     }
   }
 
+  "Not equals parser" should "return NEGATIVE(EQUALS) type" in {
+    val p = fastparse.parse("""(!= ?d "Hello")""", ConditionalParser.notEqualsParen(_))
+    p.get.value match {
+      case NEGATE(EQUALS(VARIABLE("?d"), STRING("Hello", None))) => succeed
+      case _ => fail
+    }
+  }
+
   "GT parser" should "return GT type" in {
     val p = fastparse.parse("""(> ?year "2015")""", ConditionalParser.gtParen(_))
     p.get.value match {
@@ -28,6 +36,22 @@ class ConditionalParserSpec extends AnyFlatSpec{
     val p = fastparse.parse("""(< ?year "2015")""", ConditionalParser.ltParen(_))
     p.get.value match {
       case LT(VARIABLE("?year"), STRING("2015",None)) => succeed
+      case _ => fail
+    }
+  }
+
+  "GTE parser" should "return GTE type" in {
+    val p = fastparse.parse("""(>= ?year "2015")""", ConditionalParser.gteParen(_))
+    p.get.value match {
+      case GTE(VARIABLE("?year"), STRING("2015", None)) => succeed
+      case _ => fail
+    }
+  }
+
+  "LTE parser" should "return LTE type" in {
+    val p = fastparse.parse("""(<= ?year "2015")""", ConditionalParser.lteParen(_))
+    p.get.value match {
+      case LTE(VARIABLE("?year"), STRING("2015",None)) => succeed
       case _ => fail
     }
   }

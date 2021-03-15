@@ -83,6 +83,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.EQUALS(l, r)    => Node("EQUALS", Stream(l, r))
           case ExpressionF.GT(l, r)        => Node("GT", Stream(l, r))
           case ExpressionF.LT(l, r)        => Node("LT", Stream(l, r))
+          case ExpressionF.GTE(l, r)       => Node("GTE", Stream(l, r))
+          case ExpressionF.LTE(l, r)       => Node("LTE", Stream(l, r))
           case ExpressionF.OR(l, r)        => Node("OR", Stream(l, r))
           case ExpressionF.AND(l, r)       => Node("AND", Stream(l, r))
           case ExpressionF.NEGATE(s)       => Node("NEGATE", Stream(s))
