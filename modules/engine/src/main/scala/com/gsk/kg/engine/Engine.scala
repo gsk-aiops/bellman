@@ -18,6 +18,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.types._
 import java.{util => ju}
+import com.gsk.kg.engine.data.ChunkedList
 
 object Engine {
 
@@ -31,7 +32,7 @@ object Engine {
       case DAG.Bind(variable, expression, r) =>
         evaluateBind(variable, expression, r)
       case DAG.Triple(s, p, o)         => evaluateTriple(s, p, o)
-      case DAG.BGP(triples)            => Foldable[List].fold(triples).pure[M]
+      case DAG.BGP(triples)            => Foldable[ChunkedList].fold(triples).pure[M]
       case DAG.LeftJoin(l, r, filters) => evaluateLeftJoin(l, r, filters)
       case DAG.Union(l, r)             => l.union(r).pure[M]
       case DAG.Filter(funcs, expr)     => evaluateFilter(funcs, expr)

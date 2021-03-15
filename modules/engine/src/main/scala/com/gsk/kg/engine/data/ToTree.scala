@@ -4,11 +4,13 @@ package data
 import higherkindness.droste.scheme
 import higherkindness.droste.Basis
 import higherkindness.droste.Algebra
-import cats.instances.all._
+import cats.implicits._
 import cats.Show
 import com.gsk.kg.sparqlparser.Expr
 import scala.collection.immutable.Nil
 import cats.syntax.nonEmptyTraverse
+import cats.data.{NonEmptyChain, NonEmptyList}
+import cats.Traverse
 
 /**
   * Typeclass that allows you converting values of type T to
@@ -50,7 +52,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
             )
           case DAG.Triple(s, p, o) =>
             Node(s"Triple", Stream(s.s.toTree, p.s.toTree, o.s.toTree))
-          case DAG.BGP(triples) => Node("BGP", triples.toStream)
+          case DAG.BGP(triples) => Node("BGP", Traverse[ChunkedList].toList(triples).toStream)
           case DAG.LeftJoin(l, r, filters) =>
             Node("LeftJoin", Stream(l, r) #::: filters.map(_.toTree).toStream)
           case DAG.Union(l, r) => Node("Union", Stream(l, r))
@@ -124,6 +126,18 @@ object ToTree extends LowPriorityToTreeInstances0 {
 	        case nonempty =>
             TreeRep.Node("List", nonempty.map(_.toTree).toStream)
         }
+    }
+
+  implicit def nelToTree[A: ToTree]: ToTree[NonEmptyList[A]] =
+    new ToTree[NonEmptyList[A]] {
+      def toTree(t: NonEmptyList[A]): TreeRep[String] =
+        TreeRep.Node("NonEmptyList", t.map(_.toTree).toList.toStream)
+    }
+
+  implicit def necToTree[A: ToTree]: ToTree[NonEmptyChain[A]] =
+    new ToTree[NonEmptyChain[A]] {
+      def toTree(t: NonEmptyChain[A]): TreeRep[String] =
+        TreeRep.Node("NonEmptyChain", t.map(_.toTree).toList.toStream)
     }
 }
 

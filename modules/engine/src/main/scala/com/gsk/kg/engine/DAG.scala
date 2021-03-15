@@ -15,6 +15,7 @@ import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.Expression
+import com.gsk.kg.engine.data.ChunkedList
 
 sealed trait DAG[A] {
 
@@ -40,7 +41,7 @@ object DAG {
       extends DAG[A]
   final case class Triple[A](s: StringVal, p: StringVal, o: StringVal)
       extends DAG[A]
-  final case class BGP[A](triples: List[A]) extends DAG[A]
+  final case class BGP[A](triples: ChunkedList[A]) extends DAG[A]
   final case class LeftJoin[A](l: A, r: A, filters: List[Expression])
       extends DAG[A]
   final case class Union[A](l: A, r: A) extends DAG[A]
@@ -92,7 +93,7 @@ object DAG {
     Bind[A](variable, expression, r)
   def triple[A](s: StringVal, p: StringVal, o: StringVal): DAG[A] =
     Triple[A](s, p, o)
-  def bgp[A](triples: List[A]): DAG[A] = BGP[A](triples)
+  def bgp[A](triples: ChunkedList[A]): DAG[A] = BGP[A](triples)
   def leftJoin[A](l: A, r: A, filters: List[Expression]): DAG[A] =
     LeftJoin[A](l, r, filters)
   def union[A](l: A, r: A): DAG[A] = Union[A](l, r)
@@ -123,7 +124,7 @@ object DAG {
   ): T = bind[T](variable, expression, r).embed
   def tripleR[T: Embed[DAG, *]](s: StringVal, p: StringVal, o: StringVal): T =
     triple[T](s, p, o).embed
-  def bgpR[T: Embed[DAG, *]](triples: List[T]): T = bgp[T](triples).embed
+  def bgpR[T: Embed[DAG, *]](triples: ChunkedList[T]): T = bgp[T](triples).embed
   def leftJoinR[T: Embed[DAG, *]](
       l: T,
       r: T,
@@ -166,7 +167,7 @@ object DAG {
       case ExtendF(bindTo, bindFrom, r)      => bind(bindTo, bindFrom, r)
       case FilteredLeftJoinF(l, r, f)        => leftJoin(l, r, f.toList)
       case UnionF(l, r)                      => union(l, r)
-      case BGPF(triples)                     => bgp(triples.toList.map(fromExpr))
+      case BGPF(triples)                     => bgp(ChunkedList.fromList(triples.toList).map(fromExpr))
       case OpNilF()                          => noop("OpNilF not supported yet")
       case GraphF(g, e)                      => scan(g.s, e)
       case JoinF(l, r)                       => join(l, r)
