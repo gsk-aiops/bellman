@@ -125,8 +125,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
     new ToTree[List[A]] {
       def toTree(t: List[A]): TreeRep[String] =
         t match {
-	        case Nil => TreeRep.Leaf("List.empty")
-	        case nonempty =>
+          case Nil => TreeRep.Leaf("List.empty")
+          case nonempty =>
             TreeRep.Node("List", nonempty.map(_.toTree).toStream)
         }
     }

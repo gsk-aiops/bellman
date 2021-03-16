@@ -22,14 +22,14 @@ import scala.collection.immutable.Nil
 
   def mapChunks[B](fn: Chunk[A] => B): ChunkedList[B] =
     this match {
-	    case Empty() => Empty()
+      case Empty() => Empty()
       case NonEmpty(head, tail) =>
         NonEmpty(Chunk.one(fn(head)), tail.mapChunks(fn))
     }
 
   def foldLeftChunks[B](z: B)(fn: (B, Chunk[A]) => B): B =
     this match {
-	    case Empty() => z
+      case Empty() => z
       case NonEmpty(head, tail) =>
         tail.foldLeftChunks(fn(z, head))(fn)
     }
@@ -61,7 +61,7 @@ import scala.collection.immutable.Nil
   final def concat(other:ChunkedList[A]): ChunkedList[A] =
     this.reverse.foldLeftChunks[ChunkedList[A]](other) { (acc, elem) =>
       acc match {
-	      case Empty() => Empty()
+        case Empty() => Empty()
         case other => NonEmpty(elem, other)
       }
     }
@@ -88,8 +88,8 @@ object ChunkedList {
 
   def fromChunks[A](chunks: List[NonEmptyChain[A]]): ChunkedList[A] =
     chunks match {
-	    case Nil => Empty()
-	    case head :: tl => NonEmpty(head, fromChunks(tl))
+      case Nil => Empty()
+      case head :: tl => NonEmpty(head, fromChunks(tl))
     }
 
   implicit def toTree[A: ToTree]: ToTree[ChunkedList[A]] =
