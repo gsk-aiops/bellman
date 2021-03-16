@@ -55,7 +55,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
               "Bind",
               Stream(Leaf(variable.toString), expression.toTree, r)
             )
-          case DAG.BGP(triples) => Node("BGP", Traverse[ChunkedList].toList(triples.map(_.toTree)).toStream)
+          case DAG.BGP(triples) => Node("BGP", Stream(triples.toTree))
           case DAG.LeftJoin(l, r, filters) =>
             Node("LeftJoin", Stream(l, r) #::: filters.map(_.toTree).toStream)
           case DAG.Union(l, r) => Node("Union", Stream(l, r))
