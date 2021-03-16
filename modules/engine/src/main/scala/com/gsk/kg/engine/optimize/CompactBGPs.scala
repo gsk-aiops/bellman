@@ -10,18 +10,24 @@ import cats.arrow.Arrow
 import higherkindness.droste.Basis
 import higherkindness.droste.syntax.all._
 import com.gsk.kg.engine.DAG._
+import com.gsk.kg.sparqlparser.Expr
 
+
+/**
+  * The idea behind this optimization step is to compact BGPs into
+  * smaller number of chunks, so that when we query the DataFrame in
+  * the [[Engine]], a smaller number of queries is done (number of
+  * queries is 1 per [[ChunkedList.Chunk]]).
+  */
 object CompactBGPs {
 
   def apply[T](implicit T: Basis[DAG, T]): T => T = { t =>
     T.coalgebra(t).rewrite {
       case x @ BGP(triples) =>
-        val t = triples.map(T.coalgebra.apply)
-
         BGP(
-          t.compact({
-            case Triple(s, p, o) => s.s
-          }).map(_.embed)
+          triples.compact({
+            case t @ Expr.Triple(_, _, _) => t.getVariables.map(x => x._2 + "->" + x._1.s).mkString(";")
+          })
         )
     }
   }

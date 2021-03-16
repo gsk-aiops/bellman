@@ -8,6 +8,7 @@ import DAG._
 import com.gsk.kg.sparqlparser.StringVal.STRING
 import higherkindness.droste.data.Fix
 import com.gsk.kg.engine.data.ChunkedList
+import com.gsk.kg.sparqlparser.Expr
 
 class DAGSpec extends AnyFlatSpec with Matchers {
 
@@ -18,12 +19,12 @@ class DAGSpec extends AnyFlatSpec with Matchers {
     val join: T = joinR(
       bgpR(
         ChunkedList(
-          tripleR(STRING("one"), STRING("two"), STRING("three"))
+          Expr.Triple(STRING("one"), STRING("two"), STRING("three"))
         )
       ),
       bgpR(
         ChunkedList(
-          tripleR(STRING("four"), STRING("five"), STRING("six"))
+          Expr.Triple(STRING("four"), STRING("five"), STRING("six"))
         )
       )
     )
@@ -38,8 +39,8 @@ class DAGSpec extends AnyFlatSpec with Matchers {
 
     T.coalgebra(join).rewrite(joinsAsBGP) shouldEqual bgpR(
       ChunkedList(
-        tripleR(STRING("one"), STRING("two"), STRING("three")),
-        tripleR(STRING("four"), STRING("five"), STRING("six"))
+        Expr.Triple(STRING("one"), STRING("two"), STRING("three")),
+        Expr.Triple(STRING("four"), STRING("five"), STRING("six"))
       )
     )
   }

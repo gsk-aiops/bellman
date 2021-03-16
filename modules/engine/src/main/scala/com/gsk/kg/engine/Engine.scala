@@ -19,6 +19,8 @@ import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.types._
 import java.{util => ju}
 import com.gsk.kg.engine.data.ChunkedList
+import org.apache.spark.sql.DataFrameReader
+import java.net.MulticastSocket
 
 object Engine {
 
@@ -31,8 +33,7 @@ object Engine {
       case DAG.Project(variables, r) => r.select(variables: _*).pure[M]
       case DAG.Bind(variable, expression, r) =>
         evaluateBind(variable, expression, r)
-      case DAG.Triple(s, p, o)         => evaluateTriple(s, p, o)
-      case DAG.BGP(triples)            => Foldable[ChunkedList].fold(triples).pure[M]
+      case DAG.BGP(triples)            => evaluateBGP(triples)
       case DAG.LeftJoin(l, r, filters) => evaluateLeftJoin(l, r, filters)
       case DAG.Union(l, r)             => l.union(r).pure[M]
       case DAG.Filter(funcs, expr)     => evaluateFilter(funcs, expr)
@@ -66,6 +67,38 @@ object Engine {
       )
     )
   )
+
+  private def evaluateBGP(triples: ChunkedList[Expr.Triple])(implicit sc: SQLContext): M[Multiset] = {
+    import sc.implicits._
+    import org.apache.spark.sql.functions._
+    M.get[Result, DataFrame].map { df =>
+      Foldable[ChunkedList].fold(
+        triples.mapChunks { chunk =>
+          val condition: Column =
+            chunk
+              .map(_.getPredicates)
+              .map(
+                _.map({ case (pred, position) =>
+                  df(position) === pred.s
+                }).foldLeft(lit(true))((acc, current) => acc && current)
+              ).foldLeft(lit(false))((acc, current) => acc || current)
+
+          val current = df.filter(condition)
+
+          val vars =
+            chunk.map(_.getVariables).toChain.toList.flatten
+
+          val selected =
+            current.select(vars.map(v => $"${v._2}".as(v._1.s)): _*)
+
+          Multiset(
+            vars.map(_._1.asInstanceOf[VARIABLE]).toSet,
+            selected
+          )
+        }
+      )
+    }
+  }
 
   private def evaluateDistinct(r: Multiset): M[Multiset] = {
     M.liftF(r.distinct)
@@ -177,50 +210,6 @@ object Engine {
       }
     )
   }
-
-  private def evaluateTriple(
-      s: StringVal,
-      p: StringVal,
-      o: StringVal
-  )(implicit sc: SQLContext) = {
-    import sc.implicits._
-    M.get[Result, DataFrame].map { df: DataFrame =>
-      val triple = Expr.Triple(s, p, o)
-      val predicate = Predicate.fromTriple(triple)
-      val current = applyPredicateToDataFrame(predicate, df)
-      val variables = triple.getVariables
-      val selected =
-        current.select(variables.map(v => $"${v._2}".as(v._1.s)): _*)
-
-      Multiset(
-        variables.map(_._1.asInstanceOf[StringVal.VARIABLE]).toSet,
-        selected
-      )
-    }
-  }
-
-  private def applyPredicateToDataFrame(
-      predicate: Predicate,
-      df: DataFrame
-  ): DataFrame =
-    predicate match {
-      case Predicate.SPO(s, p, o) =>
-        df.filter(df("s") === s && df("p") === p && df("o") === o)
-      case Predicate.SP(s, p) =>
-        df.filter(df("s") === s && df("p") === p)
-      case Predicate.PO(p, o) =>
-        df.filter(df("p") === p && df("o") === o)
-      case Predicate.SO(s, o) =>
-        df.filter(df("s") === s && df("o") === o)
-      case Predicate.S(s) =>
-        df.filter(df("s") === s)
-      case Predicate.P(p) =>
-        df.filter(df("p") === p)
-      case Predicate.O(o) =>
-        df.filter(df("o") === o)
-      case Predicate.None =>
-        df
-    }
 
   private def notImplemented(constructor: String): M[Multiset] =
     M.liftF[Result, DataFrame, Multiset](

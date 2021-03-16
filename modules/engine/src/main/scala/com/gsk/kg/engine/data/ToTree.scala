@@ -29,6 +29,11 @@ object ToTree extends LowPriorityToTreeInstances0 {
     def toTree: TreeRep[String] = ToTree[T].toTree(t)
   }
 
+  implicit val tripleToTree: ToTree[Expr.Triple] = new ToTree[Expr.Triple] {
+    def toTree(t: Expr.Triple): TreeRep[String] =
+      TreeRep.Node(s"Triple", Stream(t.s.s.toTree, t.p.s.toTree, t.o.s.toTree))
+  }
+
   implicit def dagToTree[T: Basis[DAG, *]]: ToTree[T] =
     new ToTree[T] {
       def toTree(tree: T): TreeRep[String] = {
@@ -50,9 +55,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
               "Bind",
               Stream(Leaf(variable.toString), expression.toTree, r)
             )
-          case DAG.Triple(s, p, o) =>
-            Node(s"Triple", Stream(s.s.toTree, p.s.toTree, o.s.toTree))
-          case DAG.BGP(triples) => Node("BGP", Traverse[ChunkedList].toList(triples).toStream)
+          case DAG.BGP(triples) => Node("BGP", Traverse[ChunkedList].toList(triples.map(_.toTree)).toStream)
           case DAG.LeftJoin(l, r, filters) =>
             Node("LeftJoin", Stream(l, r) #::: filters.map(_.toTree).toStream)
           case DAG.Union(l, r) => Node("Union", Stream(l, r))
