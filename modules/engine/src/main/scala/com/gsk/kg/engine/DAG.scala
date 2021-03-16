@@ -145,12 +145,12 @@ object DAG {
     * @return
     */
   def fromQuery[T: Basis[DAG, *]]: Query => T = {
-    case Query.Describe(vars, r) =>
+    case Query.Describe(vars, r, _, _) =>
       describeR(vars.toList, fromExpr[T].apply(r))
-    case Query.Ask(r) => askR(fromExpr[T].apply(r))
-    case Query.Construct(vars, bgp, r) =>
+    case Query.Ask(r, _, _) => askR(fromExpr[T].apply(r))
+    case Query.Construct(vars, bgp, r, _, _) =>
       constructR(bgp, fromExpr[T].apply(r))
-    case Query.Select(vars, r) => projectR(vars.toList, fromExpr[T].apply(r))
+    case Query.Select(vars, r, _, _) => projectR(vars.toList, fromExpr[T].apply(r))
   }
 
   def fromExpr[T: Basis[DAG, *]]: Expr => T = scheme.cata(transExpr.algebra)
