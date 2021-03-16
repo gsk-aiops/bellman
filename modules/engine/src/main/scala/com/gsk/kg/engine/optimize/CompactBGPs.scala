@@ -18,6 +18,68 @@ import com.gsk.kg.sparqlparser.Expr
   * smaller number of chunks, so that when we query the DataFrame in
   * the [[Engine]], a smaller number of queries is done (number of
   * queries is 1 per [[ChunkedList.Chunk]]).
+  *
+  * Given an initial BGP like this:
+  *
+  * ```
+  * ?d <http://qwer.com> <http://qwer.com> .
+  * ?d <http://test.com> <http://test.com>
+  * ```
+  *
+  * Which is represented as this DAG tree:
+  *
+  * {{{
+  *  BGP
+  *  |
+  *  `- ChunkedList.Node
+  *     |
+  *     +- NonEmptyChain
+  *     |  |
+  *     |  `- Triple
+  *     |     |
+  *     |     +- ?d
+  *     |     |
+  *     |     +- http://qwer.com
+  *     |     |
+  *     |     `- http://qwer.com
+  *     |
+  *     `- NonEmptyChain
+  *        |
+  *        `- Triple
+  *           |
+  *           +- ?d
+  *           |
+  *           +- http://test.com
+  *           |
+  *           `- http://test.com
+  *
+  * }}}
+  *
+  * We compact the triples into a single chunk:
+  *
+  * {{{
+  * BGP
+  * |
+  * `- ChunkedList.Node
+  *    |
+  *    `- NonEmptyChain
+  *       |
+  *       +- Triple
+  *       |  |
+  *       |  +- ?d
+  *       |  |
+  *       |  +- http://test.com
+  *       |  |
+  *       |  `- http://test.com
+  *       |
+  *       `- Triple
+  *          |
+  *          +- ?d
+  *          |
+  *          +- http://qwer.com
+  *          |
+  *          `- http://qwer.com
+  * }}}
   */
 object CompactBGPs {
 
