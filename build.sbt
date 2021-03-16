@@ -107,6 +107,24 @@ lazy val `bellman-spark-engine` = project
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % Versions("jackson"),
     )
   )
+  .settings(
+    initialCommands in console := """
+    import cats._
+    import cats.implicits._
+
+    import higherkindness.droste._
+    import higherkindness.droste.data._
+    import higherkindness.droste.syntax.all._
+
+    import com.gsk.kg.sparql.syntax.all._
+    import com.gsk.kg.sparqlparser._
+    import com.gsk.kg.engine.data._
+    import com.gsk.kg.engine.data.ToTree._
+    import com.gsk.kg.engine._
+    import com.gsk.kg.engine.DAG._
+    import com.gsk.kg.engine.optimizer._
+    """
+  )
   .dependsOn(`bellman-algebra-parser`)
 
 addCommandAlias("ci-test", ";scalastyle ;+test")
