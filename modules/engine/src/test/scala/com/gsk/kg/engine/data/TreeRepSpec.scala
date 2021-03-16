@@ -84,21 +84,27 @@ Construct
 |
 +- BGP
 |  |
-|  +- Triple
-|  |  |
-|  |  +- ?Document
-|  |  |
-|  |  +- http://www.w3.org/1999/02/22-rdf-syntax-ns#type
-|  |  |
-|  |  `- http://lit-search-api/node/Document
-|  |
-|  `- Triple
+|  `- ChunkedList.Node
 |     |
-|     +- ?Document
+|     +- NonEmptyChain
+|     |  |
+|     |  `- Triple
+|     |     |
+|     |     +- ?Document
+|     |     |
+|     |     +- http://lit-search-api/property/docID
+|     |     |
+|     |     `- ?docid
 |     |
-|     +- http://lit-search-api/property/docID
-|     |
-|     `- ?docid
+|     `- NonEmptyChain
+|        |
+|        `- Triple
+|           |
+|           +- ?Document
+|           |
+|           +- http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+|           |
+|           `- http://lit-search-api/node/Document
 |
 `- Bind
    |
@@ -126,13 +132,17 @@ Construct
       |
       `- BGP
          |
-         `- Triple
+         `- ChunkedList.Node
             |
-            +- ?d
-            |
-            +- http://www.w3.org/1999/02/22-rdf-syntax-ns#type
-            |
-            `- http://gsk-kg.rdip.gsk.com/dm/1.0/Document""".trim
+            `- NonEmptyChain
+               |
+               `- Triple
+                  |
+                  +- ?d
+                  |
+                  +- http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+                  |
+                  `- http://gsk-kg.rdip.gsk.com/dm/1.0/Document""".trim
   }
 
 }
