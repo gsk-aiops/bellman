@@ -39,6 +39,18 @@ class RdfFormatterSpec
     }
   }
 
+  "RDFLocalizedString" should "match localized strings correctly" in {
+    val localizedStringGen: Gen[String] =
+      for {
+        str <- Gen.alphaStr
+        lang <- Gen.oneOf("en", "es", "cn", "fr")
+      } yield s""""$str"@$lang"""
+
+    forAll(localizedStringGen) { str =>
+      RDFLocalizedString.unapply(str) shouldBe a[Some[_]]
+    }
+  }
+
   "formatField" should "not raises exceptions when formatting" in {
     val gen = Gen.oneOf(
       uriGen.map(_.toString()),
