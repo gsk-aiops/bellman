@@ -48,15 +48,14 @@ class RemoveNestedProjectSpec
     val dag: T = DAG.fromQuery.apply(query)
 
     Fix.un(dag) match {
-	    case Project(v1, Fix(Project(v2, r))) =>
+      case Project(v1, Fix(Project(v2, r))) =>
         v1 shouldEqual v2
-
       case _ => fail()
     }
 
     val optimized = RemoveNestedProject[T].apply(dag)
     Fix.un(optimized) match {
-	    case Project(v1, Fix(Project(v2, r))) =>
+      case Project(v1, Fix(Project(v2, r))) =>
         fail("RemoveNestedProject should have deduplicated Project nodes")
       case _ => succeed
     }
