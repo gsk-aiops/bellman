@@ -34,8 +34,18 @@ object RdfFormatter {
       case RDFNum(num) => num
       case RDFBoolean(bool) => bool
       case RDFDataTypeLiteral(lit) => lit
+      case RDFLocalizedString(str) => str
       case str => s""""$str""""
     }).getOrElse(null) // scalastyle:off
+
+  object RDFLocalizedString {
+    def unapply(str: String): Option[String] =
+      if (str.startsWith("\"") && str.contains("\"@") && !str.endsWith("\"")) {
+        Some(str)
+      } else {
+        None
+      }
+  }
 
   object RDFDataTypeLiteral {
     def unapply(str: String): Option[String] =
