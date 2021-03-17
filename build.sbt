@@ -16,6 +16,7 @@ lazy val Versions = Map(
   "scalacheck"         -> "1.15.2",
   "scalatestplus"      -> "3.2.3.0",
   "sansa"              -> "0.7.1",
+  "monocle"            -> "1.5.1-cats",
 )
 
 inThisBuild(List(
@@ -94,10 +95,12 @@ lazy val `bellman-spark-engine` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.spark"  %% "spark-sql"          % Versions("spark") % Provided,
-      "com.holdenkarau"   %% "spark-testing-base" % Versions("spark-testing-base") % Test,
-      "org.scalacheck"    %% "scalacheck"         % Versions("scalacheck") % Test,
-      "org.scalatestplus" %% "scalacheck-1-15"    % Versions("scalatestplus") % Test,
+      "com.github.julien-truffaut" %% "monocle-core"       % Versions("monocle"),
+      "com.github.julien-truffaut" %% "monocle-macro"      % Versions("monocle"),
+      "org.apache.spark"           %% "spark-sql"          % Versions("spark") % Provided,
+      "com.holdenkarau"            %% "spark-testing-base" % Versions("spark-testing-base") % Test,
+      "org.scalacheck"             %% "scalacheck"         % Versions("scalacheck") % Test,
+      "org.scalatestplus"          %% "scalacheck-1-15"    % Versions("scalatestplus") % Test,
     ),
     libraryDependencies ++= on(2, 11)(
       "net.sansa-stack" %% "sansa-rdf-spark" % Versions("sansa") % Test

@@ -13,6 +13,8 @@ import higherkindness.droste.Basis
 import com.gsk.kg.engine.DAG.BGP
 import com.gsk.kg.engine.DAG.Project
 
+import optics._
+
 class CompactBGPsSpec
     extends AnyFlatSpec
     with Matchers
@@ -39,11 +41,16 @@ class CompactBGPsSpec
     countChunksInBGP(optimized) shouldEqual 1
   }
 
-  def countChunksInBGP(dag: T): Int =
-    Fix.un(dag) match {
-      case Project(vars, Fix(Project(vars2, Fix(BGP(triples))))) =>
-        val countChunks = triples.foldLeftChunks(0)((acc, _) => acc + 1)
-        countChunks
-    }
+  def countChunksInBGP(dag: T): Int = {
+    _projectR
+      .composeLens(Project.r)
+      .composePrism(_projectR)
+      .composeLens(Project.r)
+      .composePrism(_bgpR)
+      .composeLens(BGP.triples)
+      .getOption(dag)
+      .map(triples => triples.foldLeftChunks(0)((acc, _) => acc + 1))
+      .getOrElse(0)
 
+  }
 }
