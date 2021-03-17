@@ -21,7 +21,7 @@ object QueryConstruct {
   def parse(sparql: String): Query = {
     val query = QueryFactory.create(sparql)
     val compiled = Algebra.compile(query)
-    val parsed = fastparse.parse(compiled.toString, ExprParser.parser(_))
+    val parsed = fastparse.parse(compiled.toString, ExprParser.parser(_), verboseFailures = true)
     val algebra =  parsed match {
       case Success(value, index) => value
       case Failure(str, i, extra) =>
@@ -29,18 +29,22 @@ object QueryConstruct {
       case _ => //Failure()
         throw SparqlParsingError(s"$sparql parsing failure.")
     }
+
+    val defaultGraphs = query.getGraphURIs.asScala.toList.map(URIVAL)
+    val namedGraphs = query.getNamedGraphURIs.asScala.toList.map(URIVAL)
+
     if (query.isConstructType) {
       val template = query.getConstructTemplate
       val vars = getVars(query)
       val bgp = toBGP(template.getQuads.asScala.toSeq)
-      Construct(vars, bgp, algebra)
+      Construct(vars, bgp, algebra, defaultGraphs, namedGraphs)
     } else if (query.isSelectType) {
       val vars = getVars(query)
-      Select(vars,algebra)
+      Select(vars, algebra, defaultGraphs, namedGraphs)
     } else if (query.isDescribeType) {
-      Describe(getVars(query), algebra)
+      Describe(getVars(query), algebra, defaultGraphs, namedGraphs)
     } else if (query.isAskType) {
-      Ask(algebra)
+      Ask(algebra, defaultGraphs, namedGraphs)
     } else {
       throw SparqlParsingError(s"The query type: ${query.queryType()} is not supported yet")
     }

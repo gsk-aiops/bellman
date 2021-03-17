@@ -90,7 +90,7 @@ object ExprParser {
     p => Join(p._1, p._2)
   }
 
-  def graphParen[_:P]:P[Graph] = P("(" ~ graph ~ StringValParser.urival ~ graphPattern ~ ")").map{
+  def graphParen[_:P]:P[Graph] = P("(" ~ graph ~ (StringValParser.urival | StringValParser.variable) ~ graphPattern ~ ")").map{
     p => Graph(p._1, p._2)
   }
 

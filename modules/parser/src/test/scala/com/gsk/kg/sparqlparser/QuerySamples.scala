@@ -454,4 +454,43 @@ object QuerySamples {
         BIND(URI(CONCAT("http://lit-search-api/node/predication#", ?predid)) as ?pred)
     }
     """
+
+  // Query that combines FROM and FROM NAMED graph to default graph and
+  // FROM NAMED as named graphs in the same query. It uses GRAPH expression
+  // with a specific URI so it will match that specific graph
+  val q36 =
+  """
+    |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+    |PREFIX ex: <http://example.org/>
+    |
+    |SELECT ?who ?mbox
+    |FROM <http://example.org/dft.ttl>
+    |FROM NAMED <http://example.org/alice>
+    |FROM NAMED <http://example.org/bob>
+    |WHERE
+    |{
+    |   GRAPH ex:alice { ?x foaf:mbox ?mbox }
+    |}
+    |""".stripMargin
+
+  // Query that combines FROM for adding graph to default graph and
+  // FROM NAMED as named graphs in the same query. It uses GRAPH expression
+  // with a variable so it can match multiple graphs.
+  val q37 =
+    """
+      |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+      |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+      |PREFIX ex: <http://example.org/>
+      |
+      |SELECT ?who ?g ?mbox
+      |FROM <http://example.org/dft.ttl>
+      |FROM NAMED <http://example.org/alice>
+      |FROM NAMED <http://example.org/bob>
+      |WHERE
+      |{
+      |   ?g dc:publisher ?who .
+      |   GRAPH ?g { ?x foaf:mbox ?mbox }
+      |}
+      |""".stripMargin
 }
