@@ -10,17 +10,15 @@ import com.gsk.kg.sparqlparser._
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import higherkindness.droste._
 import com.gsk.kg.sparqlparser.StringVal
-import com.gsk.kg.engine.Multiset._
 import com.gsk.kg.sparqlparser.StringVal._
 import com.gsk.kg.sparqlparser.Expression
 import org.apache.spark.sql.Encoder
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.types._
+
 import java.{util => ju}
 import com.gsk.kg.engine.data.ChunkedList
-import org.apache.spark.sql.DataFrameReader
-import java.net.MulticastSocket
 
 object Engine {
 
@@ -29,11 +27,12 @@ object Engine {
       case DAG.Describe(vars, r)     => notImplemented("Describe")
       case DAG.Ask(r)                => notImplemented("Ask")
       case DAG.Construct(bgp, r)     => evaluateConstruct(bgp, r)
-      case DAG.Scan(graph, expr)     => notImplemented("Scan")
+      case DAG.Scan(graph, expr)     =>
+        evaluateScan(graph, expr)
       case DAG.Project(variables, r) => r.select(variables: _*).pure[M]
       case DAG.Bind(variable, expression, r) =>
         evaluateBind(variable, expression, r)
-      case DAG.BGP(triples)            => evaluateBGP(triples)
+      case DAG.BGP(quads)              => evaluateBGP(quads)
       case DAG.LeftJoin(l, r, filters) => evaluateLeftJoin(l, r, filters)
       case DAG.Union(l, r)             => l.union(r).pure[M]
       case DAG.Filter(funcs, expr)     => evaluateFilter(funcs, expr)
@@ -63,17 +62,23 @@ object Engine {
       List(
         StructField("s", StringType),
         StructField("p", StringType),
-        StructField("o", StringType)
+        StructField("o", StringType),
+        StructField("g", StringType)
       )
     )
   )
 
-  private def evaluateBGP(triples: ChunkedList[Expr.Triple])(implicit sc: SQLContext): M[Multiset] = {
+  private def evaluateScan(graph: String, expr: Multiset): M[Multiset] = {
+    val df = expr.dataframe.filter(expr.dataframe(GRAPH_VARIABLE.s) === graph)
+    M.liftF[Result, DataFrame, Multiset](expr.copy(dataframe = df).asRight)
+  }
+
+  private def evaluateBGP(quads: ChunkedList[Expr.Quad])(implicit sc: SQLContext): M[Multiset] = {
     import sc.implicits._
     import org.apache.spark.sql.functions._
     M.get[Result, DataFrame].map { df =>
       Foldable[ChunkedList].fold(
-        triples.mapChunks { chunk =>
+        quads.mapChunks { chunk =>
           val condition: Column =
             chunk
               .map(_.getPredicates)
@@ -92,7 +97,12 @@ object Engine {
             current.select(vars.map(v => $"${v._2}".as(v._1.s)): _*)
 
           Multiset(
-            vars.map(_._1.asInstanceOf[VARIABLE]).toSet,
+            vars.map {
+              case (GRAPH_VARIABLE, _) =>
+                VARIABLE(GRAPH_VARIABLE.s)
+              case (other, _) =>
+                other.asInstanceOf[VARIABLE]
+            }.toSet,
             selected
           )
         }
@@ -152,13 +162,13 @@ object Engine {
     import sc.implicits._
 
     val acc: DataFrame =
-      List.empty[(String, String, String)].toDF("s", "p", "o")
+      List.empty[(String, String, String, String)].toDF("s", "p", "o", "g")
 
     // Extracting the triples to something that can be serialized in
     // Spark jobs
     val templateValues: List[List[(StringVal, Int)]] =
-      bgp.triples
-        .map(triple => List(triple.s -> 1, triple.p -> 2, triple.o -> 3))
+      bgp.quads
+        .map(quad => List(quad.s -> 1, quad.p -> 2, quad.o -> 3, quad.g -> 4))
         .toList
 
     val df = r.dataframe

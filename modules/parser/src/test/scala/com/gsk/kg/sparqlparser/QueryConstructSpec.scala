@@ -11,7 +11,7 @@ class QueryConstructSpec extends AnyFlatSpec {
   "Simple Query" should "parse Construct statement with correct number of Triples" in {
     TestUtils.query("/queries/q0-simple-basic-graph-pattern.sparql") match {
       case Construct(vars, bgp, expr, List(), List()) =>
-        assert(vars.size == 2 && bgp.triples.size == 2)
+        assert(vars.size == 2 && bgp.quads.size == 2)
       case _ => fail
     }
   }
@@ -19,7 +19,7 @@ class QueryConstructSpec extends AnyFlatSpec {
 
   "Construct" should "result in proper variables, a basic graph pattern, and algebra expression" in {
     TestUtils.query("/queries/q3-union.sparql") match {
-      case Construct(vars, bgp, Union(BGP(triplesL: Seq[Triple]), BGP(triplesR: Seq[Triple])), List(), List()) =>
+      case Construct(vars, bgp, Union(BGP(quadsL: Seq[Quad]), BGP(quadsR: Seq[Quad])), List(), List()) =>
         val temp = QueryConstruct.getAllVariableNames(bgp)
         val all = vars.map(_.s).toSet
         assert((all -- temp) == Set("?lnk"))
@@ -30,7 +30,7 @@ class QueryConstructSpec extends AnyFlatSpec {
 
   "Construct with Bind" should "contains bind variable" in {
     TestUtils.query("/queries/q4-simple-bind.sparql") match {
-      case Construct(vars, bgp, Extend(l: StringVal, r: StringVal, BGP(triples: Seq[Triple])), List(), List()) =>
+      case Construct(vars, bgp, Extend(l: StringVal, r: StringVal, BGP(quads: Seq[Quad])), List(), List()) =>
         vars.exists(_.s == "?dbind")
       case _ => fail
     }
@@ -49,8 +49,8 @@ class QueryConstructSpec extends AnyFlatSpec {
     val a = 1
     TestUtils.query("/queries/lit-search-3.sparql") match {
       case Construct(vars, bgp, expr, List(), List()) =>
-        assert(bgp.triples.size == 11)
-        assert(bgp.triples.head.o.asInstanceOf[BLANK].s == bgp.triples(1).s.asInstanceOf[BLANK].s)
+        assert(bgp.quads.size == 11)
+        assert(bgp.quads.head.o.asInstanceOf[BLANK].s == bgp.quads(1).s.asInstanceOf[BLANK].s)
         assert(vars.exists(v => v.s == "?secid"))
       case _ => fail
     }
@@ -59,9 +59,9 @@ class QueryConstructSpec extends AnyFlatSpec {
   "Extra large query" should "return proper Construct type" in {
     TestUtils.query("/queries/lit-search-xlarge.sparql") match {
       case Construct(vars, bgp, expr, List(), List()) =>
-        assert(bgp.triples.size == 67)
-        assert(bgp.triples.head.s.asInstanceOf[VARIABLE].s == "?Year")
-        assert(bgp.triples.last.s.asInstanceOf[VARIABLE].s == "?Predication")
+        assert(bgp.quads.size == 67)
+        assert(bgp.quads.head.s.asInstanceOf[VARIABLE].s == "?Year")
+        assert(bgp.quads.last.s.asInstanceOf[VARIABLE].s == "?Predication")
         assert(vars.exists(v => v.s == "?de"))
       case _ => fail
     }
@@ -120,8 +120,8 @@ class QueryConstructSpec extends AnyFlatSpec {
             mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
             BGP(
               mutable.ArrayBuffer(
-                Triple(VARIABLE("?de"),URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass"),VARIABLE("??0")),
-                Triple(VARIABLE("??0"),URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predClass"),VARIABLE("?et")))))),
+                Quad(VARIABLE("?de"),URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass"),VARIABLE("??0"), _),
+                Quad(VARIABLE("??0"),URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predClass"),VARIABLE("?et"), _))))),
         List(),
         List()) =>
         succeed

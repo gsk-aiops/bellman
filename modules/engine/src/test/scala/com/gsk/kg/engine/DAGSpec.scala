@@ -7,7 +7,7 @@ import org.scalatest.matchers.should.Matchers
 import cats.instances.string._
 import com.gsk.kg.engine.data.ToTree._
 import DAG._
-import com.gsk.kg.sparqlparser.StringVal.STRING
+import com.gsk.kg.sparqlparser.StringVal.{GRAPH_VARIABLE, STRING}
 import higherkindness.droste.data.Fix
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.sparqlparser.Expr
@@ -34,12 +34,12 @@ class DAGSpec
     val join: T = joinR(
       bgpR(
         ChunkedList(
-          Expr.Triple(STRING("one"), STRING("two"), STRING("three"))
+          Expr.Quad(STRING("one"), STRING("two"), STRING("three"), GRAPH_VARIABLE)
         )
       ),
       bgpR(
         ChunkedList(
-          Expr.Triple(STRING("four"), STRING("five"), STRING("six"))
+          Expr.Quad(STRING("four"), STRING("five"), STRING("six"), GRAPH_VARIABLE)
         )
       )
     )
@@ -54,8 +54,8 @@ class DAGSpec
 
     T.coalgebra(join).rewrite(joinsAsBGP) shouldEqual bgpR(
       ChunkedList(
-        Expr.Triple(STRING("one"), STRING("two"), STRING("three")),
-        Expr.Triple(STRING("four"), STRING("five"), STRING("six"))
+        Expr.Quad(STRING("one"), STRING("two"), STRING("three"), GRAPH_VARIABLE),
+        Expr.Quad(STRING("four"), STRING("five"), STRING("six"), GRAPH_VARIABLE)
       )
     )
   }

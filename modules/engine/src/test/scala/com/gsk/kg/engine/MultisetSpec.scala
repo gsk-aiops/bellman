@@ -1,10 +1,6 @@
 package com.gsk.kg.engine
 
 import org.scalatest.flatspec.AnyFlatSpec
-import org.apache.spark.sql.{SparkSession, DataFrame}
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.funsuite.AnyFunSuite
-import org.apache.spark.sql.Dataset
 import org.scalatest.matchers.should.Matchers
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import com.holdenkarau.spark.testing.DataFrameSuiteBase

@@ -19,9 +19,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     (
       "test",
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://id.gsk.com/dm/1.0/Document"
+      "http://id.gsk.com/dm/1.0/Document",
+      ""
     ),
-    ("test", "http://id.gsk.com/dm/1.0/docSource", "source")
+    ("test", "http://id.gsk.com/dm/1.0/docSource", "source", "")
   )
 
   "Compiler" when {
@@ -30,11 +31,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       import sqlContext.implicits._
 
       val df: DataFrame = List(
-        ("example", "http://xmlns.com/foaf/0.1/lit", "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"),
-        ("example", "http://xmlns.com/foaf/0.1/lit", "\"0.22\"^^xsd:float"),
-        ("example", "http://xmlns.com/foaf/0.1/lit", "\"foo\"^^xsd:string"),
-        ("example", "http://xmlns.com/foaf/0.1/lit", "\"true\"^^xsd:boolean")
-      ).toDF("s", "p", "o")
+        ("example", "http://xmlns.com/foaf/0.1/lit", "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>", ""),
+        ("example", "http://xmlns.com/foaf/0.1/lit", "\"0.22\"^^xsd:float", ""),
+        ("example", "http://xmlns.com/foaf/0.1/lit", "\"foo\"^^xsd:string", ""),
+        ("example", "http://xmlns.com/foaf/0.1/lit", "\"true\"^^xsd:boolean", "")
+      ).toDF("s", "p", "o", "g")
 
       val query =
         """
@@ -100,7 +101,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "will execute operations in the dataframe" in {
         import sqlContext.implicits._
 
-        val df = dfList.toDF("s", "p", "o")
+        val df = dfList.toDF("s", "p", "o", "g")
         val query =
           """
             SELECT
@@ -123,7 +124,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "will execute with two dependent BGPs" in {
         import sqlContext.implicits._
 
-        val df: DataFrame = dfList.toDF("s", "p", "o")
+        val df: DataFrame = dfList.toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -146,7 +147,8 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "execute with the same bindings" in {
         import sqlContext.implicits._
 
-        val df: DataFrame = (("does", "not", "match") :: dfList).toDF("s", "p", "o")
+        val df: DataFrame = (("does", "not", "match", "") :: dfList)
+          .toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -168,7 +170,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "execute with different bindings" in {
         import sqlContext.implicits._
 
-        val df: DataFrame = (("does", "not", "match") :: dfList).toDF("s", "p", "o")
+        val df: DataFrame = (("does", "not", "match", "") :: dfList).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -193,7 +195,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "execute with a single triple pattern" in {
         import sqlContext.implicits._
 
-        val df: DataFrame = dfList.toDF("s", "p", "o")
+        val df: DataFrame = dfList.toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -217,10 +219,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val positive = List(
-          ("doesmatch", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://id.gsk.com/dm/1.0/Document"),
-          ("doesmatchaswell", "http://id.gsk.com/dm/1.0/docSource", "potato")
+          ("doesmatch", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://id.gsk.com/dm/1.0/Document", ""),
+          ("doesmatchaswell", "http://id.gsk.com/dm/1.0/docSource", "potato", "")
         )
-        val df: DataFrame = (positive ++ dfList).toDF("s", "p", "o")
+        val df: DataFrame = (positive ++ dfList).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -261,11 +263,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val negative = List(
-          ("doesntmatch", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://id.gsk.com/dm/1.0/Document"),
-          ("doesntmatcheither", "http://id.gsk.com/dm/1.0/docSource", "potato")
+          ("doesntmatch", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://id.gsk.com/dm/1.0/Document", ""),
+          ("doesntmatcheither", "http://id.gsk.com/dm/1.0/docSource", "potato", "")
         )
 
-        val df: DataFrame = (negative ++ dfList).toDF("s", "p", "o")
+        val df: DataFrame = (negative ++ dfList).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -302,11 +304,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("a", "b", "c"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry")
-        ).toDF("s", "p", "o")
+          ("a", "b", "c", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -328,11 +330,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("\"a\"", "\"b\"", "\"c\""),
-          ("\"team\"", "http://xmlns.com/foaf/0.1/name", "\"Anthony\""),
-          ("\"team\"", "http://xmlns.com/foaf/0.1/name", "\"Perico\""),
-          ("\"team\"", "http://xmlns.com/foaf/0.1/name", "\"Henry\"")
-        ).toDF("s", "p", "o")
+          ("a", "b", "c", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -354,11 +356,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("a", "b", "c"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry")
-        ).toDF("s", "p", "o")
+          ("a", "b", "c", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -382,11 +384,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("a", "b", "c"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry")
-        ).toDF("s", "p", "o")
+          ("a", "b", "c", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -408,11 +410,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("a", "b", "c"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry")
-        ).toDF("s", "p", "o")
+          ("a", "b", "c", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -434,11 +436,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("a", "b", "c"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry")
-        ).toDF("s", "p", "o")
+          ("a", "b", "c", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -463,9 +465,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("nodeA", "http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass", "thisIsTheBlankNode"),
-          ("thisIsTheBlankNode", "http://gsk-kg.rdip.gsk.com/dm/1.0/predClass", "otherThingy")
-        ).toDF("s", "p", "o")
+          ("nodeA", "http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass", "thisIsTheBlankNode", ""),
+          ("thisIsTheBlankNode", "http://gsk-kg.rdip.gsk.com/dm/1.0/predClass", "otherThingy", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -494,11 +496,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("example", "http://xmlns.com/foaf/0.1/lit", "abcd"),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "abaB"),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "bbBB"),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "aaaa")
-        ).toDF("s", "p", "o")
+          ("example", "http://xmlns.com/foaf/0.1/lit", "abcd", ""),
+          ("example", "http://xmlns.com/foaf/0.1/lit", "abaB", ""),
+          ("example", "http://xmlns.com/foaf/0.1/lit", "bbBB", ""),
+          ("example", "http://xmlns.com/foaf/0.1/lit", "aaaa", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -530,8 +532,8 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("example", "http://xmlns.com/foaf/0.1/lit", "abracadabra")
-        ).toDF("s", "p", "o")
+          ("example", "http://xmlns.com/foaf/0.1/lit", "abracadabra", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -557,13 +559,13 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("_:a", "http://www.w3.org/2000/10/annotation-ns#annotates", "http://www.w3.org/TR/rdf-sparql-query/"),
-          ("_:a", "http://purl.org/dc/elements/1.1/creator", "Alice B. Toeclips"),
-          ("_:b", "http://www.w3.org/2000/10/annotation-ns#annotates", "http://www.w3.org/TR/rdf-sparql-query/"),
-          ("_:b", "http://purl.org/dc/elements/1.1/creator", "_:c"),
-          ("_:c", "http://xmlns.com/foaf/0.1/given", "Bob"),
-          ("_:c", "http://xmlns.com/foaf/0.1/family", "Smith")
-        ).toDF("s", "p", "o")
+          ("_:a", "http://www.w3.org/2000/10/annotation-ns#annotates", "http://www.w3.org/TR/rdf-sparql-query/", ""),
+          ("_:a", "http://purl.org/dc/elements/1.1/creator", "Alice B. Toeclips", ""),
+          ("_:b", "http://www.w3.org/2000/10/annotation-ns#annotates", "http://www.w3.org/TR/rdf-sparql-query/", ""),
+          ("_:b", "http://purl.org/dc/elements/1.1/creator", "_:c", ""),
+          ("_:c", "http://xmlns.com/foaf/0.1/given", "Bob", ""),
+          ("_:c", "http://xmlns.com/foaf/0.1/family", "Smith", "")
+        ).toDF("s", "p", "o", "g")
 
         val query = {
           """
@@ -599,12 +601,12 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("a", "b", "c"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Henry"),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "Blank")
-          ).toDF("s", "p", "o")
+            ("a", "b", "c", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
+            ("_:", "http://xmlns.com/foaf/0.1/name", "Blank", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -630,12 +632,12 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("a", "b", "c"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Henry"),
-            ("a:", "http://xmlns.com/foaf/0.1/name", "Blank")
-          ).toDF("s", "p", "o")
+            ("a", "b", "c", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
+            ("a:", "http://xmlns.com/foaf/0.1/name", "Blank", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -661,12 +663,12 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("a", "b", "c"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "_:b"),
-            ("foaf:c", "http://xmlns.com/foaf/0.1/name", "_:d"),
-            ("_:e", "http://xmlns.com/foaf/0.1/name", "foaf:f")
-          ).toDF("s", "p", "o")
+            ("a", "b", "c", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "_:b", ""),
+            ("foaf:c", "http://xmlns.com/foaf/0.1/name", "_:d", ""),
+            ("_:e", "http://xmlns.com/foaf/0.1/name", "foaf:f", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -695,17 +697,17 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("http://example.org/Network", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Main"),
-            ("http://example.org/ATM", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Network"),
-            ("http://example.org/ARPANET", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Network"),
-            ("http://example.org/Software", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Main"),
-            ("_:Linux", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Software"),
-            ("http://example.org/Windows", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Software"),
-            ("http://example.org/XP", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Windows"),
-            ("http://example.org/Win7", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Windows"),
-            ("http://example.org/Win8", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Windows"),
-            ("http://example.org/Ubuntu20", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "_:Linux")
-          ).toDF("s", "p", "o")
+            ("http://example.org/Network", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Main", ""),
+            ("http://example.org/ATM", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Network", ""),
+            ("http://example.org/ARPANET", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Network", ""),
+            ("http://example.org/Software", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Main", ""),
+            ("_:Linux", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Software", ""),
+            ("http://example.org/Windows", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Software", ""),
+            ("http://example.org/XP", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Windows", ""),
+            ("http://example.org/Win7", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Windows", ""),
+            ("http://example.org/Win8", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "http://example.org/Windows", ""),
+            ("http://example.org/Ubuntu20", "http://www.w3.org/2000/01/rdf-schema#subClassOf", "_:Linux", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -734,13 +736,13 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice"),
-            ("_:a", "http://example.org/stats#hits", "\"2349\"^^xsd:integer"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob"),
-            ("_:b", "http://example.org/stats#hits", "\"105\"^^xsd:integer"),
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+            ("_:a", "http://example.org/stats#hits", "\"2349\"^^xsd:integer", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
+            ("_:b", "http://example.org/stats#hits", "\"105\"^^xsd:integer", ""),
             ("_:c", "http://xmlns.com/foaf/0.1/name", "Eve"),
-            ("_:c", "http://example.org/stats#hits", "\"181\"^^xsd:integer")
-          ).toDF("s", "p", "o")
+            ("_:c", "http://example.org/stats#hits", "\"181\"^^xsd:integer", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -773,8 +775,8 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:a", "foaf:name", "\"Bob\""),
-            Row("_:b", "site:hits", "\"2349\"^^xsd:integer")
+            Row("_:a", "foaf:name", "\"Bob\"", ""),
+            Row("_:b", "site:hits", "\"2349\"^^xsd:integer", "")
           )
         }
       }
@@ -787,13 +789,13 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("a", "b", "c"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Henry"),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "Blank"),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "http://test-uri/blank")
-          ).toDF("s", "p", "o")
+            ("a", "b", "c", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
+            ("_:", "http://xmlns.com/foaf/0.1/name", "Blank", ""),
+            ("_:", "http://xmlns.com/foaf/0.1/name", "http://test-uri/blank", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -818,11 +820,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("team", "http://xmlns.com/foaf/0.1/name", "_:"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "_:"),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "Henry")
-          ).toDF("s", "p", "o")
+            ("team", "http://xmlns.com/foaf/0.1/name", "_:", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+            ("_:", "http://xmlns.com/foaf/0.1/name", "_:", ""),
+            ("_:", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -849,11 +851,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("team", "http://xmlns.com/foaf/0.1/name", "_:"),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Perico"),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "_:"),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "Henry")
-          ).toDF("s", "p", "o")
+            ("team", "http://xmlns.com/foaf/0.1/name", "_:", ""),
+            ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+            ("_:", "http://xmlns.com/foaf/0.1/name", "_:", ""),
+            ("_:", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -885,9 +887,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Henry"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Perico")
-          ).toDF("s", "p", "o")
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "Perico", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -915,9 +917,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "\"Henry\"^^<http://www.w3.org/2001/XMLSchema#string>"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "\"Perico\"^^<http://www.w3.org/2001/XMLSchema#string>")
-          ).toDF("s", "p", "o")
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "\"Henry\"^^<http://www.w3.org/2001/XMLSchema#string>", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "\"Perico\"^^<http://www.w3.org/2001/XMLSchema#string>", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -945,9 +947,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Perico", "http://xmlns.com/foaf/0.1/age", 15),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21)
-          ).toDF("s", "p", "o")
+            ("_:Perico", "http://xmlns.com/foaf/0.1/age", 15, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -974,9 +976,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false)
-          ).toDF("s", "p", "o")
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1009,9 +1011,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Henry"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Perico")
-          ).toDF("s", "p", "o")
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "Perico", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1039,9 +1041,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "\"Henry\"^^<http://www.w3.org/2001/XMLSchema#string>"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "\"Perico\"^^<http://www.w3.org/2001/XMLSchema#string>")
-          ).toDF("s", "p", "o")
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "\"Henry\"^^<http://www.w3.org/2001/XMLSchema#string>", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "\"Perico\"^^<http://www.w3.org/2001/XMLSchema#string>", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1069,9 +1071,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Perico", "http://xmlns.com/foaf/0.1/age", 15),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21)
-          ).toDF("s", "p", "o")
+            ("_:Perico", "http://xmlns.com/foaf/0.1/age", 15, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1098,9 +1100,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false)
-          ).toDF("s", "p", "o")
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1133,9 +1135,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Charles")
-          ).toDF("s", "p", "o")
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1193,10 +1195,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15),
-            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21)
-          ).toDF("s", "p", "o")
+            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
+            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1223,9 +1225,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false)
-          ).toDF("s", "p", "o")
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1256,9 +1258,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Charles")
-          ).toDF("s", "p", "o")
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1286,9 +1288,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>")
-          ).toDF("s", "p", "o")
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1316,10 +1318,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15),
-            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21)
-          ).toDF("s", "p", "o")
+            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
+            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1346,9 +1348,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false)
-          ).toDF("s", "p", "o")
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1381,10 +1383,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob"),
-            ("_:c", "http://xmlns.com/foaf/0.1/name", "Charles")
-          ).toDF("s", "p", "o")
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
+            ("_:c", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1413,10 +1415,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "\"Bob\"^^<http://www.w3.org/2001/XMLSchema#string>"),
-            ("_:c", "http://xmlns.com/foaf/0.1/name", "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>")
-          ).toDF("s", "p", "o")
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "\"Bob\"^^<http://www.w3.org/2001/XMLSchema#string>", ""),
+            ("_:c", "http://xmlns.com/foaf/0.1/name", "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1445,10 +1447,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15),
-            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21)
-          ).toDF("s", "p", "o")
+            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
+            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1476,9 +1478,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false)
-          ).toDF("s", "p", "o")
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1511,10 +1513,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob"),
-            ("_:c", "http://xmlns.com/foaf/0.1/name", "Charles")
-          ).toDF("s", "p", "o")
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
+            ("_:c", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1543,10 +1545,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>"),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "\"Bob\"^^<http://www.w3.org/2001/XMLSchema#string>"),
-            ("_:c", "http://xmlns.com/foaf/0.1/name", "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>")
-          ).toDF("s", "p", "o")
+            ("_:a", "http://xmlns.com/foaf/0.1/name", "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>", ""),
+            ("_:b", "http://xmlns.com/foaf/0.1/name", "\"Bob\"^^<http://www.w3.org/2001/XMLSchema#string>", ""),
+            ("_:c", "http://xmlns.com/foaf/0.1/name", "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>", "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1575,10 +1577,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15),
-            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21)
-          ).toDF("s", "p", "o")
+            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
+            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1606,9 +1608,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false)
-          ).toDF("s", "p", "o")
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ).toDF("s", "p", "o", "g")
 
           val query =
             """
@@ -1643,14 +1645,14 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
-          ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
-          ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
-          ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("negative", "negative", "negative")
-        ).toDF("s", "p", "o")
+          ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", ""),
+          ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", ""),
+          ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", ""),
+          ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("negative", "negative", "negative", "")
+        ).toDF("s", "p", "o", "g")
 
 
         val query =
@@ -1685,14 +1687,14 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
-          ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
-          ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
-          ("negative", "negative", "negative")
-        ).toDF("s", "p", "o")
+          ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", ""),
+          ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", ""),
+          ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", ""),
+          ("negative", "negative", "negative", "")
+        ).toDF("s", "p", "o", "g")
 
 
         val query =
@@ -1724,13 +1726,13 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
-          ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
-          ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce")
-        ).toDF("s", "p", "o")
+          ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", ""),
+          ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", ""),
+          ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", "")
+        ).toDF("s", "p", "o", "g")
 
 
         val query =
@@ -1767,13 +1769,13 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
-          ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
-          ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
-          ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce")
-        ).toDF("s", "p", "o")
+          ("http://potato.com/b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("http://potato.com/c", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("http://potato.com/b", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", ""),
+          ("http://potato.com/d", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://gsk-kg.rdip.gsk.com/dm/1.0/Document", ""),
+          ("http://potato.com/c", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", ""),
+          ("http://potato.com/d", "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce", "")
+        ).toDF("s", "p", "o", "g")
 
 
         val query =
@@ -1808,13 +1810,13 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("_:a", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://xmlns.com/foaf/0.1/Person"),
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice"),
-          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:alice@example.com"),
-          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:alice@work.example"),
-          ("_:b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://xmlns.com/foaf/0.1/Person"),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob")
-        ).toDF("s", "p", "o")
+          ("_:a", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://xmlns.com/foaf/0.1/Person", ""),
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:alice@example.com", ""),
+          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:alice@work.example", ""),
+          ("_:b", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://xmlns.com/foaf/0.1/Person", ""),
+          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -1840,11 +1842,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("_:book1", "http://purl.org/dc/elements/1.1/title", "SPARQL Tutorial"),
-          ("_:book1", "http://example.org/ns#price", "42"),
-          ("_:book2", "http://purl.org/dc/elements/1.1/title", "The Semantic Web"),
-          ("_:book2", "http://example.org/ns#price", "_:23")
-        ).toDF("s", "p", "o")
+          ("_:book1", "http://purl.org/dc/elements/1.1/title", "SPARQL Tutorial", ""),
+          ("_:book1", "http://example.org/ns#price", "42", ""),
+          ("_:book2", "http://purl.org/dc/elements/1.1/title", "The Semantic Web", ""),
+          ("_:book2", "http://example.org/ns#price", "_:23", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -1875,11 +1877,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice"),
-          ("_:a", "http://xmlns.com/foaf/0.1/homepage", "http://work.example.org/alice/"),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob"),
-          ("_:b", "http://xmlns.com/foaf/0.1/mbox", "mailto:bob@work.example")
-        ).toDF("s", "p", "o")
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+          ("_:a", "http://xmlns.com/foaf/0.1/homepage", "http://work.example.org/alice/", ""),
+          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
+          ("_:b", "http://xmlns.com/foaf/0.1/mbox", "mailto:bob@work.example", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -1910,11 +1912,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice"),
-          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:alice@work.example"),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "_:bob"),
-          ("_:b", "http://xmlns.com/foaf/0.1/mbox", "mailto:bob@work.example")
-        ).toDF("s", "p", "o")
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:alice@work.example", ""),
+          ("_:b", "http://xmlns.com/foaf/0.1/name", "_:bob", ""),
+          ("_:b", "http://xmlns.com/foaf/0.1/mbox", "mailto:bob@work.example", "")
+        ).toDF("s", "p", "o", "g")
 
 
         val query =
@@ -1945,10 +1947,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice"),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob"),
-          ("_:c", "http://xmlns.com/foaf/0.1/name", "Alice")
-        ).toDF("s", "p", "o")
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
+          ("_:c", "http://xmlns.com/foaf/0.1/name", "Alice", "")
+        ).toDF("s", "p", "o", "g")
 
         val query =
           """
@@ -1970,6 +1972,150 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         )
       }
     }
+
+    "perform query with GRAPH expression" should {
+
+      "execute and obtain expected results with one graph specified" in {
+        import sqlContext.implicits._
+
+        val df: DataFrame = List(
+          // Default graph
+          ("http://example.org/bob", "http://purl.org/dc/elements/1.1/publisher", "Bob Hacker", ""),
+          ("http://example.org/alice", "http://purl.org/dc/elements/1.1/publisher", "Alice Hacker", ""),
+          // Alice graph
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", "http://example.org/alice"),
+          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:alice@work.example.org", "http://example.org/alice"),
+          // Bob graph
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Bob", "http://example.org/bob"),
+          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:bob@oldcorp.example.org", "http://example.org/bob")
+        ).toDF("s", "p", "o", "g")
+
+        val query =
+          """
+            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            |PREFIX ex: <http://example.org/>
+            |
+            |SELECT ?mbox
+            |FROM <http://example.org/dft.ttl>
+            |FROM NAMED <http://example.org/alice>
+            |FROM NAMED <http://example.org/bob>
+            |WHERE
+            |{
+            |   GRAPH ex:alice { ?x foaf:mbox ?mbox }
+            |}
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.show()
+
+        result shouldBe a[Right[_, _]]
+        result.right.get.collect.length shouldEqual 1
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("mailto:alice@work.example.org")
+        )
+      }
+
+      "execute and obtain expected results with multiple graphs specified" in {
+        import sqlContext.implicits._
+
+        val df: DataFrame = List(
+          // Default graph
+          ("http://example.org/bob", "http://purl.org/dc/elements/1.1/publisher", "Bob Hacker", ""),
+          ("http://example.org/alice", "http://purl.org/dc/elements/1.1/publisher", "Alice Hacker", ""),
+          ("http://example.org/charles", "http://purl.org/dc/elements/1.1/publisher", "Charles Hacker", ""),
+          // Alice graph
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", "http://example.org/alice"),
+          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:alice@work.example.org", "http://example.org/alice"),
+          // Bob graph
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Bob", "http://example.org/bob"),
+          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:bob@oldcorp.example.org", "http://example.org/bob"),
+          // Charles graph
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Charles", "http://example.org/charles"),
+          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:charles@work.example.org", "http://example.org/charles")
+        ).toDF("s", "p", "o", "g")
+
+        val query =
+          """
+            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            |PREFIX ex: <http://example.org/>
+            |
+            |SELECT ?mbox
+            |FROM <http://example.org/dft.ttl>
+            |FROM NAMED <http://example.org/alice>
+            |FROM NAMED <http://example.org/bob>
+            |FROM NAMED <http://example.org/charles>
+            |WHERE
+            |{
+            |   { GRAPH ex:alice { ?x foaf:mbox ?mbox } }
+            |   UNION
+            |   { GRAPH ex:bob { ?y foaf:mbox ?mbox } }
+            |}
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.show()
+
+        result shouldBe a[Right[_, _]]
+        result.right.get.collect.length shouldEqual 2
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("mailto:alice@work.example.org"),
+          Row("mailto:bob@oldcorp.example.org")
+        )
+      }
+
+      "execute and obtain expected results when referenced graph is a variable instead of a specified graph" ignore {
+        import sqlContext.implicits._
+
+        val df: DataFrame = List(
+          // Default graph
+          ("http://example.org/bob", "http://purl.org/dc/elements/1.1/publisher", "Bob Hacker", ""),
+          ("http://example.org/alice", "http://purl.org/dc/elements/1.1/publisher", "Alice Hacker", ""),
+          ("http://example.org/charles", "http://purl.org/dc/elements/1.1/publisher", "Charles Hacker", ""),
+          // Alice graph
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", "http://example.org/alice"),
+          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:alice@work.example.org", "http://example.org/alice"),
+          // Bob graph
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Bob", "http://example.org/bob"),
+          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:bob@oldcorp.example.org", "http://example.org/bob"),
+          // Charles graph
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Charles", "http://example.org/charles"),
+          ("_:a", "http://xmlns.com/foaf/0.1/mbox", "mailto:charles@work.example.org", "http://example.org/charles")
+        ).toDF("s", "p", "o", "g")
+
+        val query =
+          """
+            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            |PREFIX ex: <http://example.org/>
+            |
+            |SELECT ?mbox ?g
+            |FROM <http://example.org/dft.ttl>
+            |FROM NAMED <http://example.org/alice>
+            |FROM NAMED <http://example.org/bob>
+            |FROM NAMED <http://example.org/charles>
+            |WHERE
+            |{
+            |   GRAPH ?g { ?x foaf:mbox ?mbox }
+            |}
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.show()
+
+        result shouldBe a[Right[_, _]]
+        result.right.get.collect.length shouldEqual 3
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("mailto:alice@work.example.org", "http://example.org/alice"),
+          Row("mailto:bob@oldcorp.example.org", "http://example.org/bob"),
+          Row("mailto:charles@work.example.org", "http://example.org/charles")
+        )
+      }
+    }
   }
 
   private def readNTtoDF(path: String) = {
@@ -1984,8 +2130,8 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       .getCollected()
       .asScala
       .toList
-      .map(triple =>
-        (triple.getSubject().toString(), triple.getPredicate().toString(), triple.getObject().toString())
+      .map(quad =>
+        (quad.getSubject().toString(), quad.getPredicate().toString(), quad.getObject().toString())
       ).toDF("s", "p", "o")
 
   }

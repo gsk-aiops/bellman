@@ -3,14 +3,10 @@ package com.gsk.kg.sparqlparser
 import com.gsk.kg.sparqlparser.StringVal._
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.Query._
-import com.gsk.kg.sparqlparser.Conditional._
-import com.gsk.kg.sparqlparser.BuildInFunc._
 import fastparse.Parsed.{Failure, Success}
-import org.apache.jena.graph.Node
-import org.apache.jena.query
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
-import org.apache.jena.sparql.core.Quad
+import org.apache.jena.sparql.core.{Quad => JenaQuad}
 
 import collection.JavaConverters._
 
@@ -36,7 +32,7 @@ object QueryConstruct {
     if (query.isConstructType) {
       val template = query.getConstructTemplate
       val vars = getVars(query)
-      val bgp = toBGP(template.getQuads.asScala.toSeq)
+      val bgp = toBGP(template.getQuads.asScala)
       Construct(vars, bgp, algebra, defaultGraphs, namedGraphs)
     } else if (query.isSelectType) {
       val vars = getVars(query)
@@ -51,7 +47,7 @@ object QueryConstruct {
   }
 
   private def getVars(query: org.apache.jena.query.Query): Seq[VARIABLE] = {
-    query.getProjectVars.asScala.map(v => VARIABLE(v.toString())).toSeq
+    query.getProjectVars.asScala.map(v => VARIABLE(v.toString()))
   }
 
   def parseADT(sparql: String): Expr = {
@@ -59,42 +55,19 @@ object QueryConstruct {
   }
 
   def getAllVariableNames(bgp: BGP): Set[String] = {
-    bgp.triples.foldLeft(Set.empty[String]) {
-      (acc, t) =>
-        acc ++ Set(t.s, t.p, t.o).flatMap { e =>
+    bgp.quads.foldLeft(Set.empty[String]) {
+      (acc, q) =>
+        acc ++ Set(q.s, q.p, q.o, q.g).flatMap { e =>
           e match {
             case VARIABLE(v) => Some(v)
+//            case GRAPH_VARIABLE => Some(GRAPH_VARIABLE.s)
             case _ => None
           }
         }
     }
   }
 
-  def toBGP(quads: Iterable[Quad]): BGP = {
-    BGP(quads.map(toTriple(_)).toSeq)
+  def toBGP(quads: Iterable[JenaQuad]): BGP = {
+    BGP(quads.flatMap(Quad(_)).toSeq)
   }
-
-  def toTriple(quad: Quad): Triple = {
-    def toStringVal(n: Node): StringVal = {
-      if (n.isLiteral) {
-        STRING(n.toString())
-      } else if (n.isURI) {
-        URIVAL(n.toString)
-      } else if (n.isVariable) {
-        VARIABLE(n.toString())
-      } else if (n.isBlank) {
-        BLANK(n.toString())
-      } else {
-        throw new SparqlParsingError(s"${quad} cannot convert to ADT triple")
-      }
-    }
-
-    val triple = quad.asTriple()
-    Triple(
-      toStringVal(triple.getSubject),
-      toStringVal(triple.getPredicate),
-      toStringVal(triple.getObject)
-    )
-  }
-
 }
