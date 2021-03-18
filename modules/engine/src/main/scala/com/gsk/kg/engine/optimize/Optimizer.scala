@@ -9,6 +9,7 @@ import cats.arrow.Arrow
 object Optimizer {
 
   def optimize[T: Basis[DAG, *]]: Phase[T, T] =
-    Arrow[Phase].lift(CompactBGPs[T])
+    Arrow[Phase].lift(CompactBGPs[T]) >>>
+      Arrow[Phase].lift(RemoveNestedProject[T])
 
 }
