@@ -1,22 +1,25 @@
 import xerial.sbt.Sonatype._
 
 lazy val Versions = Map(
-  "kind-projector"     -> "0.11.3",
-  "cats"               -> "2.0.0",
-  "jena"               -> "3.17.0",
-  "scalatest"          -> "3.2.5",
-  "fastparse"          -> "2.1.2",
-  "cats"               -> "2.0.0",
-  "scala212"           -> "2.12.12",
-  "scala211"           -> "2.11.12",
-  "droste"             -> "0.8.0",
-  "spark"              -> "2.4.0",
-  "spark-testing-base" -> "2.4.5_0.14.0",
-  "jackson"            -> "2.12.1",
-  "scalacheck"         -> "1.15.2",
-  "scalatestplus"      -> "3.2.3.0",
-  "sansa"              -> "0.7.1",
-  "monocle"            -> "1.5.1-cats",
+  "kind-projector"       -> "0.11.3",
+  "cats"                 -> "2.0.0",
+  "cats-scalacheck"      -> "0.2.0",
+  "jena"                 -> "3.17.0",
+  "scalatest"            -> "3.2.5",
+  "fastparse"            -> "2.1.2",
+  "cats"                 -> "2.0.0",
+  "scala212"             -> "2.12.12",
+  "scala211"             -> "2.11.12",
+  "droste"               -> "0.8.0",
+  "spark"                -> "2.4.0",
+  "spark-testing-base"   -> "2.4.5_0.14.0",
+  "jackson"              -> "2.12.1",
+  "scalacheck"           -> "1.15.2",
+  "scalatestplus"        -> "3.2.3.0",
+  "sansa"                -> "0.7.1",
+  "monocle"              -> "1.5.1-cats",
+  "discipline"           -> "1.1.2",
+  "discipline-scalatest" -> "2.0.0",
 )
 
 inThisBuild(List(
@@ -95,12 +98,13 @@ lazy val `bellman-spark-engine` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "com.github.julien-truffaut" %% "monocle-core"       % Versions("monocle"),
-      "com.github.julien-truffaut" %% "monocle-macro"      % Versions("monocle"),
-      "org.apache.spark"           %% "spark-sql"          % Versions("spark") % Provided,
-      "com.holdenkarau"            %% "spark-testing-base" % Versions("spark-testing-base") % Test,
-      "org.scalacheck"             %% "scalacheck"         % Versions("scalacheck") % Test,
-      "org.scalatestplus"          %% "scalacheck-1-15"    % Versions("scalatestplus") % Test,
+      "org.apache.spark"           %% "spark-sql"            % Versions("spark") % Provided,
+      "com.github.julien-truffaut" %% "monocle-core"         % Versions("monocle"),
+      "com.github.julien-truffaut" %% "monocle-macro"        % Versions("monocle"),
+      "io.chrisdavenport"          %% "cats-scalacheck"      % Versions("cats-scalacheck") % Test,
+      "com.holdenkarau"            %% "spark-testing-base"   % Versions("spark-testing-base") % Test,
+      "org.scalacheck"             %% "scalacheck"           % Versions("scalacheck") % Test,
+      "org.scalatestplus"          %% "scalacheck-1-15"      % Versions("scalatestplus") % Test,
     ),
     libraryDependencies ++= on(2, 11)(
       "net.sansa-stack" %% "sansa-rdf-spark" % Versions("sansa") % Test

@@ -1,4 +1,5 @@
 package com.gsk.kg.engine
+package scalacheck
 
 import org.scalacheck.Gen
 import org.scalacheck.Arbitrary
@@ -27,18 +28,18 @@ trait CommonGenerators {
         fragment.map(f => s"#$f").getOrElse("")
     )
 
-  val genNonEmptyString = Gen.nonEmptyListOf(Gen.alphaChar).map(_.mkString)
+  val nonEmptyStringGenerator = Gen.nonEmptyListOf(Gen.alphaChar).map(_.mkString)
 
   val path: Gen[String] =
     for {
       n <- Gen.choose(0, 10)
-      paths <- Gen.listOfN(n, genNonEmptyString)
+      paths <- Gen.listOfN(n, nonEmptyStringGenerator)
     } yield paths.mkString("/")
 
   val query: Gen[String] =
     for {
       n <- Gen.choose(0, 10)
-      paths <- Gen.listOfN(n, Gen.zip(genNonEmptyString, genNonEmptyString))
+      paths <- Gen.listOfN(n, Gen.zip(nonEmptyStringGenerator, nonEmptyStringGenerator))
     } yield paths.map({ case (k, v) => s"$k=$v" }).mkString("&")
 
   val sparqlDataTypesGen: Gen[String] = Gen.oneOf(

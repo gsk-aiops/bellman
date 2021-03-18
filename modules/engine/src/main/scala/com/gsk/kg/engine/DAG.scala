@@ -7,8 +7,7 @@ import higherkindness.droste.syntax.all._
 import higherkindness.droste.util.DefaultTraverse
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import com.gsk.kg.sparqlparser.StringVal
-import cats.Traverse
-import cats.Applicative
+import cats._
 import cats.data.NonEmptyList
 import cats.implicits._
 import com.gsk.kg.sparqlparser.Expr
@@ -18,6 +17,7 @@ import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.engine.data.ChunkedList
 import monocle._
 import monocle.macros.Lenses
+
 
 sealed trait DAG[A] {
 
@@ -177,6 +177,14 @@ object DAG {
       case OffsetLimitF(Some(o), Some(l), r) => offset(o, limit(l, r).embed)
       case FilterF(funcs, expr)              => filter(NonEmptyList.fromListUnsafe(funcs.toList), expr)
       case TabUnitF()                        => noop("TabUnitF not supported yet")
+    }
+
+  implicit def dagEq[A: Eq]: Eq[DAG[A]] =
+    Eq.fromUniversalEquals
+
+  implicit val eqDelay: Delay[Eq, DAG] =
+    λ[Eq ~> (Eq ∘ DAG)#λ] { eqA =>
+      dagEq(eqA)
     }
 
 }

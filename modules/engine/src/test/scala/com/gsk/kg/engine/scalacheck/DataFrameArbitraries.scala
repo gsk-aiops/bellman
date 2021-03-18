@@ -1,4 +1,5 @@
 package com.gsk.kg.engine
+package scalacheck
 
 
 import cats.implicits._
@@ -10,13 +11,13 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SQLContext
 import cats.Show
 
-trait DataFrameGenerator {
+trait DataFrameArbitraries {
   implicit val showUri: Show[URI] = Show[String].contramap(uri => s"<$uri>")
 
   final case class BlankNodeLabel(label: String)
 
   object BlankNodeLabel {
-    implicit val arb: Arbitrary[BlankNodeLabel] = Arbitrary(CommonGenerators.genNonEmptyString.map(BlankNodeLabel.apply))
+    implicit val arb: Arbitrary[BlankNodeLabel] = Arbitrary(CommonGenerators.nonEmptyStringGenerator.map(BlankNodeLabel.apply))
 
     implicit val show: Show[BlankNodeLabel] = Show[String].contramap(str => "_:" + str.label)
   }
@@ -91,7 +92,7 @@ trait DataFrameGenerator {
         Gen.frequency(
           1 -> langTaggedString,
           1 -> typeTaggedLiteral,
-          2 -> CommonGenerators.genNonEmptyString.map(str => Literal(str, None))
+          2 -> CommonGenerators.nonEmptyStringGenerator.map(str => Literal(str, None))
         )
       )
     }
@@ -152,4 +153,4 @@ trait DataFrameGenerator {
 
 }
 
-object DataFrameGenerator extends DataFrameGenerator
+object DataFrameArbitraries extends DataFrameArbitraries
