@@ -71,6 +71,12 @@ trait CommonGenerators {
       lit <- Gen.alphaNumStr
     } yield s""""${lit}"^^$dataType"""
 
+  def smallListOf[A](a: Gen[A]): Gen[List[A]] =
+    Gen.choose(0, 5).flatMap(n => Gen.listOfN(n, a))
+
+  def smallNonEmptyListOf[A](a: Gen[A]): Gen[List[A]] =
+    Gen.choose(1, 5).flatMap(n => Gen.listOfN(n, a))
+
 }
 
 object CommonGenerators extends CommonGenerators

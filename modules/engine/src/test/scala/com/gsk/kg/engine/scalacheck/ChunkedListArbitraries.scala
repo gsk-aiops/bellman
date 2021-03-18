@@ -11,16 +11,15 @@ import org.scalacheck.Gen
 import com.gsk.kg.engine.data.ChunkedList
 import cats.data.Chain
 
-trait ChunkedListArbitraries {
+trait ChunkedListArbitraries extends CommonGenerators {
 
   implicit def arb[A](implicit A: Arbitrary[A]): Arbitrary[ChunkedList[A]] =
     Arbitrary(chunkedListGenerator)
 
   def chunkedListGenerator[A](implicit A: Arbitrary[A]): Gen[ChunkedList[A]] =
     Gen.oneOf(
-      Gen.const(ChunkedList.Empty[A]()),
-      Gen.nonEmptyListOf(A.arbitrary).map(ChunkedList.fromList),
-      Gen.nonEmptyListOf(Gen.nonEmptyListOf(A.arbitrary)).map { ls =>
+      smallListOf(A.arbitrary).map(ChunkedList.fromList),
+      smallNonEmptyListOf(smallNonEmptyListOf(A.arbitrary)).map { ls =>
         def go(l: List[List[A]]): ChunkedList[A] =
           l match {
             case Nil => ChunkedList.Empty()

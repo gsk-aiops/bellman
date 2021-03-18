@@ -17,6 +17,7 @@ import com.gsk.kg.engine.scalacheck.DrosteImplicits
 import com.gsk.kg.engine.scalacheck.ExpressionArbitraries
 import com.gsk.kg.engine.scalacheck.DAGArbitraries
 import com.gsk.kg.engine.scalacheck.ChunkedListArbitraries
+import org.scalacheck.Arbitrary
 
 class DAGSpec
     extends AnyFlatSpec
@@ -57,6 +58,20 @@ class DAGSpec
         Expr.Triple(STRING("four"), STRING("five"), STRING("six"))
       )
     )
+  }
+
+  "it" should "potato" in {
+    val saa: Arbitrary[DAG[T]] = implicitly
+    val aaa: Arbitrary[DAG.Describe[T]] = implicitly
+
+    forAll { (s: DAG[T], a: DAG.Describe[T]) =>
+      val prism = optics._describe
+      val left = prism.set(a)(s)
+      val right = prism.modify(_ => a)(s)
+
+      left shouldEqual right
+    }
+
   }
 
 }

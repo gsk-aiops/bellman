@@ -20,7 +20,7 @@ trait ExpressionArbitraries
     )
 
   val stringValGenerator: Gen[StringVal] = Gen.oneOf(
-    nonEmptyStringGenerator.map(StringVal.STRING(_, None)),
+    (nonEmptyStringGenerator, Gen.option(sparqlDataTypesGen)).mapN(StringVal.STRING(_, _)),
     Gen.numStr.map(StringVal.NUM(_)),
     nonEmptyStringGenerator.map(str => StringVal.VARIABLE(s"?$str")),
     nonEmptyStringGenerator.map(uri => StringVal.URIVAL(uri)),

@@ -16,7 +16,7 @@ trait DrosteImplicits {
   ): Arbitrary[F[A]] =
     F(A)
 
-  implicit def embedArbitrary[T, F[_]: Functor]
+  implicit def embedArbitrary[F[_]: Functor, T]
     (implicit T: higherkindness.droste.Embed[F, T], fArb: Delay[Arbitrary, F])
       : Arbitrary[T] =
     Arbitrary(Gen.sized(size =>
@@ -24,7 +24,7 @@ trait DrosteImplicits {
         if (size <= 0)
           Gen.fail[T]
         else
-          Gen.resize(size - 1, embedArbitrary[T, F].arbitrary))).arbitrary map (_.embed)))
+          Gen.resize(size - 1, embedArbitrary[F, T].arbitrary))).arbitrary map (_.embed)))
 
 }
 
