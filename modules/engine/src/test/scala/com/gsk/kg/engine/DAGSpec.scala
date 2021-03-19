@@ -59,19 +59,4 @@ class DAGSpec
       )
     )
   }
-
-  "it" should "potato" in {
-    val saa: Arbitrary[DAG[T]] = implicitly
-    val aaa: Arbitrary[DAG.Describe[T]] = implicitly
-
-    forAll { (s: DAG[T], a: DAG.Describe[T]) =>
-      val prism = optics._describe
-      val left = prism.set(a)(s)
-      val right = prism.modify(_ => a)(s)
-
-      left shouldEqual right
-    }
-
-  }
-
 }

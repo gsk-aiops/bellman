@@ -20,21 +20,25 @@ import com.gsk.kg.engine.data.ChunkedList._
 import com.gsk.kg.sparqlparser.StringVal._
 import com.gsk.kg.sparqlparser.Expr
 import monocle.law.PrismLaws
+import org.typelevel.discipline.scalatest.FlatSpecDiscipline
+import org.scalatest.flatspec.AnyFlatSpec
 
 class OpticsLawTests
-    extends AnyFunSuite
+    extends AnyFlatSpec
     with Configuration
-    with FunSuiteDiscipline
+    with FlatSpecDiscipline
     with DAGArbitraries
     with DrosteImplicits {
 
   override implicit val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(
-      sizeRange = PosZInt(5)
+      sizeRange = PosZInt(5),
+      maxDiscardedFactor = 100
     )
 
   implicit val embedArbitrary: Arbitrary[optics.T] = embedArbitrary[DAG, optics.T]
 
+  checkAll("basisIso", IsoTests(optics.basisIso))
   checkAll("_describe", PrismTests(optics._describe))
   checkAll("_ask", PrismTests(optics._ask))
   checkAll("_construct", PrismTests(optics._construct))

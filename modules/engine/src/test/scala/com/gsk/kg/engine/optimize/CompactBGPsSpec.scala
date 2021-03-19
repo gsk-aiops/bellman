@@ -51,6 +51,5 @@ class CompactBGPsSpec
       .getOption(dag)
       .map(triples => triples.foldLeftChunks(0)((acc, _) => acc + 1))
       .getOrElse(0)
-
   }
 }
