@@ -1,5 +1,6 @@
 package com.gsk.kg.engine
 
+import com.gsk.kg.engine.scalacheck.DataFrameArbitraries
 import com.gsk.kg.sparql.syntax.all._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -12,12 +13,12 @@ import scala.reflect.io.Directory
 import java.io.File
 import scala.util.Try
 
-class DataFrameGeneratorSpec
+class DataFrameArbitrariesSpec
     extends AnyFlatSpec
     with Matchers
     with DataFrameSuiteBase
     with ScalaCheckDrivenPropertyChecks
-    with DataFrameGenerator {
+    with DataFrameArbitraries {
 
   override implicit def reuseContextIfPossible: Boolean = true
 
@@ -32,7 +33,7 @@ class DataFrameGeneratorSpec
    *
    * Once we do #103 we'll be able to test this out without problem!
    */
-  "DataFrameGeneratorSpec" should "work" ignore {
+  "DataFrameArbitrariesSpec" should "work" ignore {
     forAll { df: DataFrame =>
       val path = "/tmp/data_frame_generated_by_sansa"
       try {

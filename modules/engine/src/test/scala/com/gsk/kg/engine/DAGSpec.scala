@@ -1,16 +1,31 @@
 package com.gsk.kg.engine
 
-import higherkindness.droste.syntax.project._
+import higherkindness.droste.syntax.all._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import cats.instances.string._
+import com.gsk.kg.engine.data.ToTree._
 import DAG._
 import com.gsk.kg.sparqlparser.StringVal.STRING
 import higherkindness.droste.data.Fix
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.sparqlparser.Expr
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import com.gsk.kg.engine.data.TreeRep
+import com.gsk.kg.engine.scalacheck.DrosteImplicits
+import com.gsk.kg.engine.scalacheck.ExpressionArbitraries
+import com.gsk.kg.engine.scalacheck.DAGArbitraries
+import com.gsk.kg.engine.scalacheck.ChunkedListArbitraries
+import org.scalacheck.Arbitrary
 
-class DAGSpec extends AnyFlatSpec with Matchers {
+class DAGSpec
+    extends AnyFlatSpec
+    with Matchers
+    with ScalaCheckDrivenPropertyChecks
+    with DrosteImplicits
+    with DAGArbitraries
+    with ChunkedListArbitraries {
 
   type T = Fix[DAG]
   val T = higherkindness.droste.Project[DAG, T]
@@ -44,5 +59,4 @@ class DAGSpec extends AnyFlatSpec with Matchers {
       )
     )
   }
-
 }

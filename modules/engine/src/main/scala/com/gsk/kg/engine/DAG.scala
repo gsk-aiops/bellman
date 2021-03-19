@@ -7,8 +7,7 @@ import higherkindness.droste.syntax.all._
 import higherkindness.droste.util.DefaultTraverse
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import com.gsk.kg.sparqlparser.StringVal
-import cats.Traverse
-import cats.Applicative
+import cats._
 import cats.data.NonEmptyList
 import cats.implicits._
 import com.gsk.kg.sparqlparser.Expr
@@ -16,6 +15,9 @@ import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.engine.data.ChunkedList
+import monocle._
+import monocle.macros.Lenses
+
 
 sealed trait DAG[A] {
 
@@ -28,27 +30,28 @@ sealed trait DAG[A] {
       })).algebra)
       .apply(this.embed)
 
+  def widen: DAG[A] = this
 }
 
-// scalastyle:off number.of.methods
+// scalastyle:off
 object DAG {
-  final case class Describe[A](vars: List[VARIABLE], r: A) extends DAG[A]
-  final case class Ask[A](r: A) extends DAG[A]
-  final case class Construct[A](bgp: Expr.BGP, r: A) extends DAG[A]
-  final case class Scan[A](graph: String, expr: A) extends DAG[A]
-  final case class Project[A](variables: List[VARIABLE], r: A) extends DAG[A]
-  final case class Bind[A](variable: VARIABLE, expression: Expression, r: A)
+  @Lenses final case class Describe[A](vars: List[VARIABLE], r: A) extends DAG[A]
+  @Lenses final case class Ask[A](r: A) extends DAG[A]
+  @Lenses final case class Construct[A](bgp: Expr.BGP, r: A) extends DAG[A]
+  @Lenses final case class Scan[A](graph: String, expr: A) extends DAG[A]
+  @Lenses final case class Project[A](variables: List[VARIABLE], r: A) extends DAG[A]
+  @Lenses final case class Bind[A](variable: VARIABLE, expression: Expression, r: A)
       extends DAG[A]
-  final case class BGP[A](triples: ChunkedList[Expr.Triple]) extends DAG[A]
-  final case class LeftJoin[A](l: A, r: A, filters: List[Expression])
+  @Lenses final case class BGP[A](triples: ChunkedList[Expr.Triple]) extends DAG[A]
+  @Lenses final case class LeftJoin[A](l: A, r: A, filters: List[Expression])
       extends DAG[A]
-  final case class Union[A](l: A, r: A) extends DAG[A]
-  final case class Filter[A](funcs: NonEmptyList[Expression], expr: A) extends DAG[A]
-  final case class Join[A](l: A, r: A) extends DAG[A]
-  final case class Offset[A](offset: Long, r: A) extends DAG[A]
-  final case class Limit[A](limit: Long, r: A) extends DAG[A]
-  final case class Distinct[A](r: A) extends DAG[A]
-  final case class Noop[A](trace: String) extends DAG[A]
+  @Lenses final case class Union[A](l: A, r: A) extends DAG[A]
+  @Lenses final case class Filter[A](funcs: NonEmptyList[Expression], expr: A) extends DAG[A]
+  @Lenses final case class Join[A](l: A, r: A) extends DAG[A]
+  @Lenses final case class Offset[A](offset: Long, r: A) extends DAG[A]
+  @Lenses final case class Limit[A](limit: Long, r: A) extends DAG[A]
+  @Lenses final case class Distinct[A](r: A) extends DAG[A]
+  @Lenses final case class Noop[A](trace: String) extends DAG[A]
 
   implicit val traverse: Traverse[DAG] = new DefaultTraverse[DAG] {
     def traverse[G[_]: Applicative, A, B](fa: DAG[A])(f: A => G[B]): G[DAG[B]] =
@@ -176,5 +179,68 @@ object DAG {
       case TabUnitF()                        => noop("TabUnitF not supported yet")
     }
 
+  implicit def dagEq[A: Eq]: Eq[DAG[A]] =
+    Eq.fromUniversalEquals
+
+  implicit val eqDelay: Delay[Eq, DAG] =
+    λ[Eq ~> (Eq ∘ DAG)#λ] { eqA =>
+      dagEq(eqA)
+    }
+
+  implicit def eqDescribe[A]: Eq[Describe[A]] = Eq.fromUniversalEquals
+  implicit def eqAsk[A]: Eq[Ask[A]] = Eq.fromUniversalEquals
+  implicit def eqConstruct[A]: Eq[Construct[A]] = Eq.fromUniversalEquals
+  implicit def eqScan[A]: Eq[Scan[A]] = Eq.fromUniversalEquals
+  implicit def eqProject[A]: Eq[Project[A]] = Eq.fromUniversalEquals
+  implicit def eqBind[A]: Eq[Bind[A]] = Eq.fromUniversalEquals
+  implicit def eqBGP[A]: Eq[BGP[A]] = Eq.fromUniversalEquals
+  implicit def eqLeftJoin[A]: Eq[LeftJoin[A]] = Eq.fromUniversalEquals
+  implicit def eqUnion[A]: Eq[Union[A]] = Eq.fromUniversalEquals
+  implicit def eqFilter[A]: Eq[Filter[A]] = Eq.fromUniversalEquals
+  implicit def eqJoin[A]: Eq[Join[A]] = Eq.fromUniversalEquals
+  implicit def eqOffset[A]: Eq[Offset[A]] = Eq.fromUniversalEquals
+  implicit def eqLimit[A]: Eq[Limit[A]] = Eq.fromUniversalEquals
+  implicit def eqDistinct[A]: Eq[Distinct[A]] = Eq.fromUniversalEquals
+  implicit def eqNoop[A]: Eq[Noop[A]] = Eq.fromUniversalEquals
 }
-// scalastyle:on number.of.methods
+
+object optics {
+  import DAG._
+
+  type T = Fix[DAG]
+
+  val basisIso: Iso[T, DAG[T]] = Iso[T, DAG[T]] { t => Basis[DAG, T].coalgebra(t) } { dag => Basis[DAG, T].algebra(dag) }
+
+  def _describe: Prism[DAG[T], Describe[T]] = Prism.partial[DAG[T], Describe[T]] { case dag @ Describe(vars, r) => dag } (identity)
+  def _ask: Prism[DAG[T], Ask[T]] = Prism.partial[DAG[T], Ask[T]] { case dag @ Ask(r) => dag } (identity)
+  def _construct: Prism[DAG[T], Construct[T]] = Prism.partial[DAG[T], Construct[T]] { case dag @ Construct(bgp: Expr.BGP, r) => dag } (identity)
+  def _scan: Prism[DAG[T], Scan[T]] = Prism.partial[DAG[T], Scan[T]] { case dag @ Scan(graph: String, expr) => dag } (identity)
+  def _project: Prism[DAG[T], Project[T]] = Prism.partial[DAG[T], Project[T]] { case dag @ Project(variables: List[VARIABLE], r) => dag } (identity)
+  def _bind: Prism[DAG[T], Bind[T]] = Prism.partial[DAG[T], Bind[T]] { case dag @ Bind(variable: VARIABLE, expression: Expression, r) => dag } (identity)
+  def _bgp: Prism[DAG[T], BGP[T]] = Prism.partial[DAG[T], BGP[T]] { case dag @ BGP(triples: ChunkedList[Expr.Triple]) => dag } (identity)
+  def _leftjoin: Prism[DAG[T], LeftJoin[T]] = Prism.partial[DAG[T], LeftJoin[T]] { case dag @ LeftJoin(l, r, filters: List[Expression]) => dag } (identity)
+  def _union: Prism[DAG[T], Union[T]] = Prism.partial[DAG[T], Union[T]] { case dag @ Union(l, r) => dag } (identity)
+  def _filter: Prism[DAG[T], Filter[T]] = Prism.partial[DAG[T], Filter[T]] { case dag @ Filter(funcs: NonEmptyList[Expression], expr) => dag } (identity)
+  def _join: Prism[DAG[T], Join[T]] = Prism.partial[DAG[T], Join[T]] { case dag @ Join(l, r) => dag } (identity)
+  def _offset: Prism[DAG[T], Offset[T]] = Prism.partial[DAG[T], Offset[T]] { case dag @ Offset(offset: Long, r) => dag } (identity)
+  def _limit: Prism[DAG[T], Limit[T]] = Prism.partial[DAG[T], Limit[T]] { case dag @ Limit(limit: Long, r) => dag } (identity)
+  def _distinct: Prism[DAG[T], Distinct[T]] = Prism.partial[DAG[T], Distinct[T]] { case dag @ Distinct(r) => dag } (identity)
+  def _noop: Prism[DAG[T], Noop[T]] = Prism.partial[DAG[T], Noop[T]] { case dag @ Noop(trace: String) => dag } (identity)
+
+  val _describeR: Prism[T, Describe[T]] = basisIso composePrism _describe
+  val _askR: Prism[T, Ask[T]] = basisIso composePrism _ask
+  val _constructR: Prism[T, Construct[T]] = basisIso composePrism _construct
+  val _scanR: Prism[T, Scan[T]] = basisIso composePrism _scan
+  val _projectR: Prism[T, Project[T]] = basisIso composePrism _project
+  val _bindR: Prism[T, Bind[T]] = basisIso composePrism _bind
+  val _bgpR: Prism[T, BGP[T]] = basisIso composePrism _bgp
+  val _leftjoinR: Prism[T, LeftJoin[T]] = basisIso composePrism _leftjoin
+  val _unionR: Prism[T, Union[T]] = basisIso composePrism _union
+  val _filterR: Prism[T, Filter[T]] = basisIso composePrism _filter
+  val _joinR: Prism[T, Join[T]] = basisIso composePrism _join
+  val _offsetR: Prism[T, Offset[T]] = basisIso composePrism _offset
+  val _limitR: Prism[T, Limit[T]] = basisIso composePrism _limit
+  val _distinctR: Prism[T, Distinct[T]] = basisIso composePrism _distinct
+  val _noopR: Prism[T, Noop[T]] = basisIso composePrism _noop
+}
+// scalastyle:on
