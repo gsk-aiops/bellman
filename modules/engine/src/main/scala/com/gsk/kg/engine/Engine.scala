@@ -19,6 +19,7 @@ import org.apache.spark.sql.types._
 
 import java.{util => ju}
 import com.gsk.kg.engine.data.ChunkedList
+import org.apache.spark.sql.functions.lit
 
 object Engine {
 
@@ -34,7 +35,7 @@ object Engine {
         evaluateBind(variable, expression, r)
       case DAG.BGP(quads)              => evaluateBGP(quads)
       case DAG.LeftJoin(l, r, filters) => evaluateLeftJoin(l, r, filters)
-      case DAG.Union(l, r)             => l.union(r).pure[M]
+      case DAG.Union(l, r)             => evaluateUnion(l, r)
       case DAG.Filter(funcs, expr)     => evaluateFilter(funcs, expr)
       case DAG.Join(l, r)              => notImplemented("Join")
       case DAG.Offset(offset, r)       => evaluateOffset(offset, r)
@@ -62,11 +63,22 @@ object Engine {
       List(
         StructField("s", StringType),
         StructField("p", StringType),
-        StructField("o", StringType),
-        StructField("g", StringType)
+        StructField("o", StringType)
       )
     )
   )
+
+  private def evaluateUnion(l: Multiset, r: Multiset): M[Multiset] = {
+
+    val lFixed = l.copy(dataframe = l.dataframe.drop(GRAPH_VARIABLE.s))
+    val rFixed = r.copy(dataframe = r.dataframe.drop(GRAPH_VARIABLE.s))
+
+    val unionMultiset = lFixed.union(rFixed)
+
+    M.liftF[Result, DataFrame, Multiset] {
+      unionMultiset.copy(dataframe = unionMultiset.dataframe.withColumn(GRAPH_VARIABLE.s, lit(""))).asRight
+    }
+  }
 
   private def evaluateScan(graph: String, expr: Multiset): M[Multiset] = {
     val df = expr.dataframe.filter(expr.dataframe(GRAPH_VARIABLE.s) === graph)
@@ -159,16 +171,12 @@ object Engine {
   private def evaluateConstruct(bgp: Expr.BGP, r: Multiset)(implicit
       sc: SQLContext
   ): M[Multiset] = {
-    import sc.implicits._
-
-    val acc: DataFrame =
-      List.empty[(String, String, String, String)].toDF("s", "p", "o", "g")
 
     // Extracting the triples to something that can be serialized in
     // Spark jobs
     val templateValues: List[List[(StringVal, Int)]] =
       bgp.quads
-        .map(quad => List(quad.s -> 1, quad.p -> 2, quad.o -> 3, quad.g -> 4))
+        .map(quad => List(quad.s -> 1, quad.p -> 2, quad.o -> 3))
         .toList
 
     val df = r.dataframe

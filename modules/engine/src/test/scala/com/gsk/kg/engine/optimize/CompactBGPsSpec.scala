@@ -47,7 +47,7 @@ class CompactBGPsSpec
       .composePrism(_projectR)
       .composeLens(Project.r)
       .composePrism(_bgpR)
-      .composeLens(BGP.triples)
+      .composeLens(BGP.quads)
       .getOption(dag)
       .map(triples => triples.foldLeftChunks(0)((acc, _) => acc + 1))
       .getOrElse(0)

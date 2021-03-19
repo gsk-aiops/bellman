@@ -89,11 +89,12 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       """
 
       val inputDF = readNTtoDF("fixtures/reference-q1-input.nt")
-
       val outputDF = readNTtoDF("fixtures/reference-q1-output.nt")
 
-      Compiler.compile(inputDF, query) shouldBe a[Right[_, _]]
-      Compiler.compile(inputDF, query).right.get.collect.toSet shouldEqual outputDF.collect().toSet
+      val result = Compiler.compile(inputDF, query)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get.collect.toSet shouldEqual outputDF.drop("g").collect().toSet
     }
 
     "perform query with BGPs" should {
@@ -2008,8 +2009,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         val result = Compiler.compile(df, query)
 
-        result.right.get.show()
-
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
@@ -2057,8 +2056,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         val result = Compiler.compile(df, query)
 
-        result.right.get.show()
-
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
         result.right.get.collect.toSet shouldEqual Set(
@@ -2067,6 +2064,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         )
       }
 
+      // TODO: Un-ignore when JOIN implemented and named graphs support for variables
       "execute and obtain expected results when referenced graph is a variable instead of a specified graph" ignore {
         import sqlContext.implicits._
 
@@ -2092,27 +2090,26 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |PREFIX dc: <http://purl.org/dc/elements/1.1/>
             |PREFIX ex: <http://example.org/>
             |
-            |SELECT ?mbox ?g
+            |SELECT ?who ?g ?mbox
             |FROM <http://example.org/dft.ttl>
             |FROM NAMED <http://example.org/alice>
             |FROM NAMED <http://example.org/bob>
             |FROM NAMED <http://example.org/charles>
             |WHERE
             |{
+            |   ?g dc:publisher ?who .
             |   GRAPH ?g { ?x foaf:mbox ?mbox }
             |}
             |""".stripMargin
 
         val result = Compiler.compile(df, query)
 
-        result.right.get.show()
-
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 3
         result.right.get.collect.toSet shouldEqual Set(
-          Row("mailto:alice@work.example.org", "http://example.org/alice"),
-          Row("mailto:bob@oldcorp.example.org", "http://example.org/bob"),
-          Row("mailto:charles@work.example.org", "http://example.org/charles")
+          Row("Alice Hacker", "http://example.org/alice", "mailto:alice@work.example.org"),
+          Row("Bob Hacker", "http://example.org/bob", "mailto:bob@oldcorp.example.org"),
+          Row("Charles Hacker", "http://example.org/charles", "mailto:charles@work.example.org")
         )
       }
     }
@@ -2130,9 +2127,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       .getCollected()
       .asScala
       .toList
-      .map(quad =>
-        (quad.getSubject().toString(), quad.getPredicate().toString(), quad.getObject().toString())
-      ).toDF("s", "p", "o")
+      .map(triple =>
+        (triple.getSubject().toString(), triple.getPredicate().toString(), triple.getObject().toString(), "")
+      ).toDF("s", "p", "o", "g")
 
   }
 

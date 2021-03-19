@@ -3,7 +3,6 @@ package scalacheck
 
 import cats._
 import cats.implicits._
-import cats.arrow.FunctionK
 import cats.data.NonEmptyList
 
 import higherkindness.droste._
@@ -27,18 +26,19 @@ trait DAGArbitraries
   val variableGenerator: Gen[VARIABLE] =
     nonEmptyStringGenerator.map(VARIABLE(_))
 
-  val tripleGenerator: Gen[Expr.Triple] =
+  val quadGenerator: Gen[Expr.Quad] =
     (
       stringValGenerator,
       stringValGenerator,
+      stringValGenerator,
       stringValGenerator
-    ).mapN(Expr.Triple(_, _, _))
+    ).mapN(Expr.Quad(_, _, _, _))
 
-  implicit val tripleArbitrary: Arbitrary[Expr.Triple] = Arbitrary(
-    tripleGenerator
+  implicit val quadArbitrary: Arbitrary[Expr.Quad] = Arbitrary(
+    quadGenerator
   )
 
-  val exprBgpGenerator: Gen[Expr.BGP] = smallNonEmptyListOf(tripleGenerator).map(Expr.BGP(_))
+  val exprBgpGenerator: Gen[Expr.BGP] = smallNonEmptyListOf(quadGenerator).map(Expr.BGP(_))
 
   val expressionNelGenerator: Gen[NonEmptyList[Expression]] =
     smallNonEmptyListOf(expressionGenerator)
@@ -77,7 +77,7 @@ trait DAGArbitraries
   def distinctGenerator[A](implicit A: Arbitrary[A]): Gen[Distinct[A]] =
     Gen.lzy(A.arbitrary).map(Distinct(_))
   def bgpGenerator[A](implicit A: Arbitrary[A]): Gen[BGP[A]] =
-    chunkedListGenerator[Expr.Triple].map(BGP(_))
+    chunkedListGenerator[Expr.Quad].map(BGP(_))
   def noopGenerator[A]: Gen[Noop[A]] =
     Arbitrary.arbString.arbitrary.map(Noop[A](_))
 

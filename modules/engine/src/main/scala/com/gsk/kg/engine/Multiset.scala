@@ -103,10 +103,10 @@ final case class Multiset(
         val union = colsA.union(colsB)
 
         def genColumns(current: Set[String], total: Set[String]) = {
-          total.map(x => x match {
+          total.map {
             case x if current.contains(x) => col(x)
-            case _ => lit(null).as(x) // scalastyle:ignore
-          }).toList
+            case x => lit(null).as(x) // scalastyle:ignore
+          }.toList
         }
 
         Multiset(
