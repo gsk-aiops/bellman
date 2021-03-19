@@ -6,6 +6,7 @@ import cats.data.Kleisli
 import com.gsk.kg.sparqlparser.QueryConstruct
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.engine.optimizer.Optimizer
+import com.gsk.kg.engine.analyzer.Analyzer
 import cats.arrow.Arrow
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.DataFrame
@@ -32,6 +33,7 @@ object Compiler {
     parser >>>
       transformToGraph >>>
       optimizer >>>
+      staticAnalysis >>>
       engine(df) >>>
       rdfFormatter
 
@@ -60,6 +62,9 @@ object Compiler {
 
   def optimizer[T: Basis[DAG, *]]: Phase[T, T] =
     Optimizer.optimize
+
+  def staticAnalysis[T: Basis[DAG, *]]: Phase[T, T] =
+    Analyzer.analyze
 
   def rdfFormatter: Phase[DataFrame, DataFrame] = Arrow[Phase].lift(RdfFormatter.formatDataFrame)
 

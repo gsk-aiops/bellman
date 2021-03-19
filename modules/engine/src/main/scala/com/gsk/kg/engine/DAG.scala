@@ -17,6 +17,7 @@ import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.engine.data.ChunkedList
 import monocle._
 import monocle.macros.Lenses
+import com.gsk.kg.sparqlparser.Query.Select
 
 
 sealed trait DAG[A] {
@@ -207,40 +208,38 @@ object DAG {
 object optics {
   import DAG._
 
-  type T = Fix[DAG]
+  def basisIso[F[_], T](implicit T: Basis[F, T]): Iso[T, F[T]] = Iso[T, F[T]] { t => Basis[F, T].coalgebra(t) } { dag => Basis[F, T].algebra(dag) }
 
-  val basisIso: Iso[T, DAG[T]] = Iso[T, DAG[T]] { t => Basis[DAG, T].coalgebra(t) } { dag => Basis[DAG, T].algebra(dag) }
+  def _describe[T: Basis[DAG, *]]: Prism[DAG[T], Describe[T]] = Prism.partial[DAG[T], Describe[T]] { case dag @ Describe(vars, r) => dag } (identity)
+  def _ask[T: Basis[DAG, *]]: Prism[DAG[T], Ask[T]] = Prism.partial[DAG[T], Ask[T]] { case dag @ Ask(r) => dag } (identity)
+  def _construct[T: Basis[DAG, *]]: Prism[DAG[T], Construct[T]] = Prism.partial[DAG[T], Construct[T]] { case dag @ Construct(bgp: Expr.BGP, r) => dag } (identity)
+  def _scan[T: Basis[DAG, *]]: Prism[DAG[T], Scan[T]] = Prism.partial[DAG[T], Scan[T]] { case dag @ Scan(graph: String, expr) => dag } (identity)
+  def _project[T: Basis[DAG, *]]: Prism[DAG[T], Project[T]] = Prism.partial[DAG[T], Project[T]] { case dag @ Project(variables: List[VARIABLE], r) => dag } (identity)
+  def _bind[T: Basis[DAG, *]]: Prism[DAG[T], Bind[T]] = Prism.partial[DAG[T], Bind[T]] { case dag @ Bind(variable: VARIABLE, expression: Expression, r) => dag } (identity)
+  def _bgp[T: Basis[DAG, *]]: Prism[DAG[T], BGP[T]] = Prism.partial[DAG[T], BGP[T]] { case dag @ BGP(triples: ChunkedList[Expr.Triple]) => dag } (identity)
+  def _leftjoin[T: Basis[DAG, *]]: Prism[DAG[T], LeftJoin[T]] = Prism.partial[DAG[T], LeftJoin[T]] { case dag @ LeftJoin(l, r, filters: List[Expression]) => dag } (identity)
+  def _union[T: Basis[DAG, *]]: Prism[DAG[T], Union[T]] = Prism.partial[DAG[T], Union[T]] { case dag @ Union(l, r) => dag } (identity)
+  def _filter[T: Basis[DAG, *]]: Prism[DAG[T], Filter[T]] = Prism.partial[DAG[T], Filter[T]] { case dag @ Filter(funcs: NonEmptyList[Expression], expr) => dag } (identity)
+  def _join[T: Basis[DAG, *]]: Prism[DAG[T], Join[T]] = Prism.partial[DAG[T], Join[T]] { case dag @ Join(l, r) => dag } (identity)
+  def _offset[T: Basis[DAG, *]]: Prism[DAG[T], Offset[T]] = Prism.partial[DAG[T], Offset[T]] { case dag @ Offset(offset: Long, r) => dag } (identity)
+  def _limit[T: Basis[DAG, *]]: Prism[DAG[T], Limit[T]] = Prism.partial[DAG[T], Limit[T]] { case dag @ Limit(limit: Long, r) => dag } (identity)
+  def _distinct[T: Basis[DAG, *]]: Prism[DAG[T], Distinct[T]] = Prism.partial[DAG[T], Distinct[T]] { case dag @ Distinct(r) => dag } (identity)
+  def _noop[T: Basis[DAG, *]]: Prism[DAG[T], Noop[T]] = Prism.partial[DAG[T], Noop[T]] { case dag @ Noop(trace: String) => dag } (identity)
 
-  def _describe: Prism[DAG[T], Describe[T]] = Prism.partial[DAG[T], Describe[T]] { case dag @ Describe(vars, r) => dag } (identity)
-  def _ask: Prism[DAG[T], Ask[T]] = Prism.partial[DAG[T], Ask[T]] { case dag @ Ask(r) => dag } (identity)
-  def _construct: Prism[DAG[T], Construct[T]] = Prism.partial[DAG[T], Construct[T]] { case dag @ Construct(bgp: Expr.BGP, r) => dag } (identity)
-  def _scan: Prism[DAG[T], Scan[T]] = Prism.partial[DAG[T], Scan[T]] { case dag @ Scan(graph: String, expr) => dag } (identity)
-  def _project: Prism[DAG[T], Project[T]] = Prism.partial[DAG[T], Project[T]] { case dag @ Project(variables: List[VARIABLE], r) => dag } (identity)
-  def _bind: Prism[DAG[T], Bind[T]] = Prism.partial[DAG[T], Bind[T]] { case dag @ Bind(variable: VARIABLE, expression: Expression, r) => dag } (identity)
-  def _bgp: Prism[DAG[T], BGP[T]] = Prism.partial[DAG[T], BGP[T]] { case dag @ BGP(triples: ChunkedList[Expr.Triple]) => dag } (identity)
-  def _leftjoin: Prism[DAG[T], LeftJoin[T]] = Prism.partial[DAG[T], LeftJoin[T]] { case dag @ LeftJoin(l, r, filters: List[Expression]) => dag } (identity)
-  def _union: Prism[DAG[T], Union[T]] = Prism.partial[DAG[T], Union[T]] { case dag @ Union(l, r) => dag } (identity)
-  def _filter: Prism[DAG[T], Filter[T]] = Prism.partial[DAG[T], Filter[T]] { case dag @ Filter(funcs: NonEmptyList[Expression], expr) => dag } (identity)
-  def _join: Prism[DAG[T], Join[T]] = Prism.partial[DAG[T], Join[T]] { case dag @ Join(l, r) => dag } (identity)
-  def _offset: Prism[DAG[T], Offset[T]] = Prism.partial[DAG[T], Offset[T]] { case dag @ Offset(offset: Long, r) => dag } (identity)
-  def _limit: Prism[DAG[T], Limit[T]] = Prism.partial[DAG[T], Limit[T]] { case dag @ Limit(limit: Long, r) => dag } (identity)
-  def _distinct: Prism[DAG[T], Distinct[T]] = Prism.partial[DAG[T], Distinct[T]] { case dag @ Distinct(r) => dag } (identity)
-  def _noop: Prism[DAG[T], Noop[T]] = Prism.partial[DAG[T], Noop[T]] { case dag @ Noop(trace: String) => dag } (identity)
-
-  val _describeR: Prism[T, Describe[T]] = basisIso composePrism _describe
-  val _askR: Prism[T, Ask[T]] = basisIso composePrism _ask
-  val _constructR: Prism[T, Construct[T]] = basisIso composePrism _construct
-  val _scanR: Prism[T, Scan[T]] = basisIso composePrism _scan
-  val _projectR: Prism[T, Project[T]] = basisIso composePrism _project
-  val _bindR: Prism[T, Bind[T]] = basisIso composePrism _bind
-  val _bgpR: Prism[T, BGP[T]] = basisIso composePrism _bgp
-  val _leftjoinR: Prism[T, LeftJoin[T]] = basisIso composePrism _leftjoin
-  val _unionR: Prism[T, Union[T]] = basisIso composePrism _union
-  val _filterR: Prism[T, Filter[T]] = basisIso composePrism _filter
-  val _joinR: Prism[T, Join[T]] = basisIso composePrism _join
-  val _offsetR: Prism[T, Offset[T]] = basisIso composePrism _offset
-  val _limitR: Prism[T, Limit[T]] = basisIso composePrism _limit
-  val _distinctR: Prism[T, Distinct[T]] = basisIso composePrism _distinct
-  val _noopR: Prism[T, Noop[T]] = basisIso composePrism _noop
+  def _describeR[T: Basis[DAG, *]]: Prism[T, Describe[T]] = basisIso[DAG, T] composePrism _describe
+  def _askR[T: Basis[DAG, *]]: Prism[T, Ask[T]] = basisIso[DAG,T] composePrism _ask
+  def _constructR[T: Basis[DAG, *]]: Prism[T, Construct[T]] = basisIso[DAG,T] composePrism _construct
+  def _scanR[T: Basis[DAG, *]]: Prism[T, Scan[T]] = basisIso[DAG,T] composePrism _scan
+  def _projectR[T: Basis[DAG, *]]: Prism[T, Project[T]] = basisIso[DAG,T] composePrism _project
+  def _bindR[T: Basis[DAG, *]]: Prism[T, Bind[T]] = basisIso[DAG,T] composePrism _bind
+  def _bgpR[T: Basis[DAG, *]]: Prism[T, BGP[T]] = basisIso[DAG,T] composePrism _bgp
+  def _leftjoinR[T: Basis[DAG, *]]: Prism[T, LeftJoin[T]] = basisIso[DAG,T] composePrism _leftjoin
+  def _unionR[T: Basis[DAG, *]]: Prism[T, Union[T]] = basisIso[DAG,T] composePrism _union
+  def _filterR[T: Basis[DAG, *]]: Prism[T, Filter[T]] = basisIso[DAG,T] composePrism _filter
+  def _joinR[T: Basis[DAG, *]]: Prism[T, Join[T]] = basisIso[DAG,T] composePrism _join
+  def _offsetR[T: Basis[DAG, *]]: Prism[T, Offset[T]] = basisIso[DAG,T] composePrism _offset
+  def _limitR[T: Basis[DAG, *]]: Prism[T, Limit[T]] = basisIso[DAG,T] composePrism _limit
+  def _distinctR[T: Basis[DAG, *]]: Prism[T, Distinct[T]] = basisIso[DAG,T] composePrism _distinct
+  def _noopR[T: Basis[DAG, *]]: Prism[T, Noop[T]] = basisIso[DAG,T] composePrism _noop
 }
 // scalastyle:on
