@@ -19,7 +19,7 @@ lazy val Versions = Map(
   "sansa"                -> "0.7.1",
   "monocle"              -> "1.5.1-cats",
   "discipline"           -> "1.1.2",
-  "discipline-scalatest" -> "2.0.0",
+  "discipline-scalatest" -> "2.0.1",
 )
 
 inThisBuild(List(
