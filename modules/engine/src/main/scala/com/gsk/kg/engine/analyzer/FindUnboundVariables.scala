@@ -38,7 +38,7 @@ object FindUnboundVariables {
     val findUnboundVariables: AlgebraM[ST, DAG, Set[VARIABLE]] = AlgebraM[ST, DAG, Set[VARIABLE]] {
       case Describe(vars, r) =>
         (vars.toSet diff r).pure[ST]
-	    case Ask(r) => Set.empty.pure[ST]
+      case Ask(r) => Set.empty.pure[ST]
       case Construct(bgp, r) =>
         val used = bgp.triples.flatMap(_.getVariables).map(_._1.asInstanceOf[VARIABLE]).toSet
         (used diff r).pure[ST]
@@ -62,14 +62,14 @@ object FindUnboundVariables {
         State
           .modify[Set[VARIABLE]](x => x union vars)
           .flatMap(_ => Set.empty.pure[ST])
-	    case LeftJoin(l, r, filters) => (l union r).pure[ST]
-	    case Union(l, r) => (l union r).pure[ST]
-	    case Filter(funcs, expr) => expr.pure[ST]
-	    case Join(l, r) => r.pure[ST]
-	    case Offset(offset, r) => r.pure[ST]
-	    case Limit(limit, r) => r.pure[ST]
-	    case Distinct(r) => r.pure[ST]
-	    case Noop(trace) => Set.empty.pure[ST]
+      case LeftJoin(l, r, filters) => (l union r).pure[ST]
+      case Union(l, r) => (l union r).pure[ST]
+      case Filter(funcs, expr) => expr.pure[ST]
+      case Join(l, r) => r.pure[ST]
+      case Offset(offset, r) => r.pure[ST]
+      case Limit(limit, r) => r.pure[ST]
+      case Distinct(r) => r.pure[ST]
+      case Noop(trace) => Set.empty.pure[ST]
     }
 
     val analyze = scheme.cataM[ST, DAG, T, Set[VARIABLE]](findUnboundVariables)
