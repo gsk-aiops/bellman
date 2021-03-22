@@ -2,6 +2,7 @@ package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.ParserError.UnExpectedType
+import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import fastparse.MultiLineWhitespace._
 import fastparse._
 
@@ -36,11 +37,11 @@ object ExprParser {
 
   def distinctParen[_:P]:P[Distinct] = P("(" ~ distinct ~ graphPattern).map(Distinct(_))
 
-  def triple[_:P]:P[Triple] =
+  def triple[_:P]:P[Quad] =
     P("(triple" ~
       StringValParser.tripleValParser ~
       StringValParser.tripleValParser ~
-      StringValParser.tripleValParser ~ ")").map(t => Triple(t._1, t._2, t._3))
+      StringValParser.tripleValParser ~ ")").map(t => Quad(t._1, t._2, t._3, GRAPH_VARIABLE))
 
   def bgpParen[_:P]:P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 

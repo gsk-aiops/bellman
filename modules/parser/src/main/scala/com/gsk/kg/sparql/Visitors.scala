@@ -5,7 +5,7 @@ import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import com.gsk.kg.sparqlparser.{Expr, Expression, Conditional, StringLike}
 
 trait Visitor[T] {
-  def visitTriple(triple: Triple): T
+  def visitQuad(quad: Quad): T
 
   def visitBGP(triples: Seq[T]): T
 
@@ -38,8 +38,8 @@ object Visitors {
 
   def dispatch[T](expr: Expr, visitor: Visitor[T]): T = {
     expr match {
-      case triple: Triple =>
-        visitor.visitTriple(triple)
+      case quad: Quad =>
+        visitor.visitQuad(quad)
       case BGP(triples) =>
         val ts = triples.map(t => dispatch(t, visitor))
         visitor.visitBGP(ts)
