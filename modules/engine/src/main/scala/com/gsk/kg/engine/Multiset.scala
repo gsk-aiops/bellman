@@ -100,18 +100,22 @@ final case class Multiset(
 
         val colsA = aDF.columns.toSet
         val colsB = bDF.columns.toSet
-        val union = colsA.union(colsB)
+        val colsUnion = colsA.union(colsB)
 
-        def genColumns(current: Set[String], total: Set[String]) = {
-          total.map {
+        def genColumns(current: Set[String], total: Set[String]): Seq[Column] = {
+          total.toList.sorted.map {
             case x if current.contains(x) => col(x)
             case x => lit(null).as(x) // scalastyle:ignore
-          }.toList
+          }
         }
 
+        val bindingsUnion = aBindings union bBindings
+        val selectionA = aDF.select(genColumns(colsA, colsUnion):_*)
+        val selectionB = bDF.select(genColumns(colsB, colsUnion):_*)
+
         Multiset(
-          aBindings.union(bBindings),
-          aDF.select(genColumns(colsA, union):_*).unionAll(bDF.select(genColumns(colsB, union):_*))
+          bindingsUnion,
+          selectionA.union(selectionB)
         )
     }
 

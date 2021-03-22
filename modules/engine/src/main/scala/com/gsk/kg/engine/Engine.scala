@@ -69,20 +69,12 @@ object Engine {
   )
 
   private def evaluateUnion(l: Multiset, r: Multiset): M[Multiset] = {
-
-    val lFixed = l.copy(dataframe = l.dataframe.drop(GRAPH_VARIABLE.s))
-    val rFixed = r.copy(dataframe = r.dataframe.drop(GRAPH_VARIABLE.s))
-
-    val unionMultiset = lFixed.union(rFixed)
-
-    M.liftF[Result, DataFrame, Multiset] {
-      unionMultiset.copy(dataframe = unionMultiset.dataframe.withColumn(GRAPH_VARIABLE.s, lit(""))).asRight
-    }
+    l.union(r).pure[M]
   }
 
   private def evaluateScan(graph: String, expr: Multiset): M[Multiset] = {
     val df = expr.dataframe.filter(expr.dataframe(GRAPH_VARIABLE.s) === graph)
-    M.liftF[Result, DataFrame, Multiset](expr.copy(dataframe = df).asRight)
+    expr.copy(dataframe = df).pure[M]
   }
 
   private def evaluateBGP(quads: ChunkedList[Expr.Quad])(implicit sc: SQLContext): M[Multiset] = {
