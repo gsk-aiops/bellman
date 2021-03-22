@@ -5,7 +5,9 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.Encoder
 import org.apache.spark.sql.Row
+
 import java.net.URI
+import scala.annotation.tailrec
 import scala.util.Try
 import scala.util.Success
 
@@ -35,8 +37,24 @@ object RdfFormatter {
       case RDFBoolean(bool) => bool
       case RDFDataTypeLiteral(lit) => lit
       case RDFLocalizedString(str) => str
-      case str => s""""$str""""
+      case RDFString(str) => str
     }).getOrElse(null) // scalastyle:off
+
+  object RDFString {
+    def unapply(str: String): Option[String] = {
+
+      @tailrec
+      def removeExtraDoubleQuotes(str: String): String = {
+        if (str.startsWith("\"") && str.endsWith("\"")) {
+          removeExtraDoubleQuotes(str.replace("\"", ""))
+        } else {
+          str
+        }
+      }
+
+      Some(s""""${removeExtraDoubleQuotes(str)}"""")
+    }
+  }
 
   object RDFLocalizedString {
     def unapply(str: String): Option[String] =

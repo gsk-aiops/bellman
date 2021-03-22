@@ -70,6 +70,8 @@ class RdfFormatterSpec
 
   val tests = List(
     ("test", "\"test\""),
+    ("\"foo\"", "\"foo\""),
+    ("\"\"bar\"\"", "\"bar\""),
     ("<http://test.com>", "<http://test.com>"),
     ("http://test.com", "http://test.com"),
     ("1", 1),
