@@ -2,15 +2,16 @@ package com.gsk.kg.engine.analyzer
 
 import cats.implicits._
 import com.gsk.kg.engine.data.ToTree._
-
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import com.gsk.kg.sparql.syntax.all._
+import higherkindness.droste.syntax.all._
 import higherkindness.droste.data.Fix
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.engine.EngineError
 import cats.data.NonEmptyChain
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 class AnalyzerSpec extends AnyFlatSpec with Matchers {
 
@@ -54,6 +55,29 @@ class AnalyzerSpec extends AnyFlatSpec with Matchers {
         )
       )
     )
+  }
+
+  it should "find bound variables even when they're bound as part of expressions" in {
+    val query = sparql"""
+      PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+
+      SELECT   ?lit ?lit2
+      WHERE    {
+        ?x foaf:lit ?lit .
+        BIND(REPLACE(?lit, "b", "Z") AS ?lit2)
+      }
+      """
+
+    val dag = DAG.fromQuery.apply(query)
+
+    val variablesBoundInBind = dag.collect[List[VARIABLE], VARIABLE] {
+      case DAG.Bind(variable, _, _) => variable
+      }.toSet
+
+    val result = Analyzer.analyze.apply(dag).runA(null)
+
+    result shouldBe a[Right[_, _]]
+
   }
 
 }

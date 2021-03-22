@@ -18,7 +18,7 @@ import DAG._
 object Analyzer {
 
   def rules[T: Basis[DAG, *]]: List[Rule[T]] =
-    List(findUnboundVariables)
+    List(FindUnboundVariables[T])
 
 
   /**
@@ -38,31 +38,5 @@ object Analyzer {
         case Valid(e) => t.pure[M]
       }
     }
-
-  def findUnboundVariables[T](implicit T: Basis[DAG, T]): Rule[T] = { t =>
-    val declaredVariables: Set[VARIABLE] = t.collect[List[List[VARIABLE]], List[VARIABLE]] {
-        case BGP(triples) =>
-          Traverse[ChunkedList].toList(triples).flatMap(_.getVariables).map(_._1.asInstanceOf[VARIABLE])
-    }.flatten.toSet
-
-    val usedVariablesInConstruct: Set[VARIABLE] =
-      _constructR
-        .composeLens(Construct.bgp)
-        .getOption(t)
-        .map(_.triples.flatMap(_.getVariables).map(_._1.asInstanceOf[VARIABLE]).toSet)
-        .getOrElse(Set.empty)
-
-    val usedVariablesInSelect: Set[VARIABLE] = _projectR.getOption(t).map(_.variables.toSet).getOrElse(Set.empty)
-
-    val usedVariables = usedVariablesInSelect union usedVariablesInConstruct
-
-    if (declaredVariables.union(usedVariables) != declaredVariables) {
-      val msg = "found free variables " + usedVariables.diff(declaredVariables).mkString(", ")
-
-      msg.invalidNec
-    } else {
-      "ok".validNec
-    }
-  }
 
 }
