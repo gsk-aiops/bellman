@@ -84,7 +84,4 @@ object FindUnboundVariables {
       "ok".validNec
     }
   }
-
-  def notIn[A](setA: Set[A], setB: Set[A]): Set[A] =
-    setA.&~(setB)
 }
