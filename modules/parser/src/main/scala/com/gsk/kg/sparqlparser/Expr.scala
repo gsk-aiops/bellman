@@ -33,6 +33,10 @@ object Expr {
   final case class BGP(quads:Seq[Quad]) extends Expr
   final case class Quad(s:StringVal, p:StringVal, o:StringVal, g:StringVal) extends Expr {
     def getVariables: List[(StringVal, String)] = {
+      getNamesAndPositions.filterNot(_._1 == GRAPH_VARIABLE)
+    }
+
+    def getNamesAndPositions: List[(StringVal, String)] = {
       List((s, "s"),(p, "p"),(o, "o"),(g, "g")).filter(_._1.isVariable)
     }
 
