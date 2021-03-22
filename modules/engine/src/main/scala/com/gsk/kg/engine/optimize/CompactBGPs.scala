@@ -88,7 +88,7 @@ object CompactBGPs {
       case x @ BGP(triples) =>
         BGP(
           triples.compact({
-            case t @ Expr.Quad(_, _, _, _) => t.getVariables.map(x => x._2 + "->" + x._1.s).mkString(";")
+            case t @ Expr.Quad(_, _, _, _) => t.getNamesAndPositions.map(x => x._2 + "->" + x._1.s).mkString(";")
           })
         )
     }

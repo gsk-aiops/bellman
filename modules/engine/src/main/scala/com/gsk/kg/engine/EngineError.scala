@@ -1,5 +1,7 @@
 package com.gsk.kg.engine
 
+import cats.data.NonEmptyChain
+
 sealed trait EngineError
 
 object EngineError {
@@ -8,4 +10,5 @@ object EngineError {
   case class UnexpectedNegative(description: String) extends EngineError
   case class NumericTypesDoNotMatch(description: String) extends EngineError
   case class FunctionError(description: String) extends EngineError
+  case class AnalyzerError(errors: NonEmptyChain[String]) extends EngineError
 }

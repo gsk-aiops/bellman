@@ -95,7 +95,7 @@ object Engine {
           val current = df.filter(condition)
 
           val vars =
-            chunk.map(_.getVariables).toChain.toList.flatten
+            chunk.map(_.getNamesAndPositions).toChain.toList.flatten
 
           val selected =
             current.select(vars.map(v => $"${v._2}".as(v._1.s)): _*)

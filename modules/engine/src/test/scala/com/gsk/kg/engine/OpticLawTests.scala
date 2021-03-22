@@ -22,6 +22,7 @@ import com.gsk.kg.sparqlparser.Expr
 import monocle.law.PrismLaws
 import org.typelevel.discipline.scalatest.FlatSpecDiscipline
 import org.scalatest.flatspec.AnyFlatSpec
+import higherkindness.droste.data.Fix
 
 class OpticsLawTests
     extends AnyFlatSpec
@@ -36,9 +37,9 @@ class OpticsLawTests
       maxDiscardedFactor = 100
     )
 
-  implicit val embedArbitrary: Arbitrary[optics.T] = embedArbitrary[DAG, optics.T]
+  implicit val embedArbitrary: Arbitrary[Fix[DAG]] = embedArbitrary[DAG, Fix[DAG]]
 
-  checkAll("basisIso", IsoTests(optics.basisIso))
+  checkAll("basisIso", IsoTests(optics.basisIso[DAG, Fix[DAG]]))
   checkAll("_describe", PrismTests(optics._describe))
   checkAll("_ask", PrismTests(optics._ask))
   checkAll("_construct", PrismTests(optics._construct))
