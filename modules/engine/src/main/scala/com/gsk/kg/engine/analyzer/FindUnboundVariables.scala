@@ -36,12 +36,13 @@ object FindUnboundVariables {
 
   def apply[T](implicit T: Basis[DAG, T]): Rule[T] = { t =>
     val findUnboundVariables: AlgebraM[ST, DAG, Set[VARIABLE]] = AlgebraM[ST, DAG, Set[VARIABLE]] {
-      case Describe(vars, r) =>
-        (vars.toSet diff r).pure[ST]
+      case Describe(vars, r) => (vars.toSet diff r).pure[ST]
       case Ask(r) => Set.empty.pure[ST]
       case Construct(bgp, r) =>
         val used = bgp.triples.flatMap(_.getVariables).map(_._1.asInstanceOf[VARIABLE]).toSet
-        (used diff r).pure[ST]
+        for {
+          declared <- State.get
+        } yield (used diff declared) ++ r
       case Scan(graph, expr) =>
         Set.empty.pure[ST]
       case Project(variables, r) =>
