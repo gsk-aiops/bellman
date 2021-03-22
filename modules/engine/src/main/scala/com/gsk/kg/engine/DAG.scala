@@ -5,8 +5,7 @@ import higherkindness.droste.data.Fix
 import higherkindness.droste.macros.deriveTraverse
 import higherkindness.droste.syntax.all._
 import higherkindness.droste.util.DefaultTraverse
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-import com.gsk.kg.sparqlparser.StringVal
+import com.gsk.kg.sparqlparser.StringVal.{GRAPH_VARIABLE, VARIABLE}
 import cats._
 import cats.data.NonEmptyList
 import cats.implicits._
@@ -43,7 +42,7 @@ object DAG {
   @Lenses final case class Project[A](variables: List[VARIABLE], r: A) extends DAG[A]
   @Lenses final case class Bind[A](variable: VARIABLE, expression: Expression, r: A)
       extends DAG[A]
-  @Lenses final case class BGP[A](triples: ChunkedList[Expr.Triple]) extends DAG[A]
+  @Lenses final case class BGP[A](quads: ChunkedList[Expr.Quad]) extends DAG[A]
   @Lenses final case class LeftJoin[A](l: A, r: A, filters: List[Expression])
       extends DAG[A]
   @Lenses final case class Union[A](l: A, r: A) extends DAG[A]
@@ -64,7 +63,7 @@ object DAG {
         case DAG.Project(variables, r) => f(r).map(project(variables, _))
         case DAG.Bind(variable, expression, r) =>
           f(r).map(bind(variable, expression, _))
-        case DAG.BGP(triples)    => bgp(triples).pure[G]
+        case DAG.BGP(quads)            => bgp(quads).pure[G]
         case DAG.LeftJoin(l, r, filters) =>
           (
             f(l),
@@ -92,7 +91,7 @@ object DAG {
     Project[A](variables, r)
   def bind[A](variable: VARIABLE, expression: Expression, r: A): DAG[A] =
     Bind[A](variable, expression, r)
-  def bgp[A](triples: ChunkedList[Expr.Triple]): DAG[A] = BGP[A](triples)
+  def bgp[A](quads: ChunkedList[Expr.Quad]): DAG[A] = BGP[A](quads)
   def leftJoin[A](l: A, r: A, filters: List[Expression]): DAG[A] =
     LeftJoin[A](l, r, filters)
   def union[A](l: A, r: A): DAG[A] = Union[A](l, r)
@@ -121,7 +120,7 @@ object DAG {
       expression: Expression,
       r: T
   ): T = bind[T](variable, expression, r).embed
-  def bgpR[T: Embed[DAG, *]](triples: ChunkedList[Expr.Triple]): T = bgp[T](triples).embed
+  def bgpR[T: Embed[DAG, *]](triples: ChunkedList[Expr.Quad]): T = bgp[T](triples).embed
   def leftJoinR[T: Embed[DAG, *]](
       l: T,
       r: T,
@@ -164,13 +163,13 @@ object DAG {
       case ExtendF(bindTo, bindFrom, r)      => bind(bindTo, bindFrom, r)
       case FilteredLeftJoinF(l, r, f)        => leftJoin(l, r, f.toList)
       case UnionF(l, r)                      => union(l, r)
-      case BGPF(triples)                     => bgp(ChunkedList.fromList(triples.toList))
+      case BGPF(quads)                       => bgp(ChunkedList.fromList(quads.toList))
       case OpNilF()                          => noop("OpNilF not supported yet")
       case GraphF(g, e)                      => scan(g.s, e)
       case JoinF(l, r)                       => join(l, r)
       case LeftJoinF(l, r)                   => leftJoin(l, r, Nil)
       case ProjectF(vars, r)                 => project(vars.toList, r)
-      case TripleF(s, p, o)                  => noop("TripleF not supported")
+      case QuadF(s, p, o, g)                 => noop("QuadF not supported")
       case DistinctF(r)                      => distinct(r)
       case OffsetLimitF(None, None, r)       => T.coalgebra(r)
       case OffsetLimitF(None, Some(l), r)    => limit(l, r)
@@ -216,7 +215,7 @@ object optics {
   def _scan[T: Basis[DAG, *]]: Prism[DAG[T], Scan[T]] = Prism.partial[DAG[T], Scan[T]] { case dag @ Scan(graph: String, expr) => dag } (identity)
   def _project[T: Basis[DAG, *]]: Prism[DAG[T], Project[T]] = Prism.partial[DAG[T], Project[T]] { case dag @ Project(variables: List[VARIABLE], r) => dag } (identity)
   def _bind[T: Basis[DAG, *]]: Prism[DAG[T], Bind[T]] = Prism.partial[DAG[T], Bind[T]] { case dag @ Bind(variable: VARIABLE, expression: Expression, r) => dag } (identity)
-  def _bgp[T: Basis[DAG, *]]: Prism[DAG[T], BGP[T]] = Prism.partial[DAG[T], BGP[T]] { case dag @ BGP(triples: ChunkedList[Expr.Triple]) => dag } (identity)
+  def _bgp[T: Basis[DAG, *]]: Prism[DAG[T], BGP[T]] = Prism.partial[DAG[T], BGP[T]] { case dag @ BGP(triples: ChunkedList[Expr.Quad]) => dag } (identity)
   def _leftjoin[T: Basis[DAG, *]]: Prism[DAG[T], LeftJoin[T]] = Prism.partial[DAG[T], LeftJoin[T]] { case dag @ LeftJoin(l, r, filters: List[Expression]) => dag } (identity)
   def _union[T: Basis[DAG, *]]: Prism[DAG[T], Union[T]] = Prism.partial[DAG[T], Union[T]] { case dag @ Union(l, r) => dag } (identity)
   def _filter[T: Basis[DAG, *]]: Prism[DAG[T], Filter[T]] = Prism.partial[DAG[T], Filter[T]] { case dag @ Filter(funcs: NonEmptyList[Expression], expr) => dag } (identity)
@@ -241,5 +240,6 @@ object optics {
   def _limitR[T: Basis[DAG, *]]: Prism[T, Limit[T]] = basisIso[DAG,T] composePrism _limit
   def _distinctR[T: Basis[DAG, *]]: Prism[T, Distinct[T]] = basisIso[DAG,T] composePrism _distinct
   def _noopR[T: Basis[DAG, *]]: Prism[T, Noop[T]] = basisIso[DAG,T] composePrism _noop
+
 }
 // scalastyle:on
