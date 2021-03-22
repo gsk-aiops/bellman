@@ -8,9 +8,7 @@ import cats.implicits._
 import cats.Show
 import com.gsk.kg.sparqlparser.Expr
 import scala.collection.immutable.Nil
-import cats.syntax.nonEmptyTraverse
 import cats.data.{NonEmptyChain, NonEmptyList}
-import cats.Traverse
 
 /**
   * Typeclass that allows you converting values of type T to
@@ -29,8 +27,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
     def toTree: TreeRep[String] = ToTree[T].toTree(t)
   }
 
-  implicit val tripleToTree: ToTree[Expr.Triple] = new ToTree[Expr.Triple] {
-    def toTree(t: Expr.Triple): TreeRep[String] =
+  implicit val tripleToTree: ToTree[Expr.Quad] = new ToTree[Expr.Quad] {
+    def toTree(t: Expr.Quad): TreeRep[String] =
       TreeRep.Node(s"Triple", Stream(t.s.s.toTree, t.p.s.toTree, t.o.s.toTree))
   }
 

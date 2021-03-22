@@ -21,10 +21,11 @@ class SyntaxSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       (
         "test",
         "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        "http://id.gsk.com/dm/1.0/Document"
+        "http://id.gsk.com/dm/1.0/Document",
+        ""
       ),
-      ("test", "http://id.gsk.com/dm/1.0/docSource", "source")
-    ).toDF("s", "p", "o")
+      ("test", "http://id.gsk.com/dm/1.0/docSource", "source", "")
+    ).toDF("s", "p", "o", "g")
 
     val result: DataFrame = df.sparql(
       """

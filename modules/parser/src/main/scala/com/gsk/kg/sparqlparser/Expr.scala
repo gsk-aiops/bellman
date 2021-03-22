@@ -1,8 +1,9 @@
 package com.gsk.kg.sparqlparser
 
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-
+import com.gsk.kg.sparqlparser.StringVal.{BLANK, GRAPH_VARIABLE, STRING, URIVAL, VARIABLE}
 import higherkindness.droste.macros.deriveFixedPoint
+import org.apache.jena.graph.Node
+import org.apache.jena.sparql.core.{Quad => JenaQuad}
 
 sealed trait Query {
   def r: Expr
@@ -29,14 +30,45 @@ object Query {
 
 @deriveFixedPoint sealed trait Expr
 object Expr {
-  final case class BGP(triples:Seq[Triple]) extends Expr
-  final case class Triple(s:StringVal, p:StringVal, o:StringVal) extends Expr {
+  final case class BGP(quads:Seq[Quad]) extends Expr
+  final case class Quad(s:StringVal, p:StringVal, o:StringVal, g:StringVal) extends Expr {
     def getVariables: List[(StringVal, String)] = {
-      List((s, "s"),(p, "p"),(o, "o")).filter(_._1.isVariable)
+      getNamesAndPositions.filterNot(_._1 == GRAPH_VARIABLE)
+    }
+
+    def getNamesAndPositions: List[(StringVal, String)] = {
+      List((s, "s"),(p, "p"),(o, "o"),(g, "g")).filter(_._1.isVariable)
     }
 
     def getPredicates: List[(StringVal, String)] = {
-      List((s, "s"),(p, "p"),(o, "o")).filter(!_._1.isVariable)
+      List((s, "s"),(p, "p"),(o, "o"),(g, "g")).filter(x => !x._1.isVariable)
+    }
+  }
+  object Quad {
+    def apply(q: JenaQuad): Option[Quad] = {
+
+      def toStringVal(n: Node): Option[StringVal] =
+        if (n.isLiteral) {
+          Some(STRING(n.toString))
+        } else if (n.isURI) {
+          Some(URIVAL(n.toString))
+        } else if (n.isVariable) {
+          Some(VARIABLE(n.toString))
+        } else if (n.isBlank) {
+          Some(BLANK(n.toString))
+        } else if (n.isNodeGraph) {
+          Some(GRAPH_VARIABLE)
+        } else {
+          None
+        }
+
+      (toStringVal(q.getSubject),
+        toStringVal(q.getPredicate),
+        toStringVal(q.getObject),
+        toStringVal(q.getGraph)) match {
+        case (Some(s), Some(p), Some(o), Some(g)) => Some(Quad(s, p, o, g))
+        case _ => None
+      }
     }
   }
   final case class LeftJoin(l:Expr, r:Expr) extends Expr
