@@ -181,7 +181,7 @@ addCommandAlias(
 
 addCommandAlias(
   "lint",
-  ";scalafixAll ;scalafmtAll"
+  ";scalafixAll ;scalafmtAll ;scalastyle"
 )
 
 def on[A](major: Int, minor: Int)(a: A): Def.Initialize[Seq[A]] =
