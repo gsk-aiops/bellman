@@ -2,19 +2,19 @@ package com.gsk.kg.engine
 package scalacheck
 
 import cats._
-import cats.implicits._
 import cats.data.NonEmptyList
+import cats.implicits._
 
 import higherkindness.droste._
 import higherkindness.droste.syntax.compose._
 
-import org.scalacheck._
-import org.scalacheck.cats.implicits._
-import org.scalacheck.Gen
-
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.Expression
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+
+import org.scalacheck.Gen
+import org.scalacheck._
+import org.scalacheck.cats.implicits._
 
 trait DAGArbitraries
     extends CommonGenerators
@@ -38,7 +38,8 @@ trait DAGArbitraries
     quadGenerator
   )
 
-  val exprBgpGenerator: Gen[Expr.BGP] = smallNonEmptyListOf(quadGenerator).map(Expr.BGP(_))
+  val exprBgpGenerator: Gen[Expr.BGP] =
+    smallNonEmptyListOf(quadGenerator).map(Expr.BGP(_))
 
   val expressionNelGenerator: Gen[NonEmptyList[Expression]] =
     smallNonEmptyListOf(expressionGenerator)
@@ -103,40 +104,76 @@ trait DAGArbitraries
       )
     }
 
-  implicit def arbitraryDescribe[T: Arbitrary]: Arbitrary[DAG.Describe[T]] = Arbitrary(describeGenerator[T])
-  implicit def arbitraryAsk[T: Arbitrary]: Arbitrary[DAG.Ask[T]] = Arbitrary(askGenerator[T])
-  implicit def arbitraryConstruct[T: Arbitrary]: Arbitrary[DAG.Construct[T]] = Arbitrary(constructGenerator[T])
-  implicit def arbitraryScan[T: Arbitrary]: Arbitrary[DAG.Scan[T]] = Arbitrary(scanGenerator[T])
-  implicit def arbitraryProject[T: Arbitrary]: Arbitrary[DAG.Project[T]] = Arbitrary(projectGenerator[T])
-  implicit def arbitraryBind[T: Arbitrary]: Arbitrary[DAG.Bind[T]] = Arbitrary(bindGenerator[T])
-  implicit def arbitraryLeftJoin[T: Arbitrary]: Arbitrary[DAG.LeftJoin[T]] = Arbitrary(leftJoinGenerator[T])
-  implicit def arbitraryUnion[T: Arbitrary]: Arbitrary[DAG.Union[T]] = Arbitrary(unionGenerator[T])
-  implicit def arbitraryFilter[T: Arbitrary]: Arbitrary[DAG.Filter[T]] = Arbitrary(filterGenerator[T])
-  implicit def arbitraryJoin[T: Arbitrary]: Arbitrary[DAG.Join[T]] = Arbitrary(joinGenerator[T])
-  implicit def arbitraryOffset[T: Arbitrary]: Arbitrary[DAG.Offset[T]] = Arbitrary(offsetGenerator[T])
-  implicit def arbitraryLimit[T: Arbitrary]: Arbitrary[DAG.Limit[T]] = Arbitrary(limitGenerator[T])
-  implicit def arbitraryDistinct[T: Arbitrary]: Arbitrary[DAG.Distinct[T]] = Arbitrary(distinctGenerator[T])
-  implicit def arbitraryBgp[T: Arbitrary]: Arbitrary[DAG.BGP[T]] = Arbitrary(bgpGenerator[T])
-  implicit def arbitraryNoop[T: Arbitrary]: Arbitrary[DAG.Noop[T]] = Arbitrary(noopGenerator[T])
+  implicit def arbitraryDescribe[T: Arbitrary]: Arbitrary[DAG.Describe[T]] =
+    Arbitrary(describeGenerator[T])
+  implicit def arbitraryAsk[T: Arbitrary]: Arbitrary[DAG.Ask[T]] = Arbitrary(
+    askGenerator[T]
+  )
+  implicit def arbitraryConstruct[T: Arbitrary]: Arbitrary[DAG.Construct[T]] =
+    Arbitrary(constructGenerator[T])
+  implicit def arbitraryScan[T: Arbitrary]: Arbitrary[DAG.Scan[T]] = Arbitrary(
+    scanGenerator[T]
+  )
+  implicit def arbitraryProject[T: Arbitrary]: Arbitrary[DAG.Project[T]] =
+    Arbitrary(projectGenerator[T])
+  implicit def arbitraryBind[T: Arbitrary]: Arbitrary[DAG.Bind[T]] = Arbitrary(
+    bindGenerator[T]
+  )
+  implicit def arbitraryLeftJoin[T: Arbitrary]: Arbitrary[DAG.LeftJoin[T]] =
+    Arbitrary(leftJoinGenerator[T])
+  implicit def arbitraryUnion[T: Arbitrary]: Arbitrary[DAG.Union[T]] =
+    Arbitrary(unionGenerator[T])
+  implicit def arbitraryFilter[T: Arbitrary]: Arbitrary[DAG.Filter[T]] =
+    Arbitrary(filterGenerator[T])
+  implicit def arbitraryJoin[T: Arbitrary]: Arbitrary[DAG.Join[T]] = Arbitrary(
+    joinGenerator[T]
+  )
+  implicit def arbitraryOffset[T: Arbitrary]: Arbitrary[DAG.Offset[T]] =
+    Arbitrary(offsetGenerator[T])
+  implicit def arbitraryLimit[T: Arbitrary]: Arbitrary[DAG.Limit[T]] =
+    Arbitrary(limitGenerator[T])
+  implicit def arbitraryDistinct[T: Arbitrary]: Arbitrary[DAG.Distinct[T]] =
+    Arbitrary(distinctGenerator[T])
+  implicit def arbitraryBgp[T: Arbitrary]: Arbitrary[DAG.BGP[T]] = Arbitrary(
+    bgpGenerator[T]
+  )
+  implicit def arbitraryNoop[T: Arbitrary]: Arbitrary[DAG.Noop[T]] = Arbitrary(
+    noopGenerator[T]
+  )
 
   implicit def cogenDag[T]: Cogen[DAG[T]] =
     Cogen.cogenString.contramap(_.toString)
 
-  implicit def cogenDescribe[A]: Cogen[Describe[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenAsk[A]: Cogen[Ask[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenConstruct[A]: Cogen[Construct[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenScan[A]: Cogen[Scan[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenProject[A]: Cogen[Project[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenBind[A]: Cogen[Bind[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenBGP[A]: Cogen[BGP[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenLeftJoin[A]: Cogen[LeftJoin[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenUnion[A]: Cogen[Union[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenFilter[A]: Cogen[Filter[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenJoin[A]: Cogen[Join[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenOffset[A]: Cogen[Offset[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenLimit[A]: Cogen[Limit[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenDistinct[A]: Cogen[Distinct[A]] = Cogen.cogenString.contramap(_.toString)
-  implicit def cogenNoop[A]: Cogen[Noop[A]] = Cogen.cogenString.contramap(_.toString)
+  implicit def cogenDescribe[A]: Cogen[Describe[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenAsk[A]: Cogen[Ask[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenConstruct[A]: Cogen[Construct[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenScan[A]: Cogen[Scan[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenProject[A]: Cogen[Project[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenBind[A]: Cogen[Bind[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenBGP[A]: Cogen[BGP[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenLeftJoin[A]: Cogen[LeftJoin[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenUnion[A]: Cogen[Union[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenFilter[A]: Cogen[Filter[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenJoin[A]: Cogen[Join[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenOffset[A]: Cogen[Offset[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenLimit[A]: Cogen[Limit[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenDistinct[A]: Cogen[Distinct[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenNoop[A]: Cogen[Noop[A]] =
+    Cogen.cogenString.contramap(_.toString)
 
 }
 

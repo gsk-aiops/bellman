@@ -1,17 +1,20 @@
 package com.gsk.kg.engine
 package data
 
-import higherkindness.droste.scheme
-import higherkindness.droste.Basis
-import higherkindness.droste.Algebra
-import cats.implicits._
 import cats.Show
-import com.gsk.kg.sparqlparser.Expr
-import scala.collection.immutable.Nil
-import cats.data.{NonEmptyChain, NonEmptyList}
+import cats.data.NonEmptyChain
+import cats.data.NonEmptyList
+import cats.implicits._
 
-/**
-  * Typeclass that allows you converting values of type T to
+import higherkindness.droste.Algebra
+import higherkindness.droste.Basis
+import higherkindness.droste.scheme
+
+import com.gsk.kg.sparqlparser.Expr
+
+import scala.collection.immutable.Nil
+
+/** Typeclass that allows you converting values of type T to
   * [[TreeRep]].  The benefit of doing so is that we'll be able to
   * render them nicely wit the drawTree method.
   */
@@ -58,7 +61,10 @@ object ToTree extends LowPriorityToTreeInstances0 {
             Node("LeftJoin", Stream(l, r) #::: filters.map(_.toTree).toStream)
           case DAG.Union(l, r) => Node("Union", Stream(l, r))
           case DAG.Filter(funcs, expr) =>
-            Node("Filter", funcs.map(_.toTree).toList.toStream #::: Stream(expr))
+            Node(
+              "Filter",
+              funcs.map(_.toTree).toList.toStream #::: Stream(expr)
+            )
           case DAG.Join(l, r) => Node("Join", Stream(l, r))
           case DAG.Offset(offset, r) =>
             Node(

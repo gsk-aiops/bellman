@@ -1,8 +1,10 @@
 package com.gsk.kg.engine
 
-import org.scalatest.matchers.should.Matchers
+import org.apache.spark.sql.AnalysisException
+import org.apache.spark.sql.Row
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.spark.sql.{AnalysisException, Row}
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
@@ -42,7 +44,7 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       caught.getMessage should contain
-        "cannot resolve '(NOT `boolean`)' due to data type mismatch"
+      "cannot resolve '(NOT `boolean`)' due to data type mismatch"
     }
   }
 
@@ -85,8 +87,7 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         "aaaa"
       ).toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "b", "Z"))
-        .collect
+      val result = df.select(Func.replace(df("text"), "b", "Z")).collect
 
       result shouldEqual Array(
         Row("aZcd"),
@@ -101,8 +102,7 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "bra", "*"))
-        .collect
+      val result = df.select(Func.replace(df("text"), "bra", "*")).collect
 
       result shouldEqual Array(
         Row("a*cada*")
@@ -114,8 +114,7 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "a.*a", "*"))
-        .collect
+      val result = df.select(Func.replace(df("text"), "a.*a", "*")).collect
 
       result shouldEqual Array(
         Row("*")
@@ -127,8 +126,7 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "a.*?a", "*"))
-        .collect
+      val result = df.select(Func.replace(df("text"), "a.*?a", "*")).collect
 
       result shouldEqual Array(
         Row("*c*bra")
@@ -140,8 +138,7 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "a", ""))
-        .collect
+      val result = df.select(Func.replace(df("text"), "a", "")).collect
 
       result shouldEqual Array(
         Row("brcdbr")
@@ -153,8 +150,7 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "a(.)", "a$1$1"))
-        .collect
+      val result = df.select(Func.replace(df("text"), "a(.)", "a$1$1")).collect
 
       result shouldEqual Array(
         Row("abbraccaddabbra")
@@ -169,8 +165,7 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       ).toDF("text")
 
       val caught = intercept[IndexOutOfBoundsException] {
-        df.select(Func.replace(df("text"), ".*?", "$1"))
-          .collect
+        df.select(Func.replace(df("text"), ".*?", "$1")).collect
       }
 
       caught.getMessage shouldEqual "No group 1"
@@ -181,8 +176,7 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
       val df = List("AAAA").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "A+", "b"))
-        .collect
+      val result = df.select(Func.replace(df("text"), "A+", "b")).collect
 
       result shouldEqual Array(
         Row("b")
@@ -196,8 +190,7 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         "AAAA"
       ).toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "A+?", "b"))
-        .collect
+      val result = df.select(Func.replace(df("text"), "A+?", "b")).collect
 
       result shouldEqual Array(
         Row("bbbb")
@@ -211,8 +204,8 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         "darted"
       ).toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "^(.*?)d(.*)$", "$1c$2"))
-        .collect
+      val result =
+        df.select(Func.replace(df("text"), "^(.*?)d(.*)$", "$1c$2")).collect
 
       result shouldEqual Array(
         Row("carted")

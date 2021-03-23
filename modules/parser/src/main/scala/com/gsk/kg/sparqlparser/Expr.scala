@@ -1,9 +1,15 @@
 package com.gsk.kg.sparqlparser
 
-import com.gsk.kg.sparqlparser.StringVal.{BLANK, GRAPH_VARIABLE, STRING, URIVAL, VARIABLE}
 import higherkindness.droste.macros.deriveFixedPoint
+
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.core.{Quad => JenaQuad}
+
+import com.gsk.kg.sparqlparser.StringVal.BLANK
+import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
+import com.gsk.kg.sparqlparser.StringVal.STRING
+import com.gsk.kg.sparqlparser.StringVal.URIVAL
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 sealed trait Query {
   def r: Expr
@@ -11,38 +17,45 @@ sealed trait Query {
 
 object Query {
   import com.gsk.kg.sparqlparser.Expr.BGP
-  final case class Describe(vars: Seq[VARIABLE], r: Expr,
-                            defaultGraphs: List[StringVal.URIVAL] = List.empty,
-                            namedGraphs: List[StringVal.URIVAL] = List.empty) extends Query
-  final case class Ask(r: Expr,
-                       defaultGraphs: List[StringVal.URIVAL] = List.empty,
-                       namedGraphs: List[StringVal.URIVAL] = List.empty) extends Query
-  final case class Construct(vars: Seq[VARIABLE],
-                             bgp: BGP,
-                             r: Expr,
-                             defaultGraphs: List[StringVal.URIVAL] = List.empty,
-                             namedGraphs: List[StringVal.URIVAL] = List.empty) extends Query
-  final case class Select(vars: Seq[VARIABLE],
-                          r: Expr,
-                          defaultGraphs: List[StringVal.URIVAL] = List.empty,
-                          namedGraphs: List[StringVal.URIVAL] = List.empty) extends Query
+  final case class Describe(
+      vars: Seq[VARIABLE],
+      r: Expr,
+      defaultGraphs: List[StringVal.URIVAL] = List.empty,
+      namedGraphs: List[StringVal.URIVAL] = List.empty
+  ) extends Query
+  final case class Ask(
+      r: Expr,
+      defaultGraphs: List[StringVal.URIVAL] = List.empty,
+      namedGraphs: List[StringVal.URIVAL] = List.empty
+  ) extends Query
+  final case class Construct(
+      vars: Seq[VARIABLE],
+      bgp: BGP,
+      r: Expr,
+      defaultGraphs: List[StringVal.URIVAL] = List.empty,
+      namedGraphs: List[StringVal.URIVAL] = List.empty
+  ) extends Query
+  final case class Select(
+      vars: Seq[VARIABLE],
+      r: Expr,
+      defaultGraphs: List[StringVal.URIVAL] = List.empty,
+      namedGraphs: List[StringVal.URIVAL] = List.empty
+  ) extends Query
 }
 
 @deriveFixedPoint sealed trait Expr
 object Expr {
-  final case class BGP(quads:Seq[Quad]) extends Expr
-  final case class Quad(s:StringVal, p:StringVal, o:StringVal, g:StringVal) extends Expr {
-    def getVariables: List[(StringVal, String)] = {
+  final case class BGP(quads: Seq[Quad]) extends Expr
+  final case class Quad(s: StringVal, p: StringVal, o: StringVal, g: StringVal)
+      extends Expr {
+    def getVariables: List[(StringVal, String)] =
       getNamesAndPositions.filterNot(_._1 == GRAPH_VARIABLE)
-    }
 
-    def getNamesAndPositions: List[(StringVal, String)] = {
-      List((s, "s"),(p, "p"),(o, "o"),(g, "g")).filter(_._1.isVariable)
-    }
+    def getNamesAndPositions: List[(StringVal, String)] =
+      List((s, "s"), (p, "p"), (o, "o"), (g, "g")).filter(_._1.isVariable)
 
-    def getPredicates: List[(StringVal, String)] = {
-      List((s, "s"),(p, "p"),(o, "o"),(g, "g")).filter(x => !x._1.isVariable)
-    }
+    def getPredicates: List[(StringVal, String)] =
+      List((s, "s"), (p, "p"), (o, "o"), (g, "g")).filter(x => !x._1.isVariable)
   }
   object Quad {
     def apply(q: JenaQuad): Option[Quad] = {
@@ -62,25 +75,33 @@ object Expr {
           None
         }
 
-      (toStringVal(q.getSubject),
+      (
+        toStringVal(q.getSubject),
         toStringVal(q.getPredicate),
         toStringVal(q.getObject),
-        toStringVal(q.getGraph)) match {
+        toStringVal(q.getGraph)
+      ) match {
         case (Some(s), Some(p), Some(o), Some(g)) => Some(Quad(s, p, o, g))
-        case _ => None
+        case _                                    => None
       }
     }
   }
-  final case class LeftJoin(l:Expr, r:Expr) extends Expr
-  final case class FilteredLeftJoin(l:Expr, r:Expr, f:Seq[Expression]) extends Expr
-  final case class Union(l:Expr, r:Expr) extends Expr
-  final case class Extend(bindTo:VARIABLE, bindFrom:Expression, r:Expr) extends Expr
-  final case class Filter(funcs:Seq[Expression], expr:Expr) extends Expr
-  final case class Join(l:Expr, r:Expr) extends Expr
-  final case class Graph(g:StringVal, e:Expr) extends Expr
-  final case class Project(vars: Seq[VARIABLE], r:Expr) extends Expr
-  final case class OffsetLimit(offset: Option[Long], limit: Option[Long], r:Expr) extends Expr
-  final case class Distinct(r:Expr) extends Expr
-  final case class OpNil() extends Expr
-  final case class TabUnit() extends Expr
+  final case class LeftJoin(l: Expr, r: Expr) extends Expr
+  final case class FilteredLeftJoin(l: Expr, r: Expr, f: Seq[Expression])
+      extends Expr
+  final case class Union(l: Expr, r: Expr) extends Expr
+  final case class Extend(bindTo: VARIABLE, bindFrom: Expression, r: Expr)
+      extends Expr
+  final case class Filter(funcs: Seq[Expression], expr: Expr) extends Expr
+  final case class Join(l: Expr, r: Expr)                     extends Expr
+  final case class Graph(g: StringVal, e: Expr)               extends Expr
+  final case class Project(vars: Seq[VARIABLE], r: Expr)      extends Expr
+  final case class OffsetLimit(
+      offset: Option[Long],
+      limit: Option[Long],
+      r: Expr
+  )                                  extends Expr
+  final case class Distinct(r: Expr) extends Expr
+  final case class OpNil()           extends Expr
+  final case class TabUnit()         extends Expr
 }

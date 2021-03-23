@@ -1,20 +1,25 @@
 package com.gsk.kg.sparqlparser
 
-import org.scalatest.flatspec.AnyFlatSpec
 import com.gsk.kg.sparqlparser.StringVal._
 
-class StringValParserSpec extends AnyFlatSpec{
+import org.scalatest.flatspec.AnyFlatSpec
+
+class StringValParserSpec extends AnyFlatSpec {
   "parse the string literal with tag" should "create proper STRING cass class" in {
     val s = "\"abc\"@en"
     val p = fastparse.parse(s, StringValParser.tripleValParser(_))
     p.get.value match {
       case STRING("abc", Some("@en")) => succeed
-      case _ => fail
+      case _                          => fail
     }
     val s1 = "\"345\"^^<http://www.w3.org/2001/XMLSchema#xsd:integer>"
     val p1 = fastparse.parse(s1, StringValParser.tripleValParser(_))
     p1.get.value match {
-      case STRING("345", Some("<http://www.w3.org/2001/XMLSchema#xsd:integer>")) => succeed
+      case STRING(
+            "345",
+            Some("<http://www.w3.org/2001/XMLSchema#xsd:integer>")
+          ) =>
+        succeed
       case _ => fail
     }
   }
@@ -24,7 +29,7 @@ class StringValParserSpec extends AnyFlatSpec{
     val p = fastparse.parse(s, StringValParser.tripleValParser(_))
     p.get.value match {
       case VARIABLE("?ab_cd") => succeed
-      case _ => fail
+      case _                  => fail
     }
   }
 
@@ -33,7 +38,7 @@ class StringValParserSpec extends AnyFlatSpec{
     val p = fastparse.parse(s, StringValParser.tripleValParser(_))
     p.get.value match {
       case VARIABLE("??d") => succeed
-      case _ => fail
+      case _               => fail
     }
   }
 
@@ -42,7 +47,7 @@ class StringValParserSpec extends AnyFlatSpec{
     val p = fastparse.parse(s, StringValParser.tripleValParser(_))
     p.get.value match {
       case URIVAL("http://id.gsk.com/dm/1.0/") => succeed
-      case _ => fail
+      case _                                   => fail
     }
   }
 
@@ -51,7 +56,7 @@ class StringValParserSpec extends AnyFlatSpec{
     val p = fastparse.parse(s, StringValParser.tripleValParser(_))
     p.get.value match {
       case NUM("-123.456") => succeed
-      case _ => fail
+      case _               => fail
     }
   }
 
@@ -60,7 +65,7 @@ class StringValParserSpec extends AnyFlatSpec{
     val p = fastparse.parse(s, StringValParser.tripleValParser(_))
     p.get.value match {
       case BLANK("iamblank") => succeed
-      case _ => fail
+      case _                 => fail
     }
   }
 
@@ -69,7 +74,7 @@ class StringValParserSpec extends AnyFlatSpec{
     val p = fastparse.parse(s, StringValParser.tripleValParser(_))
     p.get.value match {
       case BOOL("false") => succeed
-      case _ => fail
+      case _             => fail
     }
   }
 

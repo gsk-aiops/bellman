@@ -3,8 +3,10 @@ package com.gsk.kg.sparqlparser
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.Query._
 import com.gsk.kg.sparqlparser.StringVal._
-import org.scalatest.flatspec.AnyFlatSpec
+
 import scala.collection.mutable
+
+import org.scalatest.flatspec.AnyFlatSpec
 
 class QueryConstructSpec extends AnyFlatSpec {
 
@@ -16,21 +18,31 @@ class QueryConstructSpec extends AnyFlatSpec {
     }
   }
 
-
   "Construct" should "result in proper variables, a basic graph pattern, and algebra expression" in {
     TestUtils.query("/queries/q3-union.sparql") match {
-      case Construct(vars, bgp, Union(BGP(quadsL: Seq[Quad]), BGP(quadsR: Seq[Quad])), List(), List()) =>
+      case Construct(
+            vars,
+            bgp,
+            Union(BGP(quadsL: Seq[Quad]), BGP(quadsR: Seq[Quad])),
+            List(),
+            List()
+          ) =>
         val temp = QueryConstruct.getAllVariableNames(bgp)
-        val all = vars.map(_.s).toSet
+        val all  = vars.map(_.s).toSet
         assert((all -- temp) == Set("?lnk"))
       case _ => fail
     }
   }
 
-
   "Construct with Bind" should "contains bind variable" in {
     TestUtils.query("/queries/q4-simple-bind.sparql") match {
-      case Construct(vars, bgp, Extend(l: StringVal, r: StringVal, BGP(quads: Seq[Quad])), List(), List()) =>
+      case Construct(
+            vars,
+            bgp,
+            Extend(l: StringVal, r: StringVal, BGP(quads: Seq[Quad])),
+            List(),
+            List()
+          ) =>
         vars.exists(_.s == "?dbind")
       case _ => fail
     }
@@ -50,7 +62,11 @@ class QueryConstructSpec extends AnyFlatSpec {
     TestUtils.query("/queries/lit-search-3.sparql") match {
       case Construct(vars, bgp, expr, List(), List()) =>
         assert(bgp.quads.size == 11)
-        assert(bgp.quads.head.o.asInstanceOf[BLANK].s == bgp.quads(1).s.asInstanceOf[BLANK].s)
+        assert(
+          bgp.quads.head.o
+            .asInstanceOf[BLANK]
+            .s == bgp.quads(1).s.asInstanceOf[BLANK].s
+        )
         assert(vars.exists(v => v.s == "?secid"))
       case _ => fail
     }
@@ -85,12 +101,17 @@ class QueryConstructSpec extends AnyFlatSpec {
       """
 
     QueryConstruct.parse(query) match {
-      case Construct(vars,
-        bgp,
-        Project(Seq(VARIABLE("?name"), VARIABLE("?person")),
-        Filter(funcs,expr)),
-        List(),
-        List()) => succeed
+      case Construct(
+            vars,
+            bgp,
+            Project(
+              Seq(VARIABLE("?name"), VARIABLE("?person")),
+              Filter(funcs, expr)
+            ),
+            List(),
+            List()
+          ) =>
+        succeed
       case _ => fail
     }
   }
@@ -112,18 +133,35 @@ class QueryConstructSpec extends AnyFlatSpec {
 
     x match {
       case Select(
-        mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
-        OffsetLimit(
-          None,
-          Some(10),
-          Project(
             mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
-            BGP(
-              mutable.ArrayBuffer(
-                Quad(VARIABLE("?de"),URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass"),VARIABLE("??0"), _),
-                Quad(VARIABLE("??0"),URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predClass"),VARIABLE("?et"), _))))),
-        List(),
-        List()) =>
+            OffsetLimit(
+              None,
+              Some(10),
+              Project(
+                mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
+                BGP(
+                  mutable.ArrayBuffer(
+                    Quad(
+                      VARIABLE("?de"),
+                      URIVAL(
+                        "http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass"
+                      ),
+                      VARIABLE("??0"),
+                      _
+                    ),
+                    Quad(
+                      VARIABLE("??0"),
+                      URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predClass"),
+                      VARIABLE("?et"),
+                      _
+                    )
+                  )
+                )
+              )
+            ),
+            List(),
+            List()
+          ) =>
         succeed
       case _ => fail
     }

@@ -1,28 +1,19 @@
 package com.gsk.kg.engine
 
-import higherkindness.droste.prelude._
-import org.scalatest.funsuite.AnyFunSuite
-import org.scalatest.prop.Configuration
-import org.typelevel.discipline.scalatest.FunSuiteDiscipline
-import monocle.law.discipline.IsoTests
-import com.gsk.kg.engine.scalacheck.DrosteImplicits
-import com.gsk.kg.engine.scalacheck.DAGArbitraries
-import org.scalacheck.Arbitrary
-import org.scalacheck.Cogen
-import DAG._
-import monocle.law.discipline.PrismTests
-import org.scalactic.anyvals.PosZInt
-import org.scalatestplus.scalacheck.Checkers
-
-import cats.data._
-import com.gsk.kg.engine.data.ChunkedList._
-
-import com.gsk.kg.sparqlparser.StringVal._
-import com.gsk.kg.sparqlparser.Expr
-import monocle.law.PrismLaws
-import org.typelevel.discipline.scalatest.FlatSpecDiscipline
-import org.scalatest.flatspec.AnyFlatSpec
 import higherkindness.droste.data.Fix
+import higherkindness.droste.prelude._
+
+import com.gsk.kg.engine.DAG._
+import com.gsk.kg.engine.scalacheck.DAGArbitraries
+import com.gsk.kg.engine.scalacheck.DrosteImplicits
+
+import monocle.law.discipline.IsoTests
+import monocle.law.discipline.PrismTests
+import org.scalacheck.Arbitrary
+import org.scalactic.anyvals.PosZInt
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.prop.Configuration
+import org.typelevel.discipline.scalatest.FlatSpecDiscipline
 
 class OpticsLawTests
     extends AnyFlatSpec
@@ -37,7 +28,8 @@ class OpticsLawTests
       maxDiscardedFactor = 100
     )
 
-  implicit val embedArbitrary: Arbitrary[Fix[DAG]] = embedArbitrary[DAG, Fix[DAG]]
+  implicit val embedArbitrary: Arbitrary[Fix[DAG]] =
+    embedArbitrary[DAG, Fix[DAG]]
 
   checkAll("basisIso", IsoTests(optics.basisIso[DAG, Fix[DAG]]))
   checkAll("_describe", PrismTests(optics._describe))
