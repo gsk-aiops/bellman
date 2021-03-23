@@ -13,7 +13,7 @@ object Predicate {
   final case class S(s: String)                         extends Predicate
   final case class P(p: String)                         extends Predicate
   final case class O(o: String)                         extends Predicate
-  case object None                                extends Predicate
+  case object None                                      extends Predicate
 
   def fromQuad(Quad: Expr.Quad): Predicate =
     Quad match {

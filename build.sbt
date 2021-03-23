@@ -174,7 +174,15 @@ lazy val `bellman-spark-engine` = project
   )
   .dependsOn(`bellman-algebra-parser`)
 
-addCommandAlias("ci-test", ";scalastyle ;+test")
+addCommandAlias(
+  "ci-test",
+  ";scalafix --check ;scalafmtCheckAll ;scalastyle ;+test"
+)
+
+addCommandAlias(
+  "lint",
+  ";scalafixAll ;scalafmtAll"
+)
 
 def on[A](major: Int, minor: Int)(a: A): Def.Initialize[Seq[A]] =
   Def.setting {

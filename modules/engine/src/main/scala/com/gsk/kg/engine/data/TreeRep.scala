@@ -10,7 +10,6 @@ import cats.instances.function._
   */
 sealed trait TreeRep[A] {
 
-
   /** The label at the root of this tree. */
   def rootLabel: A
 
