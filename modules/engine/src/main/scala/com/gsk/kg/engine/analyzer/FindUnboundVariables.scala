@@ -1,22 +1,15 @@
 package com.gsk.kg.engine
 package analyzer
 
-import DAG._
-
 import cats._
 import cats.data.State
-import cats.data.Validated._
-import cats.data.ValidatedNec
 import cats.implicits._
 
-import com.gsk.kg.engine.data.ChunkedList
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-
-import higherkindness.droste.syntax.all._
 import higherkindness.droste.{Project => _, _}
 
-import optics._
-import org.apache.spark.sql.DataFrame
+import com.gsk.kg.engine.DAG._
+import com.gsk.kg.engine.data.ChunkedList
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 /** This rule performs a bottom-up traverse of the DAG (with a
   * [[higherkindness.droste.AlgebraM]]), accumulating bound variables

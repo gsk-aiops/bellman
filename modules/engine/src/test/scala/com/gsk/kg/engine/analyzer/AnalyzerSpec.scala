@@ -1,17 +1,17 @@
 package com.gsk.kg.engine.analyzer
 
+import cats.data.NonEmptyChain
 import cats.implicits._
-import com.gsk.kg.engine.data.ToTree._
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import com.gsk.kg.sparql.syntax.all._
+
 import higherkindness.droste.syntax.all._
-import higherkindness.droste.data.Fix
+
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.engine.EngineError
-import cats.data.NonEmptyChain
+import com.gsk.kg.sparql.syntax.all._
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class AnalyzerSpec extends AnyFlatSpec with Matchers {
 

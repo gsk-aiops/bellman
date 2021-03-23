@@ -2,19 +2,19 @@ package com.gsk.kg.engine
 package scalacheck
 
 import cats._
-import cats.implicits._
 import cats.data.NonEmptyList
+import cats.implicits._
 
 import higherkindness.droste._
 import higherkindness.droste.syntax.compose._
 
-import org.scalacheck._
-import org.scalacheck.cats.implicits._
-import org.scalacheck.Gen
-
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.Expression
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+
+import org.scalacheck.Gen
+import org.scalacheck._
+import org.scalacheck.cats.implicits._
 
 trait DAGArbitraries
     extends CommonGenerators

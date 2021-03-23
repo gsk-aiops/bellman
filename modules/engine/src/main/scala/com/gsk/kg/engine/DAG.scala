@@ -1,23 +1,22 @@
 package com.gsk.kg.engine
 
-import higherkindness.droste._
-import higherkindness.droste.data.Fix
-import higherkindness.droste.macros.deriveTraverse
-import higherkindness.droste.syntax.all._
-import higherkindness.droste.util.DefaultTraverse
-import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import cats._
 import cats.data.NonEmptyList
 import cats.implicits._
+
+import higherkindness.droste._
+import higherkindness.droste.syntax.all._
+import higherkindness.droste.util.DefaultTraverse
+
+import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
-import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.Expression
-import com.gsk.kg.engine.data.ChunkedList
+import com.gsk.kg.sparqlparser.Query
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+
 import monocle._
 import monocle.macros.Lenses
-import com.gsk.kg.sparqlparser.Query.Select
 
 sealed trait DAG[A] {
 

@@ -1,24 +1,19 @@
 package com.gsk.kg.engine
 
-import higherkindness.droste.syntax.all._
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import higherkindness.droste.data.Fix
 
-import cats.instances.string._
-import com.gsk.kg.engine.data.ToTree._
-import DAG._
+import com.gsk.kg.engine.DAG._
+import com.gsk.kg.engine.data.ChunkedList
+import com.gsk.kg.engine.scalacheck.ChunkedListArbitraries
+import com.gsk.kg.engine.scalacheck.DAGArbitraries
+import com.gsk.kg.engine.scalacheck.DrosteImplicits
+import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.STRING
-import higherkindness.droste.data.Fix
-import com.gsk.kg.engine.data.ChunkedList
-import com.gsk.kg.sparqlparser.Expr
+
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import com.gsk.kg.engine.data.TreeRep
-import com.gsk.kg.engine.scalacheck.DrosteImplicits
-import com.gsk.kg.engine.scalacheck.ExpressionArbitraries
-import com.gsk.kg.engine.scalacheck.DAGArbitraries
-import com.gsk.kg.engine.scalacheck.ChunkedListArbitraries
-import org.scalacheck.Arbitrary
 
 class DAGSpec
     extends AnyFlatSpec

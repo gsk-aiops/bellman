@@ -1,11 +1,10 @@
 package com.gsk.kg.sparql
 
-import com.gsk.kg.sparqlparser.Expr._
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import com.gsk.kg.sparqlparser.Expr
+import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.Expression
-import com.gsk.kg.sparqlparser.Conditional
 import com.gsk.kg.sparqlparser.StringLike
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 trait Visitor[T] {
   def visitQuad(quad: Quad): T

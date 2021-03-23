@@ -1,8 +1,8 @@
 package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.Conditional._
-import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
+
 import org.scalatest.flatspec.AnyFlatSpec
 
 class ConditionalParserSpec extends AnyFlatSpec {

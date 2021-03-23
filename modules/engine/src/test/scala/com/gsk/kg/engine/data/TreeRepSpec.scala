@@ -1,13 +1,12 @@
 package com.gsk.kg.engine
 package data
 
-import com.gsk.kg.sparql.syntax.all._
 import cats.instances.string._
+
+import com.gsk.kg.sparql.syntax.all._
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import higherkindness.droste.data.Fix
-import higherkindness.droste.Basis
 
 class TreeRepSpec extends AnyFlatSpec with Matchers {
 
@@ -57,7 +56,6 @@ class TreeRepSpec extends AnyFlatSpec with Matchers {
 
   it should "work as a typeclass for other types" in {
     import ToTree._
-    import DAG._
 
     val dag = DAG.fromQuery.apply(sparql"""
       PREFIX  schema: <http://schema.org/>

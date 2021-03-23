@@ -1,19 +1,14 @@
 package com.gsk.kg.engine
 package analyzer
 
-import cats.implicits._
-import higherkindness.droste.Basis
-import higherkindness.droste.syntax.all._
 import cats.Foldable
-import cats.data.ValidatedNec
 import cats.data.Validated._
-import org.apache.spark.sql.DataFrame
-import optics._
-import cats.Traverse
-import com.gsk.kg.engine.data.ChunkedList
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+import cats.data.ValidatedNec
+import cats.implicits._
 
-import DAG._
+import higherkindness.droste.Basis
+
+import org.apache.spark.sql.DataFrame
 
 object Analyzer {
 

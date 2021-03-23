@@ -1,18 +1,18 @@
 package com.gsk.kg.engine
 
-import higherkindness.droste.syntax.all._
-import cats.implicits._
-import cats.data.Kleisli
-import com.gsk.kg.sparqlparser.QueryConstruct
-import com.gsk.kg.sparqlparser.Query
-import com.gsk.kg.engine.optimizer.Optimizer
-import com.gsk.kg.engine.analyzer.Analyzer
 import cats.arrow.Arrow
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.DataFrame
-import higherkindness.droste.Trans
-import com.gsk.kg.sparqlparser.Expr.fixedpoint._
+import cats.data.Kleisli
+import cats.implicits._
+
 import higherkindness.droste.Basis
+
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SQLContext
+
+import com.gsk.kg.engine.analyzer.Analyzer
+import com.gsk.kg.engine.optimizer.Optimizer
+import com.gsk.kg.sparqlparser.Query
+import com.gsk.kg.sparqlparser.QueryConstruct
 
 object Compiler {
 

@@ -1,11 +1,13 @@
 package com.gsk.kg.engine
 package scalacheck
 
+import cats.implicits._
+
+import com.gsk.kg.sparqlparser._
+
+import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.cats.implicits._
-import cats.implicits._
-import com.gsk.kg.sparqlparser._
-import org.scalacheck.Arbitrary
 
 trait ExpressionArbitraries extends CommonGenerators {
 

@@ -1,14 +1,17 @@
 package com.gsk.kg.engine
 package scalacheck
 
+import cats.Show
 import cats.implicits._
-import java.net.URI
-import java.{util => ju}
-import org.scalacheck.Arbitrary
-import org.scalacheck.Gen
+
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SQLContext
-import cats.Show
+
+import java.net.URI
+import java.{util => ju}
+
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen
 
 trait DataFrameArbitraries {
   implicit val showUri: Show[URI] = Show[String].contramap(uri => s"<$uri>")

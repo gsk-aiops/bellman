@@ -1,9 +1,10 @@
 package com.gsk.kg.engine
 
-import org.scalatest.matchers.should.Matchers
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.Row
+
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {

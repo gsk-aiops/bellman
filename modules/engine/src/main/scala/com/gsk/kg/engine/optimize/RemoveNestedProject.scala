@@ -1,16 +1,9 @@
 package com.gsk.kg.engine
 package optimizer
 
-import com.gsk.kg.engine.data.ToTree._
-import com.gsk.kg.engine.data.ChunkedList._
-
-import cats.implicits._
-import cats.arrow.Arrow
-
 import higherkindness.droste.Basis
-import higherkindness.droste.syntax.all._
+
 import com.gsk.kg.engine.DAG._
-import com.gsk.kg.sparqlparser.Expr
 
 /** This optimization removes nested [[Project]] from the [[DAG]] when
   * they are consecutive and bind the same variables.

@@ -1,12 +1,13 @@
 package com.gsk.kg.engine
 
-import com.gsk.kg.sparql.syntax.all._
-import org.scalatest.matchers.should.Matchers
-import org.apache.spark.sql.DataFrame
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.spark.sql.Row
-import org.apache.jena.riot.lang.CollectorStreamTriples
 import org.apache.jena.riot.RDFParser
+import org.apache.jena.riot.lang.CollectorStreamTriples
+
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Row
+
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
@@ -2663,8 +2664,8 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     import scala.collection.JavaConverters._
 
     val filename                            = s"modules/engine/src/test/resources/$path"
-    val inputStream: CollectorStreamTriples = new CollectorStreamTriples();
-    RDFParser.source(filename).parse(inputStream);
+    val inputStream: CollectorStreamTriples = new CollectorStreamTriples()
+    RDFParser.source(filename).parse(inputStream)
 
     inputStream
       .getCollected()

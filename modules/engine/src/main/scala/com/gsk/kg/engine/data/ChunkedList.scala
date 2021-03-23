@@ -1,15 +1,16 @@
 package com.gsk.kg.engine
 package data
 
-import ToTree._
-import cats.instances.list._
-import higherkindness.droste.macros.deriveTraverse
-import ChunkedList._
 import cats._
 import cats.data.NonEmptyChain
-import java.{util => ju}
-import scala.collection.immutable.SortedMap
+
+import higherkindness.droste.macros.deriveTraverse
+
+import com.gsk.kg.engine.data.ChunkedList._
+import com.gsk.kg.engine.data.ToTree._
+
 import scala.collection.immutable.Nil
+import scala.collection.immutable.SortedMap
 
 /** A data structure like a linked [[scala.List]] but in which nodes
   * can be [[ChunkedList.Chunk]]s of elements.

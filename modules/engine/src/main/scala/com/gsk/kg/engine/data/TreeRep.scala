@@ -1,9 +1,8 @@
 package com.gsk.kg.engine.data
 
-import cats.instances.function._
-import cats.free.Trampoline
 import cats.Show
-import cats.Eval
+import cats.free.Trampoline
+import cats.instances.function._
 
 /** A generic tree representation.  It's particularly useful for its [[draw]] method.
   *
@@ -11,7 +10,6 @@ import cats.Eval
   */
 sealed trait TreeRep[A] {
 
-  import TreeRep._
 
   /** The label at the root of this tree. */
   def rootLabel: A

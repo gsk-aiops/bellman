@@ -1,12 +1,9 @@
 package com.gsk.kg.sparqlparser
 
-import org.scalatest.flatspec.AnyFlatSpec
 import com.gsk.kg.sparqlparser.Expr._
-import com.gsk.kg.sparqlparser.Conditional._
-import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
 
-import scala.collection.mutable.ArrayBuffer
+import org.scalatest.flatspec.AnyFlatSpec
 
 class ShortQueryTestSpec extends AnyFlatSpec {
 

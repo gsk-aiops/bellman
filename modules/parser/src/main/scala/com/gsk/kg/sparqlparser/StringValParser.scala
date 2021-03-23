@@ -1,6 +1,7 @@
 package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.StringVal._
+
 import fastparse.MultiLineWhitespace._
 import fastparse._
 

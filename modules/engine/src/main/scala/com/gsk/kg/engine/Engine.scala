@@ -3,25 +3,27 @@ package com.gsk.kg.engine
 import cats.Foldable
 import cats.data.NonEmptyList
 import cats.instances.all._
-import cats.syntax.either._
 import cats.syntax.applicative._
+import cats.syntax.either._
+
+import higherkindness.droste._
+
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SQLContext
-import com.gsk.kg.sparqlparser._
-import com.gsk.kg.sparqlparser.Expr.fixedpoint._
-import higherkindness.droste._
-import com.gsk.kg.sparqlparser.StringVal
-import com.gsk.kg.sparqlparser.StringVal._
-import com.gsk.kg.sparqlparser.Expression
 import org.apache.spark.sql.Encoder
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.types._
 
-import java.{util => ju}
 import com.gsk.kg.engine.data.ChunkedList
-import org.apache.spark.sql.functions.lit
+import com.gsk.kg.sparqlparser.Expression
+import com.gsk.kg.sparqlparser.StringVal
+import com.gsk.kg.sparqlparser.StringVal._
+import com.gsk.kg.sparqlparser._
+
+import java.{util => ju}
 
 object Engine {
 

@@ -2,7 +2,6 @@ package com.gsk.kg.sparql.syntax
 
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.QueryConstruct
-import com.gsk.kg.sparqlparser.Expr
 
 trait Interpolators {
 

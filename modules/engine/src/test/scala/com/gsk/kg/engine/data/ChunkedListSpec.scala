@@ -1,18 +1,12 @@
 package com.gsk.kg.engine.data
 
+import cats.implicits._
+
+import com.gsk.kg.engine.scalacheck.ChunkedListArbitraries
+
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import org.scalacheck.Arbitrary
-import org.scalacheck.Gen
-import scala.collection.immutable.Nil
-import com.gsk.kg.engine.scalacheck.ChunkedListArbitraries
-import com.gsk.kg.engine.data.ChunkedList.NonEmpty
-import cats.data.NonEmptyChain
-import cats.implicits._
-import cats.data.Chain
-import cats.Traverse
-import ToTree._
 
 class ChunkedListSpec
     extends AnyFlatSpec

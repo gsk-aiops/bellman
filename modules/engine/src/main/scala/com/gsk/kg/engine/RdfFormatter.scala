@@ -1,15 +1,15 @@
 package com.gsk.kg.engine
 
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.Encoder
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.encoders.RowEncoder
 
 import java.net.URI
+
 import scala.annotation.tailrec
-import scala.util.Try
 import scala.util.Success
+import scala.util.Try
 
 object RdfFormatter {
 

@@ -1,10 +1,12 @@
 package com.gsk.kg.engine
 package scalacheck
 
+import cats.Functor
+
 import higherkindness.droste._
 import higherkindness.droste.syntax.all._
+
 import org.scalacheck.Arbitrary
-import cats.Functor
 import org.scalacheck.Gen
 
 trait DrosteImplicits {

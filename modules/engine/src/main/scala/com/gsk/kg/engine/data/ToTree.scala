@@ -1,15 +1,18 @@
 package com.gsk.kg.engine
 package data
 
-import higherkindness.droste.scheme
-import higherkindness.droste.Basis
-import higherkindness.droste.Algebra
-import cats.implicits._
 import cats.Show
-import com.gsk.kg.sparqlparser.Expr
-import scala.collection.immutable.Nil
 import cats.data.NonEmptyChain
 import cats.data.NonEmptyList
+import cats.implicits._
+
+import higherkindness.droste.Algebra
+import higherkindness.droste.Basis
+import higherkindness.droste.scheme
+
+import com.gsk.kg.sparqlparser.Expr
+
+import scala.collection.immutable.Nil
 
 /** Typeclass that allows you converting values of type T to
   * [[TreeRep]].  The benefit of doing so is that we'll be able to

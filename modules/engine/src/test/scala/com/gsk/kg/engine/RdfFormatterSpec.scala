@@ -2,12 +2,10 @@ package com.gsk.kg.engine
 
 import com.gsk.kg.engine.scalacheck.CommonGenerators
 
+import org.scalacheck.Gen
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import org.scalacheck.Gen
-import org.scalacheck.Arbitrary
-import java.net.URI
 
 class RdfFormatterSpec
     extends AnyFlatSpec

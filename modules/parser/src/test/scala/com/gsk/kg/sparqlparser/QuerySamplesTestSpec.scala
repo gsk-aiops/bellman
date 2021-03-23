@@ -1,13 +1,15 @@
 package com.gsk.kg.sparqlparser
+import org.apache.jena.query.QueryFactory
+import org.apache.jena.sparql.algebra.Algebra
+import org.apache.jena.sparql.algebra.Op
+
+import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.Query.Construct
 import com.gsk.kg.sparqlparser.Query.Describe
 import com.gsk.kg.sparqlparser.Query.Select
-import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
-import org.apache.jena.query.QueryFactory
-import org.apache.jena.sparql.algebra.Algebra
-import org.apache.jena.sparql.algebra.Op
+
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper

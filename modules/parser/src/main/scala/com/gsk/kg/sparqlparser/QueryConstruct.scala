@@ -1,19 +1,21 @@
 package com.gsk.kg.sparqlparser
 
-import com.gsk.kg.sparqlparser.StringVal._
-import com.gsk.kg.sparqlparser.Expr._
-import com.gsk.kg.sparqlparser.Query._
-import fastparse.Parsed.Failure
-import fastparse.Parsed.Success
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
 import org.apache.jena.sparql.core.{Quad => JenaQuad}
 
-import collection.JavaConverters._
+import com.gsk.kg.sparqlparser.Expr._
+import com.gsk.kg.sparqlparser.Query._
+import com.gsk.kg.sparqlparser.StringVal._
+
+import scala.collection.JavaConverters._
+
+import fastparse.Parsed.Failure
+import fastparse.Parsed.Success
 
 object QueryConstruct {
 
-  case class SparqlParsingError(s: String) extends Exception(s)
+  final case class SparqlParsingError(s: String) extends Exception(s)
 
   def parse(sparql: String): Query = {
     val query    = QueryFactory.create(sparql)

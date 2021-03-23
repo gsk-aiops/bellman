@@ -19,27 +19,46 @@ lazy val Versions = Map(
   "sansa"                -> "0.7.1",
   "monocle"              -> "1.5.1-cats",
   "discipline"           -> "1.1.2",
-  "discipline-scalatest" -> "2.0.0",
+  "discipline-scalatest" -> "2.0.0"
 )
 
-inThisBuild(List(
-  organization := "com.github.gsk-aiops",
-  homepage := Some(url("https://github.com/gsk-aiops/bellman-algebra-parser")),
-  licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-  developers := List(
-    Developer(
-      id = "JNKHunter",
-      name = "John Hunter",
-      email = "johnhuntergskatgmail.com",
-      url = url("https://gsk.com")
+inThisBuild(
+  List(
+    organization := "com.github.gsk-aiops",
+    homepage := Some(
+      url("https://github.com/gsk-aiops/bellman-algebra-parser")
+    ),
+    licenses := Seq(
+      "APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")
+    ),
+    developers := List(
+      Developer(
+        id = "JNKHunter",
+        name = "John Hunter",
+        email = "johnhuntergskatgmail.com",
+        url = url("https://gsk.com")
+      )
+    ),
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision,
+    scalacOptions += "-Ywarn-unused-import",
+    scalafixDependencies := Seq(
+      "com.github.liancheng" %% "organize-imports" % "0.5.0",
+      "com.github.vovapolu"  %% "scaluzzi"         % "0.1.18"
     )
   )
-))
+)
 
 lazy val buildSettings = Seq(
   scalaVersion := Versions("scala211"),
-  crossScalaVersions :=  List(Versions("scala211"), Versions("scala212")),
-  sonatypeProjectHosting := Some(GitHubHosting("gsk-aiops", "bellman-algebra-parser", "johnhuntergskatgmail.com")),
+  crossScalaVersions := List(Versions("scala211"), Versions("scala212")),
+  sonatypeProjectHosting := Some(
+    GitHubHosting(
+      "gsk-aiops",
+      "bellman-algebra-parser",
+      "johnhuntergskatgmail.com"
+    )
+  ),
   sonatypeProfileName := "com.github.gsk-aiops",
   artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
     artifact.name + "_" + sv.binary + "-" + module.revision + "." + artifact.extension
@@ -56,17 +75,23 @@ lazy val noPublishSettings = Seq(
 
 lazy val compilerPlugins = Seq(
   libraryDependencies ++= Seq(
-    compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
-    compilerPlugin("org.typelevel" %% "kind-projector" % Versions("kind-projector") cross CrossVersion.full),
+    compilerPlugin(
+      "org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full
+    ),
+    compilerPlugin(
+      "org.typelevel" %% "kind-projector" % Versions(
+        "kind-projector"
+      ) cross CrossVersion.full
+    )
   )
 )
 
 lazy val commonDependencies = Seq(
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-core" % Versions("cats"),
-    "io.higherkindness" %% "droste-core" % Versions("droste"),
+    "org.typelevel"     %% "cats-core"     % Versions("cats"),
+    "io.higherkindness" %% "droste-core"   % Versions("droste"),
     "io.higherkindness" %% "droste-macros" % Versions("droste"),
-    "org.scalatest" %% "scalatest" % Versions("scalatest") % Test,
+    "org.scalatest"     %% "scalatest"     % Versions("scalatest") % Test
   )
 )
 
@@ -85,9 +110,9 @@ lazy val `bellman-algebra-parser` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.jena" % "jena-arq" % Versions("jena"),
-      "com.lihaoyi" %% "fastparse" % Versions("fastparse"),
-    ),
+      "org.apache.jena" % "jena-arq"  % Versions("jena"),
+      "com.lihaoyi"    %% "fastparse" % Versions("fastparse")
+    )
   )
 
 lazy val `bellman-spark-engine` = project
@@ -98,23 +123,35 @@ lazy val `bellman-spark-engine` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.spark"           %% "spark-sql"            % Versions("spark") % Provided,
-      "com.github.julien-truffaut" %% "monocle-core"         % Versions("monocle"),
-      "com.github.julien-truffaut" %% "monocle-macro"        % Versions("monocle"),
-      "com.github.julien-truffaut" %% "monocle-law"          % Versions("monocle") % Test,
-      "org.typelevel"              %% "discipline-core"      % Versions("discipline") % Test,
-      "org.typelevel"              %% "discipline-scalatest" % Versions("discipline-scalatest") % Test,
-      "io.chrisdavenport"          %% "cats-scalacheck"      % Versions("cats-scalacheck") % Test,
-      "com.holdenkarau"            %% "spark-testing-base"   % Versions("spark-testing-base") % Test,
-      "org.scalacheck"             %% "scalacheck"           % Versions("scalacheck") % Test,
-      "org.scalatestplus"          %% "scalacheck-1-15"      % Versions("scalatestplus") % Test,
+      "org.apache.spark"           %% "spark-sql"    % Versions("spark") % Provided,
+      "com.github.julien-truffaut" %% "monocle-core" % Versions("monocle"),
+      "com.github.julien-truffaut" %% "monocle-macro" % Versions("monocle"),
+      "com.github.julien-truffaut" %% "monocle-law" % Versions(
+        "monocle"
+      )                % Test,
+      "org.typelevel" %% "discipline-core" % Versions("discipline") % Test,
+      "org.typelevel" %% "discipline-scalatest" % Versions(
+        "discipline-scalatest"
+      )                    % Test,
+      "io.chrisdavenport" %% "cats-scalacheck" % Versions(
+        "cats-scalacheck"
+      )                  % Test,
+      "com.holdenkarau" %% "spark-testing-base" % Versions(
+        "spark-testing-base"
+      )                    % Test,
+      "org.scalacheck"    %% "scalacheck" % Versions("scalacheck") % Test,
+      "org.scalatestplus" %% "scalacheck-1-15" % Versions(
+        "scalatestplus"
+      ) % Test
     ),
     libraryDependencies ++= on(2, 11)(
       "net.sansa-stack" %% "sansa-rdf-spark" % Versions("sansa") % Test
     ).value,
     dependencyOverrides ++= Seq(
-      "com.fasterxml.jackson.core" % "jackson-databind" % Versions("jackson"),
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % Versions("jackson"),
+      "com.fasterxml.jackson.core"    % "jackson-databind" % Versions("jackson"),
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % Versions(
+        "jackson"
+      )
     )
   )
   .settings(

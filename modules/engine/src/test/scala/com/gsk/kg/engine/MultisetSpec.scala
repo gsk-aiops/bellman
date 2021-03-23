@@ -1,9 +1,10 @@
 package com.gsk.kg.engine
 
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 
 class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 

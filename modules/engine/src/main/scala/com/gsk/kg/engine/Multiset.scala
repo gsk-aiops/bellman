@@ -1,13 +1,15 @@
 package com.gsk.kg.engine
 
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.DataFrame
-import cats.kernel.Semigroup
-import org.apache.spark.sql.SQLContext
 import cats.kernel.Monoid
+import cats.kernel.Semigroup
 import cats.syntax.all._
+
 import org.apache.spark.sql.Column
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.functions._
+
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 /** A [[Multiset]], as expressed in SparQL terms.
   *

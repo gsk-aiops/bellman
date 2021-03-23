@@ -1,9 +1,10 @@
 package com.gsk.kg.engine
 package scalacheck
 
-import org.scalacheck.Gen
-import org.scalacheck.Arbitrary
 import java.net.URI
+
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen
 
 trait CommonGenerators {
 

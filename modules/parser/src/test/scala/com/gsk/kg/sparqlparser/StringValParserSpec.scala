@@ -1,7 +1,8 @@
 package com.gsk.kg.sparqlparser
 
-import org.scalatest.flatspec.AnyFlatSpec
 import com.gsk.kg.sparqlparser.StringVal._
+
+import org.scalatest.flatspec.AnyFlatSpec
 
 class StringValParserSpec extends AnyFlatSpec {
   "parse the string literal with tag" should "create proper STRING cass class" in {

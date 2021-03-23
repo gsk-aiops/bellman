@@ -1,19 +1,19 @@
 package com.gsk.kg.engine
 
-import com.gsk.kg.engine._
 import cats.implicits._
+
 import higherkindness.droste._
-import higherkindness.droste.syntax.all._
 import higherkindness.droste.macros.deriveTraverse
-import org.apache.spark.sql.functions._
-import com.gsk.kg.sparqlparser.Expression
-import com.gsk.kg.sparqlparser.Conditional
-import com.gsk.kg.sparqlparser.BuildInFunc
-import com.gsk.kg.sparqlparser.StringVal
-import com.gsk.kg.sparqlparser.StringLike
+
 import org.apache.spark.sql.Column
-import com.gsk.kg.engine.ExpressionF._
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions._
+
+import com.gsk.kg.sparqlparser.BuildInFunc
+import com.gsk.kg.sparqlparser.Conditional
+import com.gsk.kg.sparqlparser.Expression
+import com.gsk.kg.sparqlparser.StringLike
+import com.gsk.kg.sparqlparser.StringVal
 
 /** [[ExpressionF]] is a pattern functor for the recursive
   * [[Expression]].
