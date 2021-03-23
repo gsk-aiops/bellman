@@ -37,7 +37,8 @@ class OpticsLawTests
       maxDiscardedFactor = 100
     )
 
-  implicit val embedArbitrary: Arbitrary[Fix[DAG]] = embedArbitrary[DAG, Fix[DAG]]
+  implicit val embedArbitrary: Arbitrary[Fix[DAG]] =
+    embedArbitrary[DAG, Fix[DAG]]
 
   checkAll("basisIso", IsoTests(optics.basisIso[DAG, Fix[DAG]]))
   checkAll("_describe", PrismTests(optics._describe))

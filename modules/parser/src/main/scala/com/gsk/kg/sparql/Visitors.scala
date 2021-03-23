@@ -2,7 +2,10 @@ package com.gsk.kg.sparql
 
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-import com.gsk.kg.sparqlparser.{Expr, Expression, Conditional, StringLike}
+import com.gsk.kg.sparqlparser.Expr
+import com.gsk.kg.sparqlparser.Expression
+import com.gsk.kg.sparqlparser.Conditional
+import com.gsk.kg.sparqlparser.StringLike
 
 trait Visitor[T] {
   def visitQuad(quad: Quad): T
@@ -44,15 +47,15 @@ object Visitors {
         val ts = triples.map(t => dispatch(t, visitor))
         visitor.visitBGP(ts)
       case LeftJoin(l, r) =>
-        val left = dispatch(l, visitor)
+        val left  = dispatch(l, visitor)
         val right = dispatch(r, visitor)
         visitor.visitLeftJoin(left, right)
       case FilteredLeftJoin(l, r, f) =>
-        val left = dispatch(l, visitor)
+        val left  = dispatch(l, visitor)
         val right = dispatch(r, visitor)
         visitor.visitFilteredLeftJoinVisitor(left, right, f)
       case Union(l, r) =>
-        val left = dispatch(l, visitor)
+        val left  = dispatch(l, visitor)
         val right = dispatch(r, visitor)
         visitor.visitUnion(left, right)
       case Extend(to, from, r) =>
@@ -60,20 +63,19 @@ object Visitors {
       case Filter(funcs, e) =>
         visitor.visitFilter(funcs, dispatch(e, visitor))
       case Join(l, r) =>
-        val left = dispatch(l, visitor)
+        val left  = dispatch(l, visitor)
         val right = dispatch(r, visitor)
         visitor.visitJoin(left, right)
       case Graph(g, e) =>
         visitor.visitGraph(g, dispatch(e, visitor))
       case Project(vars, r) =>
         visitor.visitSelect(vars, dispatch(r, visitor))
-      case OffsetLimit(offset,limit, r) =>
+      case OffsetLimit(offset, limit, r) =>
         visitor.visitOffsetLimit(offset, limit, dispatch(r, visitor))
       case Distinct(r) =>
-        visitor.visitDistinct(dispatch(r,visitor))
-      case OpNil() => visitor.visitOpNil
+        visitor.visitDistinct(dispatch(r, visitor))
+      case OpNil()   => visitor.visitOpNil
       case TabUnit() => visitor.visitTabUnit
-
 
     }
   }

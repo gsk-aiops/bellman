@@ -31,13 +31,13 @@ class ChunkedListSpec
 
   "fromList" should "generate a non compacted ChunkedList" in {
     forAll { l: List[Int] =>
-      ChunkedList.fromList(l).mapChunks(c => c.toList should have size (1))
+      ChunkedList.fromList(l).mapChunks(c => c.toList should have size 1)
     }
   }
 
   "concat" should "concat two ChunkedLists correctly" in {
-    val a = ChunkedList(1, 2, 3)
-    val b = ChunkedList(4, 5, 6)
+    val a      = ChunkedList(1, 2, 3)
+    val b      = ChunkedList(4, 5, 6)
     val result = a concat b
 
     result shouldEqual ChunkedList(

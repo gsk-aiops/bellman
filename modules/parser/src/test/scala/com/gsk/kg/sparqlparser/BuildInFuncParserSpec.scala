@@ -4,14 +4,13 @@ import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
 import org.scalatest.flatspec.AnyFlatSpec
 
-
 class BuildInFuncParserSpec extends AnyFlatSpec {
   "URI function with string" should "return URI type" in {
     val s = "(uri \"http://id.gsk.com/dm/1.0/\")"
     val p = fastparse.parse(s, BuildInFuncParser.parser(_))
     p.get.value match {
-      case URI(STRING("http://id.gsk.com/dm/1.0/",_)) => succeed
-      case _ => fail
+      case URI(STRING("http://id.gsk.com/dm/1.0/", _)) => succeed
+      case _                                           => fail
     }
   }
 
@@ -20,7 +19,7 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(s, BuildInFuncParser.parser(_))
     p.get.value match {
       case URI(VARIABLE("?test")) => succeed
-      case _ => fail
+      case _                      => fail
     }
   }
 
@@ -28,7 +27,8 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
     val s = "(concat \"http://id.gsk.com/dm/1.0/\" ?src)"
     val p = fastparse.parse(s, BuildInFuncParser.parser(_))
     p.get.value match {
-      case CONCAT(STRING("http://id.gsk.com/dm/1.0/",_), VARIABLE("?src")) => succeed
+      case CONCAT(STRING("http://id.gsk.com/dm/1.0/", _), VARIABLE("?src")) =>
+        succeed
       case _ => fail
     }
   }
@@ -37,7 +37,10 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
     val s = "(uri (concat \"http://id.gsk.com/dm/1.0/\" ?src))"
     val p = fastparse.parse(s, BuildInFuncParser.parser(_))
     p.get.value match {
-      case URI(CONCAT(STRING("http://id.gsk.com/dm/1.0/",_), VARIABLE("?src"))) => succeed
+      case URI(
+            CONCAT(STRING("http://id.gsk.com/dm/1.0/", _), VARIABLE("?src"))
+          ) =>
+        succeed
       case _ => fail
     }
   }
@@ -46,8 +49,8 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
     val s = "(str ?d)"
     val p = fastparse.parse(s, BuildInFuncParser.parser(_))
     p.get.value match {
-      case STR(i:StringLike) => succeed
-      case _ => fail
+      case STR(i: StringLike) => succeed
+      case _                  => fail
     }
   }
 
@@ -55,8 +58,8 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
     val s = "(strafter ( str ?d) \"#\")"
     val p = fastparse.parse(s, BuildInFuncParser.parser(_))
     p.get.value match {
-      case STRAFTER(STR(VARIABLE(s1:String)), STRING(s2:String,_)) => succeed
-      case _ => fail
+      case STRAFTER(STR(VARIABLE(s1: String)), STRING(s2: String, _)) => succeed
+      case _                                                          => fail
     }
   }
 
@@ -64,7 +67,13 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
     val s = "(uri (strafter (concat (str ?d) (str ?src)) \"#\"))"
     val p = fastparse.parse(s, BuildInFuncParser.parser(_))
     p.get.value match {
-      case URI(STRAFTER(CONCAT(STR(VARIABLE(a1: String)), STR(VARIABLE(a2: String))), STRING("#",_))) => succeed
+      case URI(
+            STRAFTER(
+              CONCAT(STR(VARIABLE(a1: String)), STR(VARIABLE(a2: String))),
+              STRING("#", _)
+            )
+          ) =>
+        succeed
       case _ => fail
     }
   }
@@ -73,16 +82,18 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
     val s = """(strstarts (str ?modelname) "ner:")"""
     val p = fastparse.parse(s, BuildInFuncParser.parser(_))
     p.get.value match {
-      case STRSTARTS(STR(VARIABLE("?modelname")), STRING("ner:",None)) => succeed
+      case STRSTARTS(STR(VARIABLE("?modelname")), STRING("ner:", None)) =>
+        succeed
       case _ => fail
     }
   }
 
   "Regex parser" should "return REGEX type" in {
-    val p = fastparse.parse("""(regex ?d "Hello")""", BuildInFuncParser.regexParen(_))
+    val p =
+      fastparse.parse("""(regex ?d "Hello")""", BuildInFuncParser.regexParen(_))
     p.get.value match {
-      case REGEX(VARIABLE("?d"), STRING("Hello",None)) => succeed
-      case _ => fail
+      case REGEX(VARIABLE("?d"), STRING("Hello", None)) => succeed
+      case _                                            => fail
     }
   }
 }

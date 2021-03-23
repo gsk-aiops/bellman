@@ -204,3 +204,4 @@ $RECYCLE.BIN/
 *.swp
 
 sonatype.sbt
+.vscode

@@ -7,8 +7,7 @@ import cats.implicits._
 import com.gsk.kg.sparqlparser._
 import org.scalacheck.Arbitrary
 
-trait ExpressionArbitraries
-  extends CommonGenerators {
+trait ExpressionArbitraries extends CommonGenerators {
 
   val expressionGenerator: Gen[Expression] =
     Gen.lzy(
@@ -20,7 +19,8 @@ trait ExpressionArbitraries
     )
 
   val stringValGenerator: Gen[StringVal] = Gen.oneOf(
-    (nonEmptyStringGenerator, Gen.option(sparqlDataTypesGen)).mapN(StringVal.STRING(_, _)),
+    (nonEmptyStringGenerator, Gen.option(sparqlDataTypesGen))
+      .mapN(StringVal.STRING(_, _)),
     Gen.numStr.map(StringVal.NUM(_)),
     nonEmptyStringGenerator.map(str => StringVal.VARIABLE(s"?$str")),
     nonEmptyStringGenerator.map(uri => StringVal.URIVAL(uri)),

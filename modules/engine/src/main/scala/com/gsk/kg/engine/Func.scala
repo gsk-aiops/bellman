@@ -5,8 +5,7 @@ import org.apache.spark.sql.functions.{concat => cc, _}
 
 object Func {
 
-  /**
-    * Performs logical binary operation '==' over two columns
+  /** Performs logical binary operation '==' over two columns
     * @param l
     * @param r
     * @return
@@ -14,8 +13,7 @@ object Func {
   def equals(l: Column, r: Column): Column =
     l === r
 
-  /**
-    * Peforms logical binary operation '>' over two columns
+  /** Peforms logical binary operation '>' over two columns
     * @param l
     * @param r
     * @return
@@ -23,8 +21,7 @@ object Func {
   def gt(l: Column, r: Column): Column =
     l > r
 
-  /**
-    * Performs logical binary operation '<' over two columns
+  /** Performs logical binary operation '<' over two columns
     * @param l
     * @param r
     * @return
@@ -32,8 +29,7 @@ object Func {
   def lt(l: Column, r: Column): Column =
     l < r
 
-  /**
-    * Performs logical binary operation '<=' over two columns
+  /** Performs logical binary operation '<=' over two columns
     * @param l
     * @param r
     * @return
@@ -41,8 +37,7 @@ object Func {
   def gte(l: Column, r: Column): Column =
     l >= r
 
-  /**
-    * Performs logical binary operation '>=' over two columns
+  /** Performs logical binary operation '>=' over two columns
     * @param l
     * @param r
     * @return
@@ -50,8 +45,7 @@ object Func {
   def lte(l: Column, r: Column): Column =
     l <= r
 
-  /**
-    * Performs logical binary operation 'or' over two columns
+  /** Performs logical binary operation 'or' over two columns
     * @param l
     * @param r
     * @return
@@ -59,8 +53,7 @@ object Func {
   def or(l: Column, r: Column): Column =
     l || r
 
-  /**
-    * Performs logical binary operation 'and' over two columns
+  /** Performs logical binary operation 'and' over two columns
     * @param r
     * @param l
     * @return
@@ -68,16 +61,14 @@ object Func {
   def and(l: Column, r: Column): Column =
     l && r
 
-  /**
-    * Negates all rows of a column
+  /** Negates all rows of a column
     * @param s
     * @return
     */
   def negate(s: Column): Column =
     not(s)
 
-  /**
-    * Returns a column with 'true' or 'false' rows indicating whether a column has blank nodes
+  /** Returns a column with 'true' or 'false' rows indicating whether a column has blank nodes
     * @param col
     * @return
     */
@@ -85,8 +76,7 @@ object Func {
     when(regexp_extract(col, "^_:.*$", 0) =!= "", true)
       .otherwise(false)
 
-  /**
-    * Implementation of SparQL REPLACE (without flags) on Spark dataframes.
+  /** Implementation of SparQL REPLACE (without flags) on Spark dataframes.
     *
     * =Examples=
     *
@@ -112,8 +102,7 @@ object Func {
   def replace(col: Column, pattern: String, by: String): Column =
     regexp_replace(col, pattern, by)
 
-  /**
-    * Implementation of SparQL STRAFTER on Spark dataframes.
+  /** Implementation of SparQL STRAFTER on Spark dataframes.
     *
     * =Examples=
     *
@@ -140,8 +129,7 @@ object Func {
     when(substring_index(col, str, -1) === col, lit(""))
       .otherwise(substring_index(col, str, -1))
 
-  /**
-    * The IRI function constructs an IRI by resolving the string
+  /** The IRI function constructs an IRI by resolving the string
     * argument (see RFC 3986 and RFC 3987 or any later RFC that
     * superceeds RFC 3986 or RFC 3987). The IRI is resolved against
     * the base IRI of the query and must result in an absolute IRI.
@@ -171,16 +159,14 @@ object Func {
   def iri(col: Column): Column =
     col
 
-  /**
-    * synonym for [[Func.iri]]
+  /** synonym for [[Func.iri]]
     *
     * @param col
     * @return
     */
   def uri(col: Column): Column = iri(col)
 
-  /**
-    * Concatenate two [[Column]] into a new one
+  /** Concatenate two [[Column]] into a new one
     *
     * @param a
     * @param b
@@ -189,8 +175,7 @@ object Func {
   def concat(a: Column, b: Column): Column =
     cc(a, b)
 
-  /**
-    * Concatenate a [[String]] with a [[Column]], generating a new [[Column]]
+  /** Concatenate a [[String]] with a [[Column]], generating a new [[Column]]
     *
     * @param a
     * @param b
@@ -199,8 +184,7 @@ object Func {
   def concat(a: String, b: Column): Column =
     concat(lit(a), b)
 
-  /**
-    * Concatenate a [[Column]] with a [[String]], generating a new [[Column]]
+  /** Concatenate a [[Column]] with a [[String]], generating a new [[Column]]
     *
     * @param a
     * @param b

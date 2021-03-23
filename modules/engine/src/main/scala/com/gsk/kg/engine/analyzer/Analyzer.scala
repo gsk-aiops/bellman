@@ -20,9 +20,7 @@ object Analyzer {
   def rules[T: Basis[DAG, *]]: List[Rule[T]] =
     List(FindUnboundVariables[T])
 
-
-  /**
-    * Execute all rules in [[Analyzer.rules]] and accumulate errors
+  /** Execute all rules in [[Analyzer.rules]] and accumulate errors
     * that they may throw.
     *
     * In case no errors are returned, the
@@ -34,7 +32,8 @@ object Analyzer {
       val x: ValidatedNec[String, String] = Foldable[List].fold(rules.map(_(t)))
 
       x match {
-        case Invalid(e) => M.lift[Result, DataFrame, T](EngineError.AnalyzerError(e).asLeft)
+        case Invalid(e) =>
+          M.lift[Result, DataFrame, T](EngineError.AnalyzerError(e).asLeft)
         case Valid(e) => t.pure[M]
       }
     }

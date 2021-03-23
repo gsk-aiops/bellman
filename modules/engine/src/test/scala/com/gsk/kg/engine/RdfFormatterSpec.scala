@@ -44,7 +44,7 @@ class RdfFormatterSpec
   "RDFLocalizedString" should "match localized strings correctly" in {
     val localizedStringGen: Gen[String] =
       for {
-        str <- Gen.alphaStr
+        str  <- Gen.alphaStr
         lang <- Gen.oneOf("en", "es", "cn", "fr")
       } yield s""""$str"@$lang"""
 
@@ -75,15 +75,14 @@ class RdfFormatterSpec
     ("<http://test.com>", "<http://test.com>"),
     ("http://test.com", "http://test.com"),
     ("1", 1),
-    ("1.333", 1.333F),
+    ("1.333", 1.333f),
     ("_:potato", "_:potato")
   )
 
-  tests foreach {
-    case (str, expected) =>
-      it should s"format nodes correctly: $str -> $expected" in {
-        formatField(str) shouldEqual expected
-      }
+  tests foreach { case (str, expected) =>
+    it should s"format nodes correctly: $str -> $expected" in {
+      formatField(str) shouldEqual expected
+    }
   }
 
 }

@@ -70,9 +70,11 @@ class AnalyzerSpec extends AnyFlatSpec with Matchers {
 
     val dag = DAG.fromQuery.apply(query)
 
-    val variablesBoundInBind = dag.collect[List[VARIABLE], VARIABLE] {
-      case DAG.Bind(variable, _, _) => variable
-      }.toSet
+    val variablesBoundInBind = dag
+      .collect[List[VARIABLE], VARIABLE] { case DAG.Bind(variable, _, _) =>
+        variable
+      }
+      .toSet
 
     val result = Analyzer.analyze.apply(dag).runA(null)
 

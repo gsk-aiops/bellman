@@ -7,14 +7,13 @@ sealed trait Predicate
 
 object Predicate {
   case class SPO(s: String, p: String, o: String) extends Predicate
-  case class SP(s: String, p: String) extends Predicate
-  case class PO(p: String, o: String) extends Predicate
-  case class SO(s: String, o: String) extends Predicate
-  case class S(s: String) extends Predicate
-  case class P(p: String) extends Predicate
-  case class O(o: String) extends Predicate
-  case object None extends Predicate
-
+  case class SP(s: String, p: String)             extends Predicate
+  case class PO(p: String, o: String)             extends Predicate
+  case class SO(s: String, o: String)             extends Predicate
+  case class S(s: String)                         extends Predicate
+  case class P(p: String)                         extends Predicate
+  case class O(o: String)                         extends Predicate
+  case object None                                extends Predicate
 
   def fromQuad(Quad: Expr.Quad): Predicate =
     Quad match {

@@ -7,7 +7,8 @@ import org.scalatest.matchers.should.Matchers
 import cats.instances.string._
 import com.gsk.kg.engine.data.ToTree._
 import DAG._
-import com.gsk.kg.sparqlparser.StringVal.{GRAPH_VARIABLE, STRING}
+import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
+import com.gsk.kg.sparqlparser.StringVal.STRING
 import higherkindness.droste.data.Fix
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.sparqlparser.Expr
@@ -34,27 +35,33 @@ class DAGSpec
     val join: T = joinR(
       bgpR(
         ChunkedList(
-          Expr.Quad(STRING("one"), STRING("two"), STRING("three"), GRAPH_VARIABLE)
+          Expr
+            .Quad(STRING("one"), STRING("two"), STRING("three"), GRAPH_VARIABLE)
         )
       ),
       bgpR(
         ChunkedList(
-          Expr.Quad(STRING("four"), STRING("five"), STRING("six"), GRAPH_VARIABLE)
+          Expr.Quad(
+            STRING("four"),
+            STRING("five"),
+            STRING("six"),
+            GRAPH_VARIABLE
+          )
         )
       )
     )
 
-    val joinsAsBGP: PartialFunction[DAG[T], DAG[T]] = {
-      case j @ Join(l, r) =>
-        (T.coalgebra(l), T.coalgebra(r)) match {
-          case (BGP(tl), BGP(tr)) => bgp(tl concat tr)
-          case _                  => j
-        }
+    val joinsAsBGP: PartialFunction[DAG[T], DAG[T]] = { case j @ Join(l, r) =>
+      (T.coalgebra(l), T.coalgebra(r)) match {
+        case (BGP(tl), BGP(tr)) => bgp(tl concat tr)
+        case _                  => j
+      }
     }
 
     T.coalgebra(join).rewrite(joinsAsBGP) shouldEqual bgpR(
       ChunkedList(
-        Expr.Quad(STRING("one"), STRING("two"), STRING("three"), GRAPH_VARIABLE),
+        Expr
+          .Quad(STRING("one"), STRING("two"), STRING("three"), GRAPH_VARIABLE),
         Expr.Quad(STRING("four"), STRING("five"), STRING("six"), GRAPH_VARIABLE)
       )
     )

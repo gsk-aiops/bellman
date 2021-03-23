@@ -11,8 +11,7 @@ import java.{util => ju}
 import scala.collection.immutable.SortedMap
 import scala.collection.immutable.Nil
 
-/**
-  * A data structure like a linked [[scala.List]] but in which nodes
+/** A data structure like a linked [[scala.List]] but in which nodes
   * can be [[ChunkedList.Chunk]]s of elements.
   */
 @deriveTraverse trait ChunkedList[A] {
@@ -37,19 +36,24 @@ import scala.collection.immutable.Nil
   def foldLeft[B](z: B)(f: (B, A) => B): B =
     Foldable[ChunkedList].foldLeft(this, z)(f)
 
-  final def groupBy[B](f: A => B)(implicit B: Order[B]): SortedMap[B, NonEmptyChain[A]] =
+  final def groupBy[B](f: A => B)(implicit
+      B: Order[B]
+  ): SortedMap[B, NonEmptyChain[A]] =
     groupMap(key = f)(identity)
 
-  final def groupMap[K, B](key: A => K)(f: A => B)(implicit K: Order[K]): SortedMap[K, NonEmptyChain[B]] = {
+  final def groupMap[K, B](
+      key: A => K
+  )(f: A => B)(implicit K: Order[K]): SortedMap[K, NonEmptyChain[B]] = {
     implicit val ordering: Ordering[K] = K.toOrdering
 
-    Foldable[ChunkedList].foldLeft(this, SortedMap.empty[K, NonEmptyChain[B]]) { (m, elem) =>
-      val k = key(elem)
+    Foldable[ChunkedList].foldLeft(this, SortedMap.empty[K, NonEmptyChain[B]]) {
+      (m, elem) =>
+        val k = key(elem)
 
-      m.get(k) match {
-        case Some(cat) => m.updated(key = k, value = cat :+ f(elem))
-        case None      => m + (k -> NonEmptyChain.one(f(elem)))
-      }
+        m.get(k) match {
+          case Some(cat) => m.updated(key = k, value = cat :+ f(elem))
+          case None      => m + (k -> NonEmptyChain.one(f(elem)))
+        }
     }
   }
 
@@ -58,11 +62,11 @@ import scala.collection.immutable.Nil
       NonEmpty(Chunk(elem), acc)
     }
 
-  final def concat(other:ChunkedList[A]): ChunkedList[A] =
+  final def concat(other: ChunkedList[A]): ChunkedList[A] =
     this.reverse.foldLeftChunks[ChunkedList[A]](other) { (acc, elem) =>
       acc match {
         case Empty() => Empty()
-        case other => NonEmpty(elem, other)
+        case other   => NonEmpty(elem, other)
       }
     }
 }
@@ -88,7 +92,7 @@ object ChunkedList {
 
   def fromChunks[A](chunks: List[NonEmptyChain[A]]): ChunkedList[A] =
     chunks match {
-      case Nil => Empty()
+      case Nil        => Empty()
       case head :: tl => NonEmpty(head, fromChunks(tl))
     }
 
@@ -102,8 +106,9 @@ object ChunkedList {
               "ChunkedList.Node",
               ne
                 .mapChunks(_.toTree)
-                .foldLeft[Stream[TreeRep[String]]](Stream.empty) { (acc, current) =>
-                  current #:: acc
+                .foldLeft[Stream[TreeRep[String]]](Stream.empty) {
+                  (acc, current) =>
+                    current #:: acc
                 }
             )
         }

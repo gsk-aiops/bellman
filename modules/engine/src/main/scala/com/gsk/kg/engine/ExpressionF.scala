@@ -15,8 +15,7 @@ import org.apache.spark.sql.Column
 import com.gsk.kg.engine.ExpressionF._
 import org.apache.spark.sql.DataFrame
 
-/**
-  * [[ExpressionF]] is a pattern functor for the recursive
+/** [[ExpressionF]] is a pattern functor for the recursive
   * [[Expression]].
   *
   * Using Droste's syntax, we get tree traversals for free such as the
@@ -26,54 +25,59 @@ import org.apache.spark.sql.DataFrame
 
 object ExpressionF {
 
-  final case class EQUALS[A](l: A, r: A) extends ExpressionF[A]
-  final case class REGEX[A](l: A, r: A) extends ExpressionF[A]
-  final case class STRSTARTS[A](l: A, r: A) extends ExpressionF[A]
-  final case class GT[A](l: A, r: A) extends ExpressionF[A]
-  final case class LT[A](l: A, r: A) extends ExpressionF[A]
-  final case class GTE[A](l: A, r: A) extends ExpressionF[A]
-  final case class LTE[A](l: A, r: A) extends ExpressionF[A]
-  final case class OR[A](l: A, r: A) extends ExpressionF[A]
-  final case class AND[A](l: A, r: A) extends ExpressionF[A]
-  final case class NEGATE[A](s: A) extends ExpressionF[A]
-  final case class URI[A](s: A) extends ExpressionF[A]
+  final case class EQUALS[A](l: A, r: A)             extends ExpressionF[A]
+  final case class REGEX[A](l: A, r: A)              extends ExpressionF[A]
+  final case class STRSTARTS[A](l: A, r: A)          extends ExpressionF[A]
+  final case class GT[A](l: A, r: A)                 extends ExpressionF[A]
+  final case class LT[A](l: A, r: A)                 extends ExpressionF[A]
+  final case class GTE[A](l: A, r: A)                extends ExpressionF[A]
+  final case class LTE[A](l: A, r: A)                extends ExpressionF[A]
+  final case class OR[A](l: A, r: A)                 extends ExpressionF[A]
+  final case class AND[A](l: A, r: A)                extends ExpressionF[A]
+  final case class NEGATE[A](s: A)                   extends ExpressionF[A]
+  final case class URI[A](s: A)                      extends ExpressionF[A]
   final case class CONCAT[A](appendTo: A, append: A) extends ExpressionF[A]
-  final case class STR[A](s: A) extends ExpressionF[A]
-  final case class STRAFTER[A](s: A, f: String) extends ExpressionF[A]
-  final case class ISBLANK[A](s: A) extends ExpressionF[A]
-  final case class REPLACE[A](st: A, pattern: String, by: String) extends ExpressionF[A]
-  final case class STRING[A](s: String) extends ExpressionF[A]
-  final case class NUM[A](s: String) extends ExpressionF[A]
+  final case class STR[A](s: A)                      extends ExpressionF[A]
+  final case class STRAFTER[A](s: A, f: String)      extends ExpressionF[A]
+  final case class ISBLANK[A](s: A)                  extends ExpressionF[A]
+  final case class REPLACE[A](st: A, pattern: String, by: String)
+      extends ExpressionF[A]
+  final case class STRING[A](s: String)   extends ExpressionF[A]
+  final case class NUM[A](s: String)      extends ExpressionF[A]
   final case class VARIABLE[A](s: String) extends ExpressionF[A]
-  final case class URIVAL[A](s: String) extends ExpressionF[A]
-  final case class BLANK[A](s: String) extends ExpressionF[A]
-  final case class BOOL[A](s: String) extends ExpressionF[A]
+  final case class URIVAL[A](s: String)   extends ExpressionF[A]
+  final case class BLANK[A](s: String)    extends ExpressionF[A]
+  final case class BOOL[A](s: String)     extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
-      case Conditional.EQUALS(l, r)         => EQUALS(l, r)
-      case Conditional.GT(l, r)             => GT(l, r)
-      case Conditional.LT(l, r)             => LT(l, r)
-      case Conditional.GTE(l, r)            => GTE(l, r)
-      case Conditional.LTE(l, r)            => LTE(l, r)
-      case Conditional.OR(l, r)             => OR(l, r)
-      case Conditional.AND(l, r)            => AND(l, r)
-      case Conditional.NEGATE(s)            => NEGATE(s)
-      case BuildInFunc.URI(s)                   => URI(s)
-      case BuildInFunc.CONCAT(appendTo, append) => CONCAT(appendTo, append)
-      case BuildInFunc.STR(s)                   => STR(s)
-      case BuildInFunc.STRAFTER(s, StringVal.STRING(f,_))           => STRAFTER(s, f)
-      case BuildInFunc.ISBLANK(s)               => ISBLANK(s)
-      case BuildInFunc.REPLACE(st, StringVal.STRING(pattern, _), StringVal.STRING(by, _)) =>
+      case Conditional.EQUALS(l, r)                        => EQUALS(l, r)
+      case Conditional.GT(l, r)                            => GT(l, r)
+      case Conditional.LT(l, r)                            => LT(l, r)
+      case Conditional.GTE(l, r)                           => GTE(l, r)
+      case Conditional.LTE(l, r)                           => LTE(l, r)
+      case Conditional.OR(l, r)                            => OR(l, r)
+      case Conditional.AND(l, r)                           => AND(l, r)
+      case Conditional.NEGATE(s)                           => NEGATE(s)
+      case BuildInFunc.URI(s)                              => URI(s)
+      case BuildInFunc.CONCAT(appendTo, append)            => CONCAT(appendTo, append)
+      case BuildInFunc.STR(s)                              => STR(s)
+      case BuildInFunc.STRAFTER(s, StringVal.STRING(f, _)) => STRAFTER(s, f)
+      case BuildInFunc.ISBLANK(s)                          => ISBLANK(s)
+      case BuildInFunc.REPLACE(
+            st,
+            StringVal.STRING(pattern, _),
+            StringVal.STRING(by, _)
+          ) =>
         REPLACE(st, pattern, by)
-      case BuildInFunc.REGEX(l, r)          => REGEX(l, r)
-      case BuildInFunc.STRSTARTS(l, r)      => STRSTARTS(l, r)
-      case StringVal.STRING(s,_)               => STRING(s)
-      case StringVal.NUM(s)                    => NUM(s)
-      case StringVal.VARIABLE(s)               => VARIABLE(s)
-      case StringVal.URIVAL(s)                 => URIVAL(s)
-      case StringVal.BLANK(s)                  => BLANK(s)
-      case StringVal.BOOL(s)                   => BOOL(s)
+      case BuildInFunc.REGEX(l, r)     => REGEX(l, r)
+      case BuildInFunc.STRSTARTS(l, r) => STRSTARTS(l, r)
+      case StringVal.STRING(s, _)      => STRING(s)
+      case StringVal.NUM(s)            => NUM(s)
+      case StringVal.VARIABLE(s)       => VARIABLE(s)
+      case StringVal.URIVAL(s)         => URIVAL(s)
+      case StringVal.BLANK(s)          => BLANK(s)
+      case StringVal.BOOL(s)           => BOOL(s)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -121,33 +125,42 @@ object ExpressionF {
       coalgebra = fromExpressionCoalg
     )
 
-  def compile[T](t: T)(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
-    val algebraM: AlgebraM[M, ExpressionF, Column] = AlgebraM.apply[M, ExpressionF, Column] {
-      case EQUALS(l, r)    => Func.equals(l, r).pure[M]
-      case REGEX(l, r)     => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("REGEX").asLeft[Column])
-      case STRSTARTS(l, r) => M.liftF[Result, DataFrame, Column](EngineError.UnknownFunction("STRSTARTS").asLeft[Column])
-      case GT(l, r)        => Func.gt(l, r).pure[M]
-      case LT(l, r)        => Func.lt(l, r).pure[M]
-      case GTE(l, r)       => Func.gte(l, r).pure[M]
-      case LTE(l, r)       => Func.lte(l, r).pure[M]
-      case OR(l, r)        => Func.or(l, r).pure[M]
-      case AND(l, r)       => Func.and(l, r).pure[M]
-      case NEGATE(s)       => Func.negate(s).pure[M]
+  def compile[T](
+      t: T
+  )(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
+    val algebraM: AlgebraM[M, ExpressionF, Column] =
+      AlgebraM.apply[M, ExpressionF, Column] {
+        case EQUALS(l, r) => Func.equals(l, r).pure[M]
+        case REGEX(l, r) =>
+          M.liftF[Result, DataFrame, Column](
+            EngineError.UnknownFunction("REGEX").asLeft[Column]
+          )
+        case STRSTARTS(l, r) =>
+          M.liftF[Result, DataFrame, Column](
+            EngineError.UnknownFunction("STRSTARTS").asLeft[Column]
+          )
+        case GT(l, r)  => Func.gt(l, r).pure[M]
+        case LT(l, r)  => Func.lt(l, r).pure[M]
+        case GTE(l, r) => Func.gte(l, r).pure[M]
+        case LTE(l, r) => Func.lte(l, r).pure[M]
+        case OR(l, r)  => Func.or(l, r).pure[M]
+        case AND(l, r) => Func.and(l, r).pure[M]
+        case NEGATE(s) => Func.negate(s).pure[M]
 
-      case URI(s)                   => Func.iri(s).pure[M]
-      case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]
-      case STR(s)                   => s.pure[M]
-      case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
-      case ISBLANK(s)               => Func.isBlank(s).pure[M]
-      case REPLACE(st, pattern, by) => Func.replace(st, pattern, by).pure[M]
+        case URI(s)                   => Func.iri(s).pure[M]
+        case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]
+        case STR(s)                   => s.pure[M]
+        case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
+        case ISBLANK(s)               => Func.isBlank(s).pure[M]
+        case REPLACE(st, pattern, by) => Func.replace(st, pattern, by).pure[M]
 
-      case STRING(s)   => lit(s).pure[M]
-      case NUM(s)      => lit(s).pure[M]
-      case VARIABLE(s) => M.inspect[Result, DataFrame, Column](_(s))
-      case URIVAL(s)   => lit(s).pure[M]
-      case BLANK(s)    => lit(s).pure[M]
-      case BOOL(s)    => lit(s).pure[M]
-    }
+        case STRING(s)   => lit(s).pure[M]
+        case NUM(s)      => lit(s).pure[M]
+        case VARIABLE(s) => M.inspect[Result, DataFrame, Column](_(s))
+        case URIVAL(s)   => lit(s).pure[M]
+        case BLANK(s)    => lit(s).pure[M]
+        case BOOL(s)     => lit(s).pure[M]
+      }
 
     val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)
 
