@@ -1,237 +1,587 @@
 package com.gsk.kg.engine
 
+import com.gsk.kg.engine.utils.MultisetMatchers
+import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
+class MultisetSpec
+    extends AnyWordSpec
+    with DataFrameSuiteBase
+    with MultisetMatchers {
 
   override implicit def reuseContextIfPossible: Boolean = true
 
   override implicit def enableHiveSupport: Boolean = false
 
-  "Multiset.join empty" should "join two empty multisets together" in {
-    val ms1 = Multiset(Set.empty, spark.emptyDataFrame)
-    val ms2 = Multiset(Set.empty, spark.emptyDataFrame)
+  "Multiset.join" should {
 
-    assertMultisetEquals(
-      ms1.join(ms2),
-      Multiset(Set.empty, spark.emptyDataFrame)
-    )
-  }
+    "join two empty multisets together" in {
+      val ms1 = Multiset.empty
+      val ms2 = Multiset.empty
 
-  it should "join other nonempty multiset on the right" in {
-    import sqlContext.implicits._
-    val empty    = Multiset(Set.empty, spark.emptyDataFrame)
-    val nonEmpty = Multiset(Set(VARIABLE("d")), Seq("test1", "test2").toDF("d"))
+      ms1.join(ms2) should equalsMultiset(Multiset.empty)
+    }
 
-    assertMultisetEquals(empty.join(nonEmpty), nonEmpty)
-  }
-
-  it should "join other nonempty multiset on the left" in {
-    import sqlContext.implicits._
-    val empty    = Multiset(Set.empty, spark.emptyDataFrame)
-    val nonEmpty = Multiset(Set(VARIABLE("d")), Seq("test1", "test2").toDF("d"))
-
-    assertMultisetEquals(nonEmpty.join(empty), nonEmpty)
-  }
-
-  "Multiset.join" should "join other multiset when they have both the same single binding" in {
-    import sqlContext.implicits._
-    val variable = VARIABLE("d")
-    val ms1      = Multiset(Set(variable), List("test1", "test2").toDF("d"))
-    val ms2      = Multiset(Set(variable), List("test1", "test3").toDF("d"))
-
-    assertMultisetEquals(
-      ms1.join(ms2),
-      Multiset(Set(variable), List("test1").toDF("d"))
-    )
-  }
-
-  it should "join other multiset when they share one binding" in {
-    import sqlContext.implicits._
-    val d = VARIABLE("d")
-    val e = VARIABLE("e")
-    val f = VARIABLE("f")
-    val ms1 = Multiset(
-      Set(d, e),
-      List(("test1", "234"), ("test2", "123")).toDF(d.s, e.s)
-    )
-    val ms2 = Multiset(
-      Set(d, f),
-      List(("test1", "hello"), ("test3", "goodbye")).toDF(d.s, f.s)
-    )
-
-    assertMultisetEquals(
-      ms1.join(ms2),
-      Multiset(
-        Set(d, e, f),
-        List(("test1", "234", "hello")).toDF("d", "e", "f")
+    "join other nonempty multiset on the right" in {
+      import sqlContext.implicits._
+      val empty = Multiset.empty
+      val nonEmpty = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        Seq(("test1", ""), ("test2", "")).toDF("d", GRAPH_VARIABLE.s)
       )
-    )
-  }
 
-  it should "join other multiset when they share more than one binding" in {
-    import sqlContext.implicits._
-    val d = VARIABLE("d")
-    val e = VARIABLE("e")
-    val f = VARIABLE("f")
-    val g = VARIABLE("g")
-    val h = VARIABLE("h")
-    val ms1 = Multiset(
-      Set(d, e, g, h),
-      List(("test1", "234", "g1", "h1"), ("test2", "123", "g2", "h2"))
-        .toDF(d.s, e.s, g.s, h.s)
-    )
-    val ms2 = Multiset(
-      Set(d, e, f),
-      List(("test1", "234", "hello"), ("test3", "e2", "goodbye"))
-        .toDF(d.s, e.s, f.s)
-    )
+      empty.join(nonEmpty) should equalsMultiset(nonEmpty)
+    }
 
-    assertMultisetEquals(
-      ms1.join(ms2),
-      Multiset(
-        Set(d, e, f, g, h),
-        List(("test1", "234", "g1", "h1", "hello"))
-          .toDF("d", "e", "g", "h", "f")
+    "join other nonempty multiset on the left" in {
+      import sqlContext.implicits._
+      val empty = Multiset.empty
+      val nonEmpty = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        Seq(("test1", ""), ("test2", "")).toDF("d", GRAPH_VARIABLE.s)
       )
-    )
-  }
 
-  it should "perform a union when there's no shared bindings between multisets" in {
-    import sqlContext.implicits._
-    val d = VARIABLE("d")
-    val e = VARIABLE("e")
-    val f = VARIABLE("f")
-    val g = VARIABLE("g")
-    val h = VARIABLE("h")
-    val i = VARIABLE("i")
+      nonEmpty.join(empty) should equalsMultiset(nonEmpty)
+    }
 
-    val ms1 = Multiset(
-      Set(d, e, f),
-      List(("test1", "234", "g1"), ("test2", "123", "g2")).toDF(d.s, e.s, f.s)
-    )
-    val ms2 = Multiset(
-      Set(g, h, i),
-      List(("test1", "234", "hello"), ("test3", "e2", "goodbye"))
-        .toDF(g.s, h.s, i.s)
-    )
+    "join other multiset when they have both the same single binding" in {
+      import sqlContext.implicits._
+      val variables = Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s))
+      val df1 = List(
+        ("test1", ""),
+        ("test2", "")
+      ).toDF("d", GRAPH_VARIABLE.s)
+      val df2 = List(
+        ("test1", ""),
+        ("test3", "")
+      ).toDF("d", GRAPH_VARIABLE.s)
 
-    assertMultisetEquals(
-      ms1.join(ms2),
-      Multiset(
-        Set(d, e, f, g, h, i),
+      val ms1 = Multiset(variables, df1)
+      val ms2 = Multiset(variables, df2)
+
+      ms1.join(ms2) should equalsMultiset(
+        Multiset(variables, List(("test1", "")).toDF("d", GRAPH_VARIABLE.s))
+      )
+    }
+
+    "join other multiset when they share one binding" in {
+      import sqlContext.implicits._
+      val d     = VARIABLE("d")
+      val e     = VARIABLE("e")
+      val f     = VARIABLE("f")
+      val graph = VARIABLE(GRAPH_VARIABLE.s)
+
+      val ms1 = Multiset(
+        Set(d, e, graph),
+        List(("test1", "234", "graph1"), ("test2", "123", "graph1"))
+          .toDF(d.s, e.s, graph.s)
+      )
+      val ms2 = Multiset(
+        Set(d, f, graph),
+        List(("test1", "hello", "graph2"), ("test3", "goodbye", "graph2"))
+          .toDF(d.s, f.s, graph.s)
+      )
+
+      ms1.join(ms2) should equalsMultiset(
+        Multiset(
+          Set(d, e, f, graph),
+          List(("test1", "234", "hello", "")).toDF("d", "e", "f", graph.s)
+        )
+      )
+    }
+
+    "join other multiset when they share more than one binding" in {
+      import sqlContext.implicits._
+      val d     = VARIABLE("d")
+      val e     = VARIABLE("e")
+      val f     = VARIABLE("f")
+      val g     = VARIABLE("g")
+      val h     = VARIABLE("h")
+      val graph = VARIABLE(GRAPH_VARIABLE.s)
+
+      val ms1 = Multiset(
+        Set(d, e, g, h, graph),
         List(
-          ("test1", "234", "g1", "test1", "234", "hello"),
-          ("test1", "234", "g1", "test3", "e2", "goodbye"),
-          ("test2", "123", "g2", "test1", "234", "hello"),
-          ("test2", "123", "g2", "test3", "e2", "goodbye")
-        ).toDF("d", "e", "g", "h", "f", "i")
+          ("test1", "234", "g1", "h1", "graph1"),
+          ("test2", "123", "g2", "h2", "graph2")
+        )
+          .toDF(d.s, e.s, g.s, h.s, graph.s)
       )
-    )
-  }
-
-  "Multiset.union" should "work both sides are empty" in {
-    val ms1 = Multiset(Set.empty, spark.emptyDataFrame)
-    val ms2 = Multiset(Set.empty, spark.emptyDataFrame)
-
-    assertMultisetEquals(
-      ms1.union(ms2),
-      Multiset(Set.empty, spark.emptyDataFrame)
-    )
-  }
-
-  it should "work when left side is empty" in {
-    import sqlContext.implicits._
-
-    val ms1 = Multiset(Set.empty, spark.emptyDataFrame)
-    val ms2 = Multiset(Set(VARIABLE("a")), List("A", "B", "C").toDF("a"))
-
-    assertMultisetEquals(
-      ms1.union(ms2),
-      ms2
-    )
-  }
-
-  it should "work when right side is empty" in {
-    import sqlContext.implicits._
-
-    val ms1 = Multiset(Set(VARIABLE("a")), List("A", "B", "C").toDF("a"))
-    val ms2 = Multiset(Set.empty, spark.emptyDataFrame)
-
-    assertMultisetEquals(
-      ms1.union(ms2),
-      ms1
-    )
-  }
-
-  it should "union two multisets with the same bindings" in {
-    import sqlContext.implicits._
-
-    val a = VARIABLE("a")
-    val b = VARIABLE("b")
-
-    val ms1 = Multiset(
-      Set(a, b),
-      List(("A", "1"), ("B", "2"), ("C", "3")).toDF(a.s, b.s)
-    )
-    val ms2 = Multiset(
-      Set(a, b),
-      List(("D", "4"), ("E", "5"), ("F", "6")).toDF(a.s, b.s)
-    )
-
-    assertMultisetEquals(
-      ms1.union(ms2),
-      Multiset(
-        Set(a, b),
+      val ms2 = Multiset(
+        Set(d, e, f, graph),
         List(
-          ("A", "1"),
-          ("B", "2"),
-          ("C", "3"),
-          ("D", "4"),
-          ("E", "5"),
-          ("F", "6")
-        ).toDF("a", "b")
+          ("test1", "234", "hello", "graph3"),
+          ("test3", "e2", "goodbye", "graph4")
+        )
+          .toDF(d.s, e.s, f.s, graph.s)
       )
-    )
-  }
 
-  it should "union two multisets with different bindings" in {
-    import sqlContext.implicits._
+      val result = ms1.join(ms2)
+      val expectedResult = Multiset(
+        Set(d, e, f, g, h, graph),
+        List(("test1", "234", "g1", "h1", "hello", ""))
+          .toDF("d", "e", "g", "h", "f", graph.s)
+      )
 
-    val a = VARIABLE("a")
-    val b = VARIABLE("b")
-    val c = VARIABLE("c")
+      result.dataframe.show()
+      expectedResult.dataframe.show()
 
-    val ms1 = Multiset(
-      Set(a, b),
-      List(("A", "1"), ("B", "2"), ("C", "3")).toDF(a.s, b.s)
-    )
-    val ms2 = Multiset(Set(c), List("CC").toDF(c.s))
+      result should equalsMultiset(expectedResult)
+    }
 
-    assertMultisetEquals(
-      ms1.union(ms2),
-      Multiset(
-        Set(a, b, c),
+    "perform a union when there's no shared bindings between multisets" in {
+      import sqlContext.implicits._
+      val d     = VARIABLE("d")
+      val e     = VARIABLE("e")
+      val f     = VARIABLE("f")
+      val g     = VARIABLE("g")
+      val h     = VARIABLE("h")
+      val i     = VARIABLE("i")
+      val graph = VARIABLE(GRAPH_VARIABLE.s)
+
+      val ms1 = Multiset(
+        Set(d, e, f, graph),
+        List(("test1", "234", "g1", "graph1"), ("test2", "123", "g2", "graph1"))
+          .toDF(d.s, e.s, f.s, graph.s)
+      )
+      val ms2 = Multiset(
+        Set(g, h, i, graph),
         List(
-          ("A", "1", null),
-          ("B", "2", null),
-          ("C", "3", null),
-          (null, null, "CC")
-        ).toDF(a.s, b.s, c.s)
+          ("test1", "234", "hello", "graph2"),
+          ("test3", "e2", "goodbye", "graph2")
+        )
+          .toDF(g.s, h.s, i.s, graph.s)
       )
-    )
+
+      ms1.join(ms2) should equalsMultiset(
+        Multiset(
+          Set(d, e, f, g, h, i, graph),
+          List(
+            ("test1", "234", "g1", "test1", "234", "hello", ""),
+            ("test1", "234", "g1", "test3", "e2", "goodbye", ""),
+            ("test2", "123", "g2", "test1", "234", "hello", ""),
+            ("test2", "123", "g2", "test3", "e2", "goodbye", "")
+          ).toDF("d", "e", "g", "h", "f", "i", graph.s)
+        )
+      )
+    }
   }
 
-  def assertMultisetEquals(ms1: Multiset, ms2: Multiset): Unit = {
-    assert(ms1.bindings === ms2.bindings, "bindings are different")
-    assert(
-      ms1.dataframe.collect === ms2.dataframe.collect,
-      "dataframes are different"
-    )
+  "Multiset.leftJoin" should {
+
+    "return empty multiset when left joined two empty multisets" in {
+      val ms1 = Multiset.empty
+      val ms2 = Multiset.empty
+
+      val result = ms1.leftJoin(ms2)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get should equalsMultiset(Multiset.empty)
+    }
+
+    "return empty multiset when empty multiset on left and non empty multiset on right" in {
+      import sqlContext.implicits._
+      val leftEmpty = Multiset.empty
+      val rightNonEmpty = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        Seq(("test1", ""), ("test2", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+
+      val result = leftEmpty.leftJoin(rightNonEmpty)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get should equalsMultiset(leftEmpty)
+    }
+
+    "return right multiset when non empty multiset on left and empty multiset on right" in {
+      import sqlContext.implicits._
+      val rightEmpty = Multiset.empty
+      val leftNonEmpty = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        Seq(("test1", ""), ("test2", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+
+      val result = leftNonEmpty.leftJoin(rightEmpty)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get should equalsMultiset(leftNonEmpty)
+    }
+
+    "return left multiset joined with right multiset when they have both the same single binding" in {
+      import sqlContext.implicits._
+      val variables = Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s))
+      val leftDf = List(
+        ("test1", ""),
+        ("test2", "")
+      ).toDF("d", GRAPH_VARIABLE.s)
+      val rightDf = List(
+        ("test1", ""),
+        ("test3", "")
+      ).toDF("d", GRAPH_VARIABLE.s)
+
+      val left  = Multiset(variables, leftDf)
+      val right = Multiset(variables, rightDf)
+
+      val result = left.leftJoin(right)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get should equalsMultiset(
+        Multiset(
+          variables,
+          List(("test1", ""), ("test2", "")).toDF("d", GRAPH_VARIABLE.s)
+        )
+      )
+    }
+
+    "return left multiset joined with right multiset when they share one binding" in {
+      import sqlContext.implicits._
+      val d     = VARIABLE("d")
+      val e     = VARIABLE("e")
+      val f     = VARIABLE("f")
+      val graph = VARIABLE(GRAPH_VARIABLE.s)
+
+      val left = Multiset(
+        Set(d, e, graph),
+        List(("test1", "234", "graph1"), ("test2", "123", "graph1"))
+          .toDF(d.s, e.s, graph.s)
+      )
+      val right = Multiset(
+        Set(d, f, graph),
+        List(("test1", "hello", "graph2"), ("test3", "goodbye", "graph2"))
+          .toDF(d.s, f.s, graph.s)
+      )
+
+      val result = left.leftJoin(right)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get should equalsMultiset(
+        Multiset(
+          Set(d, e, f, graph),
+          List(
+            ("test1", "234", "hello", ""),
+            ("test2", "123", null, "")
+          ).toDF("d", "e", "f", graph.s)
+        )
+      )
+    }
+
+    "return left when there's no shared bindings between multisets" in {
+      import sqlContext.implicits._
+      val d     = VARIABLE("d")
+      val e     = VARIABLE("e")
+      val f     = VARIABLE("f")
+      val g     = VARIABLE("g")
+      val h     = VARIABLE("h")
+      val graph = VARIABLE(GRAPH_VARIABLE.s)
+
+      val left = Multiset(
+        Set(d, e, g, h, graph),
+        List(
+          ("test1", "234", "g1", "h1", "graph1"),
+          ("test2", "123", "g2", "h2", "graph2")
+        )
+          .toDF(d.s, e.s, g.s, h.s, graph.s)
+      )
+      val right = Multiset(
+        Set(d, e, f, graph),
+        List(
+          ("test1", "234", "hello", "graph3"),
+          ("test3", "e2", "goodbye", "graph4")
+        )
+          .toDF(d.s, e.s, f.s, graph.s)
+      )
+
+      val result = left.leftJoin(right)
+      val expectedResult = Multiset(
+        Set(d, e, f, g, h, graph),
+        List(
+          ("test1", "234", "g1", "h1", "hello", ""),
+          ("test2", "123", "g2", "h2", null, "")
+        ).toDF("d", "e", "g", "h", "f", graph.s)
+      )
+
+      result.right.get.dataframe.show()
+      expectedResult.dataframe.show()
+
+      result shouldBe a[Right[_, _]]
+      result.right.get should equalsMultiset(expectedResult)
+    }
   }
+
+  "Multiset.union" should {
+
+    "union two empty multisets together" in {
+      val left  = Multiset.empty
+      val right = Multiset.empty
+
+      left.union(right) should equalsMultiset(Multiset.empty)
+    }
+
+    "union other non empty multiset on right" in {
+      import sqlContext.implicits._
+
+      val left = Multiset.empty
+      val right = Multiset(
+        Set(VARIABLE("a"), VARIABLE(GRAPH_VARIABLE.s)),
+        List(("A", ""), ("B", ""), ("C", "")).toDF("a", GRAPH_VARIABLE.s)
+      )
+
+      left.union(right) should equalsMultiset(right)
+    }
+
+    "union other non empty multiset on left" in {
+      import sqlContext.implicits._
+
+      val left = Multiset(
+        Set(VARIABLE("a"), VARIABLE(GRAPH_VARIABLE.s)),
+        List(("A", ""), ("B", ""), ("C", "")).toDF("a", GRAPH_VARIABLE.s)
+      )
+      val right = Multiset.empty
+
+      left.union(right) should equalsMultiset(left)
+    }
+
+    "union two multisets when they have both the single bindings" in {
+      import sqlContext.implicits._
+      val variables = Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s))
+
+      val left = Multiset(
+        variables,
+        List(("test1", ""), ("test2", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+      val right = Multiset(
+        variables,
+        List(("test1", ""), ("test3", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+
+      left.union(right) should equalsMultiset(
+        Multiset(
+          variables,
+          List(("test1", ""), ("test2", ""), ("test1", ""), ("test3", ""))
+            .toDF("d", GRAPH_VARIABLE.s)
+        )
+      )
+    }
+
+    "union two multisets when they share one binding" in {
+      import sqlContext.implicits._
+      val d     = VARIABLE("d")
+      val e     = VARIABLE("e")
+      val f     = VARIABLE("f")
+      val graph = VARIABLE(GRAPH_VARIABLE.s)
+
+      val left = Multiset(
+        Set(d, e, graph),
+        List(("test1", "234", ""), ("test2", "123", "")).toDF(d.s, e.s, graph.s)
+      )
+      val right = Multiset(
+        Set(d, f),
+        List(("test1", "hello", ""), ("test3", "goodbye", ""))
+          .toDF(d.s, f.s, graph.s)
+      )
+
+      left.union(right) should equalsMultiset(
+        Multiset(
+          Set(d, e, f, graph),
+          List(
+            ("test1", "234", null, ""),
+            ("test2", "123", null, ""),
+            ("test1", null, "hello", ""),
+            ("test3", null, "goodbye", "")
+          ).toDF("d", "e", "f", graph.s)
+        )
+      )
+    }
+
+    "union other multiset when they share more than one binding" in {
+      import sqlContext.implicits._
+      val d     = VARIABLE("d")
+      val e     = VARIABLE("e")
+      val f     = VARIABLE("f")
+      val g     = VARIABLE("g")
+      val h     = VARIABLE("h")
+      val graph = VARIABLE(GRAPH_VARIABLE.s)
+
+      val left = Multiset(
+        Set(d, e, g, h, graph),
+        List(("test1", "234", "g1", "h1", ""), ("test2", "123", "g2", "h2", ""))
+          .toDF(d.s, e.s, g.s, h.s, graph.s)
+      )
+      val right = Multiset(
+        Set(d, e, f, graph),
+        List(("test1", "234", "hello", ""), ("test3", "e2", "goodbye", ""))
+          .toDF(d.s, e.s, f.s, graph.s)
+      )
+
+      val result = left.union(right)
+      val expectedResult = Multiset(
+        Set(d, e, f, g, h, graph),
+        List(
+          ("test1", "234", "g1", "h1", null, ""),
+          ("test2", "123", "g2", "h2", null, ""),
+          ("test1", "234", null, null, "hello", ""),
+          ("test3", "e2", null, null, "goodbye", "")
+        ).toDF("d", "e", "g", "h", "f", graph.s)
+      )
+
+      result.dataframe.show
+      expectedResult.dataframe.show
+
+      result should equalsMultiset(expectedResult)
+    }
+  }
+
+  "Multiset.limit" should {
+
+    "return solutions limited by l when l > 0" in {
+      import sqlContext.implicits._
+      val m = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        List(("a", ""), ("b", ""), ("c", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+
+      val result = m.limit(2)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get should equalsMultiset(
+        Multiset(
+          Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+          List(("a", ""), ("b", "")).toDF("d", GRAPH_VARIABLE.s)
+        )
+      )
+    }
+
+    "return no solutions when l = 0" in {
+      import sqlContext.implicits._
+      val m = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        List(("a", ""), ("b", ""), ("c", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+
+      val result = m.limit(0)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get should equalsMultiset(
+        Multiset(
+          Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+          spark.emptyDataFrame
+        )
+      )
+    }
+
+    "return error when l > MAX_INTEGER" in {
+      import sqlContext.implicits._
+      val m = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        List(("a", ""), ("b", ""), ("c", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+
+      val result = m.limit(Integer.MAX_VALUE.toLong + 1)
+
+      result shouldBe a[Left[_, _]]
+      result.left.get shouldBe a[EngineError.NumericTypesDoNotMatch]
+    }
+
+    "return error when l < 0" in {
+      import sqlContext.implicits._
+      val m = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        List(("a", ""), ("b", ""), ("c", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+
+      val result = m.limit(-1)
+
+      result shouldBe a[Left[_, _]]
+      result.left.get shouldBe a[EngineError.UnexpectedNegative]
+    }
+  }
+
+  "Multiset.offset" should {
+
+    "return solutions form offset" in {
+      import sqlContext.implicits._
+      val m = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        List(("a", ""), ("b", ""), ("c", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+
+      val result = m.offset(1)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get should equalsMultiset(
+        Multiset(
+          Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+          List(("b", ""), ("c", "")).toDF("d", GRAPH_VARIABLE.s)
+        )
+      )
+    }
+
+    "return no solutions when offset is greater than size of initial dataframe" in {
+      import sqlContext.implicits._
+      val m = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        List(("a", ""), ("b", ""), ("c", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+
+      val result = m.offset(5)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get should equalsMultiset(
+        Multiset(
+          Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+          spark.emptyDataFrame
+        )
+      )
+    }
+
+    "return all solutions when offset is 0" in {
+      import sqlContext.implicits._
+      val m = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        List(("a", ""), ("b", ""), ("c", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+
+      val result = m.offset(0)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get should equalsMultiset(
+        Multiset(
+          Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+          List(("a", ""), ("b", ""), ("c", "")).toDF("d", GRAPH_VARIABLE.s)
+        )
+      )
+    }
+
+    "return 0 when offset is negative" in {
+      import sqlContext.implicits._
+      val m = Multiset(
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        List(("a", ""), ("b", ""), ("c", "")).toDF("d", GRAPH_VARIABLE.s)
+      )
+
+      val result = m.offset(-1)
+
+      result shouldBe a[Left[_, _]]
+      result.left.get shouldBe a[EngineError.UnexpectedNegative]
+    }
+  }
+
+  // TODO: Add unit tests for filter
+  "Multiset.filter" should {}
+
+  // TODO: Add unit test for distinct
+  "Multiset.distinct" should {}
+
+  // TODO: Add unit test for withColumn
+  "Multiset.withColumn" should {}
+
+  // TODO: Add unit test for select
+  "Multiset.select" should {}
+
+  // TODO: Add unit test for isEmpty
+  "Multiset.empty" should {}
 
 }
