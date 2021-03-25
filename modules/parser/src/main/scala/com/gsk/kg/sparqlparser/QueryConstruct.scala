@@ -63,12 +63,9 @@ object QueryConstruct {
 
   def getAllVariableNames(bgp: BGP): Set[String] = {
     bgp.quads.foldLeft(Set.empty[String]) { (acc, q) =>
-      acc ++ Set(q.s, q.p, q.o, q.g).flatMap { e =>
-        e match {
-          case VARIABLE(v) => Some(v)
-//            case GRAPH_VARIABLE => Some(GRAPH_VARIABLE.s)
-          case _ => None
-        }
+      acc ++ Set(q.s, q.p, q.o, q.g).flatMap[String, Set[String]] {
+        case VARIABLE(v) => Set(v)
+        case _           => Set.empty
       }
     }
   }

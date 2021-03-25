@@ -203,7 +203,7 @@ object Engine {
               case (VARIABLE(s), pos) =>
                 (solution.get(solution.fieldIndex(s)), pos)
               case (BLANK(x), pos) =>
-                (blankNodes(x), pos)
+                (blankNodes.get(x).get, pos)
               case (x, pos) =>
                 (x.s, pos)
             })

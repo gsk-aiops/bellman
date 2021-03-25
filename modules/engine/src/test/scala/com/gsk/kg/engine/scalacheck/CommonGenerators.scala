@@ -2,6 +2,7 @@ package com.gsk.kg.engine
 package scalacheck
 
 import java.net.URI
+import java.time.LocalDateTime
 
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
@@ -81,6 +82,18 @@ trait CommonGenerators {
 
   def smallNonEmptyListOf[A](a: Gen[A]): Gen[List[A]] =
     Gen.choose(1, 5).flatMap(n => Gen.listOfN(n, a))
+
+  implicit def localDateTime: Arbitrary[LocalDateTime] =
+    Arbitrary(
+      for {
+        year   <- Gen.choose(0, 2030)
+        month  <- Gen.choose(1, 12)
+        day    <- Gen.choose(1, 28)
+        hour   <- Gen.choose(0, 23)
+        minute <- Gen.choose(0, 59)
+        second <- Gen.choose(0, 59)
+      } yield LocalDateTime.of(year, month, day, hour, minute, second)
+    )
 
 }
 

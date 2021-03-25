@@ -176,7 +176,7 @@ lazy val `bellman-spark-engine` = project
 
 addCommandAlias(
   "ci-test",
-  ";scalafix --check ;scalafmtCheckAll ;scalastyle ;+test"
+  ";scalafixAll --check ;scalafmtCheckAll ;scalastyle ;+test"
 )
 
 addCommandAlias(
