@@ -3,11 +3,25 @@ package com.gsk.kg.engine
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.Row
 
+import com.gsk.kg.engine.scalacheck.CommonGenerators
+
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAccessor
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
+class FuncSpec
+    extends AnyWordSpec
+    with Matchers
+    with DataFrameSuiteBase
+    with ScalaCheckDrivenPropertyChecks
+    with CommonGenerators {
 
   override implicit def reuseContextIfPossible: Boolean = true
 
@@ -310,4 +324,267 @@ class FuncSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       )
     }
   }
+
+  "Func.equals" should {
+    "operate on equal dates correctly" in {
+      import sqlContext.implicits._
+
+      forAll { datetime: LocalDateTime =>
+        val df = List(
+          (
+            toRDFDateTime(datetime),
+            toRDFDateTime(datetime)
+          )
+        ).toDF("a", "b")
+
+        df.select(Func.equals(df("a"), df("b"))).collect() shouldEqual Array(
+          Row(true)
+        )
+      }
+    }
+
+    "operate on different dates correctly" in {
+      import sqlContext.implicits._
+
+      forAll { datetime: LocalDateTime =>
+        val df = List(
+          (
+            toRDFDateTime(datetime.plusSeconds(1)),
+            toRDFDateTime(datetime)
+          )
+        ).toDF("a", "b")
+
+        df.select(Func.equals(df("a"), df("b"))).collect() shouldEqual Array(
+          Row(false)
+        )
+      }
+    }
+  }
+
+  "Func.parseDAteFromRDFDateTime" should {
+    "work for all types of dates specified by RDF spec" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        """"2001-10-26T21:32:52"^^xsd:dateTime""",
+        """"2001-10-26T21:32:52+02:00"^^xsd:dateTime""",
+        """"2001-10-26T19:32:52Z"^^xsd:dateTime""",
+        """"2001-10-26T19:32:52+00:00"^^xsd:dateTime""",
+        """"2001-10-26T21:32:52.12679"^^xsd:dateTime"""
+      ).toDF("date")
+
+      df.select(Func.parseDateFromRDFDateTime(df("date")))
+        .collect()
+        .map(_.get(0)) shouldNot contain(null)
+    }
+  }
+
+  "Func.gt" should {
+    "work for integer values" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        (2, 1)
+      ).toDF("a", "b")
+
+      df.select(Func.gt(df("a"), df("b"))).collect() shouldEqual Array(
+        Row(true)
+      )
+    }
+
+    "work in datetimes without a zone" in {
+      import sqlContext.implicits._
+
+      forAll { datetime: LocalDateTime =>
+        val df = List(
+          (
+            toRDFDateTime(datetime.plusSeconds(1)),
+            toRDFDateTime(datetime)
+          )
+        ).toDF("a", "b")
+
+        df.select(Func.gt(df("a"), df("b"))).collect() shouldEqual Array(
+          Row(true)
+        )
+      }
+    }
+
+    "work in datetimes with zone" in {
+      import sqlContext.implicits._
+
+      forAll { datetime: LocalDateTime =>
+        val df = List(
+          (
+            toRDFDateTime(OffsetDateTime.of(datetime, ZoneOffset.ofHours(4))),
+            toRDFDateTime(OffsetDateTime.of(datetime, ZoneOffset.ofHours(5)))
+          )
+        ).toDF("a", "b")
+
+        df.select(
+          Func.gt(df("a"), df("b"))
+        ).collect() shouldEqual Array(
+          Row(true)
+        )
+      }
+    }
+  }
+
+  "Func.lt" should {
+    "work for integer values" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        (1, 2)
+      ).toDF("a", "b")
+
+      df.select(Func.lt(df("a"), df("b"))).collect() shouldEqual Array(
+        Row(true)
+      )
+    }
+
+    "work in datetimes without a zone" in {
+      import sqlContext.implicits._
+
+      forAll { datetime: LocalDateTime =>
+        val df = List(
+          (
+            toRDFDateTime(datetime),
+            toRDFDateTime(datetime.plusSeconds(1))
+          )
+        ).toDF("a", "b")
+
+        df.select(Func.lt(df("a"), df("b"))).collect() shouldEqual Array(
+          Row(true)
+        )
+      }
+    }
+
+    "work in datetimes with zone" in {
+      import sqlContext.implicits._
+
+      forAll { datetime: LocalDateTime =>
+        val df = List(
+          (
+            toRDFDateTime(OffsetDateTime.of(datetime, ZoneOffset.ofHours(5))),
+            toRDFDateTime(OffsetDateTime.of(datetime, ZoneOffset.ofHours(4)))
+          )
+        ).toDF("a", "b")
+
+        df.select(
+          Func.lt(df("a"), df("b"))
+        ).collect() shouldEqual Array(
+          Row(true)
+        )
+      }
+    }
+  }
+
+  "Func.gte" should {
+    "work for integer values" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        (2, 1),
+        (2, 2)
+      ).toDF("a", "b")
+
+      df.select(Func.gte(df("a"), df("b"))).collect() shouldEqual Array(
+        Row(true),
+        Row(true)
+      )
+    }
+
+    "work in datetimes without a zone" in {
+      import sqlContext.implicits._
+
+      forAll { datetime: LocalDateTime =>
+        val df = List(
+          (
+            toRDFDateTime(datetime.plusSeconds(1)),
+            toRDFDateTime(datetime)
+          )
+        ).toDF("a", "b")
+
+        df.select(Func.gte(df("a"), df("b"))).collect() shouldEqual Array(
+          Row(true)
+        )
+      }
+    }
+
+    "work in datetimes with zone" in {
+      import sqlContext.implicits._
+
+      forAll { datetime: LocalDateTime =>
+        val df = List(
+          (
+            toRDFDateTime(OffsetDateTime.of(datetime, ZoneOffset.ofHours(4))),
+            toRDFDateTime(OffsetDateTime.of(datetime, ZoneOffset.ofHours(5)))
+          )
+        ).toDF("a", "b")
+
+        df.select(
+          Func.gte(df("a"), df("b"))
+        ).collect() shouldEqual Array(
+          Row(true)
+        )
+      }
+    }
+  }
+
+  "Func.lte" should {
+    "work for integer values" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        (1, 2),
+        (2, 2)
+      ).toDF("a", "b")
+
+      df.select(Func.lte(df("a"), df("b"))).collect() shouldEqual Array(
+        Row(true),
+        Row(true)
+      )
+    }
+
+    "work in datetimes without a zone" in {
+      import sqlContext.implicits._
+
+      forAll { datetime: LocalDateTime =>
+        val df = List(
+          (
+            toRDFDateTime(datetime),
+            toRDFDateTime(datetime.plusSeconds(1))
+          )
+        ).toDF("a", "b")
+
+        df.select(Func.lte(df("a"), df("b"))).collect() shouldEqual Array(
+          Row(true)
+        )
+      }
+    }
+
+    "work in datetimes with zone" in {
+      import sqlContext.implicits._
+
+      forAll { datetime: LocalDateTime =>
+        val df = List(
+          (
+            toRDFDateTime(OffsetDateTime.of(datetime, ZoneOffset.ofHours(5))),
+            toRDFDateTime(OffsetDateTime.of(datetime, ZoneOffset.ofHours(4)))
+          )
+        ).toDF("a", "b")
+
+        df.select(
+          Func.lte(df("a"), df("b"))
+        ).collect() shouldEqual Array(
+          Row(true)
+        )
+      }
+    }
+  }
+
+  def toRDFDateTime(datetime: TemporalAccessor): String =
+    "\"" + DateTimeFormatter
+      .ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]")
+      .format(datetime) + "\"^^xsd:dateTime"
 }

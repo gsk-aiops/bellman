@@ -2,6 +2,7 @@ package com.gsk.kg.engine
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
+import org.apache.spark.sql.types.StringType
 
 object Func {
 
@@ -11,7 +12,7 @@ object Func {
     * @return
     */
   def equals(l: Column, r: Column): Column =
-    l === r
+    applyOperator(l, r)(_ === _)
 
   /** Peforms logical binary operation '>' over two columns
     * @param l
@@ -19,7 +20,7 @@ object Func {
     * @return
     */
   def gt(l: Column, r: Column): Column =
-    l > r
+    applyOperator(l, r)(_ > _)
 
   /** Performs logical binary operation '<' over two columns
     * @param l
@@ -27,7 +28,7 @@ object Func {
     * @return
     */
   def lt(l: Column, r: Column): Column =
-    l < r
+    applyOperator(l, r)(_ < _)
 
   /** Performs logical binary operation '<=' over two columns
     * @param l
@@ -35,7 +36,7 @@ object Func {
     * @return
     */
   def gte(l: Column, r: Column): Column =
-    l >= r
+    applyOperator(l, r)(_ >= _)
 
   /** Performs logical binary operation '>=' over two columns
     * @param l
@@ -43,7 +44,7 @@ object Func {
     * @return
     */
   def lte(l: Column, r: Column): Column =
-    l <= r
+    applyOperator(l, r)(_ <= _)
 
   /** Performs logical binary operation 'or' over two columns
     * @param l
@@ -193,4 +194,30 @@ object Func {
   def concat(a: Column, b: String): Column =
     concat(a, lit(b))
 
+  /** This helper method tries to parse a datetime expressed as a RDF
+    * datetime string `"0193-07-03T20:50:09.000+04:00"^^xsd:dateTime`
+    * to a column with underlying type datetime.
+    *
+    * @param col
+    * @return
+    */
+  def parseDateFromRDFDateTime(col: Column): Column =
+    when(
+      regexp_extract(col, ExtractDateTime, 1) =!= lit(""),
+      to_timestamp(regexp_extract(col, ExtractDateTime, 1))
+    ).otherwise(lit(null)) // scalastyle:off
+
+  private def applyOperator(l: Column, r: Column)(
+      operator: (Column, Column) => Column
+  ): Column =
+    when(
+      regexp_extract(l.cast(StringType), ExtractDateTime, 1) =!= lit("") &&
+        regexp_extract(r.cast(StringType), ExtractDateTime, 1) =!= lit(""),
+      operator(
+        parseDateFromRDFDateTime(l.cast(StringType)),
+        parseDateFromRDFDateTime(r.cast(StringType))
+      )
+    ).otherwise(operator(l, r))
+
+  val ExtractDateTime = """^"(.*)"\^\^(.*)dateTime(.*)$"""
 }

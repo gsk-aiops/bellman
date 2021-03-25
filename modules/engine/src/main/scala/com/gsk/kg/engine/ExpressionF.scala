@@ -42,7 +42,8 @@ object ExpressionF {
   final case class ISBLANK[A](s: A)                  extends ExpressionF[A]
   final case class REPLACE[A](st: A, pattern: String, by: String)
       extends ExpressionF[A]
-  final case class STRING[A](s: String)   extends ExpressionF[A]
+  final case class STRING[A](s: String, tag: Option[String])
+      extends ExpressionF[A]
   final case class NUM[A](s: String)      extends ExpressionF[A]
   final case class VARIABLE[A](s: String) extends ExpressionF[A]
   final case class URIVAL[A](s: String)   extends ExpressionF[A]
@@ -72,7 +73,7 @@ object ExpressionF {
         REPLACE(st, pattern, by)
       case BuildInFunc.REGEX(l, r)     => REGEX(l, r)
       case BuildInFunc.STRSTARTS(l, r) => STRSTARTS(l, r)
-      case StringVal.STRING(s, _)      => STRING(s)
+      case StringVal.STRING(s, tag)    => STRING(s, tag)
       case StringVal.NUM(s)            => NUM(s)
       case StringVal.VARIABLE(s)       => VARIABLE(s)
       case StringVal.URIVAL(s)         => URIVAL(s)
@@ -111,12 +112,12 @@ object ExpressionF {
           pattern.asInstanceOf[StringLike],
           by.asInstanceOf[StringLike]
         )
-      case STRING(s)   => StringVal.STRING(s)
-      case NUM(s)      => StringVal.NUM(s)
-      case VARIABLE(s) => StringVal.VARIABLE(s)
-      case URIVAL(s)   => StringVal.URIVAL(s)
-      case BLANK(s)    => StringVal.BLANK(s)
-      case BOOL(s)     => StringVal.BOOL(s)
+      case STRING(s, tag) => StringVal.STRING(s, tag)
+      case NUM(s)         => StringVal.NUM(s)
+      case VARIABLE(s)    => StringVal.VARIABLE(s)
+      case URIVAL(s)      => StringVal.URIVAL(s)
+      case BLANK(s)       => StringVal.BLANK(s)
+      case BOOL(s)        => StringVal.BOOL(s)
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -154,12 +155,13 @@ object ExpressionF {
         case ISBLANK(s)               => Func.isBlank(s).pure[M]
         case REPLACE(st, pattern, by) => Func.replace(st, pattern, by).pure[M]
 
-        case STRING(s)   => lit(s).pure[M]
-        case NUM(s)      => lit(s).pure[M]
-        case VARIABLE(s) => M.inspect[Result, DataFrame, Column](_(s))
-        case URIVAL(s)   => lit(s).pure[M]
-        case BLANK(s)    => lit(s).pure[M]
-        case BOOL(s)     => lit(s).pure[M]
+        case STRING(s, None)      => lit(s).pure[M]
+        case STRING(s, Some(tag)) => lit(s""""$s"^^$tag""").pure[M]
+        case NUM(s)               => lit(s).pure[M]
+        case VARIABLE(s)          => M.inspect[Result, DataFrame, Column](_(s))
+        case URIVAL(s)            => lit(s).pure[M]
+        case BLANK(s)             => lit(s).pure[M]
+        case BOOL(s)              => lit(s).pure[M]
       }
 
     val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)
