@@ -219,5 +219,5 @@ object Func {
       )
     ).otherwise(operator(l, r))
 
-  val ExtractDateTime = """^"(.*)"\^\^xsd:dateTime"""
+  val ExtractDateTime = """^"(.*)"\^\^(.*)dateTime(.*)$"""
 }

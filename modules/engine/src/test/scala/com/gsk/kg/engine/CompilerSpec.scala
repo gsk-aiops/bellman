@@ -1150,43 +1150,42 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           )
         }
 
-        "execute on datetimes" ignore {
+        "execute on datetimes" in {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, ""),
-            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
+            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
             (
               "_:Martha",
               "http://xmlns.com/foaf/0.1/birthDay",
-              """"2000-10-10:10:10:10.000"^^xsd:dateTime""",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Ana",
               "http://xmlns.com/foaf/0.1/birthDay",
-              """"2000-10-10:10:10:10.000"^^xsd:dateTime""",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Henry",
               "http://xmlns.com/foaf/0.1/birthDay",
-              """"1990-10-10:10:10:10.000"^^xsd:dateTime""",
+              """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             )
           ).toDF("s", "p", "o", "g")
 
           val query =
             """
-              |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
               |
-              |SELECT ?x ?y
+              |SELECT ?x
               |WHERE   {
-              |   ?x foaf:isFemale true .
-              |   ?y foaf:isFemale true .
-              |   ?x foaf:birthDay ?xbday .
-              |   ?y foaf:birthDay ?ybday
+              |   ?x foaf:birthDay ?bday .
+              |   FILTER(?bday = "2000-10-10T10:10:10.000"^^xsd:dateTime)
               |}
               |
               |""".stripMargin
@@ -1194,9 +1193,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           val result = Compiler.compile(df, query)
 
           result shouldBe a[Right[_, _]]
-          result.right.get.collect should have length 1
+          result.right.get.collect should have length 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Martha", "_:Ana")
+            Row("_:Martha"),
+            Row("_:Ana")
           )
         }
       }
@@ -1331,8 +1331,54 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           )
         }
 
-        // TODO: Implement Date Time support issue
-        "execute on dateTimes" ignore {}
+        "execute on dateTimes" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
+            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            (
+              "_:Martha",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            ),
+            (
+              "_:Ana",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            ),
+            (
+              "_:Henry",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+              |
+              |SELECT ?x
+              |WHERE   {
+              |   ?x foaf:birthDay ?bday .
+              |   FILTER(?bday != "2000-10-10T10:10:10.000"^^xsd:dateTime)
+              |}
+              |
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect should have length 1
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("_:Henry")
+          )
+        }
       }
 
       "with logical operation GT" should {
@@ -1463,7 +1509,55 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         // TODO: Implement Date Time support issue
-        "execute on dateTimes" ignore {}
+        "execute on dateTimes" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
+            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            (
+              "_:Martha",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            ),
+            (
+              "_:Ana",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            ),
+            (
+              "_:Henry",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+              |
+              |SELECT ?x
+              |WHERE   {
+              |   ?x foaf:birthDay ?bday .
+              |   FILTER(?bday > "1990-10-10T10:10:10.000"^^xsd:dateTime)
+              |}
+              |
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect should have length 2
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("_:Martha"),
+            Row("_:Ana")
+          )
+        }
       }
 
       "with logical operation LT" should {
@@ -1598,7 +1692,56 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         // TODO: Implement Date Time support issue
-        "execute on dateTimes" ignore {}
+        "execute on dateTimes" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
+            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            (
+              "_:Martha",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            ),
+            (
+              "_:Ana",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            ),
+            (
+              "_:Henry",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+              |
+              |SELECT ?x
+              |WHERE   {
+              |   ?x foaf:birthDay ?bday .
+              |   FILTER(?bday > "1990-10-10T10:10:10.000"^^xsd:dateTime)
+              |}
+              |
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect should have length 2
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("_:Martha"),
+            Row("_:Ana")
+          )
+
+        }
       }
 
       "with logical operation GTE" should {
@@ -1742,8 +1885,56 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           )
         }
 
-        // TODO: Implement Date Time support issue
-        "execute on dateTimes" ignore {}
+        "execute on dateTimes" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
+            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            (
+              "_:Martha",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            ),
+            (
+              "_:Ana",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            ),
+            (
+              "_:Henry",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+              |
+              |SELECT ?x
+              |WHERE   {
+              |   ?x foaf:birthDay ?bday .
+              |   FILTER(?bday >= "1990-10-10T10:10:10.000"^^xsd:dateTime)
+              |}
+              |
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect should have length 3
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("_:Martha"),
+            Row("_:Ana"),
+            Row("_:Henry")
+          )
+        }
       }
 
       "with logical operation LTE" should {
@@ -1889,7 +2080,56 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         // TODO: Implement Date Time support issue
-        "execute on dateTimes" ignore {}
+        "execute on dateTimes" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
+            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            (
+              "_:Martha",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            ),
+            (
+              "_:Ana",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            ),
+            (
+              "_:Henry",
+              "http://xmlns.com/foaf/0.1/birthDay",
+              """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
+              ""
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+              |
+              |SELECT ?x
+              |WHERE   {
+              |   ?x foaf:birthDay ?bday .
+              |   FILTER(?bday <= "2000-10-10T10:10:10.000"^^xsd:dateTime)
+              |}
+              |
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect should have length 3
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("_:Martha"),
+            Row("_:Ana"),
+            Row("_:Henry")
+          )
+        }
       }
     }
 

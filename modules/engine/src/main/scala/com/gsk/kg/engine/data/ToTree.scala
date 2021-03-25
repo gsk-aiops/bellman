@@ -111,7 +111,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.REPLACE(st, pattern, by) =>
             Node("REPLACE", Stream(st, Leaf(pattern), Leaf(by)))
 
-          case ExpressionF.STRING(s)   => Leaf(s"STRING($s)")
+          case ExpressionF.STRING(s, tag) =>
+            tag.fold(Leaf(s"STRING($s)"))(t => Leaf(s"STRING($s, $t)"))
           case ExpressionF.NUM(s)      => Leaf(s"NUM($s)")
           case ExpressionF.VARIABLE(s) => Leaf(s"VARIABLE($s)")
           case ExpressionF.URIVAL(s)   => Leaf(s"URIVAL($s)")
