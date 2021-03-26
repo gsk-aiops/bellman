@@ -79,7 +79,9 @@ object Engine {
     l.union(r).pure[M]
 
   private def evaluateScan(graph: String, expr: Multiset): M[Multiset] = {
-    val df = expr.dataframe.filter(expr.dataframe(GRAPH_VARIABLE.s) === graph)
+    val df = expr.dataframe
+      .filter(expr.dataframe(GRAPH_VARIABLE.s) === graph)
+      .withColumn(GRAPH_VARIABLE.s, lit(""))
     expr.copy(dataframe = df).pure[M]
   }
 
