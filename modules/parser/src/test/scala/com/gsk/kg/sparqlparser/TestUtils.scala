@@ -8,7 +8,7 @@ import scala.io.Source
 object TestUtils {
 
   def sparql2Algebra(fileLoc: String): String = {
-    val path = getClass.getResource(fileLoc).getPath
+    val path   = getClass.getResource(fileLoc).getPath
     val sparql = Source.fromFile(path).mkString
 
     val query = QueryFactory.create(sparql)
@@ -24,7 +24,6 @@ object TestUtils {
     val q = readOutputFile(fileLoc)
     QueryConstruct.parse(q)
   }
-
 
   def readOutputFile(fileLoc: String): String = {
     val path = getClass.getResource(fileLoc).getPath

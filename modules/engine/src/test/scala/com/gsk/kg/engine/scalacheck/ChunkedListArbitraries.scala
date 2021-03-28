@@ -1,15 +1,13 @@
 package com.gsk.kg.engine
 package scalacheck
 
-import cats._
-import cats.data._
-import higherkindness.droste._
-import higherkindness.droste.syntax.compose._
-import org.scalacheck.Arbitrary
-import cats.arrow.FunctionK
-import org.scalacheck.Gen
-import com.gsk.kg.engine.data.ChunkedList
 import cats.data.Chain
+import cats.data._
+
+import com.gsk.kg.engine.data.ChunkedList
+
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen
 
 trait ChunkedListArbitraries extends CommonGenerators {
 

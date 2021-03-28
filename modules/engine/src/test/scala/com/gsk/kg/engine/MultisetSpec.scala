@@ -1,13 +1,10 @@
 package com.gsk.kg.engine
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.apache.spark.sql.{SparkSession, DataFrame}
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.funsuite.AnyFunSuite
-import org.apache.spark.sql.Dataset
-import org.scalatest.matchers.should.Matchers
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
@@ -27,7 +24,7 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
   it should "join other nonempty multiset on the right" in {
     import sqlContext.implicits._
-    val empty = Multiset(Set.empty, spark.emptyDataFrame)
+    val empty    = Multiset(Set.empty, spark.emptyDataFrame)
     val nonEmpty = Multiset(Set(VARIABLE("d")), Seq("test1", "test2").toDF("d"))
 
     assertMultisetEquals(empty.join(nonEmpty), nonEmpty)
@@ -35,7 +32,7 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
   it should "join other nonempty multiset on the left" in {
     import sqlContext.implicits._
-    val empty = Multiset(Set.empty, spark.emptyDataFrame)
+    val empty    = Multiset(Set.empty, spark.emptyDataFrame)
     val nonEmpty = Multiset(Set(VARIABLE("d")), Seq("test1", "test2").toDF("d"))
 
     assertMultisetEquals(nonEmpty.join(empty), nonEmpty)
@@ -44,8 +41,8 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
   "Multiset.join" should "join other multiset when they have both the same single binding" in {
     import sqlContext.implicits._
     val variable = VARIABLE("d")
-    val ms1 = Multiset(Set(variable), List("test1", "test2").toDF("d"))
-    val ms2 = Multiset(Set(variable), List("test1", "test3").toDF("d"))
+    val ms1      = Multiset(Set(variable), List("test1", "test2").toDF("d"))
+    val ms2      = Multiset(Set(variable), List("test1", "test3").toDF("d"))
 
     assertMultisetEquals(
       ms1.join(ms2),
@@ -128,10 +125,10 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       Multiset(
         Set(d, e, f, g, h, i),
         List(
-          ("test1","234","g1","test1","234","hello"),
-          ("test1","234","g1","test3","e2","goodbye"),
-          ("test2","123","g2","test1","234","hello"),
-          ("test2","123","g2","test3","e2","goodbye")
+          ("test1", "234", "g1", "test1", "234", "hello"),
+          ("test1", "234", "g1", "test3", "e2", "goodbye"),
+          ("test2", "123", "g2", "test1", "234", "hello"),
+          ("test2", "123", "g2", "test3", "e2", "goodbye")
         ).toDF("d", "e", "g", "h", "f", "i")
       )
     )
@@ -177,14 +174,27 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     val a = VARIABLE("a")
     val b = VARIABLE("b")
 
-    val ms1 = Multiset(Set(a, b), List(("A", "1"), ("B", "2"), ("C", "3")).toDF(a.s, b.s))
-    val ms2 = Multiset(Set(a, b), List(("D", "4"), ("E", "5"), ("F", "6")).toDF(a.s, b.s))
+    val ms1 = Multiset(
+      Set(a, b),
+      List(("A", "1"), ("B", "2"), ("C", "3")).toDF(a.s, b.s)
+    )
+    val ms2 = Multiset(
+      Set(a, b),
+      List(("D", "4"), ("E", "5"), ("F", "6")).toDF(a.s, b.s)
+    )
 
     assertMultisetEquals(
       ms1.union(ms2),
       Multiset(
         Set(a, b),
-        List(("A", "1"), ("B", "2"), ("C", "3"), ("D", "4"), ("E", "5"), ("F", "6")).toDF("a", "b")
+        List(
+          ("A", "1"),
+          ("B", "2"),
+          ("C", "3"),
+          ("D", "4"),
+          ("E", "5"),
+          ("F", "6")
+        ).toDF("a", "b")
       )
     )
   }
@@ -196,7 +206,10 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
     val b = VARIABLE("b")
     val c = VARIABLE("c")
 
-    val ms1 = Multiset(Set(a, b), List(("A", "1"), ("B", "2"), ("C", "3")).toDF(a.s, b.s))
+    val ms1 = Multiset(
+      Set(a, b),
+      List(("A", "1"), ("B", "2"), ("C", "3")).toDF(a.s, b.s)
+    )
     val ms2 = Multiset(Set(c), List("CC").toDF(c.s))
 
     assertMultisetEquals(
@@ -204,10 +217,11 @@ class MultisetSpec extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
       Multiset(
         Set(a, b, c),
         List(
-          ("A" ,"1" ,null),
-          ("B" ,"2" ,null),
-          ("C" ,"3" ,null),
-          (null,null,"CC")).toDF(a.s, b.s, c.s)
+          ("A", "1", null),
+          ("B", "2", null),
+          ("C", "3", null),
+          (null, null, "CC")
+        ).toDF(a.s, b.s, c.s)
       )
     )
   }

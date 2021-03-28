@@ -1,17 +1,18 @@
 package com.gsk.kg.engine
 
+import org.apache.spark.sql.DataFrame
+
 import com.gsk.kg.engine.scalacheck.DataFrameArbitraries
-import com.gsk.kg.sparql.syntax.all._
+
+import java.io.File
+
+import scala.reflect.io.Directory
+
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import net.sansa_stack.rdf.spark.io._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.apache.spark.sql.DataFrame
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.riot.lang.CollectorStreamTriples
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import net.sansa_stack.rdf.spark.io._
-import scala.reflect.io.Directory
-import java.io.File
-import scala.util.Try
 
 class DataFrameArbitrariesSpec
     extends AnyFlatSpec
@@ -48,6 +49,5 @@ class DataFrameArbitrariesSpec
       }
     }
   }
-
 
 }

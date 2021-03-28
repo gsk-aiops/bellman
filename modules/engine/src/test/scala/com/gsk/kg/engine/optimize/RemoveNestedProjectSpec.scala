@@ -1,30 +1,14 @@
 package com.gsk.kg.engine
 package optimizer
 
-import cats.implicits._
-import com.gsk.kg.engine.data.ToTree._
+import higherkindness.droste.data.Fix
+
+import com.gsk.kg.engine.DAG.Project
+import com.gsk.kg.sparql.syntax.all._
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import com.gsk.kg.sparql.syntax.all._
-import higherkindness.droste.data.Fix
-import higherkindness.droste.Basis
-import com.gsk.kg.engine.DAG.BGP
-import com.gsk.kg.engine.DAG.Project
-import com.gsk.kg.engine.DAG.Describe
-import com.gsk.kg.engine.DAG.Ask
-import com.gsk.kg.engine.DAG.Construct
-import com.gsk.kg.engine.DAG.Scan
-import com.gsk.kg.engine.DAG.Bind
-import com.gsk.kg.engine.DAG.LeftJoin
-import com.gsk.kg.engine.DAG.Union
-import com.gsk.kg.engine.DAG.Filter
-import com.gsk.kg.engine.DAG.Join
-import com.gsk.kg.engine.DAG.Offset
-import com.gsk.kg.engine.DAG.Limit
-import com.gsk.kg.engine.DAG.Distinct
-import com.gsk.kg.engine.DAG.Noop
 
 class RemoveNestedProjectSpec
     extends AnyFlatSpec

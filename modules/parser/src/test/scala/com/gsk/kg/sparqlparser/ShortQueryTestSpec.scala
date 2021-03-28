@@ -1,18 +1,15 @@
 package com.gsk.kg.sparqlparser
 
-import org.scalatest.flatspec.AnyFlatSpec
 import com.gsk.kg.sparqlparser.Expr._
-import com.gsk.kg.sparqlparser.Conditional._
-import com.gsk.kg.sparqlparser.BuildInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
 
-import scala.collection.mutable.ArrayBuffer
+import org.scalatest.flatspec.AnyFlatSpec
 
 class ShortQueryTestSpec extends AnyFlatSpec {
 
   "test filtered left join with multiple filters" should "pass" in {
 
-  val q = """
+    val q     = """
     PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
     PREFIX  litp:  <http://lit-search-api/property/>
@@ -37,7 +34,7 @@ class ShortQueryTestSpec extends AnyFlatSpec {
     """
     val query = QueryConstruct.parse(q)
     query.r match {
-      case FilteredLeftJoin(BGP(_), Extend(to,from, _), funcs) =>
+      case FilteredLeftJoin(BGP(_), Extend(to, from, _), funcs) =>
         assert(funcs.size == 2)
       case _ => fail
     }
@@ -63,7 +60,7 @@ class ShortQueryTestSpec extends AnyFlatSpec {
         assert(triples(0).o == BOOL("true"))
         assert(triples(1).s == NUM("0.3"))
         assert(triples(2).o == NUM("-1234"))
-        assert(triples(3).o == STRING("xyz",Some("@en")))
+        assert(triples(3).o == STRING("xyz", Some("@en")))
         assert(triples(4).o == STRING("cde", None))
       case _ => fail
     }

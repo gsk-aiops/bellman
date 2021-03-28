@@ -1,19 +1,20 @@
 package com.gsk.kg.engine
 package data
 
-import higherkindness.droste.scheme
-import higherkindness.droste.Basis
-import higherkindness.droste.Algebra
-import cats.implicits._
 import cats.Show
-import com.gsk.kg.sparqlparser.Expr
-import scala.collection.immutable.Nil
-import cats.syntax.nonEmptyTraverse
-import cats.data.{NonEmptyChain, NonEmptyList}
-import cats.Traverse
+import cats.data.NonEmptyChain
+import cats.data.NonEmptyList
+import cats.implicits._
 
-/**
-  * Typeclass that allows you converting values of type T to
+import higherkindness.droste.Algebra
+import higherkindness.droste.Basis
+import higherkindness.droste.scheme
+
+import com.gsk.kg.sparqlparser.Expr
+
+import scala.collection.immutable.Nil
+
+/** Typeclass that allows you converting values of type T to
   * [[TreeRep]].  The benefit of doing so is that we'll be able to
   * render them nicely wit the drawTree method.
   */
@@ -29,8 +30,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
     def toTree: TreeRep[String] = ToTree[T].toTree(t)
   }
 
-  implicit val tripleToTree: ToTree[Expr.Triple] = new ToTree[Expr.Triple] {
-    def toTree(t: Expr.Triple): TreeRep[String] =
+  implicit val tripleToTree: ToTree[Expr.Quad] = new ToTree[Expr.Quad] {
+    def toTree(t: Expr.Quad): TreeRep[String] =
       TreeRep.Node(s"Triple", Stream(t.s.s.toTree, t.p.s.toTree, t.o.s.toTree))
   }
 
@@ -60,7 +61,10 @@ object ToTree extends LowPriorityToTreeInstances0 {
             Node("LeftJoin", Stream(l, r) #::: filters.map(_.toTree).toStream)
           case DAG.Union(l, r) => Node("Union", Stream(l, r))
           case DAG.Filter(funcs, expr) =>
-            Node("Filter", funcs.map(_.toTree).toList.toStream #::: Stream(expr))
+            Node(
+              "Filter",
+              funcs.map(_.toTree).toList.toStream #::: Stream(expr)
+            )
           case DAG.Join(l, r) => Node("Join", Stream(l, r))
           case DAG.Offset(offset, r) =>
             Node(
@@ -107,7 +111,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.REPLACE(st, pattern, by) =>
             Node("REPLACE", Stream(st, Leaf(pattern), Leaf(by)))
 
-          case ExpressionF.STRING(s)   => Leaf(s"STRING($s)")
+          case ExpressionF.STRING(s, tag) =>
+            tag.fold(Leaf(s"STRING($s)"))(t => Leaf(s"STRING($s, $t)"))
           case ExpressionF.NUM(s)      => Leaf(s"NUM($s)")
           case ExpressionF.VARIABLE(s) => Leaf(s"VARIABLE($s)")
           case ExpressionF.URIVAL(s)   => Leaf(s"URIVAL($s)")
