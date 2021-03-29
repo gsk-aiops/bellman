@@ -12,6 +12,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.functions._
 
+import com.gsk.kg.engine.Multiset._
 import com.gsk.kg.engine.Multiset.filterGraph
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
@@ -45,10 +46,7 @@ final case class Multiset(
   def join(other: Multiset): Multiset = (this, other) match {
     case (l, r) if l.isEmpty => r
     case (l, r) if r.isEmpty => l
-    case (l, r)
-        if (filterGraph(l).bindings intersect filterGraph(
-          r
-        ).bindings).isEmpty =>
+    case (l, r) if noCommonBindings(l, r) =>
       Multiset(
         l.bindings union r.bindings,
         crossJoinWithGraphs(l.dataframe, r.dataframe)
@@ -63,43 +61,6 @@ final case class Multiset(
       Multiset(l.bindings union r.bindings, df)
   }
 
-  private def crossJoinWithGraphs(l: DataFrame, r: DataFrame): DataFrame = {
-    val leftGraphCol  = "*l"
-    val rightGraphCol = "*r"
-
-    // Generates DF with two different columns of graphs *l, *r
-    val productWithGraphs = l
-      .as("a")
-      .withColumnRenamed(GRAPH_VARIABLE.s, leftGraphCol)
-      .crossJoin(
-        r
-          .withColumnRenamed(GRAPH_VARIABLE.s, rightGraphCol)
-          .as("b")
-      )
-
-    // Merges the *l and *r columns into a *g column with Array(l, r)
-    val productWithMergedGraphColunns = productWithGraphs
-      .withColumn(GRAPH_VARIABLE.s, array(leftGraphCol, rightGraphCol))
-      .drop(leftGraphCol, rightGraphCol)
-
-    // Generates a schema for the final DF (needed for the flatMap)
-    val resultSchema = productWithGraphs
-      .drop(leftGraphCol, rightGraphCol)
-      .withColumn(GRAPH_VARIABLE.s, lit(""))
-      .schema
-
-    // For each element on the array of *g column it generates a new row with the graph (unfolds *g column)
-    val result = productWithMergedGraphColunns.flatMap { r =>
-      val index  = r.fieldIndex(GRAPH_VARIABLE.s)
-      val graphs = r.getSeq[String](index)
-      graphs.distinct.map(g => Row.fromSeq(r.toSeq.dropRight(1) :+ g))
-    }(RowEncoder(resultSchema))
-
-    // Needed to keep Schema information on each Row. We will have GenericRowWithSchema instead of GenericRow
-    dataframe.sqlContext.sparkSession
-      .createDataFrame(result.toJavaRDD, resultSchema)
-  }
-
   /** A left join returns all values from the left relation and the matched values from the right relation,
     * or appends NULL if there is no match. It is also referred to as a left outer join.
     * @param other
@@ -108,7 +69,7 @@ final case class Multiset(
   def leftJoin(other: Multiset): Result[Multiset] = ((this, other) match {
     case (l, r) if l.isEmpty => l
     case (l, r) if r.isEmpty => l
-    case (l, r) if (l.bindings intersect filterGraph(r).bindings).isEmpty =>
+    case (l, r) if noCommonBindings(l, r) =>
       val df = l.dataframe.crossJoin(r.dataframe)
       Multiset(l.bindings union r.bindings, df)
     case (l, r) =>
@@ -261,6 +222,8 @@ final case class Multiset(
 
 object Multiset {
 
+  /** Removes graph bindings and graph columns from Multiset
+    */
   private val filterGraph: Multiset => Multiset = { m =>
     if (m.isEmpty) {
       m
@@ -272,6 +235,8 @@ object Multiset {
     }
   }
 
+  /** Adds graph binding and column to the Multiset (with default graph as the default value)
+    */
   private val addDefaultGraph: Multiset => Multiset = { m =>
     if (m.isEmpty) {
       m
@@ -282,6 +247,14 @@ object Multiset {
       )
     }
   }
+
+  /** Checks whether two Multisets has no common bindings without having into account graph bindings
+    * @param l
+    * @param r
+    * @return
+    */
+  private def noCommonBindings(l: Multiset, r: Multiset): Boolean =
+    (filterGraph(l).bindings intersect filterGraph(r).bindings).isEmpty
 
   /** This methods is a utility to perform operations like [[union]], [[join]], [[leftJoin]] on Multisets without
     * taking into account graph bindings and graph columns on dataframes by:
@@ -295,6 +268,90 @@ object Multiset {
       f: (Multiset, Multiset) => Multiset
   ): Multiset =
     addDefaultGraph(f(filterGraph(right), filterGraph(left)))
+
+  /** This method performs a cross join between graphs by merging the graph columns of each dataframes into an array
+    * column, this way we generate new rows for each graph that is in the array. Eg:
+    * Initial dataframes:
+    * l.dataframe = List(
+    *   ("a", "graph1"),
+    *   ("b", "graph1")
+    * ).toDF("?x", "*g")
+    * r.dataframe = List((1, "graph2"), (2, "graph2")).toDF("?y", "*g")
+    *
+    * Step1:
+    * step1Dataframe = List(
+    *   ("a", 1, "graph1", "graph2"),
+    *   ("a", 2, "graph1", "graph2"),
+    *   ("b", 1, "graph1", "graph2"),
+    *   ("b", 2, "graph1", "graph2")
+    * ).toDF("?x", "?y", "*l", "*r")
+    *
+    * Step2:
+    * step2Dataframe = List(
+    *   ("a", 1, List("graph1", "graph2")),
+    *   ("a", 2, List("graph1", "graph2")),
+    *   ("b", 1, List("graph1", "graph2")),
+    *   ("b", 2, List("graph1", "graph2"))
+    * ).toDF("?x", "?y", "*g")
+    *
+    * Final:
+    * final = List(
+    *  ("a", 1, "graph1"),
+    *  ("a", 1, "graph2"),
+    *  ("a", 2, "graph1"),
+    *  ("a", 2, "graph2"),
+    *  ("b", 1, "graph1"),
+    *  ("b", 1, "graph2"),
+    *  ("b", 2, "graph1"),
+    *  ("b", 2, "graph2")
+    * ).toDF("?x", "?y", "*g")
+    *
+    * IMPORTANT!: This method could have some performance issues as it traverses entire dataframe, and should be revisited
+    * for performance improvements.
+    * @param l
+    * @param r
+    * @return
+    */
+  private def crossJoinWithGraphs(l: DataFrame, r: DataFrame): DataFrame = {
+    val leftGraphCol  = "*l"
+    val rightGraphCol = "*r"
+
+    // Generates DF with two different columns of graphs *l, *r
+    val productWithGraphs = l
+      .as("a")
+      .withColumnRenamed(GRAPH_VARIABLE.s, leftGraphCol)
+      .crossJoin(
+        r
+          .withColumnRenamed(GRAPH_VARIABLE.s, rightGraphCol)
+          .as("b")
+      )
+
+    // Merges the *l and *r columns into a *g column with Array(l, r)
+    val productWithMergedGraphColunns = productWithGraphs
+      .withColumn(GRAPH_VARIABLE.s, array(leftGraphCol, rightGraphCol))
+      .drop(leftGraphCol, rightGraphCol)
+
+    // Generates a schema for the final DF (needed for the flatMap)
+    val resultSchema = productWithGraphs
+      .drop(leftGraphCol, rightGraphCol)
+      .withColumn(GRAPH_VARIABLE.s, lit(""))
+      .schema
+
+    // For each element on the array of *g column it generates a new row with the graph (unfolds *g column)
+    val result = productWithMergedGraphColunns.flatMap { r =>
+      val index  = r.fieldIndex(GRAPH_VARIABLE.s)
+      val graphs = r.getSeq[String](index)
+      graphs.distinct.map(g => Row.fromSeq(r.toSeq.dropRight(1) :+ g))
+    }(RowEncoder(resultSchema))
+
+    // Needed to keep Schema information on each Row. We will have GenericRowWithSchema instead of GenericRow
+    SparkSession
+      .builder()
+      .getOrCreate()
+      .sqlContext
+      .sparkSession
+      .createDataFrame(result.toJavaRDD, resultSchema)
+  }
 
   lazy val empty: Multiset =
     Multiset(Set.empty, SparkSession.builder().getOrCreate().emptyDataFrame)
