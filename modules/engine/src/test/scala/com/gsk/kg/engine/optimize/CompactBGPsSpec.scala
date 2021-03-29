@@ -1,22 +1,19 @@
 package com.gsk.kg.engine
 package optimizer
-
-import cats.instances.string._
+import cats.Traverse
 
 import higherkindness.droste.data.Fix
 
 import com.gsk.kg.engine.DAG.BGP
 import com.gsk.kg.engine.DAG.Project
+import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.optics._
-import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.sparql.syntax.all._
+import com.gsk.kg.sparqlparser.Expr.Quad
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import com.gsk.kg.engine.data.ChunkedList
-import com.gsk.kg.sparqlparser.Expr.Quad
-import cats.Traverse
 
 class CompactBGPsSpec
     extends AnyFlatSpec
@@ -56,10 +53,13 @@ class CompactBGPsSpec
         }
       """
 
-    val dag: T = DAG.fromQuery.apply(query)
+    val dag: T       = DAG.fromQuery.apply(query)
     val optimized: T = CompactBGPs[T].apply(dag)
 
-    Traverse[ChunkedList].toList(getQuads(dag)) shouldEqual Traverse[ChunkedList].toList(getQuads(optimized))
+    Traverse[ChunkedList]
+      .toList(getQuads(dag)) shouldEqual Traverse[ChunkedList].toList(
+      getQuads(optimized)
+    )
   }
 
   def getQuads(dag: T): ChunkedList[Quad] =
@@ -71,7 +71,6 @@ class CompactBGPsSpec
       .composeLens(BGP.quads)
       .getOption(dag)
       .getOrElse(ChunkedList.empty)
-
 
   def countChunksInBGP(dag: T): Int = getQuads(dag)
     .foldLeftChunks(0)((acc, _) => acc + 1)

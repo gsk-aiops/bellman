@@ -2,8 +2,8 @@ package com.gsk.kg.engine
 package data
 
 import cats._
-import cats.syntax.eq._
 import cats.data.NonEmptyChain
+import cats.syntax.eq._
 
 import higherkindness.droste.macros.deriveTraverse
 
@@ -28,8 +28,8 @@ import scala.collection.immutable.Nil
       case ((list, None), current) =>
         (list, Some(Chunk.one(current)))
     } match {
-	    case (list, None) => list
-	    case (list, Some(chunk)) => list.appendChunk(chunk)
+      case (list, None)        => list
+      case (list, Some(chunk)) => list.appendChunk(chunk)
     }
 
   def mapChunks[B](fn: Chunk[A] => B): ChunkedList[B] =
@@ -38,7 +38,6 @@ import scala.collection.immutable.Nil
       case NonEmpty(head, tail) =>
         NonEmpty(Chunk.one(fn(head)), tail.mapChunks(fn))
     }
-
 
   def foldLeftChunks[B](z: B)(fn: (B, Chunk[A]) => B): B =
     this match {
@@ -65,7 +64,7 @@ import scala.collection.immutable.Nil
 
   final def appendChunk(chunk: Chunk[A]): ChunkedList[A] =
     this match {
-	    case Empty() => NonEmpty(chunk, Empty())
+      case Empty()              => NonEmpty(chunk, Empty())
       case NonEmpty(head, tail) => NonEmpty(head, tail.appendChunk(chunk))
     }
 }
