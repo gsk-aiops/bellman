@@ -6,9 +6,15 @@ import cats.syntax.all._
 
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.functions._
 
+import com.gsk.kg.engine.Multiset._
+import com.gsk.kg.engine.Multiset.filterGraph
+import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 /** A [[Multiset]], as expressed in SparQL terms.
@@ -37,23 +43,89 @@ final case class Multiset(
     * @param other
     * @return the join result of both multisets
     */
-  def join(other: Multiset): Multiset =
-    (this, other) match {
-      case (a, b) if a.isEmpty => b
-      case (a, b) if b.isEmpty => a
-      case (Multiset(aBindings, aDF), Multiset(bBindings, bDF))
-          if aBindings.intersect(bBindings).isEmpty =>
-        val df = aDF
-          .as("a")
-          .crossJoin(bDF.as("b"))
-        Multiset(aBindings.union(bBindings), df)
-      case (a, b) =>
-        val common = a.bindings.intersect(b.bindings)
-        val df = a.dataframe
-          .as("a")
-          .join(b.dataframe.as("b"), common.map(_.s).toSeq)
-        Multiset(a.bindings.union(b.bindings), df)
-    }
+  def join(other: Multiset): Multiset = (this, other) match {
+    case (l, r) if l.isEmpty => r
+    case (l, r) if r.isEmpty => l
+    case (l, r) if noCommonBindings(l, r) =>
+      Multiset(
+        l.bindings union r.bindings,
+        crossJoinWithGraphs(l.dataframe, r.dataframe)
+      )
+    case (l, r) =>
+      val df = l.dataframe.join(
+        r.dataframe,
+        (l.bindings intersect r.bindings).toSeq
+          .map(_.s),
+        "inner"
+      )
+      Multiset(l.bindings union r.bindings, df)
+  }
+
+  /** A left join returns all values from the left relation and the matched values from the right relation,
+    * or appends NULL if there is no match. It is also referred to as a left outer join.
+    * @param other
+    * @return
+    */
+  def leftJoin(other: Multiset): Result[Multiset] = ((this, other) match {
+    case (l, r) if l.isEmpty => l
+    case (l, r) if r.isEmpty => l
+    case (l, r) if noCommonBindings(l, r) =>
+      val df = l.dataframe.crossJoin(r.dataframe)
+      Multiset(l.bindings union r.bindings, df)
+    case (l, r) =>
+      val df =
+        l.dataframe.join(
+          filterGraph(r).dataframe,
+          (l.bindings intersect filterGraph(r).bindings).toSeq
+            .map(_.s),
+          "left"
+        )
+      Multiset(l.bindings union r.bindings, df)
+  }).asRight
+
+  /** Perform a union between [[this]] and [[other]], as described in
+    * SparQL Algebra doc.
+    *
+    * =Spec=
+    *
+    * Defn: Union
+    * Let Ω1 and Ω2 be multisets of mappings. We define:
+    * Union(Ω1, Ω2) = { μ | μ in Ω1 or μ in Ω2 }
+    * card[Union(Ω1, Ω2)](μ) = card[Ω1](μ) + card[Ω2](μ)
+    *
+    * @param other
+    * @return the Union of both multisets
+    */
+  def union(other: Multiset): Multiset = (this, other) match {
+    case (a, b) if a.isEmpty => b
+    case (a, b) if b.isEmpty => a
+    case (Multiset(aBindings, aDF), Multiset(bBindings, bDF))
+        if aDF.columns == bDF.columns =>
+      Multiset(
+        aBindings.union(bBindings),
+        aDF.union(bDF)
+      )
+    case (Multiset(aBindings, aDF), Multiset(bBindings, bDF)) =>
+      val colsA     = aDF.columns.toSet
+      val colsB     = bDF.columns.toSet
+      val colsUnion = colsA.union(colsB)
+
+      def genColumns(current: Set[String], total: Set[String]): Seq[Column] = {
+        total.toList.sorted.map {
+          case x if current.contains(x) => col(x)
+          case x                        => lit(null).as(x) // scalastyle:ignore
+        }
+      }
+
+      val bindingsUnion = aBindings union bBindings
+      val selectionA    = aDF.select(genColumns(colsA, colsUnion): _*)
+      val selectionB    = bDF.select(genColumns(colsB, colsUnion): _*)
+
+      Multiset(
+        bindingsUnion,
+        selectionA.unionByName(selectionB)
+      )
+  }
 
   /** Return wether both the dataframe & bindings are empty
     *
@@ -71,54 +143,6 @@ final case class Multiset(
       bindings.intersect(vars.toSet),
       dataframe.select(vars.map(v => dataframe(v.s)): _*)
     )
-
-  /** Perform a union between [[this]] and [[other]], as described in
-    * SparQL Algebra doc.
-    *
-    * =Spec=
-    *
-    * Defn: Union
-    * Let Ω1 and Ω2 be multisets of mappings. We define:
-    * Union(Ω1, Ω2) = { μ | μ in Ω1 or μ in Ω2 }
-    * card[Union(Ω1, Ω2)](μ) = card[Ω1](μ) + card[Ω2](μ)
-    *
-    * @param other
-    * @return the Union of both multisets
-    */
-  def union(other: Multiset): Multiset =
-    (this, other) match {
-      case (a, b) if a.isEmpty => b
-      case (a, b) if b.isEmpty => a
-      case (Multiset(aBindings, aDF), Multiset(bBindings, bDF))
-          if aDF.columns == bDF.columns =>
-        Multiset(
-          aBindings.union(bBindings),
-          aDF.union(bDF)
-        )
-      case (Multiset(aBindings, aDF), Multiset(bBindings, bDF)) =>
-        val colsA     = aDF.columns.toSet
-        val colsB     = bDF.columns.toSet
-        val colsUnion = colsA.union(colsB)
-
-        def genColumns(
-            current: Set[String],
-            total: Set[String]
-        ): Seq[Column] = {
-          total.toList.sorted.map {
-            case x if current.contains(x) => col(x)
-            case x                        => lit(null).as(x) // scalastyle:ignore
-          }
-        }
-
-        val bindingsUnion = aBindings union bBindings
-        val selectionA    = aDF.select(genColumns(colsA, colsUnion): _*)
-        val selectionB    = bDF.select(genColumns(colsB, colsUnion): _*)
-
-        Multiset(
-          bindingsUnion,
-          selectionA.union(selectionB)
-        )
-    }
 
   /** Add a new column to the multiset, with the given binding
     *
@@ -184,21 +208,6 @@ final case class Multiset(
     this.copy(dataframe = filtered).asRight
   }
 
-  /** A left join returns all values from the left relation and the matched values from the right relation,
-    * or appends NULL if there is no match. It is also referred to as a left outer join.
-    * @param r
-    * @return
-    */
-  def leftJoin(r: Multiset): Result[Multiset] = {
-    val cols: Seq[String] = (this.bindings intersect r.bindings).toSeq.map(_.s)
-    this
-      .copy(
-        bindings = this.bindings union r.bindings,
-        dataframe = this.dataframe.join(r.dataframe, cols, "left")
-      )
-      .asRight
-  }
-
   /** Eliminates duplicates from the dataframe that matches the same variable binding
     * @return
     */
@@ -209,10 +218,143 @@ final case class Multiset(
       )
       .asRight
   }
-
 }
 
 object Multiset {
+
+  /** Removes graph bindings and graph columns from Multiset
+    */
+  private val filterGraph: Multiset => Multiset = { m =>
+    if (m.isEmpty) {
+      m
+    } else {
+      m.copy(
+        bindings = m.bindings.filter(_.s != GRAPH_VARIABLE.s),
+        dataframe = m.dataframe.drop(GRAPH_VARIABLE.s)
+      )
+    }
+  }
+
+  /** Adds graph binding and column to the Multiset (with default graph as the default value)
+    */
+  private val addDefaultGraph: Multiset => Multiset = { m =>
+    if (m.isEmpty) {
+      m
+    } else {
+      m.copy(
+        bindings = m.bindings + VARIABLE(GRAPH_VARIABLE.s),
+        dataframe = m.dataframe.withColumn(GRAPH_VARIABLE.s, lit(""))
+      )
+    }
+  }
+
+  /** Checks whether two Multisets has no common bindings without having into account graph bindings
+    * @param l
+    * @param r
+    * @return
+    */
+  private def noCommonBindings(l: Multiset, r: Multiset): Boolean =
+    (filterGraph(l).bindings intersect filterGraph(r).bindings).isEmpty
+
+  /** This methods is a utility to perform operations like [[union]], [[join]], [[leftJoin]] on Multisets without
+    * taking into account graph bindings and graph columns on dataframes by:
+    * removing from bindings and dataframe -> operate -> adding binding and column to final dataframe as default graph
+    * @param right
+    * @param left
+    * @param f
+    * @return
+    */
+  private def graphAgnostic(right: Multiset, left: Multiset)(
+      f: (Multiset, Multiset) => Multiset
+  ): Multiset =
+    addDefaultGraph(f(filterGraph(right), filterGraph(left)))
+
+  /** This method performs a cross join between graphs by merging the graph columns of each dataframes into an array
+    * column, this way we generate new rows for each graph that is in the array. Eg:
+    * Initial dataframes:
+    * l.dataframe = List(
+    *   ("a", "graph1"),
+    *   ("b", "graph1")
+    * ).toDF("?x", "*g")
+    * r.dataframe = List((1, "graph2"), (2, "graph2")).toDF("?y", "*g")
+    *
+    * Step1:
+    * step1Dataframe = List(
+    *   ("a", 1, "graph1", "graph2"),
+    *   ("a", 2, "graph1", "graph2"),
+    *   ("b", 1, "graph1", "graph2"),
+    *   ("b", 2, "graph1", "graph2")
+    * ).toDF("?x", "?y", "*l", "*r")
+    *
+    * Step2:
+    * step2Dataframe = List(
+    *   ("a", 1, List("graph1", "graph2")),
+    *   ("a", 2, List("graph1", "graph2")),
+    *   ("b", 1, List("graph1", "graph2")),
+    *   ("b", 2, List("graph1", "graph2"))
+    * ).toDF("?x", "?y", "*g")
+    *
+    * Final:
+    * final = List(
+    *  ("a", 1, "graph1"),
+    *  ("a", 1, "graph2"),
+    *  ("a", 2, "graph1"),
+    *  ("a", 2, "graph2"),
+    *  ("b", 1, "graph1"),
+    *  ("b", 1, "graph2"),
+    *  ("b", 2, "graph1"),
+    *  ("b", 2, "graph2")
+    * ).toDF("?x", "?y", "*g")
+    *
+    * IMPORTANT!: This method could have some performance issues as it traverses entire dataframe, and should be revisited
+    * for performance improvements.
+    * @param l
+    * @param r
+    * @return
+    */
+  private def crossJoinWithGraphs(l: DataFrame, r: DataFrame): DataFrame = {
+    val leftGraphCol  = "*l"
+    val rightGraphCol = "*r"
+
+    // Generates DF with two different columns of graphs *l, *r
+    val productWithGraphs = l
+      .as("a")
+      .withColumnRenamed(GRAPH_VARIABLE.s, leftGraphCol)
+      .crossJoin(
+        r
+          .withColumnRenamed(GRAPH_VARIABLE.s, rightGraphCol)
+          .as("b")
+      )
+
+    // Merges the *l and *r columns into a *g column with Array(l, r)
+    val productWithMergedGraphColunns = productWithGraphs
+      .withColumn(GRAPH_VARIABLE.s, array(leftGraphCol, rightGraphCol))
+      .drop(leftGraphCol, rightGraphCol)
+
+    // Generates a schema for the final DF (needed for the flatMap)
+    val resultSchema = productWithGraphs
+      .drop(leftGraphCol, rightGraphCol)
+      .withColumn(GRAPH_VARIABLE.s, lit(""))
+      .schema
+
+    // For each element on the array of *g column it generates a new row with the graph (unfolds *g column)
+    val result = productWithMergedGraphColunns.flatMap { r =>
+      val index  = r.fieldIndex(GRAPH_VARIABLE.s)
+      val graphs = r.getSeq[String](index)
+      graphs.distinct.map(g => Row.fromSeq(r.toSeq.dropRight(1) :+ g))
+    }(RowEncoder(resultSchema))
+
+    // Needed to keep Schema information on each Row. We will have GenericRowWithSchema instead of GenericRow
+    SparkSession
+      .builder()
+      .getOrCreate()
+      .sqlContext
+      .sparkSession
+      .createDataFrame(result.toJavaRDD, resultSchema)
+  }
+
+  lazy val empty: Multiset =
+    Multiset(Set.empty, SparkSession.builder().getOrCreate().emptyDataFrame)
 
   implicit val semigroup: Semigroup[Multiset] = new Semigroup[Multiset] {
     def combine(x: Multiset, y: Multiset): Multiset = x.join(y)
