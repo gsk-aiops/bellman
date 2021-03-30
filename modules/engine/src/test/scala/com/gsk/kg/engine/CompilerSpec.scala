@@ -251,16 +251,17 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         val query =
           """
-      CONSTRUCT {
-        ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o .
-        ?s2 <http://id.gsk.com/dm/1.0/docSource> ?o2
-      } WHERE {
-        ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o .
-        ?s2 <http://id.gsk.com/dm/1.0/docSource> ?o2
-      }
-      """
+            |CONSTRUCT {
+            |  ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o .
+            |  ?s2 <http://id.gsk.com/dm/1.0/docSource> ?o2
+            |} WHERE {
+            |  ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o .
+            |  ?s2 <http://id.gsk.com/dm/1.0/docSource> ?o2
+            |}
+            |""".stripMargin
 
-        Compiler.compile(df, query).right.get.collect().toSet shouldEqual Set(
+        val result = Compiler.compile(df, query).right.get.collect().toSet
+        result shouldEqual Set(
           Row(
             "\"doesmatch\"",
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
@@ -666,9 +667,53 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
     }
 
-    "perform query with FILTER modifier" which {
+    "perform query with !ISBLANK function" should {
 
-      "with single condition" should {
+      "execute and obtain expected results" in {
+        import sqlContext.implicits._
+
+        val df: DataFrame = List(
+          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+          (
+            "_:a",
+            "http://xmlns.com/foaf/0.1/mbox",
+            "mailto:alice@work.example",
+            ""
+          ),
+          ("_:b", "http://xmlns.com/foaf/0.1/name", "_:bob", ""),
+          (
+            "_:b",
+            "http://xmlns.com/foaf/0.1/mbox",
+            "mailto:bob@work.example",
+            ""
+          )
+        ).toDF("s", "p", "o", "g")
+
+        val query =
+          """
+            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            |
+            |SELECT ?name ?mbox
+            |WHERE {
+            |   ?x foaf:name ?name ;
+            |      foaf:mbox  ?mbox .
+            |   FILTER (!isBlank(?name))
+            |}
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query)
+
+        result shouldBe a[Right[_, _]]
+        result.right.get.collect.length shouldEqual 1
+        result.right.get.collect shouldEqual Array(
+          Row("\"Alice\"", "mailto:alice@work.example")
+        )
+      }
+    }
+
+    "perform query with FILTER modifier" when {
+
+      "single condition" should {
 
         "execute and obtain expected results" in {
 
@@ -915,7 +960,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
       }
 
-      "with multiple conditions" should {
+      "multiple conditions" should {
 
         // TODO: Un-ignore when binary logical operations implemented
         "execute and obtain expected results when multiple conditions" ignore {
@@ -1020,7 +1065,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
       }
 
-      "with logical operation EQUALS" should {
+      "logical operation EQUALS" should {
 
         "execute on simple literal" in {
           import sqlContext.implicits._
@@ -1201,7 +1246,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
       }
 
-      "with logical operation NOT EQUALS" should {
+      "logical operation NOT EQUALS" should {
 
         "execute on simple literal" in {
           import sqlContext.implicits._
@@ -1381,7 +1426,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
       }
 
-      "with logical operation GT" should {
+      "logical operation GT" should {
 
         "execute on simple literal" in {
           import sqlContext.implicits._
@@ -1560,7 +1605,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
       }
 
-      "with logical operation LT" should {
+      "logical operation LT" should {
 
         "execute on simple literal" in {
           import sqlContext.implicits._
@@ -1744,7 +1789,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
       }
 
-      "with logical operation GTE" should {
+      "logical operation GTE" should {
 
         "execute on simple literal" in {
           import sqlContext.implicits._
@@ -1937,7 +1982,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
       }
 
-      "with logical operation LTE" should {
+      "logical operation LTE" should {
 
         "execute on simple literal" in {
           import sqlContext.implicits._
@@ -2597,50 +2642,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
     }
 
-    "perform query with !ISBLANK function" should {
-
-      "execute and obtain expected results" in {
-        import sqlContext.implicits._
-
-        val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example",
-            ""
-          ),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "_:bob", ""),
-          (
-            "_:b",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@work.example",
-            ""
-          )
-        ).toDF("s", "p", "o", "g")
-
-        val query =
-          """
-            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            |
-            |SELECT ?name ?mbox
-            |WHERE {
-            |   ?x foaf:name ?name ;
-            |      foaf:mbox  ?mbox .
-            |   FILTER (!isBlank(?name))
-            |}
-            |""".stripMargin
-
-        val result = Compiler.compile(df, query)
-
-        result shouldBe a[Right[_, _]]
-        result.right.get.collect.length shouldEqual 1
-        result.right.get.collect shouldEqual Array(
-          Row("\"Alice\"", "mailto:alice@work.example")
-        )
-      }
-    }
-
     "perform query with DISTINCT modifier" should {
 
       "execute and obtain expected results" in {
@@ -2673,275 +2674,838 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
     }
 
-    "perform query with GRAPH expression" should {
+    "perform query with GRAPH expression on default and named graphs" when {
 
-      "execute and obtain expected results with one graph specified" in {
-        import sqlContext.implicits._
+      "simple specific graph" should {
 
-        val df: DataFrame = List(
-          // Default graph
-          (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
-            "Bob Hacker",
-            ""
-          ),
-          (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
-            "Alice Hacker",
-            ""
-          ),
-          // Alice graph
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/name",
-            "Alice",
-            "http://example.org/alice"
-          ),
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
-          ),
-          // Bob graph
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/name",
-            "Bob",
-            "http://example.org/bob"
-          ),
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+        "execute and obtain expected results with one graph specified" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              ""
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              ""
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?mbox
+              |FROM <http://example.org/dft.ttl>
+              |FROM NAMED <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |WHERE
+              |{
+              |   GRAPH ex:alice { ?x foaf:mbox ?mbox }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 1
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("mailto:alice@work.example.org")
           )
-        ).toDF("s", "p", "o", "g")
+        }
 
-        val query =
-          """
-            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
-            |PREFIX ex: <http://example.org/>
-            |
-            |SELECT ?mbox
-            |FROM <http://example.org/dft.ttl>
-            |FROM NAMED <http://example.org/alice>
-            |FROM NAMED <http://example.org/bob>
-            |WHERE
-            |{
-            |   GRAPH ex:alice { ?x foaf:mbox ?mbox }
-            |}
-            |""".stripMargin
+        "execute and obtain expected results with one graph specified and UNION inside GRAPH statement" in {
+          import sqlContext.implicits._
 
-        val result = Compiler.compile(df, query)
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              ""
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              ""
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            )
+          ).toDF("s", "p", "o", "g")
 
-        result shouldBe a[Right[_, _]]
-        result.right.get.collect.length shouldEqual 1
-        result.right.get.collect.toSet shouldEqual Set(
-          Row("mailto:alice@work.example.org")
-        )
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?mbox ?name
+              |FROM <http://example.org/dft.ttl>
+              |FROM NAMED <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |WHERE
+              |{
+              |   GRAPH ex:alice { 
+              |     { ?x foaf:mbox ?mbox }
+              |     UNION
+              |     { ?x foaf:name ?name }
+              |   }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 2
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("mailto:alice@work.example.org", null),
+            Row(null, "\"Alice\"")
+          )
+        }
+
+        "execute and obtain expected results with one graph specified and JOIN inside GRAPH statement" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              ""
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              ""
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?mbox ?name
+              |FROM <http://example.org/dft.ttl>
+              |FROM NAMED <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |WHERE
+              |{
+              |   GRAPH ex:alice { 
+              |     ?x foaf:mbox ?mbox .
+              |     ?x foaf:name ?name .
+              |   }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 1
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("mailto:alice@work.example.org", "\"Alice\"")
+          )
+        }
+
+        "execute and obtain expected results with one graph specified and OPTIONAL inside GRAPH statement" in {}
       }
 
-      "execute and obtain expected results with multiple graphs specified" in {
-        import sqlContext.implicits._
+      "multiple specific named graphs" should {
 
-        val df: DataFrame = List(
-          // Default graph
-          (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
-            "Bob Hacker",
-            ""
-          ),
-          (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
-            "Alice Hacker",
-            ""
-          ),
-          (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
-            "Charles Hacker",
-            ""
-          ),
-          // Alice graph
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/name",
-            "Alice",
-            "http://example.org/alice"
-          ),
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
-          ),
-          // Bob graph
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/name",
-            "Bob",
-            "http://example.org/bob"
-          ),
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
-          ),
-          // Charles graph
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/name",
-            "Charles",
-            "http://example.org/charles"
-          ),
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+        "execute and obtain expected results when UNION with common variable bindings" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              ""
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              ""
+            ),
+            (
+              "http://example.org/charles",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Charles Hacker",
+              ""
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?y ?mbox
+              |FROM <http://example.org/dft.ttl>
+              |FROM NAMED <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |FROM NAMED <http://example.org/charles>
+              |WHERE
+              |{
+              |   { GRAPH ex:alice { ?x foaf:mbox ?mbox } }
+              |   UNION
+              |   { GRAPH ex:bob { ?y foaf:mbox ?mbox } }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 2
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("_:a", null, "mailto:alice@work.example.org"),
+            Row(null, "_:a", "mailto:bob@oldcorp.example.org")
           )
-        ).toDF("s", "p", "o", "g")
+        }
 
-        val query =
-          """
-            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
-            |PREFIX ex: <http://example.org/>
-            |
-            |SELECT ?mbox
-            |FROM <http://example.org/dft.ttl>
-            |FROM NAMED <http://example.org/alice>
-            |FROM NAMED <http://example.org/bob>
-            |FROM NAMED <http://example.org/charles>
-            |WHERE
-            |{
-            |   { GRAPH ex:alice { ?x foaf:mbox ?mbox } }
-            |   UNION
-            |   { GRAPH ex:bob { ?y foaf:mbox ?mbox } }
-            |}
-            |""".stripMargin
+        "execute and obtain expected results when JOIN with common variable bindings" in {
+          import sqlContext.implicits._
 
-        val result = Compiler.compile(df, query)
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              ""
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              ""
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@work.example.org",
+              "http://example.org/bob"
+            )
+          ).toDF("s", "p", "o", "g")
 
-        result shouldBe a[Right[_, _]]
-        result.right.get.collect.length shouldEqual 2
-        result.right.get.collect.toSet shouldEqual Set(
-          Row("mailto:alice@work.example.org"),
-          Row("mailto:bob@oldcorp.example.org")
-        )
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?mbox ?name
+              |FROM <http://example.org/dft.ttl>
+              |FROM NAMED <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |WHERE
+              |{
+              |   GRAPH ex:alice { ?x foaf:mbox ?mbox . }
+              |   GRAPH ex:bob { ?x foaf:name ?name . }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 1
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("_:a", "mailto:alice@work.example.org", "\"Bob\"")
+          )
+        }
+
+        "execute and obtain expected results when JOIN with no common variable bindings" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              ""
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              ""
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:b",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:b",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@work.example.org",
+              "http://example.org/bob"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?y
+              |FROM <http://example.org/dft.ttl>
+              |FROM NAMED <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |WHERE
+              |{
+              |   GRAPH ex:alice { ?x foaf:mbox <mailto:alice@work.example.org> . }
+              |   GRAPH ex:bob { ?y foaf:mbox <mailto:bob@work.example.org> . }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 1
+          result.right.get.collect.toSet shouldEqual Set(Row("_:a", "_:b"))
+        }
+
+        "execute and obtain expected results when OPTIONAL with common variable bindings" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              ""
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              ""
+            ),
+            (
+              "http://example.org/charles",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Charles Hacker",
+              ""
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?mbox ?name
+              |FROM <http://example.org/dft.ttl>
+              |FROM NAMED <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |WHERE  { 
+              |  GRAPH ex:alice { ?x foaf:name ?name . }
+              |  OPTIONAL { 
+              |    GRAPH ex:bob { ?x foaf:mbox ?mbox } 
+              |  }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 1
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("_:a", "mailto:bob@oldcorp.example.org", "\"Alice\"")
+          )
+        }
+
+        "execute and obtain expected results when OPTIONAL with no common variable bindings" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              ""
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              ""
+            ),
+            (
+              "http://example.org/charles",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Charles Hacker",
+              ""
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?y ?mbox ?name
+              |FROM <http://example.org/dft.ttl>
+              |FROM NAMED <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |WHERE  { 
+              |  GRAPH ex:alice { ?x foaf:name ?name . }
+              |  OPTIONAL { 
+              |    GRAPH ex:bob { ?y foaf:mbox ?mbox } 
+              |  }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 1
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("_:a", "_:a", "mailto:bob@oldcorp.example.org", "\"Alice\"")
+          )
+        }
       }
 
-      // TODO: Un-ignore when JOIN implemented and named graphs support for variables
-      "execute and obtain expected results when referenced graph is a variable instead of a specified graph" ignore {
-        import sqlContext.implicits._
+      // TODO: Un-ignore when support named and graph mixed queries. See: https://github.com/gsk-aiops/bellman/issues/171
+      "mixing default and named graph" ignore {
 
-        val df: DataFrame = List(
-          // Default graph
-          (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
-            "Bob Hacker",
-            ""
-          ),
-          (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
-            "Alice Hacker",
-            ""
-          ),
-          (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
-            "Charles Hacker",
-            ""
-          ),
-          // Alice graph
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/name",
-            "Alice",
-            "http://example.org/alice"
-          ),
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
-          ),
-          // Bob graph
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/name",
-            "Bob",
-            "http://example.org/bob"
-          ),
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
-          ),
-          // Charles graph
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/name",
-            "Charles",
-            "http://example.org/charles"
-          ),
-          (
-            "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+        "execute and obtain expected results when UNION with common variable bindings" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?mbox
+              |FROM NAMED <http://example.org/bob>
+              |WHERE
+              |{
+              |   { ?x foaf:mbox ?mbox }
+              |   UNION
+              |   { GRAPH ex:bob { ?x foaf:mbox ?mbox } }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 4
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("_:a", null, "mailto:alice@work.example.org"),
+            Row(null, "_:a", "mailto:bob@oldcorp.example.org")
           )
-        ).toDF("s", "p", "o", "g")
+        }
 
-        val query =
-          """
-            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
-            |PREFIX ex: <http://example.org/>
-            |
-            |SELECT ?who ?g ?mbox
-            |FROM <http://example.org/dft.ttl>
-            |FROM NAMED <http://example.org/alice>
-            |FROM NAMED <http://example.org/bob>
-            |FROM NAMED <http://example.org/charles>
-            |WHERE
-            |{
-            |   ?g dc:publisher ?who .
-            |   GRAPH ?g { ?x foaf:mbox ?mbox }
-            |}
-            |""".stripMargin
+        "execute and obtain expected results when JOIN with common variable bindings" in {}
 
-        val result = Compiler.compile(df, query)
+        "execute and obtain expected results when JOIN with no common variable bindings" in {}
 
-        result shouldBe a[Right[_, _]]
-        result.right.get.collect.length shouldEqual 3
-        result.right.get.collect.toSet shouldEqual Set(
-          Row(
-            "Alice Hacker",
-            "http://example.org/alice",
-            "mailto:alice@work.example.org"
-          ),
-          Row(
-            "Bob Hacker",
-            "http://example.org/bob",
-            "mailto:bob@oldcorp.example.org"
-          ),
-          Row(
-            "Charles Hacker",
-            "http://example.org/charles",
-            "mailto:charles@work.example.org"
+        "execute and obtain expected results when OPTIONAL with common variable bindings" in {}
+
+        "execute and obtain expected results when OPTIONAL with no common variable bindings" in {}
+      }
+
+      // TODO: Un-ignore support for variables on GRAPH statement. See: https://github.com/gsk-aiops/bellman/issues/173
+      "graph variables" ignore {
+
+        "execute and obtain expected results when referenced graph is a variable instead of a specified graph" in {
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              ""
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              ""
+            ),
+            (
+              "http://example.org/charles",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Charles Hacker",
+              ""
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?who ?g ?mbox
+              |FROM <http://example.org/dft.ttl>
+              |FROM NAMED <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |FROM NAMED <http://example.org/charles>
+              |WHERE
+              |{
+              |   ?g dc:publisher ?who .
+              |   GRAPH ?g { ?x foaf:mbox ?mbox }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 3
+          result.right.get.collect.toSet shouldEqual Set(
+            Row(
+              "\"Alice Hacker\"",
+              "http://example.org/alice",
+              "mailto:alice@work.example.org"
+            ),
+            Row(
+              "\"Bob Hacker\"",
+              "http://example.org/bob",
+              "mailto:bob@oldcorp.example.org"
+            ),
+            Row(
+              "\"Charles Hacker\"",
+              "http://example.org/charles",
+              "mailto:charles@work.example.org"
+            )
           )
-        )
+        }
       }
     }
   }
