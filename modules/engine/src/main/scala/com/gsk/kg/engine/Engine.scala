@@ -41,7 +41,7 @@ object Engine {
       case DAG.LeftJoin(l, r, filters) => evaluateLeftJoin(l, r, filters)
       case DAG.Union(l, r)             => evaluateUnion(l, r)
       case DAG.Filter(funcs, expr)     => evaluateFilter(funcs, expr)
-      case DAG.Join(l, r)              => notImplemented("Join")
+      case DAG.Join(l, r)              => evaluateJoin(l, r)
       case DAG.Offset(offset, r)       => evaluateOffset(offset, r)
       case DAG.Limit(limit, r)         => evaluateLimit(limit, r)
       case DAG.Distinct(r)             => evaluateDistinct(r)
@@ -72,11 +72,16 @@ object Engine {
     )
   )
 
+  private def evaluateJoin(l: Multiset, r: Multiset): M[Multiset] =
+    l.join(r).pure[M]
+
   private def evaluateUnion(l: Multiset, r: Multiset): M[Multiset] =
     l.union(r).pure[M]
 
   private def evaluateScan(graph: String, expr: Multiset): M[Multiset] = {
-    val df = expr.dataframe.filter(expr.dataframe(GRAPH_VARIABLE.s) === graph)
+    val df = expr.dataframe
+      .filter(expr.dataframe(GRAPH_VARIABLE.s) === graph)
+      .withColumn(GRAPH_VARIABLE.s, lit(""))
     expr.copy(dataframe = df).pure[M]
   }
 
