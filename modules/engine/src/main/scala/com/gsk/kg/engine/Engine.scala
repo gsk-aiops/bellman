@@ -57,9 +57,29 @@ object Engine {
     val eval =
       scheme.cataM[M, DAG, T, Multiset](evaluateAlgebraM)
 
-    eval(dag)
-      .runA(dataframe)
-      .map(_.dataframe)
+    validateInputDataFrame(dataframe).flatMap { df =>
+      eval(dag)
+        .runA(df)
+        .map(_.dataframe)
+    }
+  }
+
+  private def validateInputDataFrame(df: DataFrame): Result[DataFrame] = {
+    val hasThreeOrFourColumns = df.columns.length == 3 || df.columns.length == 4
+
+    for {
+      _ <- Either.cond(
+        hasThreeOrFourColumns,
+        df,
+        EngineError.InvalidInputDataFrame("Input DF must have 3 or 4 columns")
+      )
+      dataFrame =
+        if (df.columns.length == 3) {
+          df.withColumn("g", lit(""))
+        } else {
+          df
+        }
+    } yield dataFrame
   }
 
   implicit val spoEncoder: Encoder[Row] = RowEncoder(

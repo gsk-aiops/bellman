@@ -71,5 +71,5 @@ object QueryConstruct {
   }
 
   def toBGP(quads: Iterable[JenaQuad]): BGP =
-    BGP(quads.flatMap(Quad(_)).toSeq)
+    BGP(quads.flatMap(Quad(_).toIterable).toSeq)
 }

@@ -2805,7 +2805,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |FROM NAMED <http://example.org/bob>
               |WHERE
               |{
-              |   GRAPH ex:alice { 
+              |   GRAPH ex:alice {
               |     { ?x foaf:mbox ?mbox }
               |     UNION
               |     { ?x foaf:name ?name }
@@ -2880,7 +2880,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |FROM NAMED <http://example.org/bob>
               |WHERE
               |{
-              |   GRAPH ex:alice { 
+              |   GRAPH ex:alice {
               |     ?x foaf:mbox ?mbox .
               |     ?x foaf:name ?name .
               |   }
@@ -3208,10 +3208,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |FROM <http://example.org/dft.ttl>
               |FROM NAMED <http://example.org/alice>
               |FROM NAMED <http://example.org/bob>
-              |WHERE  { 
+              |WHERE  {
               |  GRAPH ex:alice { ?x foaf:name ?name . }
-              |  OPTIONAL { 
-              |    GRAPH ex:bob { ?x foaf:mbox ?mbox } 
+              |  OPTIONAL {
+              |    GRAPH ex:bob { ?x foaf:mbox ?mbox }
               |  }
               |}
               |""".stripMargin
@@ -3299,10 +3299,10 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |FROM <http://example.org/dft.ttl>
               |FROM NAMED <http://example.org/alice>
               |FROM NAMED <http://example.org/bob>
-              |WHERE  { 
+              |WHERE  {
               |  GRAPH ex:alice { ?x foaf:name ?name . }
-              |  OPTIONAL { 
-              |    GRAPH ex:bob { ?y foaf:mbox ?mbox } 
+              |  OPTIONAL {
+              |    GRAPH ex:bob { ?y foaf:mbox ?mbox }
               |  }
               |}
               |""".stripMargin
@@ -3506,6 +3506,105 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             )
           )
         }
+      }
+    }
+
+    "dealing with three column dataframes" should {
+      "add the last column automatically" in {
+        import sqlContext.implicits._
+
+        val df: DataFrame = List(
+          (
+            "example",
+            "http://xmlns.com/foaf/0.1/lit",
+            "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"
+          ),
+          ("example", "http://xmlns.com/foaf/0.1/lit", "\"0.22\"^^xsd:float"),
+          ("example", "http://xmlns.com/foaf/0.1/lit", "\"foo\"^^xsd:string"),
+          (
+            "example",
+            "http://xmlns.com/foaf/0.1/lit",
+            "\"true\"^^xsd:boolean"
+          )
+        ).toDF("s", "p", "o")
+
+        val query =
+          """
+            |PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+            |PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+            |
+            |SELECT   ?lit
+            |WHERE    {
+            |  ?x foaf:lit ?lit .
+            |}
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query)
+
+        result shouldBe a[Right[_, _]]
+        result.right.get.collect().length shouldEqual 4
+        result.right.get.collect().toSet shouldEqual Set(
+          Row("\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"),
+          Row("\"0.22\"^^xsd:float"),
+          Row("\"foo\"^^xsd:string"),
+          Row("\"true\"^^xsd:boolean")
+        )
+
+      }
+    }
+
+    "dealing with wider or narrower datasets" should {
+      "discard narrow ones before firing the Spark job" in {
+        import sqlContext.implicits._
+
+        val df: DataFrame = List(
+          "example",
+          "example"
+        ).toDF("s")
+
+        val query =
+          """
+            |PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+            |PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+            |
+            |SELECT   ?lit
+            |WHERE    {
+            |  ?x foaf:lit ?lit .
+            |}
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query)
+
+        result shouldBe a[Left[_, _]]
+        result.left.get shouldEqual EngineError.InvalidInputDataFrame(
+          "Input DF must have 3 or 4 columns"
+        )
+      }
+
+      "discard wide ones before running the spark job" in {
+        import sqlContext.implicits._
+
+        val df: DataFrame = List(
+          ("example", "example", "example", "example", "example")
+        ).toDF("a", "b", "c", "d", "e")
+
+        val query =
+          """
+            |PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+            |PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+            |
+            |SELECT   ?lit
+            |WHERE    {
+            |  ?x foaf:lit ?lit .
+            |}
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query)
+
+        result shouldBe a[Left[_, _]]
+        result.left.get shouldEqual EngineError.InvalidInputDataFrame(
+          "Input DF must have 3 or 4 columns"
+        )
       }
     }
   }
