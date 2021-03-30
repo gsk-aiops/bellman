@@ -5,7 +5,7 @@ lazy val Versions = Map(
   "cats"                 -> "2.0.0",
   "cats-scalacheck"      -> "0.2.0",
   "jena"                 -> "3.17.0",
-  "scalatest"            -> "3.2.5",
+  "scalatest"            -> "3.2.6",
   "fastparse"            -> "2.1.2",
   "cats"                 -> "2.0.0",
   "scala212"             -> "2.12.12",
@@ -19,7 +19,7 @@ lazy val Versions = Map(
   "sansa"                -> "0.7.1",
   "monocle"              -> "1.5.1-cats",
   "discipline"           -> "1.1.2",
-  "discipline-scalatest" -> "2.0.0"
+  "discipline-scalatest" -> "2.0.1"
 )
 
 inThisBuild(
@@ -155,6 +155,9 @@ lazy val `bellman-spark-engine` = project
     )
   )
   .settings(
+    scalacOptions in (Compile, console) ~= {
+      _.filterNot(Set("-Ywarn-unused-import", "-Ywarn-unused:imports"))
+    },
     initialCommands in console := """
     import cats._
     import cats.implicits._
@@ -170,6 +173,19 @@ lazy val `bellman-spark-engine` = project
     import com.gsk.kg.engine._
     import com.gsk.kg.engine.DAG._
     import com.gsk.kg.engine.optimizer._
+
+    import org.apache.spark._
+    import org.apache.spark.sql._
+
+    val spark = SparkSession.builder()
+      .appName("Spark Local")
+      .master("local")
+      .config("spark.driver.host", "localhost")
+      .getOrCreate()
+
+    implicit val sc: SQLContext = spark.sqlContext
+
+    import sc.implicits._
     """
   )
   .dependsOn(`bellman-algebra-parser`)
