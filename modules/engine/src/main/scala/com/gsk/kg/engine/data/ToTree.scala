@@ -30,9 +30,12 @@ object ToTree extends LowPriorityToTreeInstances0 {
     def toTree: TreeRep[String] = ToTree[T].toTree(t)
   }
 
-  implicit val tripleToTree: ToTree[Expr.Quad] = new ToTree[Expr.Quad] {
+  implicit val quadToTree: ToTree[Expr.Quad] = new ToTree[Expr.Quad] {
     def toTree(t: Expr.Quad): TreeRep[String] =
-      TreeRep.Node(s"Triple", Stream(t.s.s.toTree, t.p.s.toTree, t.o.s.toTree))
+      TreeRep.Node(
+        s"Quad",
+        Stream(t.s.s.toTree, t.p.s.toTree, t.o.s.toTree, t.g.s.toTree)
+      )
   }
 
   implicit def dagToTree[T: Basis[DAG, *]]: ToTree[T] =
