@@ -31,7 +31,8 @@ object QuerySamples {
 
   // Get all relations of NICR2579 cell
   // None of these should be blank nodes
-  val q4 = "SELECT ?p ?o WHERE { <http://purl.obolibrary.org/obo/CLO_0052588> ?p ?o .}"
+  val q4 =
+    "SELECT ?p ?o WHERE { <http://purl.obolibrary.org/obo/CLO_0052588> ?p ?o .}"
 
   // Get parent classes of a class of cell lines
   // This includes a distinct IRI and a BNode
@@ -119,7 +120,7 @@ object QuerySamples {
 
   // Get children of lung, returning lung in the output
   // Tests BIND
-  val q12 =  """
+  val q12 = """
     SELECT ?s ?p ?o WHERE {
         ?s ?p <http://purl.obolibrary.org/obo/UBERON_0002048> .
         FILTER (!isBlank(?s)) .
@@ -166,7 +167,7 @@ object QuerySamples {
 
   // Concept mapping query - gets info on the UMLS concept links
   // Tests str conversion and logical operators
-  val q17 =  """
+  val q17 = """
     SELECT ?s ?o WHERE {
         ?s a <http://gsk-kg.rdip.gsk.com/dm/1.0/UMLSConcept> .
         ?s <http://gsk-kg.rdip.gsk.com/dm/1.0/conceptLink> ?o .
@@ -264,7 +265,8 @@ object QuerySamples {
   // Comprehensive queries
 
   // Get a sample of triples joining non-blank nodes
-  val q22 = "SELECT ?s ?p ?o WHERE {?s ?p ?o . FILTER (!isBlank(?s) && !isBlank(?o))} LIMIT 10"
+  val q22 =
+    "SELECT ?s ?p ?o WHERE {?s ?p ?o . FILTER (!isBlank(?s) && !isBlank(?o))} LIMIT 10"
 
   // Check DISTINCT works on a small dataset
   val q23 = "SELECT DISTINCT ?s ?p ?o WHERE {?s ?p ?o} LIMIT 10"
@@ -459,7 +461,7 @@ object QuerySamples {
   // FROM NAMED as named graphs in the same query. It uses GRAPH expression
   // with a specific URI so it will match that specific graph
   val q36 =
-  """
+    """
     |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
     |PREFIX dc: <http://purl.org/dc/elements/1.1/>
     |PREFIX ex: <http://example.org/>
