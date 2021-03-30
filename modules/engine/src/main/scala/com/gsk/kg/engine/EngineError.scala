@@ -13,4 +13,5 @@ object EngineError {
   final case class FunctionError(description: String) extends EngineError
   final case class AnalyzerError(errors: NonEmptyChain[String])
       extends EngineError
+  final case class InvalidInputDataFrame(msg: String) extends EngineError
 }
