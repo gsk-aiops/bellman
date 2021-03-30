@@ -1,42 +1,43 @@
 package com.gsk.kg.engine
 package data
 
+import cats.instances.string._
 
 import com.gsk.kg.sparql.syntax.all._
-import cats.instances.string._
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import higherkindness.droste.data.Fix
-import higherkindness.droste.Basis
 
 class TreeRepSpec extends AnyFlatSpec with Matchers {
 
   "TreeRep.draw" should "generate a tree representation" in {
 
-    TreeRep.Node(
-      "1",
-      Stream(
-        TreeRep.Node(
-          "2",
-          Stream(
-            TreeRep.Leaf("5")
-          )
-        ),
-        TreeRep.Node(
-          "3",
-          Stream(
-            TreeRep.Leaf("6")
-          )
-        ),
-        TreeRep.Node(
-          "4",
-          Stream(
-            TreeRep.Leaf("7")
+    TreeRep
+      .Node(
+        "1",
+        Stream(
+          TreeRep.Node(
+            "2",
+            Stream(
+              TreeRep.Leaf("5")
+            )
+          ),
+          TreeRep.Node(
+            "3",
+            Stream(
+              TreeRep.Leaf("6")
+            )
+          ),
+          TreeRep.Node(
+            "4",
+            Stream(
+              TreeRep.Leaf("7")
+            )
           )
         )
       )
-    ).drawTree.trim shouldEqual """
+      .drawTree
+      .trim shouldEqual """
 1
 |
 +- 2
@@ -55,7 +56,6 @@ class TreeRepSpec extends AnyFlatSpec with Matchers {
 
   it should "work as a typeclass for other types" in {
     import ToTree._
-    import DAG._
 
     val dag = DAG.fromQuery.apply(sparql"""
       PREFIX  schema: <http://schema.org/>
