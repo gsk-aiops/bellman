@@ -11,7 +11,6 @@ import org.apache.spark.sql.SQLContext
 
 import com.gsk.kg.engine.analyzer.Analyzer
 import com.gsk.kg.engine.optimizer.Optimizer
-import com.gsk.kg.engine.transformations.RenameQuadsInsideGraph
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.QueryConstruct
 
@@ -37,7 +36,6 @@ object Compiler {
       transformToGraph >>>
       optimizer >>>
       staticAnalysis >>>
-      renameQuadsGraphInsideScanSubtree >>>
       engine(df) >>>
       rdfFormatter
 
@@ -62,9 +60,6 @@ object Compiler {
     */
   val parser: Phase[String, Query] =
     Arrow[Phase].lift(QueryConstruct.parse)
-
-  def renameQuadsGraphInsideScanSubtree[T: Basis[DAG, *]]: Phase[T, T] =
-    Arrow[Phase].lift(RenameQuadsInsideGraph[T])
 
   def optimizer[T: Basis[DAG, *]]: Phase[T, T] =
     Optimizer.optimize

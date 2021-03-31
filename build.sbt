@@ -164,6 +164,7 @@ lazy val `bellman-spark-engine` = project
 
     import higherkindness.droste._
     import higherkindness.droste.data._
+    import higherkindness.droste.data.prelude._
     import higherkindness.droste.syntax.all._
 
     import com.gsk.kg.sparql.syntax.all._
