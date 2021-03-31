@@ -8,6 +8,7 @@ import higherkindness.droste.scheme
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
+import com.gsk.kg.sparqlparser.StringVal
 
 /** Rename the graph column of quads inside a graph statement, so the
   * graph column will contain the graph that is being queried on the
@@ -105,16 +106,16 @@ import com.gsk.kg.sparqlparser.StringVal.URIVAL
 object NamedGraphPushdown {
 
   def apply[T](implicit T: Basis[DAG, T]): T => T = { t =>
-    val alg: Algebra[DAG, String => T] = Algebra[DAG, String => T] {
+    val alg: Algebra[DAG, StringVal => T] = Algebra[DAG, StringVal => T] {
       case DAG.Describe(vars, r)     => str => DAG.describeR(vars, r(str))
       case DAG.Ask(r)                => str => DAG.askR(r(str))
       case DAG.Construct(bgp, r)     => str => DAG.constructR(bgp, r(str))
-      case DAG.Scan(graph, expr)     => str => expr(graph)
+      case DAG.Scan(graph, expr)     => str => expr(URIVAL(graph))
       case DAG.Project(variables, r) => str => DAG.projectR(variables, r(str))
       case DAG.Bind(variable, expression, r) =>
         str => DAG.bindR(variable, expression, r(str))
       case DAG.BGP(quads) =>
-        str => DAG.bgpR(quads.flatMapChunks(_.map(_.copy(g = URIVAL(str)))))
+        str => DAG.bgpR(quads.flatMapChunks(_.map(_.copy(g = str))))
       case DAG.LeftJoin(l, r, filters) =>
         str => DAG.leftJoinR(l(str), r(str), filters)
       case DAG.Union(l, r)         => str => DAG.unionR(l(str), r(str))
@@ -128,7 +129,7 @@ object NamedGraphPushdown {
 
     val eval = scheme.cata(alg)
 
-    eval(t)(GRAPH_VARIABLE.s)
+    eval(t)(GRAPH_VARIABLE)
   }
 
 }
