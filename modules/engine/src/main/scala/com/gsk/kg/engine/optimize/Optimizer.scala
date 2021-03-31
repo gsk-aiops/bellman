@@ -11,7 +11,8 @@ import com.gsk.kg.engine.DAG
 object Optimizer {
 
   def optimize[T: Basis[DAG, *]]: Phase[T, T] =
-    Arrow[Phase].lift(CompactBGPs[T]) >>>
+    Arrow[Phase].lift(NamedGraphPushdown[T]) >>>
+      Arrow[Phase].lift(CompactBGPs[T]) >>>
       Arrow[Phase].lift(RemoveNestedProject[T])
 
 }

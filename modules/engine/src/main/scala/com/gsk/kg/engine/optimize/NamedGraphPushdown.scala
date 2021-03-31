@@ -1,14 +1,17 @@
-package com.gsk.kg.engine.transformations
+package com.gsk.kg.engine
+package optimizer
 
+import higherkindness.droste.Algebra
 import higherkindness.droste.Basis
+import higherkindness.droste.scheme
 
 import com.gsk.kg.engine.DAG
-import com.gsk.kg.engine.DAG.Scan
-import com.gsk.kg.engine.DAG._
+import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
 
-/** Rename the graph column of quads inside a graph statement, so the graph column will contain the graph that is being
-  * queried on the subtree DAG. Eg:
+/** Rename the graph column of quads inside a graph statement, so the
+  * graph column will contain the graph that is being queried on the
+  * subtree DAG. Eg:
   *
   * Initial DAG without renaming:
   * Project
@@ -91,41 +94,41 @@ import com.gsk.kg.sparqlparser.StringVal.URIVAL
   *                    +- ?mbox
   *                    |
   *                    `- http://example.org/alice
+  *
+  * The trick we're doing here in order to pass information from
+  * parent nodes to child nodes in the [[DAG]] is to have a carrier
+  * function as the result value in the
+  * [[higherkindness.droste.Algebra]].  That way, we can make parents,
+  * such as the case of the [[Scan]] in this case, pass information to
+  * children as part of the parameter of the carrier function.
   */
-object RenameQuadsInsideGraph {
+object NamedGraphPushdown {
 
   def apply[T](implicit T: Basis[DAG, T]): T => T = { t =>
-    T.coalgebra(t).rewrite { case s @ Scan(graph, expr) =>
-      val projectedSubtree: DAG[T] = T.coalgebra(expr) match {
-        case BGP(quads) =>
-          BGP(quads.flatMapChunks(_.map(_.copy(g = URIVAL(graph)))))
-        case _ => s
-      }
-      Scan(graph, T.algebra(projectedSubtree))
+    val alg: Algebra[DAG, String => T] = Algebra[DAG, String => T] {
+      case DAG.Describe(vars, r)     => str => DAG.describeR(vars, r(str))
+      case DAG.Ask(r)                => str => DAG.askR(r(str))
+      case DAG.Construct(bgp, r)     => str => DAG.constructR(bgp, r(str))
+      case DAG.Scan(graph, expr)     => str => expr(graph)
+      case DAG.Project(variables, r) => str => DAG.projectR(variables, r(str))
+      case DAG.Bind(variable, expression, r) =>
+        str => DAG.bindR(variable, expression, r(str))
+      case DAG.BGP(quads) =>
+        str => DAG.bgpR(quads.flatMapChunks(_.map(_.copy(g = URIVAL(str)))))
+      case DAG.LeftJoin(l, r, filters) =>
+        str => DAG.leftJoinR(l(str), r(str), filters)
+      case DAG.Union(l, r)         => str => DAG.unionR(l(str), r(str))
+      case DAG.Filter(funcs, expr) => str => DAG.filterR(funcs, expr(str))
+      case DAG.Join(l, r)          => str => DAG.joinR(l(str), r(str))
+      case DAG.Offset(o, r)        => str => DAG.offsetR(o, r(str))
+      case DAG.Limit(l, r)         => str => DAG.limitR(l, r(str))
+      case DAG.Distinct(r)         => str => DAG.distinctR(r(str))
+      case DAG.Noop(str)           => _ => DAG.noopR(str)
     }
+
+    val eval = scheme.cata(alg)
+
+    eval(t)(GRAPH_VARIABLE.s)
   }
 
-//  def apply[T](implicit T: Basis[DAG, T]): T => T = { t =>
-//    def projectedSubtree(s: Scan[T])(expr: T, graph: String): DAG[T] =
-//      T.coalgebra(expr) match {
-//        case BGP(quads) =>
-//          BGP(quads.flatMapChunks(_.map(_.copy(g = URIVAL(graph)))))
-//        case Join(l, r) =>
-//          Join(projectedSubtree(s)(l, graph), projectedSubtree(s)(r, graph))
-//        case Union(l, r) =>
-//          Union(projectedSubtree(s)(l, graph), projectedSubtree(s)(r, graph))
-//        case LeftJoin(l, r, filters) =>
-//          LeftJoin(
-//            projectedSubtree(s)(l, graph),
-//            projectedSubtree(s)(r, graph),
-//            filters
-//          )
-//        case _ => s
-//      }
-//
-//    T.coalgebra(t).rewrite { case s @ Scan(graph, expr) =>
-//      val projectedSubtree: DAG[T] = projectedSubtree(s)(expr, graph)
-//      Scan(graph, T.algebra(projectedSubtree))
-//    }
-//  }
 }
