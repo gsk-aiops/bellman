@@ -6,9 +6,9 @@ import higherkindness.droste.Basis
 import higherkindness.droste.scheme
 
 import com.gsk.kg.engine.DAG
+import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
-import com.gsk.kg.sparqlparser.StringVal
 
 /** Rename the graph column of quads inside a graph statement, so the
   * graph column will contain the graph that is being queried on the
