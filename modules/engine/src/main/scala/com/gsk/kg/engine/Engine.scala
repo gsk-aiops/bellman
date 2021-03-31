@@ -101,7 +101,7 @@ object Engine {
   private def evaluateScan(graph: String, expr: Multiset): M[Multiset] = {
     val df = expr.dataframe
       .filter(expr.dataframe(GRAPH_VARIABLE.s) === graph)
-//      .withColumn(GRAPH_VARIABLE.s, lit(""))
+      .withColumn(GRAPH_VARIABLE.s, lit(""))
     expr.copy(dataframe = df).pure[M]
   }
 

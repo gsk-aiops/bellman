@@ -1,10 +1,11 @@
-package com.gsk.kg.engine.graph
+package com.gsk.kg.engine.transformations
+
+import higherkindness.droste.Basis
 
 import com.gsk.kg.engine.DAG
-import com.gsk.kg.engine.DAG.BGP
 import com.gsk.kg.engine.DAG.Scan
+import com.gsk.kg.engine.DAG._
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
-import higherkindness.droste.Basis
 
 /** Rename the graph column of quads inside a graph statement, so the graph column will contain the graph that is being
   * queried on the subtree DAG. Eg:
@@ -103,4 +104,28 @@ object RenameQuadsInsideGraph {
       Scan(graph, T.algebra(projectedSubtree))
     }
   }
+
+//  def apply[T](implicit T: Basis[DAG, T]): T => T = { t =>
+//    def projectedSubtree(s: Scan[T])(expr: T, graph: String): DAG[T] =
+//      T.coalgebra(expr) match {
+//        case BGP(quads) =>
+//          BGP(quads.flatMapChunks(_.map(_.copy(g = URIVAL(graph)))))
+//        case Join(l, r) =>
+//          Join(projectedSubtree(s)(l, graph), projectedSubtree(s)(r, graph))
+//        case Union(l, r) =>
+//          Union(projectedSubtree(s)(l, graph), projectedSubtree(s)(r, graph))
+//        case LeftJoin(l, r, filters) =>
+//          LeftJoin(
+//            projectedSubtree(s)(l, graph),
+//            projectedSubtree(s)(r, graph),
+//            filters
+//          )
+//        case _ => s
+//      }
+//
+//    T.coalgebra(t).rewrite { case s @ Scan(graph, expr) =>
+//      val projectedSubtree: DAG[T] = projectedSubtree(s)(expr, graph)
+//      Scan(graph, T.algebra(projectedSubtree))
+//    }
+//  }
 }
