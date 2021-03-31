@@ -65,7 +65,9 @@ class NamedGraphPushdownSpec
         val renamed = NamedGraphPushdown[T].apply(dag)
         Fix.un(renamed) match {
           case Project(_, Project(_, BGP(quads))) =>
-            assertForAllQuads(quads)(_.g shouldEqual URIVAL("http://example.org/alice"))
+            assertForAllQuads(quads)(
+              _.g shouldEqual URIVAL("http://example.org/alice")
+            )
           case _ => fail
         }
       }
@@ -115,7 +117,9 @@ class NamedGraphPushdownSpec
                   Join(BGP(externalQuads), BGP(internalQuads))
                 )
               ) =>
-            assertForAllQuads(internalQuads)(_.g shouldEqual URIVAL("http://example.org/alice"))
+            assertForAllQuads(internalQuads)(
+              _.g shouldEqual URIVAL("http://example.org/alice")
+            )
             assertForAllQuads(externalQuads)(_.g shouldEqual GRAPH_VARIABLE)
           case _ => fail
         }
@@ -301,14 +305,17 @@ class NamedGraphPushdownSpec
                   _,
                   Join(
                     BGP(externalQuads),
-                    Join(BGP(graph1Quads),
-                         BGP(graph2Quads))
+                    Join(BGP(graph1Quads), BGP(graph2Quads))
                   )
                 )
               ) =>
             assertForAllQuads(externalQuads)(_.g shouldEqual GRAPH_VARIABLE)
-            assertForAllQuads(graph1Quads)(_.g shouldEqual URIVAL("http://example.org/alice"))
-            assertForAllQuads(graph2Quads)(_.g shouldEqual URIVAL("http://example.org/bob"))
+            assertForAllQuads(graph1Quads)(
+              _.g shouldEqual URIVAL("http://example.org/alice")
+            )
+            assertForAllQuads(graph2Quads)(
+              _.g shouldEqual URIVAL("http://example.org/bob")
+            )
           case _ => fail
         }
       }
