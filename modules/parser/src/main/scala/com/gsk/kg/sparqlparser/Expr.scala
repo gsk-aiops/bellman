@@ -46,16 +46,22 @@ object Query {
 @deriveFixedPoint sealed trait Expr
 object Expr {
   final case class BGP(quads: Seq[Quad]) extends Expr
-  final case class Quad(s: StringVal, p: StringVal, o: StringVal, g: StringVal)
-      extends Expr {
+  final case class Quad(
+      s: StringVal,
+      p: StringVal,
+      o: StringVal,
+      g: List[StringVal]
+  ) extends Expr {
     def getVariables: List[(StringVal, String)] =
       getNamesAndPositions.filterNot(_._1 == GRAPH_VARIABLE)
 
     def getNamesAndPositions: List[(StringVal, String)] =
-      List((s, "s"), (p, "p"), (o, "o"), (g, "g")).filter(_._1.isVariable)
+      List((s, "s"), (p, "p"), (o, "o")).filter(_._1.isVariable) ++
+        g.collect { case e if e.isVariable => e -> "g" }
 
     def getPredicates: List[(StringVal, String)] =
-      List((s, "s"), (p, "p"), (o, "o"), (g, "g")).filter(x => !x._1.isVariable)
+      List((s, "s"), (p, "p"), (o, "o")).filter(!_._1.isVariable) ++
+        g.collect { case e if !e.isVariable => e -> "g" }
   }
   object Quad {
     def apply(q: JenaQuad): Option[Quad] = {
@@ -81,8 +87,9 @@ object Expr {
         toStringVal(q.getObject),
         toStringVal(q.getGraph)
       ) match {
-        case (Some(s), Some(p), Some(o), Some(g)) => Some(Quad(s, p, o, g))
-        case _                                    => None
+        case (Some(s), Some(p), Some(o), Some(g)) =>
+          Some(Quad(s, p, o, g :: Nil))
+        case _ => None
       }
     }
   }

@@ -34,7 +34,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
     def toTree(t: Expr.Quad): TreeRep[String] =
       TreeRep.Node(
         s"Quad",
-        Stream(t.s.s.toTree, t.p.s.toTree, t.o.s.toTree, t.g.s.toTree)
+        Stream(t.s.s.toTree, t.p.s.toTree, t.o.s.toTree) #:::
+          t.g.map(_.s.toTree).toStream
       )
   }
 

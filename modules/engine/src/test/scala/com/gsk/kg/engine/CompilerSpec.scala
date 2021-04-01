@@ -3318,13 +3318,13 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       // TODO: Un-ignore when support named and graph mixed queries. See: https://github.com/gsk-aiops/bellman/issues/171
-      "mixing default and named graph" ignore {
+      "mixing default and named graph" should {
 
         "execute and obtain expected results when UNION with common variable bindings" in {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
-            // Default graph
+            // Default graph - Alice
             (
               "_:a",
               "http://xmlns.com/foaf/0.1/name",
@@ -3337,7 +3337,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               "mailto:alice@work.example.org",
               "http://example.org/alice"
             ),
-            // Bob graph
+            // Named graph - Bob
             (
               "_:a",
               "http://xmlns.com/foaf/0.1/name",
@@ -3349,19 +3349,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               "http://xmlns.com/foaf/0.1/mbox",
               "mailto:bob@oldcorp.example.org",
               "http://example.org/bob"
-            ),
-            // Charles graph
-            (
-              "_:a",
-              "http://xmlns.com/foaf/0.1/name",
-              "Charles",
-              "http://example.org/charles"
-            ),
-            (
-              "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3370,11 +3357,12 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
               |PREFIX ex: <http://example.org/>
               |
-              |SELECT ?x ?mbox
+              |SELECT ?x ?mbox ?name
+              |FROM <http://example.org/alice>
               |FROM NAMED <http://example.org/bob>
               |WHERE
               |{
-              |   { ?x foaf:mbox ?mbox }
+              |   { ?x foaf:name ?name }
               |   UNION
               |   { GRAPH ex:bob { ?x foaf:mbox ?mbox } }
               |}
@@ -3383,9 +3371,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           val result = Compiler.compile(df, query)
 
           result shouldBe a[Right[_, _]]
-          result.right.get.collect.length shouldEqual 4
+          result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:a", null, "mailto:alice@work.example.org"),
+            Row("_:a", null, "Alice"),
             Row(null, "_:a", "mailto:bob@oldcorp.example.org")
           )
         }

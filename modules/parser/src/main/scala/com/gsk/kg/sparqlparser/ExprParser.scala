@@ -51,7 +51,7 @@ object ExprParser {
         StringValParser.tripleValParser ~
         StringValParser.tripleValParser ~
         StringValParser.tripleValParser ~ ")"
-    ).map(t => Quad(t._1, t._2, t._3, GRAPH_VARIABLE))
+    ).map(t => Quad(t._1, t._2, t._3, GRAPH_VARIABLE :: Nil))
 
   def bgpParen[_: P]: P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 
@@ -62,15 +62,12 @@ object ExprParser {
     P("(" ~ exprList ~ exprFunc.rep(2) ~ ")")
 
   def exprFuncList[_: P]: P[Seq[Expression]] = (filterExprList | exprFunc).map {
-    p =>
-      p match {
-        case e: Seq[_]     => e.asInstanceOf[Seq[Expression]]
-        case e: Expression => Seq(e)
-        case _ =>
-          throw UnExpectedType(
-            s"${p} does not match any sparql expression type."
-          )
-      }
+    case e: Seq[_]     => e.asInstanceOf[Seq[Expression]]
+    case e: Expression => Seq(e)
+    case e =>
+      throw UnExpectedType(
+        s"${e} does not match any sparql expression type."
+      )
   }
 
   def filterListParen[_: P]: P[Filter] =

@@ -64,37 +64,33 @@ import com.gsk.kg.sparqlparser.StringVal.URIVAL
   *     |
   *     +- List(VARIABLE(?mbox), VARIABLE(?name))
   *     |
-  *     `- Scan
+  *     `- BGP
   *        |
-  *        +- http://example.org/alice
-  *        |
-  *        `- BGP
+  *        `- ChunkedList.Node
   *           |
-  *           `- ChunkedList.Node
+  *           +- NonEmptyChain
+  *           |  |
+  *           |  `- Quad
+  *           |     |
+  *           |     +- ?x
+  *           |     |
+  *           |     +- http://xmlns.com/foaf/0.1/name
+  *           |     |
+  *           |     +- ?name
+  *           |     |
+  *           |     `- http://example.org/alice
+  *           |
+  *           `- NonEmptyChain
   *              |
-  *              +- NonEmptyChain
-  *              |  |
-  *              |  `- Quad
-  *              |     |
-  *              |     +- ?x
-  *              |     |
-  *              |     +- http://xmlns.com/foaf/0.1/name
-  *              |     |
-  *              |     +- ?name
-  *              |     |
-  *              |     `- http://example.org/alice
-  *              |
-  *              `- NonEmptyChain
+  *              `- Quad
   *                 |
-  *                 `- Quad
-  *                    |
-  *                    +- ?x
-  *                    |
-  *                    +- http://xmlns.com/foaf/0.1/mbox
-  *                    |
-  *                    +- ?mbox
-  *                    |
-  *                    `- http://example.org/alice
+  *                 +- ?x
+  *                 |
+  *                 +- http://xmlns.com/foaf/0.1/mbox
+  *                 |
+  *                 +- ?mbox
+  *                 |
+  *                 `- http://example.org/alice
   *
   * The trick we're doing here in order to pass information from
   * parent nodes to child nodes in the [[DAG]] is to have a carrier
@@ -115,7 +111,7 @@ object NamedGraphPushdown {
       case DAG.Bind(variable, expression, r) =>
         str => DAG.bindR(variable, expression, r(str))
       case DAG.BGP(quads) =>
-        str => DAG.bgpR(quads.flatMapChunks(_.map(_.copy(g = str))))
+        str => DAG.bgpR(quads.flatMapChunks(_.map(_.copy(g = str :: Nil))))
       case DAG.LeftJoin(l, r, filters) =>
         str => DAG.leftJoinR(l(str), r(str), filters)
       case DAG.Union(l, r)         => str => DAG.unionR(l(str), r(str))

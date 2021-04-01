@@ -58,7 +58,7 @@ class NamedGraphPushdownSpec
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
           case Project(_, Project(_, Scan(_, BGP(quads)))) =>
-            assertForAllQuads(quads)(_.g shouldEqual GRAPH_VARIABLE)
+            assertForAllQuads(quads)(_.g shouldEqual GRAPH_VARIABLE :: Nil)
           case _ => fail
         }
 
@@ -66,7 +66,7 @@ class NamedGraphPushdownSpec
         Fix.un(renamed) match {
           case Project(_, Project(_, BGP(quads))) =>
             assertForAllQuads(quads)(
-              _.g shouldEqual URIVAL("http://example.org/alice")
+              _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
             )
           case _ => fail
         }
@@ -103,7 +103,7 @@ class NamedGraphPushdownSpec
                 )
               ) =>
             assertForAllQuads(internalQuads.concat(externalQuads))(
-              _.g shouldEqual GRAPH_VARIABLE
+              _.g shouldEqual GRAPH_VARIABLE :: Nil
             )
           case _ => fail
         }
@@ -118,9 +118,11 @@ class NamedGraphPushdownSpec
                 )
               ) =>
             assertForAllQuads(internalQuads)(
-              _.g shouldEqual URIVAL("http://example.org/alice")
+              _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
             )
-            assertForAllQuads(externalQuads)(_.g shouldEqual GRAPH_VARIABLE)
+            assertForAllQuads(externalQuads)(
+              _.g shouldEqual GRAPH_VARIABLE :: Nil
+            )
           case _ => fail
         }
       }
@@ -165,7 +167,7 @@ class NamedGraphPushdownSpec
               ) =>
             assertForAllQuads(
               externalQuads.concat(leftInsideQuads).concat(rightInsideQuads)
-            )(_.g shouldEqual GRAPH_VARIABLE)
+            )(_.g shouldEqual GRAPH_VARIABLE :: Nil)
           case _ => fail
         }
 
@@ -181,9 +183,11 @@ class NamedGraphPushdownSpec
                   )
                 )
               ) =>
-            assertForAllQuads(externalQuads)(_.g shouldEqual GRAPH_VARIABLE)
+            assertForAllQuads(externalQuads)(
+              _.g shouldEqual GRAPH_VARIABLE :: Nil
+            )
             assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
-              _.g shouldEqual URIVAL("http://example.org/alice")
+              _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
             )
           case _ => fail
         }
@@ -228,7 +232,7 @@ class NamedGraphPushdownSpec
               ) =>
             assertForAllQuads(
               externalQuads.concat(leftInsideQuads).concat(rightInsideQuads)
-            )(_.g shouldEqual GRAPH_VARIABLE)
+            )(_.g shouldEqual GRAPH_VARIABLE :: Nil)
           case _ => fail
         }
 
@@ -244,9 +248,11 @@ class NamedGraphPushdownSpec
                   )
                 )
               ) =>
-            assertForAllQuads(externalQuads)(_.g shouldEqual GRAPH_VARIABLE)
+            assertForAllQuads(externalQuads)(
+              _.g shouldEqual GRAPH_VARIABLE :: Nil
+            )
             assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
-              _.g shouldEqual URIVAL("http://example.org/alice")
+              _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
             )
           case _ => fail
         }
@@ -293,7 +299,7 @@ class NamedGraphPushdownSpec
               ) =>
             assertForAllQuads(
               externalQuads.concat(graph1Quads).concat(graph2Quads)
-            )(_.g shouldEqual GRAPH_VARIABLE)
+            )(_.g shouldEqual GRAPH_VARIABLE :: Nil)
           case _ => fail
         }
 
@@ -309,12 +315,14 @@ class NamedGraphPushdownSpec
                   )
                 )
               ) =>
-            assertForAllQuads(externalQuads)(_.g shouldEqual GRAPH_VARIABLE)
+            assertForAllQuads(externalQuads)(
+              _.g shouldEqual GRAPH_VARIABLE :: Nil
+            )
             assertForAllQuads(graph1Quads)(
-              _.g shouldEqual URIVAL("http://example.org/alice")
+              _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
             )
             assertForAllQuads(graph2Quads)(
-              _.g shouldEqual URIVAL("http://example.org/bob")
+              _.g shouldEqual URIVAL("http://example.org/bob") :: Nil
             )
           case _ => fail
         }
