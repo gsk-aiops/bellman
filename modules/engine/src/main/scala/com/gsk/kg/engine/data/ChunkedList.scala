@@ -32,6 +32,12 @@ import scala.collection.immutable.Nil
       case (list, Some(chunk)) => list.appendChunk(chunk)
     }
 
+  def flatMapChunks[B](fn: Chunk[A] => Chunk[B]): ChunkedList[B] =
+    this match {
+      case Empty()              => Empty()
+      case NonEmpty(head, tail) => NonEmpty(fn(head), tail.flatMapChunks(fn))
+    }
+
   def mapChunks[B](fn: Chunk[A] => B): ChunkedList[B] =
     this match {
       case Empty() => Empty()
