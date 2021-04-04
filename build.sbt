@@ -5,7 +5,7 @@ lazy val Versions = Map(
   "cats"                 -> "2.0.0",
   "cats-scalacheck"      -> "0.2.0",
   "jena"                 -> "3.17.0",
-  "scalatest"            -> "3.2.6",
+  "scalatest"            -> "3.2.7",
   "fastparse"            -> "2.1.2",
   "cats"                 -> "2.0.0",
   "scala212"             -> "2.12.12",
