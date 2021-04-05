@@ -65,3 +65,15 @@ object StringVal {
   final case class BLANK(s: String)    extends StringVal
   final case class BOOL(s: String)     extends StringVal
 }
+
+sealed trait Aggregate extends Expression
+object Aggregate {
+  final case class COUNT(e: Expression)  extends Aggregate
+  final case class SUM(e: Expression)    extends Aggregate
+  final case class MIN(e: Expression)    extends Aggregate
+  final case class MAX(e: Expression)    extends Aggregate
+  final case class AVG(e: Expression)    extends Aggregate
+  final case class SAMPLE(e: Expression) extends Aggregate
+  final case class GROUP_CONCAT(e: Expression, separator: String)
+      extends Aggregate
+}

@@ -9,11 +9,7 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
-import com.gsk.kg.sparqlparser.BuiltInFunc
-import com.gsk.kg.sparqlparser.Conditional
-import com.gsk.kg.sparqlparser.Expression
-import com.gsk.kg.sparqlparser.StringLike
-import com.gsk.kg.sparqlparser.StringVal
+import com.gsk.kg.sparqlparser._
 
 /** [[ExpressionF]] is a pattern functor for the recursive
   * [[Expression]].
@@ -41,6 +37,14 @@ object ExpressionF {
   final case class STRAFTER[A](s: A, f: String)      extends ExpressionF[A]
   final case class ISBLANK[A](s: A)                  extends ExpressionF[A]
   final case class REPLACE[A](st: A, pattern: String, by: String)
+      extends ExpressionF[A]
+  final case class COUNT[A](e: A)  extends ExpressionF[A]
+  final case class SUM[A](e: A)    extends ExpressionF[A]
+  final case class MIN[A](e: A)    extends ExpressionF[A]
+  final case class MAX[A](e: A)    extends ExpressionF[A]
+  final case class AVG[A](e: A)    extends ExpressionF[A]
+  final case class SAMPLE[A](e: A) extends ExpressionF[A]
+  final case class GROUP_CONCAT[A](e: A, separator: String)
       extends ExpressionF[A]
   final case class STRING[A](s: String, tag: Option[String])
       extends ExpressionF[A]
@@ -71,14 +75,21 @@ object ExpressionF {
             StringVal.STRING(by, _)
           ) =>
         REPLACE(st, pattern, by)
-      case BuiltInFunc.REGEX(l, r)     => REGEX(l, r)
-      case BuiltInFunc.STRSTARTS(l, r) => STRSTARTS(l, r)
-      case StringVal.STRING(s, tag)    => STRING(s, tag)
-      case StringVal.NUM(s)            => NUM(s)
-      case StringVal.VARIABLE(s)       => VARIABLE(s)
-      case StringVal.URIVAL(s)         => URIVAL(s)
-      case StringVal.BLANK(s)          => BLANK(s)
-      case StringVal.BOOL(s)           => BOOL(s)
+      case BuiltInFunc.REGEX(l, r)              => REGEX(l, r)
+      case BuiltInFunc.STRSTARTS(l, r)          => STRSTARTS(l, r)
+      case Aggregate.COUNT(e)                   => COUNT(e)
+      case Aggregate.SUM(e)                     => SUM(e)
+      case Aggregate.MIN(e)                     => MIN(e)
+      case Aggregate.MAX(e)                     => MAX(e)
+      case Aggregate.AVG(e)                     => AVG(e)
+      case Aggregate.SAMPLE(e)                  => SAMPLE(e)
+      case Aggregate.GROUP_CONCAT(e, separator) => GROUP_CONCAT(e, separator)
+      case StringVal.STRING(s, tag)             => STRING(s, tag)
+      case StringVal.NUM(s)                     => NUM(s)
+      case StringVal.VARIABLE(s)                => VARIABLE(s)
+      case StringVal.URIVAL(s)                  => URIVAL(s)
+      case StringVal.BLANK(s)                   => BLANK(s)
+      case StringVal.BOOL(s)                    => BOOL(s)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -112,12 +123,19 @@ object ExpressionF {
           pattern.asInstanceOf[StringLike],
           by.asInstanceOf[StringLike]
         )
-      case STRING(s, tag) => StringVal.STRING(s, tag)
-      case NUM(s)         => StringVal.NUM(s)
-      case VARIABLE(s)    => StringVal.VARIABLE(s)
-      case URIVAL(s)      => StringVal.URIVAL(s)
-      case BLANK(s)       => StringVal.BLANK(s)
-      case BOOL(s)        => StringVal.BOOL(s)
+      case COUNT(e)                   => Aggregate.COUNT(e)
+      case SUM(e)                     => Aggregate.SUM(e)
+      case MIN(e)                     => Aggregate.MIN(e)
+      case MAX(e)                     => Aggregate.MAX(e)
+      case AVG(e)                     => Aggregate.AVG(e)
+      case SAMPLE(e)                  => Aggregate.SAMPLE(e)
+      case GROUP_CONCAT(e, separator) => Aggregate.GROUP_CONCAT(e, separator)
+      case STRING(s, tag)             => StringVal.STRING(s, tag)
+      case NUM(s)                     => StringVal.NUM(s)
+      case VARIABLE(s)                => StringVal.VARIABLE(s)
+      case URIVAL(s)                  => StringVal.URIVAL(s)
+      case BLANK(s)                   => StringVal.BLANK(s)
+      case BOOL(s)                    => StringVal.BOOL(s)
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -131,42 +149,46 @@ object ExpressionF {
   )(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
     val algebraM: AlgebraM[M, ExpressionF, Column] =
       AlgebraM.apply[M, ExpressionF, Column] {
-        case EQUALS(l, r) => Func.equals(l, r).pure[M]
-        case REGEX(l, r) =>
-          M.liftF[Result, DataFrame, Column](
-            EngineError.UnknownFunction("REGEX").asLeft[Column]
-          )
-        case STRSTARTS(l, r) =>
-          M.liftF[Result, DataFrame, Column](
-            EngineError.UnknownFunction("STRSTARTS").asLeft[Column]
-          )
-        case GT(l, r)  => Func.gt(l, r).pure[M]
-        case LT(l, r)  => Func.lt(l, r).pure[M]
-        case GTE(l, r) => Func.gte(l, r).pure[M]
-        case LTE(l, r) => Func.lte(l, r).pure[M]
-        case OR(l, r)  => Func.or(l, r).pure[M]
-        case AND(l, r) => Func.and(l, r).pure[M]
-        case NEGATE(s) => Func.negate(s).pure[M]
-
-        case URI(s)                   => Func.iri(s).pure[M]
-        case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]
-        case STR(s)                   => s.pure[M]
-        case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
-        case ISBLANK(s)               => Func.isBlank(s).pure[M]
-        case REPLACE(st, pattern, by) => Func.replace(st, pattern, by).pure[M]
-
-        case STRING(s, None)      => lit(s).pure[M]
-        case STRING(s, Some(tag)) => lit(s""""$s"^^$tag""").pure[M]
-        case NUM(s)               => lit(s).pure[M]
-        case VARIABLE(s)          => M.inspect[Result, DataFrame, Column](_(s))
-        case URIVAL(s)            => lit(s).pure[M]
-        case BLANK(s)             => lit(s).pure[M]
-        case BOOL(s)              => lit(s).pure[M]
+        case EQUALS(l, r)               => Func.equals(l, r).pure[M]
+        case REGEX(l, r)                => unknownFunction("REGEX")
+        case STRSTARTS(l, r)            => unknownFunction("STRSTARTS")
+        case GT(l, r)                   => Func.gt(l, r).pure[M]
+        case LT(l, r)                   => Func.lt(l, r).pure[M]
+        case GTE(l, r)                  => Func.gte(l, r).pure[M]
+        case LTE(l, r)                  => Func.lte(l, r).pure[M]
+        case OR(l, r)                   => Func.or(l, r).pure[M]
+        case AND(l, r)                  => Func.and(l, r).pure[M]
+        case NEGATE(s)                  => Func.negate(s).pure[M]
+        case URI(s)                     => Func.iri(s).pure[M]
+        case CONCAT(appendTo, append)   => Func.concat(appendTo, append).pure[M]
+        case STR(s)                     => s.pure[M]
+        case STRAFTER(s, f)             => Func.strafter(s, f).pure[M]
+        case ISBLANK(s)                 => Func.isBlank(s).pure[M]
+        case REPLACE(st, pattern, by)   => Func.replace(st, pattern, by).pure[M]
+        case COUNT(e)                   => unknownFunction("COUNT")
+        case SUM(e)                     => unknownFunction("SUM")
+        case MIN(e)                     => unknownFunction("MIN")
+        case MAX(e)                     => unknownFunction("MAX")
+        case AVG(e)                     => unknownFunction("AVG")
+        case SAMPLE(e)                  => unknownFunction("SAMPLE")
+        case GROUP_CONCAT(e, separator) => unknownFunction("GROUP_CONCAT")
+        case STRING(s, None)            => lit(s).pure[M]
+        case STRING(s, Some(tag))       => lit(s""""$s"^^$tag""").pure[M]
+        case NUM(s)                     => lit(s).pure[M]
+        case VARIABLE(s)                => M.inspect[Result, DataFrame, Column](_(s))
+        case URIVAL(s)                  => lit(s).pure[M]
+        case BLANK(s)                   => lit(s).pure[M]
+        case BOOL(s)                    => lit(s).pure[M]
       }
 
     val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)
 
     eval(t).runA(df)
   }
+
+  private def unknownFunction(name: String): M[Column] =
+    M.liftF[Result, DataFrame, Column](
+      EngineError.UnknownFunction("GROUP_CONCAT").asLeft[Column]
+    )
 
 }
