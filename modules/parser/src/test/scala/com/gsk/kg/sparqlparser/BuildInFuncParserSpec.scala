@@ -1,14 +1,14 @@
 package com.gsk.kg.sparqlparser
 
-import com.gsk.kg.sparqlparser.BuildInFunc._
+import com.gsk.kg.sparqlparser.BuiltInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
 
 import org.scalatest.flatspec.AnyFlatSpec
 
-class BuildInFuncParserSpec extends AnyFlatSpec {
+class BuiltInFuncParserSpec extends AnyFlatSpec {
   "URI function with string" should "return URI type" in {
     val s = "(uri \"http://id.gsk.com/dm/1.0/\")"
-    val p = fastparse.parse(s, BuildInFuncParser.parser(_))
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case URI(STRING("http://id.gsk.com/dm/1.0/", _)) => succeed
       case _                                           => fail
@@ -17,7 +17,7 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
 
   "URI function with variable" should "return URI type" in {
     val s = "(uri ?test)"
-    val p = fastparse.parse(s, BuildInFuncParser.parser(_))
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case URI(VARIABLE("?test")) => succeed
       case _                      => fail
@@ -26,7 +26,7 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
 
   "CONCAT function" should "return CONCAT type" in {
     val s = "(concat \"http://id.gsk.com/dm/1.0/\" ?src)"
-    val p = fastparse.parse(s, BuildInFuncParser.parser(_))
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case CONCAT(STRING("http://id.gsk.com/dm/1.0/", _), VARIABLE("?src")) =>
         succeed
@@ -36,7 +36,7 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
 
   "Nested URI and CONCAT" should "return proper nested type" in {
     val s = "(uri (concat \"http://id.gsk.com/dm/1.0/\" ?src))"
-    val p = fastparse.parse(s, BuildInFuncParser.parser(_))
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case URI(
             CONCAT(STRING("http://id.gsk.com/dm/1.0/", _), VARIABLE("?src"))
@@ -48,7 +48,7 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
 
   "str function" should "return STR type" in {
     val s = "(str ?d)"
-    val p = fastparse.parse(s, BuildInFuncParser.parser(_))
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case STR(i: StringLike) => succeed
       case _                  => fail
@@ -57,7 +57,7 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
 
   "strafter function" should "return STRAFTER type" in {
     val s = "(strafter ( str ?d) \"#\")"
-    val p = fastparse.parse(s, BuildInFuncParser.parser(_))
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case STRAFTER(STR(VARIABLE(s1: String)), STRING(s2: String, _)) => succeed
       case _                                                          => fail
@@ -66,7 +66,7 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
 
   "Deeply nested strafter function" should "return nested STRAFTER type" in {
     val s = "(uri (strafter (concat (str ?d) (str ?src)) \"#\"))"
-    val p = fastparse.parse(s, BuildInFuncParser.parser(_))
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case URI(
             STRAFTER(
@@ -81,7 +81,7 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
 
   "strstarts function" should "return STRSTARTS type" in {
     val s = """(strstarts (str ?modelname) "ner:")"""
-    val p = fastparse.parse(s, BuildInFuncParser.parser(_))
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case STRSTARTS(STR(VARIABLE("?modelname")), STRING("ner:", None)) =>
         succeed
@@ -91,7 +91,7 @@ class BuildInFuncParserSpec extends AnyFlatSpec {
 
   "Regex parser" should "return REGEX type" in {
     val p =
-      fastparse.parse("""(regex ?d "Hello")""", BuildInFuncParser.regexParen(_))
+      fastparse.parse("""(regex ?d "Hello")""", BuiltInFuncParser.regexParen(_))
     p.get.value match {
       case REGEX(VARIABLE("?d"), STRING("Hello", None)) => succeed
       case _                                            => fail

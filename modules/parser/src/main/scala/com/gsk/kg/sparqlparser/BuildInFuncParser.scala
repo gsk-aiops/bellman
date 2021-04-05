@@ -1,11 +1,11 @@
 package com.gsk.kg.sparqlparser
 
-import com.gsk.kg.sparqlparser.BuildInFunc._
+import com.gsk.kg.sparqlparser.BuiltInFunc._
 
 import fastparse.MultiLineWhitespace._
 import fastparse._
 
-object BuildInFuncParser {
+object BuiltInFuncParser {
   /*
   Functions on strings: https://www.w3.org/TR/sparql11-query/#func-strings
    */

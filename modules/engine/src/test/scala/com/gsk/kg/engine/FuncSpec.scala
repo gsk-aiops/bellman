@@ -583,6 +583,21 @@ class FuncSpec
     }
   }
 
+  "Func.sample" should {
+
+    "return an arbitrary value from the column" in {
+      import sqlContext.implicits._
+
+      val elems = List(1, 2, 3, 4, 5)
+      val df    = elems.toDF("a")
+
+      elems.toSet should contain(
+        df.select(Func.sample(df("a"))).collect().head.get(0)
+      )
+    }
+
+  }
+
   def toRDFDateTime(datetime: TemporalAccessor): String =
     "\"" + DateTimeFormatter
       .ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]")
