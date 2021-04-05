@@ -194,7 +194,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q15
     val q     = QueryConstruct.parse(query)
     q match {
-      case Describe(_, OpNil(), List(), List()) =>
+      case (Describe(_, OpNil()), _) =>
         succeed
       case _ =>
         fail
@@ -205,7 +205,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q16
     val q     = QueryConstruct.parse(query)
     q match {
-      case Describe(vars, Project(vs, Filter(_, _)), List(), List()) =>
+      case (Describe(vars, Project(vs, Filter(_, _))), _) =>
         assert(vars == vs)
         succeed
       case _ =>
@@ -217,7 +217,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q17
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Project(vs, Filter(_, _)), List(), List()) =>
+      case (Select(vars, Project(vs, Filter(_, _))), _) =>
         succeed
       case _ =>
         fail
@@ -228,7 +228,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q18
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Project(vs, Filter(_, _)), List(), List()) =>
+      case (Select(vars, Project(vs, Filter(_, _))), _) =>
         succeed
       case _ =>
         fail
@@ -239,7 +239,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q19
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Distinct(Project(vs, Filter(_, _))), List(), List()) =>
+      case (Select(vars, Distinct(Project(vs, Filter(_, _)))), _) =>
         succeed
       case _ =>
         fail
@@ -250,12 +250,13 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q20
     val q     = QueryConstruct.parse(query)
     q match {
-      case Construct(
-            vars,
-            _,
-            Extend(to, REPLACE(_, _, _), r),
-            List(),
-            List()
+      case (
+            Construct(
+              vars,
+              _,
+              Extend(to, REPLACE(_, _, _), r)
+            ),
+            _
           ) =>
         succeed
       case _ =>
@@ -267,7 +268,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q21
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Project(vs, BGP(ts)), List(), List()) =>
+      case (Select(vars, Project(vs, BGP(ts))), _) =>
         assert(ts.size == 21)
       case _ =>
         fail
@@ -280,11 +281,12 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q22
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(
-            vars,
-            OffsetLimit(None, Some(10), Project(_, Filter(_, _))),
-            List(),
-            List()
+      case (
+            Select(
+              vars,
+              OffsetLimit(None, Some(10), Project(_, Filter(_, _)))
+            ),
+            _
           ) =>
         succeed
       case _ =>
@@ -296,11 +298,12 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q23
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(
-            vars,
-            OffsetLimit(None, Some(10), Distinct(Project(vs, _))),
-            List(),
-            List()
+      case (
+            Select(
+              vars,
+              OffsetLimit(None, Some(10), Distinct(Project(vs, _)))
+            ),
+            _
           ) =>
         assert(vs.size == 3)
       case _ =>
@@ -312,7 +315,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q24
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Project(_, Filter(_, _)), List(), List()) =>
+      case (Select(vars, Project(_, Filter(_, _))), _) =>
         succeed
       case _ =>
         fail
@@ -323,7 +326,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q25
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Project(_, Filter(_, _)), List(), List()) =>
+      case (Select(vars, Project(_, Filter(_, _))), _) =>
         succeed
       case _ =>
         fail
@@ -334,7 +337,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q26
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Distinct(Project(_, _)), List(), List()) =>
+      case (Select(vars, Distinct(Project(_, _))), _) =>
         succeed
       case _ =>
         fail
@@ -345,7 +348,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q27
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Project(vs, _), List(), List()) =>
+      case (Select(vars, Project(vs, _)), _) =>
         assert(vs.nonEmpty && vs.head == VARIABLE("?label"))
       case _ =>
         fail
@@ -356,7 +359,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q28
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Project(_, _), List(), List()) =>
+      case (Select(vars, Project(_, _)), _) =>
         succeed
       case _ =>
         fail
@@ -367,7 +370,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q29
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Project(_, _), List(), List()) =>
+      case (Select(vars, Project(_, _)), _) =>
         succeed
       case _ =>
         fail
@@ -378,7 +381,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q30
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Project(_, Filter(_, _)), List(), List()) =>
+      case (Select(vars, Project(_, Filter(_, _))), _) =>
         succeed
       case _ =>
         fail
@@ -389,7 +392,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q31
     val q     = QueryConstruct.parse(query)
     q match {
-      case Construct(vars, bgp, BGP(_), List(), List()) =>
+      case (Construct(vars, bgp, BGP(_)), _) =>
         succeed
       case _ =>
         fail
@@ -400,7 +403,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q32
     val q     = QueryConstruct.parse(query)
     q match {
-      case Construct(vars, bgp, BGP(_), List(), List()) =>
+      case (Construct(vars, bgp, BGP(_)), _) =>
         succeed
       case _ =>
         fail
@@ -411,7 +414,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q33
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(vars, Project(_, _), List(), List()) =>
+      case (Select(vars, Project(_, _)), _) =>
         succeed
       case _ =>
         fail
@@ -422,7 +425,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q34
     val q     = QueryConstruct.parse(query)
     q match {
-      case Construct(vars, bgp, Union(BGP(_), BGP(_)), List(), List()) =>
+      case (Construct(vars, bgp, Union(BGP(_), BGP(_))), _) =>
         succeed
       case _ =>
         fail
@@ -433,7 +436,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q35
     val q     = QueryConstruct.parse(query)
     q match {
-      case Construct(vars, bgp, Extend(to, from, e), List(), List()) =>
+      case (Construct(vars, bgp, Extend(to, from, e)), _) =>
         assert(to == VARIABLE("?pred"))
       case _ =>
         fail
@@ -444,21 +447,17 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q36
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(
-            _,
-            Project(_, Graph(specifiedGraph, _)),
-            defaultGraphs,
-            namedGraphs
+      case (
+            Select(
+              _,
+              Project(_, Graph(specifiedGraph, _))
+            ),
+            defaultGraphs
           ) =>
-        defaultGraphs should (have size 1 and contain(
-          URIVAL("http://example.org/dft.ttl")
+        defaultGraphs should (have size 2 and contain theSameElementsAs Seq(
+          URIVAL("http://example.org/dft.ttl"),
+          URIVAL("")
         ))
-        namedGraphs should (have size 2 and contain allElementsOf
-          List(
-            URIVAL("http://example.org/alice"),
-            URIVAL("http://example.org/bob")
-          ))
-        specifiedGraph shouldEqual namedGraphs.head
       case _ =>
         fail
     }
@@ -468,20 +467,17 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
     val query = QuerySamples.q37
     val q     = QueryConstruct.parse(query)
     q match {
-      case Select(
-            vars,
-            Project(_, Join(_, Graph(graphVariable, _))),
-            defaultGraphs,
-            namedGraphs
+      case (
+            Select(
+              vars,
+              Project(_, Join(_, Graph(graphVariable, _)))
+            ),
+            defaultGraphs
           ) =>
-        defaultGraphs should (have size 1 and contain(
-          URIVAL("http://example.org/dft.ttl")
+        defaultGraphs should (have size 2 and contain theSameElementsAs Seq(
+          URIVAL("http://example.org/dft.ttl"),
+          URIVAL("")
         ))
-        namedGraphs should (have size 2 and contain allElementsOf
-          List(
-            URIVAL("http://example.org/alice"),
-            URIVAL("http://example.org/bob")
-          ))
         graphVariable shouldEqual vars(1)
       case _ =>
         fail

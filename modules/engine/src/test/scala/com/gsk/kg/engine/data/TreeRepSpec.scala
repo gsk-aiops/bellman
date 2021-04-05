@@ -57,7 +57,7 @@ class TreeRepSpec extends AnyFlatSpec with Matchers {
   it should "work as a typeclass for other types" in {
     import ToTree._
 
-    val dag = DAG.fromQuery.apply(sparql"""
+    val (query, _) = sparql"""
       PREFIX  schema: <http://schema.org/>
       PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
@@ -77,7 +77,9 @@ class TreeRepSpec extends AnyFlatSpec with Matchers {
         BIND(STRAFTER(str(?d), "#") as ?docid) .
         BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
       }
-      """)
+      """
+
+    val dag = DAG.fromQuery.apply(query)
 
     dag.toTree.drawTree.trim shouldEqual """
 Construct

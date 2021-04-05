@@ -16,7 +16,7 @@ import org.scalatest.matchers.should.Matchers
 class AnalyzerSpec extends AnyFlatSpec with Matchers {
 
   "Analyzer.findUnboundVariables" should "find unbound variables in CONSTRUCT queries" in {
-    val query = sparql"""
+    val (query, _) = sparql"""
       CONSTRUCT {
         ?notBound <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?other
       } WHERE {
@@ -38,7 +38,7 @@ class AnalyzerSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "find unbound variables in SELECT queries" in {
-    val query = sparql"""
+    val (query, _) = sparql"""
       SELECT ?species_node WHERE {
       <http://purl.obolibrary.org/obo/CLO_0037232> <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?derived_node .
       }
@@ -58,7 +58,7 @@ class AnalyzerSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "find bound variables even when they're bound as part of expressions" in {
-    val query = sparql"""
+    val (query, _) = sparql"""
       PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
 
       SELECT   ?lit ?lit2

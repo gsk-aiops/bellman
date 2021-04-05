@@ -19,27 +19,19 @@ object Query {
   import com.gsk.kg.sparqlparser.Expr.BGP
   final case class Describe(
       vars: Seq[VARIABLE],
-      r: Expr,
-      defaultGraphs: List[StringVal.URIVAL] = List.empty,
-      namedGraphs: List[StringVal.URIVAL] = List.empty
+      r: Expr
   ) extends Query
   final case class Ask(
-      r: Expr,
-      defaultGraphs: List[StringVal.URIVAL] = List.empty,
-      namedGraphs: List[StringVal.URIVAL] = List.empty
+      r: Expr
   ) extends Query
   final case class Construct(
       vars: Seq[VARIABLE],
       bgp: BGP,
-      r: Expr,
-      defaultGraphs: List[StringVal.URIVAL] = List.empty,
-      namedGraphs: List[StringVal.URIVAL] = List.empty
+      r: Expr
   ) extends Query
   final case class Select(
       vars: Seq[VARIABLE],
-      r: Expr,
-      defaultGraphs: List[StringVal.URIVAL] = List.empty,
-      namedGraphs: List[StringVal.URIVAL] = List.empty
+      r: Expr
   ) extends Query
 }
 

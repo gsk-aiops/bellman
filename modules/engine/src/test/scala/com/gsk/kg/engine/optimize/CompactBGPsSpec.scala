@@ -24,7 +24,7 @@ class CompactBGPsSpec
 
   "CompactBGPs" should "compact BGPs based on subject" in {
 
-    val query = sparql"""
+    val (query, _) = sparql"""
         PREFIX dm: <http://gsk-kg.rdip.gsk.com/dm/1.0/>
 
         SELECT ?d
@@ -42,7 +42,7 @@ class CompactBGPsSpec
   }
 
   it should "not change the order when compacting" in {
-    val query = sparql"""
+    val (query, _) = sparql"""
         PREFIX dm: <http://gsk-kg.rdip.gsk.com/dm/1.0/>
 
         SELECT ?d

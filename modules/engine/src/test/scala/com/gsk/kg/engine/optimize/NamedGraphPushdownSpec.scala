@@ -36,7 +36,7 @@ class NamedGraphPushdownSpec
 
       "has BGP immediately after Scan" in {
 
-        val query =
+        val (query, _) =
           sparql"""
         PREFIX foaf: <http://xmlns.com/foaf/0.1/>
         PREFIX dc: <http://purl.org/dc/elements/1.1/>
@@ -74,7 +74,7 @@ class NamedGraphPushdownSpec
 
       "has BGP before and immediately after Scan" in {
 
-        val query =
+        val (query, _) =
           sparql"""
         PREFIX foaf: <http://xmlns.com/foaf/0.1/>
         PREFIX dc: <http://purl.org/dc/elements/1.1/>
@@ -129,7 +129,7 @@ class NamedGraphPushdownSpec
 
       "has BGP before and Union after Scan" in {
 
-        val query =
+        val (query, _) =
           sparql"""
         PREFIX foaf: <http://xmlns.com/foaf/0.1/>
         PREFIX dc: <http://purl.org/dc/elements/1.1/>
@@ -195,7 +195,7 @@ class NamedGraphPushdownSpec
 
       "has BGP before and LeftJoin after Scan" in {
 
-        val query =
+        val (query, _) =
           sparql"""
         PREFIX foaf: <http://xmlns.com/foaf/0.1/>
         PREFIX dc: <http://purl.org/dc/elements/1.1/>
@@ -260,7 +260,7 @@ class NamedGraphPushdownSpec
 
       "has BGP before and a Join with Scan after first Scan" in {
 
-        val query =
+        val (query, _) =
           sparql"""
         PREFIX foaf: <http://xmlns.com/foaf/0.1/>
         PREFIX dc: <http://purl.org/dc/elements/1.1/>
