@@ -188,7 +188,7 @@ object ExpressionF {
 
   private def unknownFunction(name: String): M[Column] =
     M.liftF[Result, DataFrame, Column](
-      EngineError.UnknownFunction("GROUP_CONCAT").asLeft[Column]
+      EngineError.UnknownFunction(name).asLeft[Column]
     )
 
 }
