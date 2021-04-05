@@ -31,22 +31,22 @@ trait ExpressionArbitraries extends CommonGenerators {
   )
 
   val builtinFuncGenerator: Gen[Expression] = Gen.oneOf(
-    Gen.lzy(expressionGenerator).map(BuildInFunc.URI(_)),
+    Gen.lzy(expressionGenerator).map(BuiltInFunc.URI(_)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(BuildInFunc.CONCAT(_, _)),
-    Gen.lzy(expressionGenerator).map(BuildInFunc.STR(_)),
+      .mapN(BuiltInFunc.CONCAT(_, _)),
+    Gen.lzy(expressionGenerator).map(BuiltInFunc.STR(_)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(BuildInFunc.STRAFTER(_, _)),
+      .mapN(BuiltInFunc.STRAFTER(_, _)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(BuildInFunc.STRSTARTS(_, _)),
-    Gen.lzy(expressionGenerator).map(BuildInFunc.ISBLANK(_)),
+      .mapN(BuiltInFunc.STRSTARTS(_, _)),
+    Gen.lzy(expressionGenerator).map(BuiltInFunc.ISBLANK(_)),
     (
       Gen.lzy(expressionGenerator),
       Gen.lzy(expressionGenerator),
       Gen.lzy(expressionGenerator)
-    ).mapN(BuildInFunc.REPLACE(_, _, _)),
+    ).mapN(BuiltInFunc.REPLACE(_, _, _)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(BuildInFunc.REGEX(_, _))
+      .mapN(BuiltInFunc.REGEX(_, _))
   )
 
   val conditionalGenerator: Gen[Expression] = Gen.oneOf(

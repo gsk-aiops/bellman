@@ -9,7 +9,7 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
-import com.gsk.kg.sparqlparser.BuildInFunc
+import com.gsk.kg.sparqlparser.BuiltInFunc
 import com.gsk.kg.sparqlparser.Conditional
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.StringLike
@@ -60,19 +60,19 @@ object ExpressionF {
       case Conditional.OR(l, r)                            => OR(l, r)
       case Conditional.AND(l, r)                           => AND(l, r)
       case Conditional.NEGATE(s)                           => NEGATE(s)
-      case BuildInFunc.URI(s)                              => URI(s)
-      case BuildInFunc.CONCAT(appendTo, append)            => CONCAT(appendTo, append)
-      case BuildInFunc.STR(s)                              => STR(s)
-      case BuildInFunc.STRAFTER(s, StringVal.STRING(f, _)) => STRAFTER(s, f)
-      case BuildInFunc.ISBLANK(s)                          => ISBLANK(s)
-      case BuildInFunc.REPLACE(
+      case BuiltInFunc.URI(s)                              => URI(s)
+      case BuiltInFunc.CONCAT(appendTo, append)            => CONCAT(appendTo, append)
+      case BuiltInFunc.STR(s)                              => STR(s)
+      case BuiltInFunc.STRAFTER(s, StringVal.STRING(f, _)) => STRAFTER(s, f)
+      case BuiltInFunc.ISBLANK(s)                          => ISBLANK(s)
+      case BuiltInFunc.REPLACE(
             st,
             StringVal.STRING(pattern, _),
             StringVal.STRING(by, _)
           ) =>
         REPLACE(st, pattern, by)
-      case BuildInFunc.REGEX(l, r)     => REGEX(l, r)
-      case BuildInFunc.STRSTARTS(l, r) => STRSTARTS(l, r)
+      case BuiltInFunc.REGEX(l, r)     => REGEX(l, r)
+      case BuiltInFunc.STRSTARTS(l, r) => STRSTARTS(l, r)
       case StringVal.STRING(s, tag)    => STRING(s, tag)
       case StringVal.NUM(s)            => NUM(s)
       case StringVal.VARIABLE(s)       => VARIABLE(s)
@@ -91,23 +91,23 @@ object ExpressionF {
       case OR(l, r)        => Conditional.OR(l, r)
       case AND(l, r)       => Conditional.AND(l, r)
       case NEGATE(s)       => Conditional.NEGATE(s)
-      case REGEX(l, r)     => BuildInFunc.REGEX(l, r)
-      case STRSTARTS(l, r) => BuildInFunc.STRSTARTS(l, r)
-      case URI(s)          => BuildInFunc.URI(s.asInstanceOf[StringLike])
+      case REGEX(l, r)     => BuiltInFunc.REGEX(l, r)
+      case STRSTARTS(l, r) => BuiltInFunc.STRSTARTS(l, r)
+      case URI(s)          => BuiltInFunc.URI(s.asInstanceOf[StringLike])
       case CONCAT(appendTo, append) =>
-        BuildInFunc.CONCAT(
+        BuiltInFunc.CONCAT(
           appendTo.asInstanceOf[StringLike],
           append.asInstanceOf[StringLike]
         )
-      case STR(s) => BuildInFunc.STR(s.asInstanceOf[StringLike])
+      case STR(s) => BuiltInFunc.STR(s.asInstanceOf[StringLike])
       case STRAFTER(s, f) =>
-        BuildInFunc.STRAFTER(
+        BuiltInFunc.STRAFTER(
           s.asInstanceOf[StringLike],
           f.asInstanceOf[StringLike]
         )
-      case ISBLANK(s) => BuildInFunc.ISBLANK(s.asInstanceOf[StringLike])
+      case ISBLANK(s) => BuiltInFunc.ISBLANK(s.asInstanceOf[StringLike])
       case REPLACE(st, pattern, by) =>
-        BuildInFunc.REPLACE(
+        BuiltInFunc.REPLACE(
           st.asInstanceOf[StringLike],
           pattern.asInstanceOf[StringLike],
           by.asInstanceOf[StringLike]

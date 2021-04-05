@@ -20,7 +20,19 @@ object Conditional {
 
 sealed trait StringLike extends Expression
 
-sealed trait BuildInFunc extends StringLike
+sealed trait BuiltInFunc extends StringLike
+object BuiltInFunc {
+  final case class URI(s: Expression) extends BuiltInFunc
+  final case class CONCAT(appendTo: Expression, append: Expression)
+      extends BuiltInFunc
+  final case class STR(s: Expression)                      extends BuiltInFunc
+  final case class STRAFTER(s: Expression, f: Expression)  extends BuiltInFunc
+  final case class STRSTARTS(l: Expression, r: Expression) extends BuiltInFunc
+  final case class ISBLANK(s: Expression)                  extends BuiltInFunc
+  final case class REPLACE(st: Expression, pattern: Expression, by: Expression)
+      extends BuiltInFunc
+  final case class REGEX(l: Expression, r: Expression) extends BuiltInFunc
+}
 
 sealed trait StringVal extends StringLike {
   val s: String
@@ -43,20 +55,6 @@ sealed trait StringVal extends StringLike {
     case StringVal.BOOL(_)        => false
   }
 }
-
-object BuildInFunc {
-  final case class URI(s: Expression) extends BuildInFunc
-  final case class CONCAT(appendTo: Expression, append: Expression)
-      extends BuildInFunc
-  final case class STR(s: Expression)                      extends BuildInFunc
-  final case class STRAFTER(s: Expression, f: Expression)  extends BuildInFunc
-  final case class STRSTARTS(l: Expression, r: Expression) extends BuildInFunc
-  final case class ISBLANK(s: Expression)                  extends BuildInFunc
-  final case class REPLACE(st: Expression, pattern: Expression, by: Expression)
-      extends BuildInFunc
-  final case class REGEX(l: Expression, r: Expression) extends BuildInFunc
-}
-
 object StringVal {
   final case class STRING(s: String, tag: Option[String] = None)
       extends StringVal
