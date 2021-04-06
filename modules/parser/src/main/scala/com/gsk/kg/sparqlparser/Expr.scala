@@ -100,8 +100,8 @@ object Expr {
       limit: Option[Long],
       r: Expr
   )                                  extends Expr
+  final case class Group(vars: Seq[VARIABLE], func: Option[(VARIABLE, Expression)], r: Expr) extends Expr
   final case class Distinct(r: Expr) extends Expr
-  final case class Group(vars: Seq[VARIABLE], r: Expr) extends Expr
   final case class OpNil()           extends Expr
   final case class TabUnit()         extends Expr
 }
