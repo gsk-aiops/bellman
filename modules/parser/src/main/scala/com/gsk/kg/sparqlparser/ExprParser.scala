@@ -56,7 +56,7 @@ object ExprParser {
   def bgpParen[_: P]: P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 
   def exprFunc[_: P]: P[Expression] =
-    ConditionalParser.parser | BuildInFuncParser.parser
+    ConditionalParser.parser | BuiltInFuncParser.parser
 
   def filterExprList[_: P]: P[Seq[Expression]] =
     P("(" ~ exprList ~ exprFunc.rep(2) ~ ")")

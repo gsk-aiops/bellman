@@ -3,7 +3,7 @@ import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
 import org.apache.jena.sparql.algebra.Op
 
-import com.gsk.kg.sparqlparser.BuildInFunc._
+import com.gsk.kg.sparqlparser.BuiltInFunc._
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.Query.Construct
 import com.gsk.kg.sparqlparser.Query.Describe
