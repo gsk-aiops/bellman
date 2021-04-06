@@ -55,8 +55,13 @@ object DAG {
   @Lenses final case class Join[A](l: A, r: A)           extends DAG[A]
   @Lenses final case class Offset[A](offset: Long, r: A) extends DAG[A]
   @Lenses final case class Limit[A](limit: Long, r: A)   extends DAG[A]
-  @Lenses final case class Distinct[A](r: A)             extends DAG[A]
-  @Lenses final case class Noop[A](trace: String)        extends DAG[A]
+  @Lenses final case class Group[A](
+      vars: List[VARIABLE],
+      func: Option[(VARIABLE, Expression)],
+      r: A
+  )                                               extends DAG[A]
+  @Lenses final case class Distinct[A](r: A)      extends DAG[A]
+  @Lenses final case class Noop[A](trace: String) extends DAG[A]
 
   implicit val traverse: Traverse[DAG] = new DefaultTraverse[DAG] {
     def traverse[G[_]: Applicative, A, B](fa: DAG[A])(f: A => G[B]): G[DAG[B]] =
@@ -82,8 +87,9 @@ object DAG {
           f(r).map(offset(o, _))
         case DAG.Limit(l, r) =>
           f(r).map(limit(l, _))
-        case DAG.Distinct(r) => f(r).map(distinct)
-        case DAG.Noop(str)   => noop(str).pure[G]
+        case DAG.Distinct(r)          => f(r).map(distinct)
+        case DAG.Group(vars, func, r) => f(r).map(group(vars, func, _))
+        case DAG.Noop(str)            => noop(str).pure[G]
       }
   }
 
@@ -107,7 +113,9 @@ object DAG {
     Offset[A](offset, r)
   def limit[A](limit: Long, r: A): DAG[A] =
     Limit[A](limit, r)
-  def distinct[A](r: A): DAG[A]      = Distinct[A](r)
+  def distinct[A](r: A): DAG[A] = Distinct[A](r)
+  def group[A](vars: List[VARIABLE], func: Option[(VARIABLE, Expression)], r: A): DAG[A] =
+    Group[A](vars, func, r)
   def noop[A](trace: String): DAG[A] = Noop[A](trace)
 
   // Smart constructors for building the recursive version directly
@@ -143,8 +151,13 @@ object DAG {
   def limitR[T: Embed[DAG, *]](
       l: Long,
       r: T
-  ): T                                          = limit[T](l, r).embed
-  def distinctR[T: Embed[DAG, *]](r: T): T      = distinct[T](r).embed
+  ): T                                     = limit[T](l, r).embed
+  def distinctR[T: Embed[DAG, *]](r: T): T = distinct[T](r).embed
+  def groupR[T: Embed[DAG, *]](
+      vars: List[VARIABLE],
+      func: Option[(VARIABLE, Expression)],
+      r: T
+  ): T                                          = group[T](vars, func, r).embed
   def noopR[T: Embed[DAG, *]](trace: String): T = noop[T](trace).embed
 
   /** Transform a [[Query]] into its [[Fix[DAG]]] representation
@@ -177,6 +190,7 @@ object DAG {
       case ProjectF(vars, r)                 => project(vars.toList, r)
       case QuadF(s, p, o, g)                 => noop("QuadF not supported")
       case DistinctF(r)                      => distinct(r)
+      case GroupF(vars, func, r)             => group(vars.toList, func, r)
       case OffsetLimitF(None, None, r)       => T.coalgebra(r)
       case OffsetLimitF(None, Some(l), r)    => limit(l, r)
       case OffsetLimitF(Some(o), None, r)    => offset(o, r)
