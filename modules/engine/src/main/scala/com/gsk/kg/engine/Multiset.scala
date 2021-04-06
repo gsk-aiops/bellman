@@ -46,10 +46,18 @@ final case class Multiset(
   def join(other: Multiset): Multiset = (this, other) match {
     case (l, r) if l.isEmpty => r
     case (l, r) if r.isEmpty => l
-    case (l, r) if noCommonBindings(l, r) =>
+    case (l, r)
+        if noCommonBindings(l, r) &&
+          l.dataframe.columns.contains(GRAPH_VARIABLE.s) &&
+          r.dataframe.columns.contains(GRAPH_VARIABLE.s) =>
       Multiset(
         l.bindings union r.bindings,
         crossJoinWithGraphs(l.dataframe, r.dataframe)
+      )
+    case (l, r) if noCommonBindings(l, r) =>
+      Multiset(
+        l.bindings union r.bindings,
+        l.dataframe.crossJoin(r.dataframe)
       )
     case (l, r) =>
       val df = l.dataframe.join(

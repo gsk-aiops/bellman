@@ -3,6 +3,7 @@ package com.gsk.kg.engine.optimize
 import higherkindness.droste.Algebra
 import higherkindness.droste.Basis
 import higherkindness.droste.scheme
+
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
