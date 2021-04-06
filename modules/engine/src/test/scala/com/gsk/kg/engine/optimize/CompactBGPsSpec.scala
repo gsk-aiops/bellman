@@ -8,8 +8,8 @@ import com.gsk.kg.engine.DAG.BGP
 import com.gsk.kg.engine.DAG.Project
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.optics._
-import com.gsk.kg.sparql.syntax.all._
 import com.gsk.kg.sparqlparser.Expr.Quad
+import com.gsk.kg.sparqlparser.QueryConstruct
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -24,15 +24,17 @@ class CompactBGPsSpec
 
   "CompactBGPs" should "compact BGPs based on subject" in {
 
-    val (query, _) = sparql"""
-        PREFIX dm: <http://gsk-kg.rdip.gsk.com/dm/1.0/>
-
-        SELECT ?d
-        WHERE {
-          ?d a dm:Document .
-          ?d dm:source "potato"
-        }
+    val q =
       """
+        |PREFIX dm: <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+        |
+        |SELECT ?d
+        |WHERE {
+        | ?d a dm:Document .
+        | ?d dm:source "potato"
+        |}
+        |""".stripMargin
+    val (query, _) = QueryConstruct.parse(q)
 
     val dag: T = DAG.fromQuery.apply(query)
     countChunksInBGP(dag) shouldEqual 2
@@ -42,16 +44,19 @@ class CompactBGPsSpec
   }
 
   it should "not change the order when compacting" in {
-    val (query, _) = sparql"""
-        PREFIX dm: <http://gsk-kg.rdip.gsk.com/dm/1.0/>
 
-        SELECT ?d
-        WHERE {
-          ?d a dm:Document .
-          ?other dm:source "qwer" .
-          ?d dm:source "potato" .
-        }
+    val q =
       """
+        |PREFIX dm: <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+        |
+        |SELECT ?d
+        |WHERE {
+        | ?d a dm:Document .
+        | ?other dm:source "qwer" .
+        | ?d dm:source "potato" .
+        |}
+        |""".stripMargin
+    val (query, _) = QueryConstruct.parse(q)
 
     val dag: T       = DAG.fromQuery.apply(query)
     val optimized: T = CompactBGPs[T].apply(dag)

@@ -5,8 +5,8 @@ import higherkindness.droste.data.Fix
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.engine.DAG._
 import com.gsk.kg.engine.data.ChunkedList
-import com.gsk.kg.sparql.syntax.all.SparqlQueryInterpolator
 import com.gsk.kg.sparqlparser.Expr
+import com.gsk.kg.sparqlparser.QueryConstruct
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
 
@@ -31,24 +31,25 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
 
       "has BGP immediately after Scan" in {
 
-        val (query, defaultGraphs) =
-          sparql"""
-            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            PREFIX dc: <http://purl.org/dc/elements/1.1/>
-            PREFIX ex: <http://example.org/>
-    
-            SELECT ?mbox ?name
-            FROM <http://example.org/dft.ttl>
-            FROM NAMED <http://example.org/alice>
-            FROM NAMED <http://example.org/bob>
-            WHERE
-            {
-               GRAPH ex:alice {
-                 ?x foaf:mbox ?mbox .
-                 ?x foaf:name ?name .
-               }
-            }
+        val q =
           """
+            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            |PREFIX ex: <http://example.org/>
+            |    
+            |SELECT ?mbox ?name
+            |FROM <http://example.org/dft.ttl>
+            |FROM NAMED <http://example.org/alice>
+            |FROM NAMED <http://example.org/bob>
+            |WHERE
+            |{
+            | GRAPH ex:alice {
+            |   ?x foaf:mbox ?mbox .
+            |   ?x foaf:name ?name .
+            | }
+            |}
+            |""".stripMargin
+        val (query, defaultGraphs) = QueryConstruct.parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -69,24 +70,25 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
 
       "has BGP before and immediately after Scan" in {
 
-        val (query, defaultGraphs) =
-          sparql"""
-            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            PREFIX dc: <http://purl.org/dc/elements/1.1/>
-            PREFIX ex: <http://example.org/>
-    
-            SELECT ?mbox ?name
-            FROM <http://example.org/dft.ttl>
-            FROM NAMED <http://example.org/alice>
-            FROM NAMED <http://example.org/bob>
-            WHERE
-            {
-               ?x foaf:name ?name .
-               GRAPH ex:alice {
-                 ?x foaf:mbox ?mbox
-               }
-            }
+        val q =
           """
+            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            |PREFIX ex: <http://example.org/>
+            |    
+            |SELECT ?mbox ?name
+            |FROM <http://example.org/dft.ttl>
+            |FROM NAMED <http://example.org/alice>
+            |FROM NAMED <http://example.org/bob>
+            |WHERE
+            |{
+            | ?x foaf:name ?name .
+            | GRAPH ex:alice {
+            |   ?x foaf:mbox ?mbox
+            | }
+            |}
+            |""".stripMargin
+        val (query, defaultGraphs) = QueryConstruct.parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -127,26 +129,27 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
 
       "has BGP before and Union after Scan" in {
 
-        val (query, defaultGraphs) =
-          sparql"""
-            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            PREFIX dc: <http://purl.org/dc/elements/1.1/>
-            PREFIX ex: <http://example.org/>
-    
-            SELECT ?mbox ?name
-            FROM <http://example.org/dft.ttl>
-            FROM NAMED <http://example.org/alice>
-            FROM NAMED <http://example.org/bob>
-            WHERE
-            {
-               ?x foaf:name ?name .
-               GRAPH ex:alice {
-                 { ?x foaf:mbox ?mbox }
-                 UNION
-                 { ?x foaf:name ?name }
-               }
-            }
+        val q =
           """
+            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            |PREFIX ex: <http://example.org/>
+            |    
+            |SELECT ?mbox ?name
+            |FROM <http://example.org/dft.ttl>
+            |FROM NAMED <http://example.org/alice>
+            |FROM NAMED <http://example.org/bob>
+            |WHERE
+            |{
+            | ?x foaf:name ?name .
+            | GRAPH ex:alice {
+            |   { ?x foaf:mbox ?mbox }
+            |   UNION
+            |   { ?x foaf:name ?name }
+            | }
+            |}
+            |""".stripMargin
+        val (query, defaultGraphs) = QueryConstruct.parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -193,25 +196,26 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
 
       "has BGP before and LeftJoin after Scan" in {
 
-        val (query, defaultGraphs) =
-          sparql"""
-            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            PREFIX dc: <http://purl.org/dc/elements/1.1/>
-            PREFIX ex: <http://example.org/>
-    
-            SELECT ?mbox ?name
-            FROM <http://example.org/dft.ttl>
-            FROM NAMED <http://example.org/alice>
-            FROM NAMED <http://example.org/bob>
-            WHERE
-            {
-               ?x foaf:name ?name .
-               GRAPH ex:alice {
-                 ?x foaf:mbox ?mbox
-                 OPTIONAL { ?x foaf:name ?name }
-               }
-            }
+        val q =
           """
+            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            |PREFIX ex: <http://example.org/>
+            |    
+            |SELECT ?mbox ?name
+            |FROM <http://example.org/dft.ttl>
+            |FROM NAMED <http://example.org/alice>
+            |FROM NAMED <http://example.org/bob>
+            |WHERE
+            |{
+            | ?x foaf:name ?name .
+            | GRAPH ex:alice {
+            |   ?x foaf:mbox ?mbox
+            |   OPTIONAL { ?x foaf:name ?name }
+            | }
+            |}
+            |""".stripMargin
+        val (query, defaultGraphs) = QueryConstruct.parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -258,27 +262,28 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
 
       "has BGP before and a Join with Scan after first Scan" in {
 
-        val (query, defaultGraphs) =
-          sparql"""
-            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            PREFIX dc: <http://purl.org/dc/elements/1.1/>
-            PREFIX ex: <http://example.org/>
-    
-            SELECT ?mbox ?name
-            FROM <http://example.org/dft.ttl>
-            FROM NAMED <http://example.org/alice>
-            FROM NAMED <http://example.org/bob>
-            WHERE
-            {
-               ?x foaf:name ?name .
-               GRAPH ex:alice {
-                 ?x foaf:mbox ?mbox .
-                 GRAPH ex:bob {
-                   ?x foaf:name ?name
-                 }
-               }
-            }
+        val q =
           """
+            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            |PREFIX ex: <http://example.org/>
+            |    
+            |SELECT ?mbox ?name
+            |FROM <http://example.org/dft.ttl>
+            |FROM NAMED <http://example.org/alice>
+            |FROM NAMED <http://example.org/bob>
+            |WHERE
+            |{
+            | ?x foaf:name ?name .
+            | GRAPH ex:alice {
+            |   ?x foaf:mbox ?mbox .
+            |   GRAPH ex:bob {
+            |     ?x foaf:name ?name
+            |   }
+            | }
+            |}
+            |""".stripMargin
+        val (query, defaultGraphs) = QueryConstruct.parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -331,21 +336,22 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
 
       "we have multiple default graphs" in {
 
-        val (query, defaultGraphs) =
-          sparql"""
-            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            PREFIX dc: <http://purl.org/dc/elements/1.1/>
-            PREFIX ex: <http://example.org/>
-    
-            SELECT ?mbox ?name
-            FROM <http://example.org/alice>
-            FROM <http://example.org/bob>
-            WHERE
-            {
-              ?x foaf:mbox ?mbox .
-              ?x foaf:name ?name .
-            }
+        val q =
           """
+            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            |PREFIX ex: <http://example.org/>
+            |    
+            |SELECT ?mbox ?name
+            |FROM <http://example.org/alice>
+            |FROM <http://example.org/bob>
+            |WHERE
+            |{
+            | ?x foaf:mbox ?mbox .
+            | ?x foaf:name ?name .
+            |}
+            |""".stripMargin
+        val (query, defaultGraphs) = QueryConstruct.parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {

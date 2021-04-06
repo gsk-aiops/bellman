@@ -111,39 +111,6 @@ object Engine {
       quads: ChunkedList[Expr.Quad]
   )(implicit sc: SQLContext): M[Multiset] = {
     import sc.implicits._
-    import org.apache.spark.sql.functions._
-
-    /** This method takes all the predicates from a chunk of Quads and generates a Spark condition as
-      * a Column with the next constraints:
-      * - Predicates on same column are composed with OR operations between conditions. Eg:
-      *   (col1, List(p1, p2)) => (false OR (p1 OR p2))
-      * - Predicates on different columns are composed with AND operations between conditions. Eg:
-      *   ((col1, List(p1)), (col2, List(p2)) => (true && (p1 && p2))
-      * - Predicates in the same chunk are composed with OR operation. Eg:
-      *   (c1 -> (true && p1 && (p2 || p3)), c2 -> (true && p4)) =>
-      *     (false || ((true && p1 && (p2 || p3)) || (true && p4)))
-      * @param df
-      * @param chunk
-      * @return
-      */
-    def composedConditionFromChunk(
-        df: DataFrame,
-        chunk: Chunk[Quad]
-    ): Column = {
-      chunk
-        .map { quad =>
-          quad.getPredicates
-            .groupBy(_._2)
-            .map { case (_, vs) =>
-              vs.map { case (pred, position) =>
-                df(position) === pred.s
-              }.foldLeft(lit(false))(_ || _)
-            }
-            .foldLeft(lit(true))(_ && _)
-        }
-        .foldLeft(lit(false))(_ || _)
-    }
-
     M.get[Result, DataFrame].map { df =>
       Foldable[ChunkedList].fold(
         quads.mapChunks { chunk =>
@@ -166,6 +133,37 @@ object Engine {
         }
       )
     }
+  }
+
+  /** This method takes all the predicates from a chunk of Quads and generates a Spark condition as
+    * a Column with the next constraints:
+    * - Predicates on same column are composed with OR operations between conditions. Eg:
+    *   (col1, List(p1, p2)) => (false OR (p1 OR p2))
+    * - Predicates on different columns are composed with AND operations between conditions. Eg:
+    *   ((col1, List(p1)), (col2, List(p2)) => (true && (p1 && p2))
+    * - Predicates in the same chunk are composed with OR operation. Eg:
+    *   (c1 -> (true && p1 && (p2 || p3)), c2 -> (true && p4)) =>
+    *     (false || ((true && p1 && (p2 || p3)) || (true && p4)))
+    * @param df
+    * @param chunk
+    * @return
+    */
+  def composedConditionFromChunk(
+      df: DataFrame,
+      chunk: Chunk[Quad]
+  ): Column = {
+    chunk
+      .map { quad =>
+        quad.getPredicates
+          .groupBy(_._2)
+          .map { case (_, vs) =>
+            vs.map { case (pred, position) =>
+              df(position) === pred.s
+            }.foldLeft(lit(false))(_ || _)
+          }
+          .foldLeft(lit(true))(_ && _)
+      }
+      .foldLeft(lit(false))(_ || _)
   }
 
   private def evaluateDistinct(r: Multiset): M[Multiset] =
