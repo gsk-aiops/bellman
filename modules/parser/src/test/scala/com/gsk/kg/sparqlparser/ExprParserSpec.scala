@@ -346,6 +346,40 @@ class ExprParserSpec extends AnyFlatSpec {
     }
   }
 
+  "GroupBy query" should "return the proper type" in {
+    val p = fastparse.parse(
+      TestUtils.sparql2Algebra("/queries/q38-groupby.sparql"),
+      ExprParser.parser(_)
+      )
+    p.get.value match {
+      case Project(
+        Seq(VARIABLE("?p1")),
+        Group(
+          Seq(VARIABLE("?p1")),
+          BGP(_)))
+           => succeed
+      case _ => fail
+    }
+
+  }
+
+  it should "capture all variables" in {
+    val p = fastparse.parse(
+      TestUtils.sparql2Algebra("/queries/q39-groupby-two-vars.sparql"),
+      ExprParser.parser(_)
+      )
+    p.get.value match {
+      case Project(
+        Seq(VARIABLE("?p1"), VARIABLE("?p2")),
+        Group(
+          Seq(VARIABLE("?p1"), VARIABLE("?p2")),
+          BGP(_)))
+           => succeed
+      case _ => fail
+    }
+
+  }
+
   /*Below are where assertions are beginning to get complex. The assumption is that previous tests appropriately exercise the parser
   combinator functions. Reading expected results from file instead of explicitly defining inline.
    */
