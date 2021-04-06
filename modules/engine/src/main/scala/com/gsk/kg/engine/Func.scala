@@ -194,6 +194,17 @@ object Func {
   def concat(a: Column, b: String): Column =
     concat(a, lit(b))
 
+  /** Sample is a set function which returns an arbitrary value from
+    * the multiset passed to it.
+    *
+    * Implemented using [[org.apache.spark.sql.functions.first]].
+    *
+    * @param col
+    * @return
+    */
+  def sample(col: Column): Column =
+    first(col, true)
+
   /** This helper method tries to parse a datetime expressed as a RDF
     * datetime string `"0193-07-03T20:50:09.000+04:00"^^xsd:dateTime`
     * to a column with underlying type datetime.
