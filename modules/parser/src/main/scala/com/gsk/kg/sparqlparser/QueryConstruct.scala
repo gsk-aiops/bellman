@@ -35,7 +35,6 @@ object QueryConstruct {
 
     val defaultGraphs =
       query.getGraphURIs.asScala.toList.map(URIVAL) :+ URIVAL("")
-    val namedGraphs = query.getNamedGraphURIs.asScala.toList.map(URIVAL)
 
     if (query.isConstructType) {
       val template = query.getConstructTemplate

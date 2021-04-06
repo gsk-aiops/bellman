@@ -3370,11 +3370,13 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
           val result = Compiler.compile(df, query)
 
+          result.right.get.show(false)
+
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:a", null, "Alice"),
-            Row(null, "_:a", "mailto:bob@oldcorp.example.org")
+            Row("_:a", null, "\"Alice\""),
+            Row("_:a", "mailto:bob@oldcorp.example.org", null)
           )
         }
 

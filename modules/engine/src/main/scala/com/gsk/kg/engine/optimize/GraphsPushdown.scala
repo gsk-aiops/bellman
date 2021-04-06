@@ -3,11 +3,11 @@ package com.gsk.kg.engine.optimize
 import higherkindness.droste.Algebra
 import higherkindness.droste.Basis
 import higherkindness.droste.scheme
-
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.sparqlparser.StringVal
+import com.gsk.kg.sparqlparser.StringVal.URIVAL
 
-object DefaultGraphsPushdown {
+object GraphsPushdown {
 
   def apply[T](implicit T: Basis[DAG, T]): (T, List[StringVal]) => T = {
     case (t, defaultGraphs) =>
@@ -16,7 +16,8 @@ object DefaultGraphsPushdown {
           case DAG.Describe(vars, r) => graphs => DAG.describeR(vars, r(graphs))
           case DAG.Ask(r)            => graphs => DAG.askR(r(graphs))
           case DAG.Construct(bgp, r) => graphs => DAG.constructR(bgp, r(graphs))
-          case DAG.Scan(graph, expr) => graphs => DAG.scanR(graph, expr(graphs))
+          case DAG.Scan(graph, expr) =>
+            graphs => expr(URIVAL(graph) :: Nil)
           case DAG.Project(variables, r) =>
             graphs => DAG.projectR(variables, r(graphs))
           case DAG.Bind(variable, expression, r) =>

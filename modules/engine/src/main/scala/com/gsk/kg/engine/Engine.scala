@@ -5,9 +5,7 @@ import cats.data.NonEmptyList
 import cats.instances.all._
 import cats.syntax.applicative._
 import cats.syntax.either._
-
 import higherkindness.droste._
-
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Encoder
@@ -16,8 +14,9 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.types._
-
 import com.gsk.kg.engine.data.ChunkedList
+import com.gsk.kg.engine.data.ChunkedList.Chunk
+import com.gsk.kg.sparqlparser.Expr.Quad
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringVal._
@@ -110,24 +109,32 @@ object Engine {
   )(implicit sc: SQLContext): M[Multiset] = {
     import sc.implicits._
     import org.apache.spark.sql.functions._
+
+    def composedConditionFromChunk(
+        df: DataFrame,
+        chunk: Chunk[Quad]
+    ): Column = {
+      chunk
+        .map { quad =>
+          quad.getPredicates
+            .groupBy(_._2)
+            .map { case (_, vs) =>
+              vs.map { case (pred, position) =>
+                df(position) === pred.s
+              }.foldLeft(lit(false))(_ || _)
+            }
+            .foldLeft(lit(true))(_ && _)
+        }
+        .foldLeft(lit(false))(_ || _)
+    }
+
     M.get[Result, DataFrame].map { df =>
       Foldable[ChunkedList].fold(
         quads.mapChunks { chunk =>
-          val condition: Column =
-            chunk
-              .map(_.getPredicates)
-              .map(
-                _.map({ case (pred, position) =>
-                  df(position) === pred.s
-                }).foldLeft(lit(true))((acc, current) => acc && current)
-              )
-              .foldLeft(lit(false))((acc, current) => acc || current)
-
-          val current = df.filter(condition)
-
+          val condition = composedConditionFromChunk(df, chunk)
+          val current   = df.filter(condition)
           val vars =
             chunk.map(_.getNamesAndPositions).toChain.toList.flatten
-
           val selected =
             current.select(vars.map(v => $"${v._2}".as(v._1.s)): _*)
 

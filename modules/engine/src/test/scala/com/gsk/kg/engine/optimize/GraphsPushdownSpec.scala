@@ -1,8 +1,6 @@
-package com.gsk.kg.engine
-package optimizer
+package com.gsk.kg.engine.optimize
 
 import higherkindness.droste.data.Fix
-
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.engine.DAG._
 import com.gsk.kg.engine.data.ChunkedList
@@ -10,16 +8,11 @@ import com.gsk.kg.sparql.syntax.all.SparqlQueryInterpolator
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
-
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class NamedGraphPushdownSpec
-    extends AnyWordSpec
-    with Matchers
-    with ScalaCheckDrivenPropertyChecks {
+class GraphsPushdownSpec extends AnyWordSpec with Matchers {
 
   type T = Fix[DAG]
 
@@ -30,30 +23,30 @@ class NamedGraphPushdownSpec
       chunkedList.mapChunks(_.map(assert))
   }
 
-  "NamedGraphPushdown" should {
+  "GraphsPushdown" should {
 
     "rename the graph column of quads when inside a GRAPH statement" when {
 
       "has BGP immediately after Scan" in {
 
-        val (query, _) =
+        val (query, defaultGraphs) =
           sparql"""
-        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-        PREFIX dc: <http://purl.org/dc/elements/1.1/>
-        PREFIX ex: <http://example.org/>
-
-        SELECT ?mbox ?name
-        FROM <http://example.org/dft.ttl>
-        FROM NAMED <http://example.org/alice>
-        FROM NAMED <http://example.org/bob>
-        WHERE
-        {
-           GRAPH ex:alice {
-             ?x foaf:mbox ?mbox .
-             ?x foaf:name ?name .
-           }
-        }
-      """
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            PREFIX ex: <http://example.org/>
+    
+            SELECT ?mbox ?name
+            FROM <http://example.org/dft.ttl>
+            FROM NAMED <http://example.org/alice>
+            FROM NAMED <http://example.org/bob>
+            WHERE
+            {
+               GRAPH ex:alice {
+                 ?x foaf:mbox ?mbox .
+                 ?x foaf:name ?name .
+               }
+            }
+          """
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -62,7 +55,7 @@ class NamedGraphPushdownSpec
           case _ => fail
         }
 
-        val renamed = NamedGraphPushdown[T].apply(dag)
+        val renamed = GraphsPushdown[T].apply(dag, defaultGraphs)
         Fix.un(renamed) match {
           case Project(_, Project(_, BGP(quads))) =>
             assertForAllQuads(quads)(
@@ -74,24 +67,24 @@ class NamedGraphPushdownSpec
 
       "has BGP before and immediately after Scan" in {
 
-        val (query, _) =
+        val (query, defaultGraphs) =
           sparql"""
-        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-        PREFIX dc: <http://purl.org/dc/elements/1.1/>
-        PREFIX ex: <http://example.org/>
-
-        SELECT ?mbox ?name
-        FROM <http://example.org/dft.ttl>
-        FROM NAMED <http://example.org/alice>
-        FROM NAMED <http://example.org/bob>
-        WHERE
-        {
-           ?x foaf:name ?name .
-           GRAPH ex:alice {
-             ?x foaf:mbox ?mbox
-           }
-        }
-      """
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            PREFIX ex: <http://example.org/>
+    
+            SELECT ?mbox ?name
+            FROM <http://example.org/dft.ttl>
+            FROM NAMED <http://example.org/alice>
+            FROM NAMED <http://example.org/bob>
+            WHERE
+            {
+               ?x foaf:name ?name .
+               GRAPH ex:alice {
+                 ?x foaf:mbox ?mbox
+               }
+            }
+          """
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -102,13 +95,16 @@ class NamedGraphPushdownSpec
                   Join(BGP(externalQuads), Scan(_, BGP(internalQuads)))
                 )
               ) =>
+            assertForAllQuads(externalQuads)(
+              _.g shouldEqual GRAPH_VARIABLE :: Nil
+            )
             assertForAllQuads(internalQuads.concat(externalQuads))(
               _.g shouldEqual GRAPH_VARIABLE :: Nil
             )
           case _ => fail
         }
 
-        val renamed = NamedGraphPushdown[T].apply(dag)
+        val renamed = GraphsPushdown[T].apply(dag, defaultGraphs)
         Fix.un(renamed) match {
           case Project(
                 _,
@@ -121,7 +117,7 @@ class NamedGraphPushdownSpec
               _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
             )
             assertForAllQuads(externalQuads)(
-              _.g shouldEqual GRAPH_VARIABLE :: Nil
+              _.g shouldEqual defaultGraphs
             )
           case _ => fail
         }
@@ -129,26 +125,26 @@ class NamedGraphPushdownSpec
 
       "has BGP before and Union after Scan" in {
 
-        val (query, _) =
+        val (query, defaultGraphs) =
           sparql"""
-        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-        PREFIX dc: <http://purl.org/dc/elements/1.1/>
-        PREFIX ex: <http://example.org/>
-
-        SELECT ?mbox ?name
-        FROM <http://example.org/dft.ttl>
-        FROM NAMED <http://example.org/alice>
-        FROM NAMED <http://example.org/bob>
-        WHERE
-        {
-           ?x foaf:name ?name .
-           GRAPH ex:alice {
-             { ?x foaf:mbox ?mbox }
-             UNION
-             { ?x foaf:name ?name }
-           }
-        }
-      """
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            PREFIX ex: <http://example.org/>
+    
+            SELECT ?mbox ?name
+            FROM <http://example.org/dft.ttl>
+            FROM NAMED <http://example.org/alice>
+            FROM NAMED <http://example.org/bob>
+            WHERE
+            {
+               ?x foaf:name ?name .
+               GRAPH ex:alice {
+                 { ?x foaf:mbox ?mbox }
+                 UNION
+                 { ?x foaf:name ?name }
+               }
+            }
+          """
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -171,7 +167,7 @@ class NamedGraphPushdownSpec
           case _ => fail
         }
 
-        val renamed = NamedGraphPushdown[T].apply(dag)
+        val renamed = GraphsPushdown[T].apply(dag, defaultGraphs)
         Fix.un(renamed) match {
           case Project(
                 _,
@@ -184,7 +180,7 @@ class NamedGraphPushdownSpec
                 )
               ) =>
             assertForAllQuads(externalQuads)(
-              _.g shouldEqual GRAPH_VARIABLE :: Nil
+              _.g shouldEqual defaultGraphs
             )
             assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
               _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
@@ -195,25 +191,25 @@ class NamedGraphPushdownSpec
 
       "has BGP before and LeftJoin after Scan" in {
 
-        val (query, _) =
+        val (query, defaultGraphs) =
           sparql"""
-        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-        PREFIX dc: <http://purl.org/dc/elements/1.1/>
-        PREFIX ex: <http://example.org/>
-
-        SELECT ?mbox ?name
-        FROM <http://example.org/dft.ttl>
-        FROM NAMED <http://example.org/alice>
-        FROM NAMED <http://example.org/bob>
-        WHERE
-        {
-           ?x foaf:name ?name .
-           GRAPH ex:alice {
-             ?x foaf:mbox ?mbox
-             OPTIONAL { ?x foaf:name ?name }
-           }
-        }
-      """
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            PREFIX ex: <http://example.org/>
+    
+            SELECT ?mbox ?name
+            FROM <http://example.org/dft.ttl>
+            FROM NAMED <http://example.org/alice>
+            FROM NAMED <http://example.org/bob>
+            WHERE
+            {
+               ?x foaf:name ?name .
+               GRAPH ex:alice {
+                 ?x foaf:mbox ?mbox
+                 OPTIONAL { ?x foaf:name ?name }
+               }
+            }
+          """
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -236,7 +232,7 @@ class NamedGraphPushdownSpec
           case _ => fail
         }
 
-        val renamed = NamedGraphPushdown[T].apply(dag)
+        val renamed = GraphsPushdown[T].apply(dag, defaultGraphs)
         Fix.un(renamed) match {
           case Project(
                 _,
@@ -249,7 +245,7 @@ class NamedGraphPushdownSpec
                 )
               ) =>
             assertForAllQuads(externalQuads)(
-              _.g shouldEqual GRAPH_VARIABLE :: Nil
+              _.g shouldEqual defaultGraphs
             )
             assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
               _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
@@ -260,27 +256,27 @@ class NamedGraphPushdownSpec
 
       "has BGP before and a Join with Scan after first Scan" in {
 
-        val (query, _) =
+        val (query, defaultGraphs) =
           sparql"""
-        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-        PREFIX dc: <http://purl.org/dc/elements/1.1/>
-        PREFIX ex: <http://example.org/>
-
-        SELECT ?mbox ?name
-        FROM <http://example.org/dft.ttl>
-        FROM NAMED <http://example.org/alice>
-        FROM NAMED <http://example.org/bob>
-        WHERE
-        {
-           ?x foaf:name ?name .
-           GRAPH ex:alice {
-             ?x foaf:mbox ?mbox .
-             GRAPH ex:bob {
-               ?x foaf:name ?name
-             }
-           }
-        }
-      """
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            PREFIX ex: <http://example.org/>
+    
+            SELECT ?mbox ?name
+            FROM <http://example.org/dft.ttl>
+            FROM NAMED <http://example.org/alice>
+            FROM NAMED <http://example.org/bob>
+            WHERE
+            {
+               ?x foaf:name ?name .
+               GRAPH ex:alice {
+                 ?x foaf:mbox ?mbox .
+                 GRAPH ex:bob {
+                   ?x foaf:name ?name
+                 }
+               }
+            }
+          """
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -303,7 +299,7 @@ class NamedGraphPushdownSpec
           case _ => fail
         }
 
-        val renamed = NamedGraphPushdown[T].apply(dag)
+        val renamed = GraphsPushdown[T].apply(dag, defaultGraphs)
         Fix.un(renamed) match {
           case Project(
                 _,
@@ -316,7 +312,7 @@ class NamedGraphPushdownSpec
                 )
               ) =>
             assertForAllQuads(externalQuads)(
-              _.g shouldEqual GRAPH_VARIABLE :: Nil
+              _.g shouldEqual defaultGraphs
             )
             assertForAllQuads(graph1Quads)(
               _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
@@ -324,6 +320,42 @@ class NamedGraphPushdownSpec
             assertForAllQuads(graph2Quads)(
               _.g shouldEqual URIVAL("http://example.org/bob") :: Nil
             )
+          case _ => fail
+        }
+      }
+    }
+
+    "rename the graph column of quads with the default graph" when {
+
+      "we have multiple default graphs" in {
+
+        val (query, defaultGraphs) =
+          sparql"""
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            PREFIX ex: <http://example.org/>
+    
+            SELECT ?mbox ?name
+            FROM <http://example.org/alice>
+            FROM <http://example.org/bob>
+            WHERE
+            {
+              ?x foaf:mbox ?mbox .
+              ?x foaf:name ?name .
+            }
+          """
+
+        val dag: T = DAG.fromQuery.apply(query)
+        Fix.un(dag) match {
+          case Project(_, Project(_, BGP(quads))) =>
+            assertForAllQuads(quads)(_.g shouldEqual GRAPH_VARIABLE :: Nil)
+          case _ => fail
+        }
+
+        val pushedDown = GraphsPushdown[T].apply(dag, defaultGraphs)
+        Fix.un(pushedDown) match {
+          case Project(_, Project(_, BGP(quads))) =>
+            assertForAllQuads(quads)(_.g shouldEqual defaultGraphs)
           case _ => fail
         }
       }
