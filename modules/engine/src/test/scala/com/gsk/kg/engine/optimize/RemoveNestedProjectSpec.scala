@@ -4,7 +4,7 @@ package optimizer
 import higherkindness.droste.data.Fix
 
 import com.gsk.kg.engine.DAG.Project
-import com.gsk.kg.sparql.syntax.all._
+import com.gsk.kg.sparqlparser.QueryConstruct
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -19,15 +19,17 @@ class RemoveNestedProjectSpec
 
   "CompactBGPs" should "compact BGPs based on subject" in {
 
-    val query = sparql"""
-        PREFIX dm: <http://gsk-kg.rdip.gsk.com/dm/1.0/>
-
-        SELECT ?d
-        WHERE {
-          ?d a dm:Document .
-          ?d dm:source "potato"
-        }
+    val q =
       """
+        |PREFIX dm: <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+        |
+        |SELECT ?d
+        |WHERE {
+        | ?d a dm:Document .
+        | ?d dm:source "potato"
+        |}
+        |""".stripMargin
+    val (query, _) = QueryConstruct.parse(q)
 
     val dag: T = DAG.fromQuery.apply(query)
 

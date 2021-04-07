@@ -13,6 +13,7 @@ import com.gsk.kg.engine.analyzer.Analyzer
 import com.gsk.kg.engine.optimizer.Optimizer
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.QueryConstruct
+import com.gsk.kg.sparqlparser.StringVal
 
 object Compiler {
 
@@ -33,7 +34,7 @@ object Compiler {
       sc: SQLContext
   ): Phase[String, DataFrame] =
     parser >>>
-      transformToGraph >>>
+      transformToGraph.first >>>
       optimizer >>>
       staticAnalysis >>>
       engine(df) >>>
@@ -58,10 +59,10 @@ object Compiler {
 
   /** parser converts strings to our [[Query]] ADT
     */
-  val parser: Phase[String, Query] =
+  val parser: Phase[String, (Query, List[StringVal])] =
     Arrow[Phase].lift(QueryConstruct.parse)
 
-  def optimizer[T: Basis[DAG, *]]: Phase[T, T] =
+  def optimizer[T: Basis[DAG, *]]: Phase[(T, List[StringVal]), T] =
     Optimizer.optimize
 
   def staticAnalysis[T: Basis[DAG, *]]: Phase[T, T] =

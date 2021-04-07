@@ -17,7 +17,7 @@ object QueryConstruct {
 
   final case class SparqlParsingError(s: String) extends Exception(s)
 
-  def parse(sparql: String): Query = {
+  def parse(sparql: String): (Query, List[StringVal]) = {
     val query    = QueryFactory.create(sparql)
     val compiled = Algebra.compile(query)
     val parsed = fastparse.parse(
@@ -33,21 +33,21 @@ object QueryConstruct {
         throw SparqlParsingError(s"$sparql parsing failure.")
     }
 
-    val defaultGraphs = query.getGraphURIs.asScala.toList.map(URIVAL)
-    val namedGraphs   = query.getNamedGraphURIs.asScala.toList.map(URIVAL)
+    val defaultGraphs =
+      query.getGraphURIs.asScala.toList.map(URIVAL) :+ URIVAL("")
 
     if (query.isConstructType) {
       val template = query.getConstructTemplate
       val vars     = getVars(query)
       val bgp      = toBGP(template.getQuads.asScala)
-      Construct(vars, bgp, algebra, defaultGraphs, namedGraphs)
+      (Construct(vars, bgp, algebra), defaultGraphs)
     } else if (query.isSelectType) {
       val vars = getVars(query)
-      Select(vars, algebra, defaultGraphs, namedGraphs)
+      (Select(vars, algebra), defaultGraphs)
     } else if (query.isDescribeType) {
-      Describe(getVars(query), algebra, defaultGraphs, namedGraphs)
+      (Describe(getVars(query), algebra), defaultGraphs)
     } else if (query.isAskType) {
-      Ask(algebra, defaultGraphs, namedGraphs)
+      (Ask(algebra), defaultGraphs)
     } else {
       throw SparqlParsingError(
         s"The query type: ${query.queryType()} is not supported yet"
@@ -59,7 +59,7 @@ object QueryConstruct {
     query.getProjectVars.asScala.map(v => VARIABLE(v.toString()))
 
   def parseADT(sparql: String): Expr =
-    parse(sparql).r
+    parse(sparql)._1.r
 
   def getAllVariableNames(bgp: BGP): Set[String] = {
     bgp.quads.foldLeft(Set.empty[String]) { (acc, q) =>

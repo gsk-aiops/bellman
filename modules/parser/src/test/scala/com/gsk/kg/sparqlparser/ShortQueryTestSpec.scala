@@ -33,7 +33,7 @@ class ShortQueryTestSpec extends AnyFlatSpec {
 
     """
     val query = QueryConstruct.parse(q)
-    query.r match {
+    query._1.r match {
       case FilteredLeftJoin(BGP(_), Extend(to, from, _), funcs) =>
         assert(funcs.size == 2)
       case _ => fail
@@ -55,7 +55,7 @@ class ShortQueryTestSpec extends AnyFlatSpec {
         }
       """
     val query = QueryConstruct.parse(q)
-    query.r match {
+    query._1.r match {
       case Project(vs, BGP(triples)) =>
         assert(triples(0).o == BOOL("true"))
         assert(triples(1).s == NUM("0.3"))

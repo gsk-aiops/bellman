@@ -46,10 +46,15 @@ final case class Multiset(
   def join(other: Multiset): Multiset = (this, other) match {
     case (l, r) if l.isEmpty => r
     case (l, r) if r.isEmpty => l
+    case (l, r) if noCommonBindings(l, r) && containsGraphVariables(l, r) =>
+      Multiset(
+        l.bindings union r.bindings,
+        crossJoinWithGraphsColumns(l.dataframe, r.dataframe)
+      )
     case (l, r) if noCommonBindings(l, r) =>
       Multiset(
         l.bindings union r.bindings,
-        crossJoinWithGraphs(l.dataframe, r.dataframe)
+        l.dataframe.crossJoin(r.dataframe)
       )
     case (l, r) =>
       val df = l.dataframe.join(
@@ -256,6 +261,15 @@ object Multiset {
   private def noCommonBindings(l: Multiset, r: Multiset): Boolean =
     (filterGraph(l).bindings intersect filterGraph(r).bindings).isEmpty
 
+  /** Checks whether two Multisets both contains a graph variable column
+    * @param l
+    * @param r
+    * @return
+    */
+  private def containsGraphVariables(l: Multiset, r: Multiset): Boolean =
+    l.dataframe.columns.contains(GRAPH_VARIABLE.s) &&
+      r.dataframe.columns.contains(GRAPH_VARIABLE.s)
+
   /** This methods is a utility to perform operations like [[union]], [[join]], [[leftJoin]] on Multisets without
     * taking into account graph bindings and graph columns on dataframes by:
     * removing from bindings and dataframe -> operate -> adding binding and column to final dataframe as default graph
@@ -312,7 +326,10 @@ object Multiset {
     * @param r
     * @return
     */
-  private def crossJoinWithGraphs(l: DataFrame, r: DataFrame): DataFrame = {
+  private def crossJoinWithGraphsColumns(
+      l: DataFrame,
+      r: DataFrame
+  ): DataFrame = {
     val leftGraphCol  = "*l"
     val rightGraphCol = "*r"
 

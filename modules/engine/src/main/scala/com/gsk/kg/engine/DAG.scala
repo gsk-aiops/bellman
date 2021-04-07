@@ -153,12 +153,12 @@ object DAG {
     * @return
     */
   def fromQuery[T: Basis[DAG, *]]: Query => T = {
-    case Query.Describe(vars, r, _, _) =>
+    case Query.Describe(vars, r) =>
       describeR(vars.toList, fromExpr[T].apply(r))
-    case Query.Ask(r, _, _) => askR(fromExpr[T].apply(r))
-    case Query.Construct(vars, bgp, r, _, _) =>
+    case Query.Ask(r) => askR(fromExpr[T].apply(r))
+    case Query.Construct(vars, bgp, r) =>
       constructR(bgp, fromExpr[T].apply(r))
-    case Query.Select(vars, r, _, _) =>
+    case Query.Select(vars, r) =>
       projectR(vars.toList, fromExpr[T].apply(r))
   }
 

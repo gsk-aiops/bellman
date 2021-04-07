@@ -3,7 +3,7 @@ package data
 
 import cats.instances.string._
 
-import com.gsk.kg.sparql.syntax.all._
+import com.gsk.kg.sparqlparser.QueryConstruct
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -57,29 +57,34 @@ class TreeRepSpec extends AnyFlatSpec with Matchers {
   it should "work as a typeclass for other types" in {
     import ToTree._
 
-    val dag = DAG.fromQuery.apply(sparql"""
-      PREFIX  schema: <http://schema.org/>
-      PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
-      PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
-      PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
-      PREFIX  litg:  <http://lit-search-api/graph/>
-      PREFIX  litn:  <http://lit-search-api/node/>
-      PREFIX  lite:  <http://lit-search-api/edge/>
-      PREFIX  litp:  <http://lit-search-api/property/>
+    val q =
+      """
+        |PREFIX  schema: <http://schema.org/>
+        |PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
+        |PREFIX  xml:  <http://www.w3.org/XML/1998/namespace>
+        |PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+        |PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
+        |PREFIX  litg:  <http://lit-search-api/graph/>
+        |PREFIX  litn:  <http://lit-search-api/node/>
+        |PREFIX  lite:  <http://lit-search-api/edge/>
+        |PREFIX  litp:  <http://lit-search-api/property/>
+        |
+        |CONSTRUCT {
+        | ?Document a litn:Document .
+        | ?Document litp:docID ?docid .
+        |}
+        |WHERE{
+        | ?d a dm:Document .
+        | BIND(STRAFTER(str(?d), "#") as ?docid) .
+        | BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
+        |}
+        |""".stripMargin
+    val (query, _) = QueryConstruct.parse(q)
 
-      CONSTRUCT {
-        ?Document a litn:Document .
-        ?Document litp:docID ?docid .
-      }
-      WHERE{
-        ?d a dm:Document .
-        BIND(STRAFTER(str(?d), "#") as ?docid) .
-        BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
-      }
-      """)
+    val dag = DAG.fromQuery.apply(query)
 
-    dag.toTree.drawTree.trim shouldEqual """
+    val result = dag.toTree.drawTree.trim
+    result shouldEqual """
 Construct
 |
 +- BGP
@@ -96,7 +101,7 @@ Construct
 |     |     |
 |     |     +- ?docid
 |     |     |
-|     |     `- urn:x-arq:DefaultGraphNode
+|     |     `- List(URIVAL(urn:x-arq:DefaultGraphNode))
 |     |
 |     `- NonEmptyChain
 |        |
@@ -108,7 +113,7 @@ Construct
 |           |
 |           +- http://lit-search-api/node/Document
 |           |
-|           `- urn:x-arq:DefaultGraphNode
+|           `- List(URIVAL(urn:x-arq:DefaultGraphNode))
 |
 `- Bind
    |
@@ -148,7 +153,7 @@ Construct
                   |
                   +- http://gsk-kg.rdip.gsk.com/dm/1.0/Document
                   |
-                  `- *g""".trim
+                  `- List(GRAPH_VARIABLE)""".trim
   }
 
 }

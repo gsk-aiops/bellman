@@ -12,7 +12,7 @@ class QueryConstructSpec extends AnyFlatSpec {
 
   "Simple Query" should "parse Construct statement with correct number of Triples" in {
     TestUtils.query("/queries/q0-simple-basic-graph-pattern.sparql") match {
-      case Construct(vars, bgp, expr, List(), List()) =>
+      case Construct(vars, bgp, expr) =>
         assert(vars.size == 2 && bgp.quads.size == 2)
       case _ => fail
     }
@@ -23,9 +23,7 @@ class QueryConstructSpec extends AnyFlatSpec {
       case Construct(
             vars,
             bgp,
-            Union(BGP(quadsL: Seq[Quad]), BGP(quadsR: Seq[Quad])),
-            List(),
-            List()
+            Union(BGP(quadsL: Seq[Quad]), BGP(quadsR: Seq[Quad]))
           ) =>
         val temp = QueryConstruct.getAllVariableNames(bgp)
         val all  = vars.map(_.s).toSet
@@ -39,9 +37,7 @@ class QueryConstructSpec extends AnyFlatSpec {
       case Construct(
             vars,
             bgp,
-            Extend(l: StringVal, r: StringVal, BGP(quads: Seq[Quad])),
-            List(),
-            List()
+            Extend(l: StringVal, r: StringVal, BGP(quads: Seq[Quad]))
           ) =>
         vars.exists(_.s == "?dbind")
       case _ => fail
@@ -50,7 +46,7 @@ class QueryConstructSpec extends AnyFlatSpec {
 
   "Complex named graph query" should "be captured properly in Construct" in {
     TestUtils.query("/queries/q13-complex-named-graph.sparql") match {
-      case Construct(vars, bgp, expr, List(), List()) =>
+      case Construct(vars, bgp, expr) =>
         assert(vars.size == 13)
         assert(vars.exists(va => va.s == "?ogihw"))
       case _ => fail
@@ -60,7 +56,7 @@ class QueryConstructSpec extends AnyFlatSpec {
   "Complex lit-search query" should "return proper Construct type" in {
     val a = 1
     TestUtils.query("/queries/lit-search-3.sparql") match {
-      case Construct(vars, bgp, expr, List(), List()) =>
+      case Construct(vars, bgp, expr) =>
         assert(bgp.quads.size == 11)
         assert(
           bgp.quads.head.o
@@ -74,7 +70,7 @@ class QueryConstructSpec extends AnyFlatSpec {
 
   "Extra large query" should "return proper Construct type" in {
     TestUtils.query("/queries/lit-search-xlarge.sparql") match {
-      case Construct(vars, bgp, expr, List(), List()) =>
+      case Construct(vars, bgp, expr) =>
         assert(bgp.quads.size == 67)
         assert(bgp.quads.head.s.asInstanceOf[VARIABLE].s == "?Year")
         assert(bgp.quads.last.s.asInstanceOf[VARIABLE].s == "?Predication")
@@ -101,15 +97,16 @@ class QueryConstructSpec extends AnyFlatSpec {
       """
 
     QueryConstruct.parse(query) match {
-      case Construct(
-            vars,
-            bgp,
-            Project(
-              Seq(VARIABLE("?name"), VARIABLE("?person")),
-              Filter(funcs, expr)
+      case (
+            Construct(
+              vars,
+              bgp,
+              Project(
+                Seq(VARIABLE("?name"), VARIABLE("?person")),
+                Filter(funcs, expr)
+              )
             ),
-            List(),
-            List()
+            _
           ) =>
         succeed
       case _ => fail
@@ -132,35 +129,36 @@ class QueryConstructSpec extends AnyFlatSpec {
     val x = QueryConstruct.parse(query)
 
     x match {
-      case Select(
-            mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
-            OffsetLimit(
-              None,
-              Some(10),
-              Project(
-                mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
-                BGP(
-                  mutable.ArrayBuffer(
-                    Quad(
-                      VARIABLE("?de"),
-                      URIVAL(
-                        "http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass"
+      case (
+            Select(
+              mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
+              OffsetLimit(
+                None,
+                Some(10),
+                Project(
+                  mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
+                  BGP(
+                    mutable.ArrayBuffer(
+                      Quad(
+                        VARIABLE("?de"),
+                        URIVAL(
+                          "http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass"
+                        ),
+                        VARIABLE("??0"),
+                        _
                       ),
-                      VARIABLE("??0"),
-                      _
-                    ),
-                    Quad(
-                      VARIABLE("??0"),
-                      URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predClass"),
-                      VARIABLE("?et"),
-                      _
+                      Quad(
+                        VARIABLE("??0"),
+                        URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predClass"),
+                        VARIABLE("?et"),
+                        _
+                      )
                     )
                   )
                 )
               )
             ),
-            List(),
-            List()
+            _
           ) =>
         succeed
       case _ => fail

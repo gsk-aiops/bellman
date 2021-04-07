@@ -22,7 +22,7 @@ object TestUtils {
 
   def query(fileLoc: String): Query = {
     val q = readOutputFile(fileLoc)
-    QueryConstruct.parse(q)
+    QueryConstruct.parse(q)._1
   }
 
   def readOutputFile(fileLoc: String): String = {

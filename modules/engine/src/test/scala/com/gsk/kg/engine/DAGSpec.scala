@@ -31,7 +31,12 @@ class DAGSpec
       bgpR(
         ChunkedList(
           Expr
-            .Quad(STRING("one"), STRING("two"), STRING("three"), GRAPH_VARIABLE)
+            .Quad(
+              STRING("one"),
+              STRING("two"),
+              STRING("three"),
+              GRAPH_VARIABLE :: Nil
+            )
         )
       ),
       bgpR(
@@ -40,7 +45,7 @@ class DAGSpec
             STRING("four"),
             STRING("five"),
             STRING("six"),
-            GRAPH_VARIABLE
+            GRAPH_VARIABLE :: Nil
           )
         )
       )
@@ -56,8 +61,18 @@ class DAGSpec
     T.coalgebra(join).rewrite(joinsAsBGP) shouldEqual bgpR(
       ChunkedList(
         Expr
-          .Quad(STRING("one"), STRING("two"), STRING("three"), GRAPH_VARIABLE),
-        Expr.Quad(STRING("four"), STRING("five"), STRING("six"), GRAPH_VARIABLE)
+          .Quad(
+            STRING("one"),
+            STRING("two"),
+            STRING("three"),
+            GRAPH_VARIABLE :: Nil
+          ),
+        Expr.Quad(
+          STRING("four"),
+          STRING("five"),
+          STRING("six"),
+          GRAPH_VARIABLE :: Nil
+        )
       )
     )
   }
