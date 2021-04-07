@@ -350,15 +350,13 @@ class ExprParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(
       TestUtils.sparql2Algebra("/queries/q38-groupby.sparql"),
       ExprParser.parser(_)
-      )
+    )
     p.get.value match {
       case Project(
-        Seq(VARIABLE("?p1")),
-        Group(
-          Seq(VARIABLE("?p1")),
-          None,
-          BGP(_)))
-           => succeed
+            Seq(VARIABLE("?p1")),
+            Group(Seq(VARIABLE("?p1")), None, BGP(_))
+          ) =>
+        succeed
       case _ => fail
     }
 
@@ -368,36 +366,54 @@ class ExprParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(
       TestUtils.sparql2Algebra("/queries/q39-groupby-two-vars.sparql"),
       ExprParser.parser(_)
-      )
+    )
     p.get.value match {
       case Project(
-        Seq(VARIABLE("?p1"), VARIABLE("?p2")),
-        Group(
-          Seq(VARIABLE("?p1"), VARIABLE("?p2")),
-          None,
-          BGP(_)))
-           => succeed
+            Seq(VARIABLE("?p1"), VARIABLE("?p2")),
+            Group(Seq(VARIABLE("?p1"), VARIABLE("?p2")), None, BGP(_))
+          ) =>
+        succeed
       case _ => fail
     }
   }
 
   it should "capture aggregate functions correctly" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q40-groupby-aggregate-functions.sparql"),
+      TestUtils.sparql2Algebra(
+        "/queries/q40-groupby-aggregate-functions.sparql"
+      ),
       ExprParser.parser(_)
-      )
+    )
 
     p.get.value match {
       case Project(
-        Seq(VARIABLE("?.1")),
-        Extend(VARIABLE("?.1"),VARIABLE("?.0"),
-               Group(
-                 Seq(VARIABLE("?p1")),
-                 Some((VARIABLE("?.0"),Aggregate.COUNT(VARIABLE("?p1")))),
-                 BGP(
-                   Seq(Quad(VARIABLE("?p1"),URIVAL("http://www.w3.org/2006/vcard/ns#hasAddress"),VARIABLE("?ad"),GRAPH_VARIABLE),
-                       Quad(VARIABLE("?p2"),URIVAL("http://www.w3.org/2006/vcard/ns#hasAddress"),VARIABLE("?ad"),GRAPH_VARIABLE))))))
-           => succeed
+            Seq(VARIABLE("?.1")),
+            Extend(
+              VARIABLE("?.1"),
+              VARIABLE("?.0"),
+              Group(
+                Seq(VARIABLE("?p1")),
+                Some((VARIABLE("?.0"), Aggregate.COUNT(VARIABLE("?p1")))),
+                BGP(
+                  Seq(
+                    Quad(
+                      VARIABLE("?p1"),
+                      URIVAL("http://www.w3.org/2006/vcard/ns#hasAddress"),
+                      VARIABLE("?ad"),
+                      List(GRAPH_VARIABLE)
+                    ),
+                    Quad(
+                      VARIABLE("?p2"),
+                      URIVAL("http://www.w3.org/2006/vcard/ns#hasAddress"),
+                      VARIABLE("?ad"),
+                      List(GRAPH_VARIABLE)
+                    )
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
       case _ => fail
     }
   }

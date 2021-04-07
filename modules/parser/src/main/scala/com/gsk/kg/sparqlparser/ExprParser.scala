@@ -22,7 +22,7 @@ object ExprParser {
   def select[_: P]: P[Unit]      = P("project")
   def offsetLimit[_: P]: P[Unit] = P("slice")
   def distinct[_: P]: P[Unit]    = P("distinct")
-  def group[_: P]: P[Unit]    = P("group")
+  def group[_: P]: P[Unit]       = P("group")
 
   def opNull[_: P]: P[OpNil]      = P("(null)").map(_ => OpNil())
   def tableUnit[_: P]: P[TabUnit] = P("(table unit)").map(_ => TabUnit())
@@ -73,7 +73,7 @@ object ExprParser {
   }
 
   def assignment[_: P]: P[(StringVal.VARIABLE, Expression)] = P(
-   "((" ~ StringValParser.variable ~ exprFunc ~ "))"
+    "((" ~ StringValParser.variable ~ exprFunc ~ "))"
   )
 
   def groupParen[_: P]: P[Group] = P(

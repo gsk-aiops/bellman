@@ -114,7 +114,11 @@ object DAG {
   def limit[A](limit: Long, r: A): DAG[A] =
     Limit[A](limit, r)
   def distinct[A](r: A): DAG[A] = Distinct[A](r)
-  def group[A](vars: List[VARIABLE], func: Option[(VARIABLE, Expression)], r: A): DAG[A] =
+  def group[A](
+      vars: List[VARIABLE],
+      func: Option[(VARIABLE, Expression)],
+      r: A
+  ): DAG[A] =
     Group[A](vars, func, r)
   def noop[A](trace: String): DAG[A] = Noop[A](trace)
 
@@ -280,6 +284,8 @@ object optics {
     )
   def _distinct[T: Basis[DAG, *]]: Prism[DAG[T], Distinct[T]] = Prism
     .partial[DAG[T], Distinct[T]] { case dag @ Distinct(r) => dag }(identity)
+  def _group[T: Basis[DAG, *]]: Prism[DAG[T], Group[T]] = Prism
+    .partial[DAG[T], Group[T]] { case dag @ Group(_, _, _) => dag }(identity)
   def _noop[T: Basis[DAG, *]]: Prism[DAG[T], Noop[T]] =
     Prism.partial[DAG[T], Noop[T]] { case dag @ Noop(trace: String) => dag }(
       identity
@@ -313,6 +319,8 @@ object optics {
     basisIso[DAG, T] composePrism _limit
   def _distinctR[T: Basis[DAG, *]]: Prism[T, Distinct[T]] =
     basisIso[DAG, T] composePrism _distinct
+  def _groupR[T: Basis[DAG, *]]: Prism[T, Group[T]] =
+    basisIso[DAG, T] composePrism _group
   def _noopR[T: Basis[DAG, *]]: Prism[T, Noop[T]] =
     basisIso[DAG, T] composePrism _noop
 

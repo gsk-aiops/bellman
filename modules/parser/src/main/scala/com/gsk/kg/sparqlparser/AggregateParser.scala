@@ -25,13 +25,15 @@ object AggregateParser {
   def maxParen[_: P]: P[Aggregate] =
     P("(" ~ max ~ StringValParser.variable ~ ")").map(Aggregate.MAX(_))
   def groupConcatParen[_: P]: P[Aggregate] =
-    P("(" ~
+    P(
+      "(" ~
         groupConcat ~
         StringValParser.variable ~
         "\"" ~
         CharsWhile(_ != '\"').! ~
         "\"" ~
-        ")")
+        ")"
+    )
       .map(p => Aggregate.GROUP_CONCAT(p._1, p._2))
 
   def aggregatePatterns[_: P]: P[Aggregate] =

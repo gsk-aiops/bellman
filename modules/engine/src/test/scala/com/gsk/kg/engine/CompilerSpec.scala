@@ -3874,6 +3874,39 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         )
       }
     }
+
+    "perform query with GROUP BY" should {
+
+      "operate correctly when only GROUP BY appears" in {
+        import sqlContext.implicits._
+
+        val df = List(
+          ("a1", "<http://uri.com/predicate>", "<http://uri.com/object>"),
+          ("a1", "<http://uri.com/predicate>", "<http://uri.com/object>"),
+          ("a2", "<http://uri.com/predicate>", "<http://uri.com/object>"),
+          ("a2", "<http://uri.com/predicate>", "<http://uri.com/object>"),
+          ("a3", "<http://uri.com/predicate>", "<http://uri.com/object>")
+        ).toDF("s", "p", "o")
+
+        val query = """
+          SELECT ?a
+          WHERE {
+            ?a <http://uri.com/predicate> <http://uri.com/object>
+          } GROUP BY ?a
+          """
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.show(false)
+
+        result shouldEqual 33
+      }
+
+      "operate correctly there's GROUP BY and an aggregate function" ignore {}
+
+      "operate correctly there's GROUP BY and a HAVING clause" ignore {}
+
+    }
   }
 
   private def readNTtoDF(path: String) = {
