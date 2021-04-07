@@ -32,7 +32,7 @@ trait DAGArbitraries
       stringValGenerator,
       stringValGenerator,
       stringValGenerator
-    ).mapN(Expr.Quad(_, _, _, _))
+    ).mapN((s, p, o, g) => Expr.Quad(s, p, o, g :: Nil))
 
   implicit val quadArbitrary: Arbitrary[Expr.Quad] = Arbitrary(
     quadGenerator
