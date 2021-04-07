@@ -15,7 +15,7 @@ trait Interpolators {
         buf.append(expressions.next())
         buf.append(strings.next())
       }
-      QueryConstruct.parse(buf.toString())
+      QueryConstruct.parse(buf.toString())._1
     }
 
   }

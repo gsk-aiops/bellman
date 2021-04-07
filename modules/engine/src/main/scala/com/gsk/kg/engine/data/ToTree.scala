@@ -34,7 +34,12 @@ object ToTree extends LowPriorityToTreeInstances0 {
     def toTree(t: Expr.Quad): TreeRep[String] =
       TreeRep.Node(
         s"Quad",
-        Stream(t.s.s.toTree, t.p.s.toTree, t.o.s.toTree, t.g.s.toTree)
+        Stream(
+          t.s.s.toTree,
+          t.p.s.toTree,
+          t.o.s.toTree,
+          t.g.toString().toTree
+        )
       )
   }
 
@@ -59,7 +64,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
               "Bind",
               Stream(Leaf(variable.toString), expression.toTree, r)
             )
-          case DAG.BGP(triples) => Node("BGP", Stream(triples.toTree))
+          case DAG.BGP(quads) => Node("BGP", Stream(quads.toTree))
           case DAG.LeftJoin(l, r, filters) =>
             Node("LeftJoin", Stream(l, r) #::: filters.map(_.toTree).toStream)
           case DAG.Union(l, r) => Node("Union", Stream(l, r))

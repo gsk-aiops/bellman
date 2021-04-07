@@ -6,13 +6,18 @@ import cats.implicits._
 
 import higherkindness.droste.Basis
 
-import com.gsk.kg.engine.DAG
+import com.gsk.kg.engine.optimize.GraphsPushdown
+import com.gsk.kg.sparqlparser.StringVal
 
 object Optimizer {
 
-  def optimize[T: Basis[DAG, *]]: Phase[T, T] =
-    Arrow[Phase].lift(NamedGraphPushdown[T]) >>>
+  def graphsPushdownPhase[T: Basis[DAG, *]]: Phase[(T, List[StringVal]), T] =
+    Phase { case (t, defaults) =>
+      GraphsPushdown[T].apply(t, defaults).pure[M]
+    }
+
+  def optimize[T: Basis[DAG, *]]: Phase[(T, List[StringVal]), T] =
+    graphsPushdownPhase >>>
       Arrow[Phase].lift(CompactBGPs[T]) >>>
       Arrow[Phase].lift(RemoveNestedProject[T])
-
 }

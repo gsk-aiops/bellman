@@ -41,7 +41,7 @@ class MultisetSpec
       import sqlContext.implicits._
       val empty = Multiset.empty
       val nonEmpty = Multiset(
-        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
+        Set(VARIABLE("d")),
         Seq(("test1", "graph1"), ("test2", "graph2"))
           .toDF("d", GRAPH_VARIABLE.s)
       )
@@ -51,7 +51,7 @@ class MultisetSpec
 
     "join other multiset when they have both the same single binding" in {
       import sqlContext.implicits._
-      val variables = Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s))
+      val variables = Set(VARIABLE("d"))
       val df1 = List(
         ("test1", "graph1"),
         ("test2", "graph2")
@@ -74,61 +74,60 @@ class MultisetSpec
 
     "join other multiset when they share one binding" in {
       import sqlContext.implicits._
-      val d     = VARIABLE("d")
-      val e     = VARIABLE("e")
-      val f     = VARIABLE("f")
-      val graph = VARIABLE(GRAPH_VARIABLE.s)
+      val d = VARIABLE("d")
+      val e = VARIABLE("e")
+      val f = VARIABLE("f")
 
       val ms1 = Multiset(
-        Set(d, e, graph),
+        Set(d, e),
         List(("test1", "234", "graph1"), ("test2", "123", "graph2"))
-          .toDF(d.s, e.s, graph.s)
+          .toDF(d.s, e.s, GRAPH_VARIABLE.s)
       )
       val ms2 = Multiset(
-        Set(d, f, graph),
+        Set(d, f),
         List(("test1", "hello", "graph1"), ("test3", "goodbye", "graph2"))
-          .toDF(d.s, f.s, graph.s)
+          .toDF(d.s, f.s, GRAPH_VARIABLE.s)
       )
 
       ms1.join(ms2) should equalsMultiset(
         Multiset(
-          Set(d, e, f, graph),
-          List(("test1", "234", "hello", "graph1")).toDF("d", "e", "f", graph.s)
+          Set(d, e, f),
+          List(("test1", "234", "hello", "graph1"))
+            .toDF("d", "e", "f", GRAPH_VARIABLE.s)
         )
       )
     }
 
     "join other multiset when they share more than one binding" in {
       import sqlContext.implicits._
-      val d     = VARIABLE("d")
-      val e     = VARIABLE("e")
-      val f     = VARIABLE("f")
-      val g     = VARIABLE("g")
-      val h     = VARIABLE("h")
-      val graph = VARIABLE(GRAPH_VARIABLE.s)
+      val d = VARIABLE("d")
+      val e = VARIABLE("e")
+      val f = VARIABLE("f")
+      val g = VARIABLE("g")
+      val h = VARIABLE("h")
 
       val ms1 = Multiset(
-        Set(d, e, g, h, graph),
+        Set(d, e, g, h),
         List(
           ("test1", "234", "g1", "h1", "graph1"),
           ("test2", "123", "g2", "h2", "graph2")
         )
-          .toDF(d.s, e.s, g.s, h.s, graph.s)
+          .toDF(d.s, e.s, g.s, h.s, GRAPH_VARIABLE.s)
       )
       val ms2 = Multiset(
-        Set(d, e, f, graph),
+        Set(d, e, f),
         List(
           ("test1", "234", "hello", "graph1"),
           ("test3", "e2", "goodbye", "graph3")
         )
-          .toDF(d.s, e.s, f.s, graph.s)
+          .toDF(d.s, e.s, f.s, GRAPH_VARIABLE.s)
       )
 
       val result = ms1.join(ms2)
       val expectedResult = Multiset(
-        Set(d, e, f, g, h, graph),
+        Set(d, e, f, g, h),
         List(("test1", "234", "g1", "h1", "hello", "graph1"))
-          .toDF("d", "e", "g", "h", "f", graph.s)
+          .toDF("d", "e", "g", "h", "f", GRAPH_VARIABLE.s)
       )
 
       result should equalsMultiset(expectedResult)
@@ -136,31 +135,31 @@ class MultisetSpec
 
     "perform a cartesian product when there's no shared bindings between multisets" in {
       import sqlContext.implicits._
-      val d     = VARIABLE("d")
-      val e     = VARIABLE("e")
-      val f     = VARIABLE("f")
-      val g     = VARIABLE("g")
-      val h     = VARIABLE("h")
-      val i     = VARIABLE("i")
-      val graph = VARIABLE(GRAPH_VARIABLE.s)
+      val d = VARIABLE("d")
+      val e = VARIABLE("e")
+      val f = VARIABLE("f")
+      val g = VARIABLE("g")
+      val h = VARIABLE("h")
+      val i = VARIABLE("i")
 
       val ms1 = Multiset(
-        Set(d, e, f, graph),
+        Set(d, e, f),
         List(("test1", "234", "g1", "graph1"), ("test2", "123", "g2", "graph1"))
-          .toDF(d.s, e.s, f.s, graph.s)
+          .toDF(d.s, e.s, f.s, GRAPH_VARIABLE.s)
       )
       val ms2 = Multiset(
-        Set(g, h, i, graph),
+        Set(g, h, i),
         List(
           ("test1", "234", "hello", "graph2"),
           ("test3", "e2", "goodbye", "graph2")
         )
-          .toDF(g.s, h.s, i.s, graph.s)
+          .toDF(g.s, h.s, i.s, GRAPH_VARIABLE.s)
       )
 
-      ms1.join(ms2) should equalsMultiset(
+      val result = ms1.join(ms2)
+      result should equalsMultiset(
         Multiset(
-          Set(d, e, f, g, h, i, graph),
+          Set(d, e, f, g, h, i),
           List(
             ("test1", "234", "g1", "test1", "234", "hello", "graph1"),
             ("test1", "234", "g1", "test1", "234", "hello", "graph2"),
@@ -170,7 +169,7 @@ class MultisetSpec
             ("test2", "123", "g2", "test1", "234", "hello", "graph2"),
             ("test2", "123", "g2", "test3", "e2", "goodbye", "graph1"),
             ("test2", "123", "g2", "test3", "e2", "goodbye", "graph2")
-          ).toDF("d", "e", "g", "h", "f", "i", graph.s)
+          ).toDF("d", "e", "g", "h", "f", "i", GRAPH_VARIABLE.s)
         )
       )
     }
