@@ -225,6 +225,7 @@ object DAG {
   implicit def eqJoin[A]: Eq[Join[A]]           = Eq.fromUniversalEquals
   implicit def eqOffset[A]: Eq[Offset[A]]       = Eq.fromUniversalEquals
   implicit def eqLimit[A]: Eq[Limit[A]]         = Eq.fromUniversalEquals
+  implicit def eqGroup[A]: Eq[Group[A]]         = Eq.fromUniversalEquals
   implicit def eqDistinct[A]: Eq[Distinct[A]]   = Eq.fromUniversalEquals
   implicit def eqNoop[A]: Eq[Noop[A]]           = Eq.fromUniversalEquals
 }
