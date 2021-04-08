@@ -3881,11 +3881,31 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df = List(
-          ("http://uri.com/subject/a1", "http://uri.com/predicate", "http://uri.com/object"),
-          ("http://uri.com/subject/a1", "http://uri.com/predicate", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "http://uri.com/predicate", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "http://uri.com/predicate", "http://uri.com/object"),
-          ("http://uri.com/subject/a3", "http://uri.com/predicate", "http://uri.com/object")
+          (
+            "http://uri.com/subject/a1",
+            "http://uri.com/predicate",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a1",
+            "http://uri.com/predicate",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a2",
+            "http://uri.com/predicate",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a2",
+            "http://uri.com/predicate",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a3",
+            "http://uri.com/predicate",
+            "http://uri.com/object"
+          )
         ).toDF("s", "p", "o")
 
         val query = """
@@ -3908,11 +3928,31 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df = List(
-          ("http://uri.com/subject/a1", "http://uri.com/predicate", "http://uri.com/object"),
-          ("http://uri.com/subject/a1", "http://uri.com/predicate", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "http://uri.com/predicate", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "http://uri.com/predicate", "http://uri.com/object"),
-          ("http://uri.com/subject/a3", "http://uri.com/predicate", "http://uri.com/object")
+          (
+            "http://uri.com/subject/a1",
+            "http://uri.com/predicate",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a1",
+            "http://uri.com/predicate",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a2",
+            "http://uri.com/predicate",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a2",
+            "http://uri.com/predicate",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a3",
+            "http://uri.com/predicate",
+            "http://uri.com/object"
+          )
         ).toDF("s", "p", "o")
 
         val query = """
@@ -4043,11 +4083,31 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df = List(
-          ("http://uri.com/subject/a1", "http://uri.com/predicate/1", "http://uri.com/object"),
-          ("http://uri.com/subject/a1", "http://uri.com/predicate/2", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "http://uri.com/predicate/3", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "http://uri.com/predicate/4", "http://uri.com/object"),
-          ("http://uri.com/subject/a3", "http://uri.com/predicate/5", "http://uri.com/object")
+          (
+            "http://uri.com/subject/a1",
+            "http://uri.com/predicate/1",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a1",
+            "http://uri.com/predicate/2",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a2",
+            "http://uri.com/predicate/3",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a2",
+            "http://uri.com/predicate/4",
+            "http://uri.com/object"
+          ),
+          (
+            "http://uri.com/subject/a3",
+            "http://uri.com/predicate/5",
+            "http://uri.com/object"
+          )
         ).toDF("s", "p", "o")
 
         val query = """
@@ -4059,7 +4119,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         val result = Compiler.compile(df, query)
 
-        result.right.get.collect should have length(3)
+        result.right.get.collect should have length 3
       }
 
       "operate correctly there's GROUP BY and a HAVING clause" ignore {}

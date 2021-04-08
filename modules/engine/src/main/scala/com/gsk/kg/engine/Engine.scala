@@ -181,11 +181,12 @@ object Engine {
     val groupedDF = df.groupBy(vars.map(_.s).map(df.apply): _*)
 
     evaluateAggregation(vars, groupedDF, func)
-      .map(df => r.copy(
-        dataframe = df,
-        bindings = r.bindings.union(func.map(x => x._1).toSet)
+      .map(df =>
+        r.copy(
+          dataframe = df,
+          bindings = r.bindings.union(func.map(x => x._1).toSet)
+        )
       )
-    )
   }
 
   private def evaluateAggregation(

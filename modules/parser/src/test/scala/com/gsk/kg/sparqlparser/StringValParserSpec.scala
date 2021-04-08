@@ -47,7 +47,7 @@ class StringValParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(s, StringValParser.tripleValParser(_))
     p.get.value match {
       case VARIABLE("?1") => succeed
-      case _               => fail
+      case _              => fail
     }
   }
 

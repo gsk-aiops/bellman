@@ -11,9 +11,9 @@ import higherkindness.droste.Basis
 import higherkindness.droste.scheme
 
 import com.gsk.kg.sparqlparser.Expr
+import com.gsk.kg.sparqlparser.Expression
 
 import scala.collection.immutable.Nil
-import com.gsk.kg.sparqlparser.Expression
 
 /** Typeclass that allows you converting values of type T to
   * [[TreeRep]].  The benefit of doing so is that we'll be able to
@@ -44,6 +44,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
       )
   }
 
+  // scalastyle:off
   implicit def dagToTree[T: Basis[DAG, *]]: ToTree[T] =
     new ToTree[T] {
       def toTree(tree: T): TreeRep[String] = {
@@ -99,6 +100,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
         t(tree)
       }
     }
+  // scalastyle:on
 
   implicit def expressionfToTree[T: Basis[ExpressionF, *]]: ToTree[T] =
     new ToTree[T] {
