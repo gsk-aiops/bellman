@@ -387,13 +387,13 @@ class ExprParserSpec extends AnyFlatSpec {
 
     p.get.value match {
       case Project(
-            Seq(VARIABLE("?.1")),
+            Seq(VARIABLE("?1")),
             Extend(
-              VARIABLE("?.1"),
-              VARIABLE("?.0"),
+              VARIABLE("?1"),
+              VARIABLE("?0"),
               Group(
                 Seq(VARIABLE("?p1")),
-                Some((VARIABLE("?.0"), Aggregate.COUNT(VARIABLE("?p1")))),
+                Some((VARIABLE("?0"), Aggregate.COUNT(VARIABLE("?p1")))),
                 BGP(
                   Seq(
                     Quad(
