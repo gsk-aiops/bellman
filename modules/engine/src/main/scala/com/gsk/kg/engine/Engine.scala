@@ -197,17 +197,17 @@ object Engine {
       val cols: List[Column] = vars.map(_.s).map(col).map(Func.sample)
       df.agg(cols.head, cols.tail: _*).pure[M]
     case Some((VARIABLE(name), Aggregate.COUNT(VARIABLE(v)))) =>
-      df.count().withColumnRenamed("count", name).pure[M]
+      df.agg(count(v).cast("int").as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.SUM(VARIABLE(v)))) =>
-      df.sum(v).withColumnRenamed("sum", name).pure[M]
+      df.agg(sum(v).cast("float").as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.MIN(VARIABLE(v)))) =>
-      df.min(v).withColumnRenamed("min", name).pure[M]
+      df.agg(min(v).cast("float").as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.MAX(VARIABLE(v)))) =>
-      df.max(v).withColumnRenamed("max", name).pure[M]
+      df.agg(max(v).cast("float").as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.AVG(VARIABLE(v)))) =>
-      df.avg(v).withColumnRenamed("avg", name).pure[M]
+      df.agg(avg(v).cast("float").as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v)))) =>
-      df.agg(Func.sample(col(v))).withColumnRenamed(v, name).pure[M]
+      df.agg(Func.sample(col(v)).as(name)).pure[M]
     case Some(
           (VARIABLE(name), Aggregate.GROUP_CONCAT(VARIABLE(v), separator))
         ) =>

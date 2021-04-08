@@ -3904,10 +3904,165 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         )
       }
 
-      "operate correctly there's GROUP BY and an aggregate function" ignore {}
+      "operate correctly there's GROUP BY and a COUNT function" in {
+        import sqlContext.implicits._
+
+        val df = List(
+          ("http://uri.com/subject/a1", "http://uri.com/predicate", "http://uri.com/object"),
+          ("http://uri.com/subject/a1", "http://uri.com/predicate", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "http://uri.com/predicate", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "http://uri.com/predicate", "http://uri.com/object"),
+          ("http://uri.com/subject/a3", "http://uri.com/predicate", "http://uri.com/object")
+        ).toDF("s", "p", "o")
+
+        val query = """
+          SELECT ?a COUNT(?a)
+          WHERE {
+            ?a <http://uri.com/predicate> <http://uri.com/object>
+          } GROUP BY ?a
+          """
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("http://uri.com/subject/a1", 2),
+          Row("http://uri.com/subject/a2", 2),
+          Row("http://uri.com/subject/a3", 1)
+        )
+      }
+
+      "operate correctly there's GROUP BY and a AVG function" in {
+        import sqlContext.implicits._
+
+        val df = List(
+          ("http://uri.com/subject/a1", "1", "http://uri.com/object"),
+          ("http://uri.com/subject/a1", "2", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "3", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "4", "http://uri.com/object"),
+          ("http://uri.com/subject/a3", "5", "http://uri.com/object")
+        ).toDF("s", "p", "o")
+
+        val query = """
+          SELECT ?a AVG(?b)
+          WHERE {
+            ?a ?b <http://uri.com/object>
+          } GROUP BY ?a
+          """
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("http://uri.com/subject/a1", 1.5),
+          Row("http://uri.com/subject/a2", 3.5),
+          Row("http://uri.com/subject/a3", 5.0)
+        )
+      }
+
+      "operate correctly there's GROUP BY and a MIN function" in {
+        import sqlContext.implicits._
+
+        val df = List(
+          ("http://uri.com/subject/a1", "0", "http://uri.com/object"),
+          ("http://uri.com/subject/a1", "1", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "0", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "1", "http://uri.com/object"),
+          ("http://uri.com/subject/a3", "0", "http://uri.com/object")
+        ).toDF("s", "p", "o")
+
+        val query = """
+          SELECT ?a MIN(?b)
+          WHERE {
+            ?a ?b <http://uri.com/object>
+          } GROUP BY ?a
+          """
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("http://uri.com/subject/a1", 0),
+          Row("http://uri.com/subject/a2", 0),
+          Row("http://uri.com/subject/a3", 0)
+        )
+      }
+
+      "operate correctly there's GROUP BY and a MAX function" in {
+        import sqlContext.implicits._
+
+        val df = List(
+          ("http://uri.com/subject/a1", "0", "http://uri.com/object"),
+          ("http://uri.com/subject/a1", "1", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "0", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "1", "http://uri.com/object"),
+          ("http://uri.com/subject/a3", "0", "http://uri.com/object")
+        ).toDF("s", "p", "o")
+
+        val query = """
+          SELECT ?a MIN(?b)
+          WHERE {
+            ?a ?b <http://uri.com/object>
+          } GROUP BY ?a
+          """
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("http://uri.com/subject/a1", 0),
+          Row("http://uri.com/subject/a2", 0),
+          Row("http://uri.com/subject/a3", 0)
+        )
+      }
+
+      "operate correctly there's GROUP BY and a SUM function" in {
+        import sqlContext.implicits._
+
+        val df = List(
+          ("http://uri.com/subject/a1", "2", "http://uri.com/object"),
+          ("http://uri.com/subject/a1", "1", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "2", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "1", "http://uri.com/object"),
+          ("http://uri.com/subject/a3", "1", "http://uri.com/object")
+        ).toDF("s", "p", "o")
+
+        val query = """
+          SELECT ?a SUM(?b)
+          WHERE {
+            ?a ?b <http://uri.com/object>
+          } GROUP BY ?a
+          """
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("http://uri.com/subject/a1", 3.0),
+          Row("http://uri.com/subject/a2", 3.0),
+          Row("http://uri.com/subject/a3", 1.0)
+        )
+      }
+
+      "operate correctly there's GROUP BY and a SAMPLE function" in {
+        import sqlContext.implicits._
+
+        val df = List(
+          ("http://uri.com/subject/a1", "http://uri.com/predicate/1", "http://uri.com/object"),
+          ("http://uri.com/subject/a1", "http://uri.com/predicate/2", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "http://uri.com/predicate/3", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "http://uri.com/predicate/4", "http://uri.com/object"),
+          ("http://uri.com/subject/a3", "http://uri.com/predicate/5", "http://uri.com/object")
+        ).toDF("s", "p", "o")
+
+        val query = """
+          SELECT ?a SAMPLE(?b)
+          WHERE {
+            ?a ?b <http://uri.com/object>
+          } GROUP BY ?a
+          """
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.collect should have length(3)
+      }
 
       "operate correctly there's GROUP BY and a HAVING clause" ignore {}
-
     }
   }
 
