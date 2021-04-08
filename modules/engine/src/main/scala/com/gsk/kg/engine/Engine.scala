@@ -181,7 +181,11 @@ object Engine {
     val groupedDF = df.groupBy(vars.map(_.s).map(df.apply): _*)
 
     evaluateAggregation(vars, groupedDF, func)
-      .map(df => r)
+      .map(df => r.copy(
+        dataframe = df,
+        bindings = r.bindings.union(func.map(x => x._1).toSet)
+      )
+    )
   }
 
   private def evaluateAggregation(
@@ -193,15 +197,15 @@ object Engine {
       val cols: List[Column] = vars.map(_.s).map(col).map(Func.sample)
       df.agg(cols.head, cols.tail: _*).pure[M]
     case Some((VARIABLE(name), Aggregate.COUNT(VARIABLE(v)))) =>
-      df.count().withColumnRenamed(v, name).pure[M]
+      df.count().withColumnRenamed("count", name).pure[M]
     case Some((VARIABLE(name), Aggregate.SUM(VARIABLE(v)))) =>
-      df.sum(v).withColumnRenamed(v, name).pure[M]
+      df.sum(v).withColumnRenamed("sum", name).pure[M]
     case Some((VARIABLE(name), Aggregate.MIN(VARIABLE(v)))) =>
-      df.min(v).withColumnRenamed(v, name).pure[M]
+      df.min(v).withColumnRenamed("min", name).pure[M]
     case Some((VARIABLE(name), Aggregate.MAX(VARIABLE(v)))) =>
-      df.max(v).withColumnRenamed(v, name).pure[M]
+      df.max(v).withColumnRenamed("max", name).pure[M]
     case Some((VARIABLE(name), Aggregate.AVG(VARIABLE(v)))) =>
-      df.avg(v).withColumnRenamed(v, name).pure[M]
+      df.avg(v).withColumnRenamed("avg", name).pure[M]
     case Some((VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v)))) =>
       df.agg(Func.sample(col(v))).withColumnRenamed(v, name).pure[M]
     case Some(

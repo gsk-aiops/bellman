@@ -137,6 +137,8 @@ object GraphsPushdown {
           case DAG.Offset(o, r) => graphs => DAG.offsetR(o, r(graphs))
           case DAG.Limit(l, r)  => graphs => DAG.limitR(l, r(graphs))
           case DAG.Distinct(r)  => graphs => DAG.distinctR(r(graphs))
+          case DAG.Group(vars, func, r) =>
+            graphs => DAG.groupR(vars, func, r(graphs))
           case DAG.Noop(graphs) => _ => DAG.noopR(graphs)
         }
 

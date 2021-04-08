@@ -3881,11 +3881,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         import sqlContext.implicits._
 
         val df = List(
-          ("a1", "<http://uri.com/predicate>", "<http://uri.com/object>"),
-          ("a1", "<http://uri.com/predicate>", "<http://uri.com/object>"),
-          ("a2", "<http://uri.com/predicate>", "<http://uri.com/object>"),
-          ("a2", "<http://uri.com/predicate>", "<http://uri.com/object>"),
-          ("a3", "<http://uri.com/predicate>", "<http://uri.com/object>")
+          ("http://uri.com/subject/a1", "http://uri.com/predicate", "http://uri.com/object"),
+          ("http://uri.com/subject/a1", "http://uri.com/predicate", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "http://uri.com/predicate", "http://uri.com/object"),
+          ("http://uri.com/subject/a2", "http://uri.com/predicate", "http://uri.com/object"),
+          ("http://uri.com/subject/a3", "http://uri.com/predicate", "http://uri.com/object")
         ).toDF("s", "p", "o")
 
         val query = """
@@ -3897,9 +3897,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         val result = Compiler.compile(df, query)
 
-        result.right.get.show(false)
-
-        result shouldEqual 33
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("http://uri.com/subject/a1"),
+          Row("http://uri.com/subject/a2"),
+          Row("http://uri.com/subject/a3")
+        )
       }
 
       "operate correctly there's GROUP BY and an aggregate function" ignore {}
