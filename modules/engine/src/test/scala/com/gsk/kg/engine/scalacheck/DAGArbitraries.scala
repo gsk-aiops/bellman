@@ -78,7 +78,9 @@ trait DAGArbitraries
   def groupGenerator[A](implicit A: Arbitrary[A]): Gen[Group[A]] =
     (
       Gen.nonEmptyListOf(variableGenerator),
-      Gen.option(variableGenerator.flatMap(v => expressionGenerator.map(e => (v, e)))),
+      Gen.option(
+        variableGenerator.flatMap(v => expressionGenerator.map(e => (v, e)))
+      ),
       Gen.lzy(A.arbitrary)
     ).mapN(Group(_, _, _))
   def distinctGenerator[A](implicit A: Arbitrary[A]): Gen[Distinct[A]] =
