@@ -189,7 +189,7 @@ lazy val `bellman-spark-engine` = project
     import sc.implicits._
     """
   )
-  .dependsOn(`bellman-algebra-parser`)
+  .dependsOn(`bellman-algebra-parser` % "compile->compile;test->test")
 
 addCommandAlias(
   "ci-test",

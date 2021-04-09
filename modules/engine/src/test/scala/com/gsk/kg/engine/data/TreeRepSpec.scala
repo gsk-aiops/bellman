@@ -3,12 +3,12 @@ package data
 
 import cats.instances.string._
 
-import com.gsk.kg.sparqlparser.QueryConstruct
+import com.gsk.kg.sparqlparser.TestUtils
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class TreeRepSpec extends AnyFlatSpec with Matchers {
+class TreeRepSpec extends AnyFlatSpec with Matchers with TestUtils {
 
   "TreeRep.draw" should "generate a tree representation" in {
 
@@ -79,7 +79,7 @@ class TreeRepSpec extends AnyFlatSpec with Matchers {
         | BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
         |}
         |""".stripMargin
-    val (query, _) = QueryConstruct.parse(q)
+    val (query, _) = parse(q)
 
     val dag = DAG.fromQuery.apply(query)
 

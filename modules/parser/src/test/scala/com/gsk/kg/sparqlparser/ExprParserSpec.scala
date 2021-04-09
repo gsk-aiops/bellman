@@ -7,11 +7,11 @@ import com.gsk.kg.sparqlparser.StringVal._
 
 import org.scalatest.flatspec.AnyFlatSpec
 
-class ExprParserSpec extends AnyFlatSpec {
+class ExprParserSpec extends AnyFlatSpec with TestUtils {
 
   "Basic Graph Pattern" should "parse correct number of Triples" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q0-simple-basic-graph-pattern.sparql"),
+      sparql2Algebra("/queries/q0-simple-basic-graph-pattern.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -22,7 +22,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Single optional" should "result in single leftjoin" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q1-single-leftjoin.sparql"),
+      sparql2Algebra("/queries/q1-single-leftjoin.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -33,7 +33,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Double optional" should "result in nested leftjoin" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q2-nested-leftjoins.sparql"),
+      sparql2Algebra("/queries/q2-nested-leftjoins.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -44,7 +44,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Single Union" should "result in a single nested union" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q3-union.sparql"),
+      sparql2Algebra("/queries/q3-union.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -54,7 +54,7 @@ class ExprParserSpec extends AnyFlatSpec {
   }
   "Single Bind" should "result in a successful extend instruction" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q4-simple-bind.sparql"),
+      sparql2Algebra("/queries/q4-simple-bind.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -66,7 +66,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Single union plus bind" should "result in a successful extend and union instruction" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q5-union-plus-bind.sparql"),
+      sparql2Algebra("/queries/q5-union-plus-bind.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -81,7 +81,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Nested leftjoin, nested union, multiple binds" should "result in successful nestings" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q6-nested-leftjoin-union-bind.sparql"),
+      sparql2Algebra("/queries/q6-nested-leftjoin-union-bind.sparql"),
       ExprParser.parser(_)
     )
 
@@ -111,7 +111,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Nested bind" should "Result in correct nesting of bind" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q7-nested-bind.sparql"),
+      sparql2Algebra("/queries/q7-nested-bind.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -127,7 +127,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Filter over simple BGP" should "Result in correct nesting of filter and BGP" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q8-filter-simple-basic-graph.sparql"),
+      sparql2Algebra("/queries/q8-filter-simple-basic-graph.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -138,7 +138,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Multiple filters over simple BGP" should "Result in correct nesting of filters and BGP" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra(
+      sparql2Algebra(
         "/queries/q9-double-filter-simple-basic-graph.sparql"
       ),
       ExprParser.parser(_)
@@ -158,7 +158,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Complex filters" should "Result in the correct nesting" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q10-complex-filter.sparql"),
+      sparql2Algebra("/queries/q10-complex-filter.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -193,7 +193,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Simple named graph query" should "Return correct named graph algebra" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q11-simple-named-graph.sparql"),
+      sparql2Algebra("/queries/q11-simple-named-graph.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -205,7 +205,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Double named graph query" should "Return correct named graph algebra" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q12-double-named-graph.sparql"),
+      sparql2Algebra("/queries/q12-double-named-graph.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -220,7 +220,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Complex named graph query" should "Return correct named graph algebra" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q13-complex-named-graph.sparql"),
+      sparql2Algebra("/queries/q13-complex-named-graph.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -264,7 +264,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Simple nested string function query" should "return proper nested type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q15-string-functions-nested.sparql"),
+      sparql2Algebra("/queries/q15-string-functions-nested.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -285,7 +285,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Nested filter function" should "return proper nested types" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q17-filter-nested.sparql"),
+      sparql2Algebra("/queries/q17-filter-nested.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -318,7 +318,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Simple > FILTER query" should "return the proper type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q18-filter-gt.sparql"),
+      sparql2Algebra("/queries/q18-filter-gt.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -333,7 +333,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "Simple < FILTER query" should "return the proper type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q19-filter-lt.sparql"),
+      sparql2Algebra("/queries/q19-filter-lt.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -348,7 +348,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   "GroupBy query" should "return the proper type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q38-groupby.sparql"),
+      sparql2Algebra("/queries/q38-groupby.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -364,7 +364,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   it should "capture all variables" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q39-groupby-two-vars.sparql"),
+      sparql2Algebra("/queries/q39-groupby-two-vars.sparql"),
       ExprParser.parser(_)
     )
     p.get.value match {
@@ -379,7 +379,7 @@ class ExprParserSpec extends AnyFlatSpec {
 
   it should "capture aggregate functions correctly" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra(
+      sparql2Algebra(
         "/queries/q40-groupby-aggregate-functions.sparql"
       ),
       ExprParser.parser(_)
@@ -423,87 +423,87 @@ class ExprParserSpec extends AnyFlatSpec {
    */
   "Complex nested string function query" should "return proper nested type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra(
+      sparql2Algebra(
         "/queries/q16-string-functions-nested-complex.sparql"
       ),
       ExprParser.parser(_)
     )
-    val output = TestUtils.readOutputFile("/queries/output/q16-output.txt")
+    val output = readOutputFile("/queries/output/q16-output.txt")
     assert(output.trim == p.get.value.toString.trim)
   }
 
   "Full query1" should "return proper type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/lit-search-1.sparql"),
+      sparql2Algebra("/queries/lit-search-1.sparql"),
       ExprParser.parser(_)
     )
     val output =
-      TestUtils.readOutputFile("/queries/output/lit-search-1-output.txt")
+      readOutputFile("/queries/output/lit-search-1-output.txt")
     assert(output.trim == p.get.value.toString.trim)
   }
   "Full query2" should "return proper type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/lit-search-2.sparql"),
+      sparql2Algebra("/queries/lit-search-2.sparql"),
       ExprParser.parser(_)
     )
     val output =
-      TestUtils.readOutputFile("/queries/output/lit-search-2-output.txt")
+      readOutputFile("/queries/output/lit-search-2-output.txt")
     assert(output.trim == p.get.value.toString.trim)
   }
   "Full query3" should "return proper type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/lit-search-3.sparql"),
+      sparql2Algebra("/queries/lit-search-3.sparql"),
       ExprParser.parser(_)
     )
     val output =
-      TestUtils.readOutputFile("/queries/output/lit-search-3-output.txt")
+      readOutputFile("/queries/output/lit-search-3-output.txt")
     assert(output.trim == p.get.value.toString.trim)
   }
   "Full query4" should "return proper type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/lit-search-4.sparql"),
+      sparql2Algebra("/queries/lit-search-4.sparql"),
       ExprParser.parser(_)
     )
     val output =
-      TestUtils.readOutputFile("/queries/output/lit-search-4-output.txt")
+      readOutputFile("/queries/output/lit-search-4-output.txt")
     assert(output.trim == p.get.value.toString.trim)
   }
   "Full query5" should "return proper type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/lit-search-5.sparql"),
+      sparql2Algebra("/queries/lit-search-5.sparql"),
       ExprParser.parser(_)
     )
     val output =
-      TestUtils.readOutputFile("/queries/output/lit-search-5-output.txt")
+      readOutputFile("/queries/output/lit-search-5-output.txt")
     assert(output.trim == p.get.value.toString.trim)
   }
   "Full query6" should "return proper type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/lit-search-6.sparql"),
+      sparql2Algebra("/queries/lit-search-6.sparql"),
       ExprParser.parser(_)
     )
     val output =
-      TestUtils.readOutputFile("/queries/output/lit-search-6-output.txt")
+      readOutputFile("/queries/output/lit-search-6-output.txt")
     assert(output.trim == p.get.value.toString.trim)
   }
 
   "Extra large query" should "return proper type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/lit-search-xlarge.sparql"),
+      sparql2Algebra("/queries/lit-search-xlarge.sparql"),
       ExprParser.parser(_)
     )
     val output =
-      TestUtils.readOutputFile("/queries/output/lit-search-xlarge-output.txt")
+      readOutputFile("/queries/output/lit-search-xlarge-output.txt")
     assert(output.trim == p.get.value.toString.trim)
   }
 
   "Document query" should "return the proper type" in {
     val p = fastparse.parse(
-      TestUtils.sparql2Algebra("/queries/q20-document.sparql"),
+      sparql2Algebra("/queries/q20-document.sparql"),
       ExprParser.parser(_)
     )
     val output =
-      TestUtils.readOutputFile("/queries/output/q20-document-output.txt")
+      readOutputFile("/queries/output/q20-document-output.txt")
     assert(output.trim == p.get.value.toString.trim)
   }
 }

@@ -1,5 +1,6 @@
 package com.gsk.kg.engine
 package optimizer
+
 import cats.Traverse
 
 import higherkindness.droste.data.Fix
@@ -9,7 +10,7 @@ import com.gsk.kg.engine.DAG.Project
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.optics._
 import com.gsk.kg.sparqlparser.Expr.Quad
-import com.gsk.kg.sparqlparser.QueryConstruct
+import com.gsk.kg.sparqlparser.TestUtils
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -18,7 +19,8 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 class CompactBGPsSpec
     extends AnyFlatSpec
     with Matchers
-    with ScalaCheckDrivenPropertyChecks {
+    with ScalaCheckDrivenPropertyChecks
+    with TestUtils {
 
   type T = Fix[DAG]
 
@@ -34,7 +36,7 @@ class CompactBGPsSpec
         | ?d dm:source "potato"
         |}
         |""".stripMargin
-    val (query, _) = QueryConstruct.parse(q)
+    val (query, _) = parse(q)
 
     val dag: T = DAG.fromQuery.apply(query)
     countChunksInBGP(dag) shouldEqual 2
@@ -56,7 +58,7 @@ class CompactBGPsSpec
         | ?d dm:source "potato" .
         |}
         |""".stripMargin
-    val (query, _) = QueryConstruct.parse(q)
+    val (query, _) = parse(q)
 
     val dag: T       = DAG.fromQuery.apply(query)
     val optimized: T = CompactBGPs[T].apply(dag)

@@ -5,7 +5,7 @@ import org.apache.jena.sparql.algebra.Algebra
 
 import scala.io.Source
 
-object TestUtils {
+trait TestUtils {
 
   def sparql2Algebra(fileLoc: String): String = {
     val path   = getClass.getResource(fileLoc).getPath
@@ -20,14 +20,20 @@ object TestUtils {
     QueryConstruct.parseADT(q)
   }
 
-  def query(fileLoc: String): Query = {
+  def query(fileLoc: String, isExclusive: Boolean = false): Query = {
     val q = readOutputFile(fileLoc)
-    QueryConstruct.parse(q)._1
+    parse(q, isExclusive)._1
   }
 
   def readOutputFile(fileLoc: String): String = {
     val path = getClass.getResource(fileLoc).getPath
     Source.fromFile(path).mkString
   }
+
+  def parse(
+      query: String,
+      isExclusive: Boolean = false
+  ): (Query, List[StringVal]) =
+    QueryConstruct.parse((query, isExclusive))
 
 }

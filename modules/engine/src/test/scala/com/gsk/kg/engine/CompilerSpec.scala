@@ -3367,7 +3367,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, isExclusive = true)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3438,7 +3438,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, isExclusive = true)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3509,7 +3509,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, isExclusive = true)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3582,7 +3582,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, isExclusive = true)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3655,7 +3655,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, isExclusive = true)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -4123,9 +4123,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
     }
 
-    "default graph" should {
+    "inclusive/exclusive default graph" should {
 
-      "exclusive engine with no explicit FROM" in {
+      "exclude graphs when no explicit FROM" ignore {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
@@ -4139,14 +4139,13 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, isExclusive = true)
 
-        result.right.get.show(false)
         result.right.get.collect().length shouldEqual 0
         result.right.get.collect().toSet shouldEqual Set()
       }
 
-      "exclusive engine with explicit FROM" in {
+      "exclude graphs when explicit FROM" ignore {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
@@ -4162,9 +4161,55 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
+        val result = Compiler.compile(df, query, isExclusive = true)
+
+        result.right.get.collect().length shouldEqual 2
+        result.right.get.collect().toSet shouldEqual Set(
+          Row("_:s1", "\"p1\"", "\"o1\""),
+          Row("_:s2", "\"p2\"", "\"o2\"")
+        )
+      }
+
+      "include graphs when no explicit FROM" in {
+        import sqlContext.implicits._
+
+        val df: DataFrame = List(
+          ("_:s1", "p1", "o1", "http://example.org/graph1"),
+          ("_:s2", "p2", "o2", "http://example.org/graph2")
+        ).toDF("s", "p", "o", "g")
+
+        val query =
+          """
+            |SELECT ?s ?p ?o
+            |WHERE { ?s ?p ?o }
+            |""".stripMargin
+
         val result = Compiler.compile(df, query)
 
-        result.right.get.show(false)
+        result.right.get.collect().length shouldEqual 2
+        result.right.get.collect().toSet shouldEqual Set(
+          Row("_:s1", "\"p1\"", "\"o1\""),
+          Row("_:s2", "\"p2\"", "\"o2\"")
+        )
+      }
+
+      "include graphs when explicit FROM" in {
+        import sqlContext.implicits._
+
+        val df: DataFrame = List(
+          ("_:s1", "p1", "o1", "http://example.org/graph1"),
+          ("_:s2", "p2", "o2", "http://example.org/graph2")
+        ).toDF("s", "p", "o", "g")
+
+        val query =
+          """
+            |SELECT ?s ?p ?o
+            |FROM <http://example.org/graph1>
+            |WHERE { ?s ?p ?o }
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query)
+
         result.right.get.collect().length shouldEqual 2
         result.right.get.collect().toSet shouldEqual Set(
           Row("_:s1", "\"p1\"", "\"o1\""),

@@ -17,11 +17,11 @@ import com.gsk.kg.sparqlparser.StringVal
 
 object Compiler {
 
-  def compile(df: DataFrame, query: String)(implicit
-      sc: SQLContext
+  def compile(df: DataFrame, query: String, isExclusive: Boolean = false)(
+      implicit sc: SQLContext
   ): Result[DataFrame] =
     compiler(df)
-      .run(query)
+      .run((query, isExclusive))
       .runA(df)
 
   /** Put together all phases of the compiler
@@ -32,7 +32,7 @@ object Compiler {
     */
   def compiler(df: DataFrame)(implicit
       sc: SQLContext
-  ): Phase[String, DataFrame] =
+  ): Phase[(String, Boolean), DataFrame] =
     parser >>>
       transformToGraph.first >>>
       optimizer >>>
@@ -59,7 +59,7 @@ object Compiler {
 
   /** parser converts strings to our [[Query]] ADT
     */
-  val parser: Phase[String, (Query, List[StringVal])] =
+  val parser: Phase[(String, Boolean), (Query, List[StringVal])] =
     Arrow[Phase].lift(QueryConstruct.parse)
 
   def optimizer[T: Basis[DAG, *]]: Phase[(T, List[StringVal]), T] =
