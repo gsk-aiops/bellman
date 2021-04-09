@@ -4121,8 +4121,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         result.right.get.collect should have length 3
       }
-
-      "operate correctly there's GROUP BY and a HAVING clause" ignore {}
     }
   }
 
