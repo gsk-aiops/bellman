@@ -4122,6 +4122,56 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         result.right.get.collect should have length 3
       }
     }
+
+    "default graph" should {
+
+      "exclusive engine with no explicit FROM" in {
+        import sqlContext.implicits._
+
+        val df: DataFrame = List(
+          ("_:s1", "p1", "o1", "http://example.org/graph1"),
+          ("_:s2", "p2", "o2", "http://example.org/graph2")
+        ).toDF("s", "p", "o", "g")
+
+        val query =
+          """
+            |SELECT ?s ?p ?o
+            |WHERE { ?s ?p ?o }
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.show(false)
+        result.right.get.collect().length shouldEqual 0
+        result.right.get.collect().toSet shouldEqual Set()
+      }
+
+      "exclusive engine with explicit FROM" in {
+        import sqlContext.implicits._
+
+        val df: DataFrame = List(
+          ("_:s1", "p1", "o1", "http://example.org/graph1"),
+          ("_:s2", "p2", "o2", "http://example.org/graph2")
+        ).toDF("s", "p", "o", "g")
+
+        val query =
+          """
+            |SELECT ?s ?p ?o
+            |FROM <http://example.org/graph1>
+            |FROM <http://example.org/graph2>
+            |WHERE { ?s ?p ?o }
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query)
+
+        result.right.get.show(false)
+        result.right.get.collect().length shouldEqual 2
+        result.right.get.collect().toSet shouldEqual Set(
+          Row("_:s1", "\"p1\"", "\"o1\""),
+          Row("_:s2", "\"p2\"", "\"o2\"")
+        )
+      }
+    }
   }
 
   private def readNTtoDF(path: String) = {
