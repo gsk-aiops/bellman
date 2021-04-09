@@ -6,15 +6,15 @@ import com.gsk.kg.engine.DAG
 import com.gsk.kg.engine.DAG._
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.sparqlparser.Expr
-import com.gsk.kg.sparqlparser.QueryConstruct
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
+import com.gsk.kg.sparqlparser.TestUtils
 
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class GraphsPushdownSpec extends AnyWordSpec with Matchers {
+class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
 
   type T = Fix[DAG]
 
@@ -49,7 +49,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
             | }
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = QueryConstruct.parse(q)
+        val (query, defaultGraphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -88,7 +88,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
             | }
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = QueryConstruct.parse(q)
+        val (query, defaultGraphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -149,7 +149,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
             | }
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = QueryConstruct.parse(q)
+        val (query, defaultGraphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -215,7 +215,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
             | }
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = QueryConstruct.parse(q)
+        val (query, defaultGraphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -283,7 +283,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
             | }
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = QueryConstruct.parse(q)
+        val (query, defaultGraphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -351,7 +351,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers {
             | ?x foaf:name ?name .
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = QueryConstruct.parse(q)
+        val (query, defaultGraphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {

@@ -4,7 +4,7 @@ package optimizer
 import higherkindness.droste.data.Fix
 
 import com.gsk.kg.engine.DAG.Project
-import com.gsk.kg.sparqlparser.QueryConstruct
+import com.gsk.kg.sparqlparser.TestUtils
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -13,7 +13,8 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 class RemoveNestedProjectSpec
     extends AnyFlatSpec
     with Matchers
-    with ScalaCheckDrivenPropertyChecks {
+    with ScalaCheckDrivenPropertyChecks
+    with TestUtils {
 
   type T = Fix[DAG]
 
@@ -29,7 +30,7 @@ class RemoveNestedProjectSpec
         | ?d dm:source "potato"
         |}
         |""".stripMargin
-    val (query, _) = QueryConstruct.parse(q)
+    val (query, _) = parse(q)
 
     val dag: T = DAG.fromQuery.apply(query)
 

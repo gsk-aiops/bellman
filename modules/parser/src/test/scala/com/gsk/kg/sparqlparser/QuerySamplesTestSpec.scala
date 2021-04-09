@@ -14,7 +14,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
-class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
+class QuerySamplesTestSpec extends AnyFlatSpec with Matchers with TestUtils {
 
   def showAlgebra(q: String): Op = {
     val query = QueryFactory.create(q)
@@ -192,7 +192,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Test simple describe query" should "parse" in {
     val query = QuerySamples.q15
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Describe(_, OpNil()), _) =>
         succeed
@@ -203,7 +203,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Test describe query" should "parse" in {
     val query = QuerySamples.q16
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Describe(vars, Project(vs, Filter(_, _))), _) =>
         assert(vars == vs)
@@ -215,7 +215,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Tests str conversion and logical operators" should "parse" in {
     val query = QuerySamples.q17
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Project(vs, Filter(_, _))), _) =>
         succeed
@@ -226,7 +226,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Tests FILTER positioning with graph sub-patterns" should "parse" in {
     val query = QuerySamples.q18
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Project(vs, Filter(_, _))), _) =>
         succeed
@@ -237,7 +237,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Test for FILTER in different positions" should "parse" in {
     val query = QuerySamples.q19
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Distinct(Project(vs, Filter(_, _)))), _) =>
         succeed
@@ -248,7 +248,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Test CONSTRUCT and string replacement" should "parse" in {
     val query = QuerySamples.q20
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (
             Construct(
@@ -266,7 +266,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Test document query" should "parse" in {
     val query = QuerySamples.q21
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Project(vs, BGP(ts))), _) =>
         assert(ts.size == 21)
@@ -279,7 +279,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Get a sample of triples joining non-blank nodes" should "parse" in {
     val query = QuerySamples.q22
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (
             Select(
@@ -296,7 +296,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Check DISTINCT works" should "parse" in {
     val query = QuerySamples.q23
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (
             Select(
@@ -313,7 +313,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Get class parent-child relations" should "parse" in {
     val query = QuerySamples.q24
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Project(_, Filter(_, _))), _) =>
         succeed
@@ -324,7 +324,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Get class parent-child relations with optional labels" should "parse" in {
     val query = QuerySamples.q25
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Project(_, Filter(_, _))), _) =>
         succeed
@@ -335,7 +335,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Get all labels in file" should "parse" in {
     val query = QuerySamples.q26
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Distinct(Project(_, _))), _) =>
         succeed
@@ -346,7 +346,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Get label of owl:Thing" should "parse" in {
     val query = QuerySamples.q27
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Project(vs, _)), _) =>
         assert(vs.nonEmpty && vs.head == VARIABLE("?label"))
@@ -357,7 +357,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Get label of owl:Thing with prefix" should "parse" in {
     val query = QuerySamples.q28
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Project(_, _)), _) =>
         succeed
@@ -368,7 +368,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Get label of owl:Thing with explanatory comment" should "parse" in {
     val query = QuerySamples.q29
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Project(_, _)), _) =>
         succeed
@@ -379,7 +379,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Get label of owl:Thing with regex to remove poor label if present" should "parse" in {
     val query = QuerySamples.q30
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Project(_, Filter(_, _))), _) =>
         succeed
@@ -390,7 +390,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Construct a graph where everything which is a Thing is asserted to exist" should "parse" in {
     val query = QuerySamples.q31
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Construct(vars, bgp, BGP(_)), _) =>
         succeed
@@ -401,7 +401,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Construct a graph where all the terms derived from a species have a new relation" should "parse" in {
     val query = QuerySamples.q32
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Construct(vars, bgp, BGP(_)), _) =>
         succeed
@@ -412,7 +412,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Detect punned relations in an ontology" should "parse" in {
     val query = QuerySamples.q33
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Select(vars, Project(_, _)), _) =>
         succeed
@@ -423,7 +423,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Construct a triple where the predicate is derived" should "parse" in {
     val query = QuerySamples.q34
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Construct(vars, bgp, Union(BGP(_), BGP(_))), _) =>
         succeed
@@ -434,7 +434,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Query to convert schema of predications" should "parse" in {
     val query = QuerySamples.q35
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query)
     q match {
       case (Construct(vars, bgp, Extend(to, from, e)), _) =>
         assert(to == VARIABLE("?pred"))
@@ -445,7 +445,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Query with default and named graphs to match on specific graph" should "parse" in {
     val query = QuerySamples.q36
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query, isExclusive = true)
     q match {
       case (
             Select(
@@ -465,7 +465,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers {
 
   "Query with default and named graphs to match on multiple graphs" should "parse" in {
     val query = QuerySamples.q37
-    val q     = QueryConstruct.parse(query)
+    val q     = parse(query, isExclusive = true)
     q match {
       case (
             Select(
