@@ -46,5 +46,6 @@ class OpticsLawTests
   checkAll("_offset", PrismTests(optics._offset))
   checkAll("_limit", PrismTests(optics._limit))
   checkAll("_distinct", PrismTests(optics._distinct))
+  checkAll("_group", PrismTests(optics._group))
   checkAll("_noop", PrismTests(optics._noop))
 }

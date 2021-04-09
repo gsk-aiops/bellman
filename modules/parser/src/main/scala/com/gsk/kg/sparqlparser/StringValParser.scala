@@ -15,7 +15,9 @@ object StringValParser {
     }
   //TODO improve regex. Include all valid sparql varnames in spec: https://www.w3.org/TR/sparql11-query/#rPN_CHARS_BASE
   def variable[_: P]: P[VARIABLE] =
-    P("?" ~ "?".? ~ CharsWhileIn("a-zA-Z0-9_")).!.map(VARIABLE)
+    P("?" ~ "?".? ~ CharsWhileIn("a-zA-Z0-9_.")).!.map(str =>
+      VARIABLE(str.replace(".", ""))
+    )
   def urival[_: P]: P[URIVAL] =
     iri.map(str => str.stripPrefix("<").stripSuffix(">")).map(URIVAL)
   def num[_: P]: P[NUM] =

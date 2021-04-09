@@ -75,6 +75,14 @@ trait DAGArbitraries
     (Gen.long, Gen.lzy(A.arbitrary)).mapN(Offset(_, _))
   def limitGenerator[A](implicit A: Arbitrary[A]): Gen[Limit[A]] =
     (Gen.long, Gen.lzy(A.arbitrary)).mapN(Limit(_, _))
+  def groupGenerator[A](implicit A: Arbitrary[A]): Gen[Group[A]] =
+    (
+      Gen.nonEmptyListOf(variableGenerator),
+      Gen.option(
+        variableGenerator.flatMap(v => expressionGenerator.map(e => (v, e)))
+      ),
+      Gen.lzy(A.arbitrary)
+    ).mapN(Group(_, _, _))
   def distinctGenerator[A](implicit A: Arbitrary[A]): Gen[Distinct[A]] =
     Gen.lzy(A.arbitrary).map(Distinct(_))
   def bgpGenerator[A](implicit A: Arbitrary[A]): Gen[BGP[A]] =
@@ -134,6 +142,8 @@ trait DAGArbitraries
     Arbitrary(limitGenerator[T])
   implicit def arbitraryDistinct[T: Arbitrary]: Arbitrary[DAG.Distinct[T]] =
     Arbitrary(distinctGenerator[T])
+  implicit def arbitraryGroup[T: Arbitrary]: Arbitrary[DAG.Group[T]] =
+    Arbitrary(groupGenerator[T])
   implicit def arbitraryBgp[T: Arbitrary]: Arbitrary[DAG.BGP[T]] = Arbitrary(
     bgpGenerator[T]
   )
@@ -169,6 +179,8 @@ trait DAGArbitraries
   implicit def cogenOffset[A]: Cogen[Offset[A]] =
     Cogen.cogenString.contramap(_.toString)
   implicit def cogenLimit[A]: Cogen[Limit[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenGroup[A]: Cogen[Group[A]] =
     Cogen.cogenString.contramap(_.toString)
   implicit def cogenDistinct[A]: Cogen[Distinct[A]] =
     Cogen.cogenString.contramap(_.toString)

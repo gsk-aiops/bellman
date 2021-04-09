@@ -56,7 +56,9 @@ object QueryConstruct {
   }
 
   private def getVars(query: org.apache.jena.query.Query): Seq[VARIABLE] =
-    query.getProjectVars.asScala.map(v => VARIABLE(v.toString()))
+    query.getProjectVars.asScala.map(v =>
+      VARIABLE(v.toString().replace(".", ""))
+    )
 
   def parseADT(sparql: String): Expr =
     parse(sparql)._1.r

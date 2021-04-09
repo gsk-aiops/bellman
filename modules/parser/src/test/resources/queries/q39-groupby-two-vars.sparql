@@ -1,0 +1,8 @@
+PREFIX bo: <https://webfiles.uci.edu/jenniyk2/businessontology#>
+PREFIX v:  <http://www.w3.org/2006/vcard/ns#>
+
+SELECT ?p1 ?p2
+WHERE {
+    ?p1 v:hasAddress ?ad.
+    ?p2 v:hasAddress ?ad.
+} GROUP BY ?p1 ?p2

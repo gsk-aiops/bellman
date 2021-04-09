@@ -346,6 +346,78 @@ class ExprParserSpec extends AnyFlatSpec {
     }
   }
 
+  "GroupBy query" should "return the proper type" in {
+    val p = fastparse.parse(
+      TestUtils.sparql2Algebra("/queries/q38-groupby.sparql"),
+      ExprParser.parser(_)
+    )
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?p1")),
+            Group(Seq(VARIABLE("?p1")), None, BGP(_))
+          ) =>
+        succeed
+      case _ => fail
+    }
+
+  }
+
+  it should "capture all variables" in {
+    val p = fastparse.parse(
+      TestUtils.sparql2Algebra("/queries/q39-groupby-two-vars.sparql"),
+      ExprParser.parser(_)
+    )
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?p1"), VARIABLE("?p2")),
+            Group(Seq(VARIABLE("?p1"), VARIABLE("?p2")), None, BGP(_))
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  it should "capture aggregate functions correctly" in {
+    val p = fastparse.parse(
+      TestUtils.sparql2Algebra(
+        "/queries/q40-groupby-aggregate-functions.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?1")),
+            Extend(
+              VARIABLE("?1"),
+              VARIABLE("?0"),
+              Group(
+                Seq(VARIABLE("?p1")),
+                Some((VARIABLE("?0"), Aggregate.COUNT(VARIABLE("?p1")))),
+                BGP(
+                  Seq(
+                    Quad(
+                      VARIABLE("?p1"),
+                      URIVAL("http://www.w3.org/2006/vcard/ns#hasAddress"),
+                      VARIABLE("?ad"),
+                      List(GRAPH_VARIABLE)
+                    ),
+                    Quad(
+                      VARIABLE("?p2"),
+                      URIVAL("http://www.w3.org/2006/vcard/ns#hasAddress"),
+                      VARIABLE("?ad"),
+                      List(GRAPH_VARIABLE)
+                    )
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
   /*Below are where assertions are beginning to get complex. The assumption is that previous tests appropriately exercise the parser
   combinator functions. Reading expected results from file instead of explicitly defining inline.
    */

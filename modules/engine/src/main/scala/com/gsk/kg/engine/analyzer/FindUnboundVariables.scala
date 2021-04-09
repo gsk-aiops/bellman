@@ -1,9 +1,9 @@
 package com.gsk.kg.engine
 package analyzer
 
-import cats._
 import cats.data.State
 import cats.implicits._
+import cats.{Group => _, _}
 
 import higherkindness.droste.{Project => _, _}
 
@@ -78,6 +78,7 @@ object FindUnboundVariables {
       case Offset(offset, r)       => r.pure[ST]
       case Limit(limit, r)         => r.pure[ST]
       case Distinct(r)             => r.pure[ST]
+      case Group(vars, func, r)    => r.pure[ST]
       case Noop(trace)             => Set.empty.pure[ST]
     }
 }

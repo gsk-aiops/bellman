@@ -22,6 +22,7 @@ object ExprParser {
   def select[_: P]: P[Unit]      = P("project")
   def offsetLimit[_: P]: P[Unit] = P("slice")
   def distinct[_: P]: P[Unit]    = P("distinct")
+  def group[_: P]: P[Unit]       = P("group")
 
   def opNull[_: P]: P[OpNil]      = P("(null)").map(_ => OpNil())
   def tableUnit[_: P]: P[TabUnit] = P("(table unit)").map(_ => TabUnit())
@@ -56,12 +57,13 @@ object ExprParser {
   def bgpParen[_: P]: P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
 
   def exprFunc[_: P]: P[Expression] =
-    ConditionalParser.parser | BuiltInFuncParser.parser
+    ConditionalParser.parser | BuiltInFuncParser.parser | AggregateParser.parser
 
   def filterExprList[_: P]: P[Seq[Expression]] =
     P("(" ~ exprList ~ exprFunc.rep(2) ~ ")")
 
   def exprFuncList[_: P]: P[Seq[Expression]] = (filterExprList | exprFunc).map {
+
     case e: Seq[_]     => e.asInstanceOf[Seq[Expression]]
     case e: Expression => Seq(e)
     case e =>
@@ -69,6 +71,16 @@ object ExprParser {
         s"${e} does not match any sparql expression type."
       )
   }
+
+  def assignment[_: P]: P[(StringVal.VARIABLE, Expression)] = P(
+    "((" ~ StringValParser.variable ~ exprFunc ~ "))"
+  )
+
+  def groupParen[_: P]: P[Group] = P(
+    "(" ~ group ~ "(" ~ (StringValParser.variable).rep(
+      1
+    ) ~ ")" ~ assignment.repX(max = 1) ~ graphPattern ~ ")"
+  ).map(p => Group(p._1, p._2.headOption, p._3))
 
   def filterListParen[_: P]: P[Filter] =
     P("(" ~ filter ~ filterExprList ~ graphPattern ~ ")").map { p =>
@@ -129,6 +141,7 @@ object ExprParser {
         | extendParen
         | filterSingleParen
         | filterListParen
+        | groupParen
         | opNull
         | tableUnit
     )

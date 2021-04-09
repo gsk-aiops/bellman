@@ -11,10 +11,11 @@ import higherkindness.droste._
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Encoder
+import org.apache.spark.sql.RelationalGroupedDataset
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
-import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 import com.gsk.kg.engine.data.ChunkedList
@@ -47,6 +48,7 @@ object Engine {
       case DAG.Offset(offset, r)       => evaluateOffset(offset, r)
       case DAG.Limit(limit, r)         => evaluateLimit(limit, r)
       case DAG.Distinct(r)             => evaluateDistinct(r)
+      case DAG.Group(vars, func, r)    => evaluateGroup(vars, func, r)
       case DAG.Noop(str)               => notImplemented("Noop")
     }
 
@@ -168,6 +170,58 @@ object Engine {
 
   private def evaluateDistinct(r: Multiset): M[Multiset] =
     M.liftF(r.distinct)
+
+  private def evaluateGroup(
+      vars: List[VARIABLE],
+      func: Option[(VARIABLE, Expression)],
+      r: Multiset
+  ): M[Multiset] = {
+    val df = r.dataframe
+
+    val groupedDF = df.groupBy(vars.map(_.s).map(df.apply): _*)
+
+    evaluateAggregation(vars, groupedDF, func)
+      .map(df =>
+        r.copy(
+          dataframe = df,
+          bindings = r.bindings.union(func.map(x => x._1).toSet)
+        )
+      )
+  }
+
+  private def evaluateAggregation(
+      vars: List[VARIABLE],
+      df: RelationalGroupedDataset,
+      func: Option[(VARIABLE, Expression)]
+  ): M[DataFrame] = func match {
+    case None =>
+      val cols: List[Column] = vars.map(_.s).map(col).map(Func.sample)
+      df.agg(cols.head, cols.tail: _*).pure[M]
+    case Some((VARIABLE(name), Aggregate.COUNT(VARIABLE(v)))) =>
+      df.agg(count(v).cast("int").as(name)).pure[M]
+    case Some((VARIABLE(name), Aggregate.SUM(VARIABLE(v)))) =>
+      df.agg(sum(v).cast("float").as(name)).pure[M]
+    case Some((VARIABLE(name), Aggregate.MIN(VARIABLE(v)))) =>
+      df.agg(min(v).cast("float").as(name)).pure[M]
+    case Some((VARIABLE(name), Aggregate.MAX(VARIABLE(v)))) =>
+      df.agg(max(v).cast("float").as(name)).pure[M]
+    case Some((VARIABLE(name), Aggregate.AVG(VARIABLE(v)))) =>
+      df.agg(avg(v).cast("float").as(name)).pure[M]
+    case Some((VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v)))) =>
+      df.agg(Func.sample(col(v)).as(name)).pure[M]
+    case Some(
+          (VARIABLE(name), Aggregate.GROUP_CONCAT(VARIABLE(v), separator))
+        ) =>
+      df.agg(Func.groupConcat(col(v), separator))
+        .withColumnRenamed(v, name)
+        .pure[M]
+    case fn =>
+      M.liftF[Result, DataFrame, DataFrame](
+        EngineError
+          .UnknownFunction("Aggregate function: " + fn.toString)
+          .asLeft[DataFrame]
+      )
+  }
 
   private def evaluateLeftJoin(
       l: Multiset,

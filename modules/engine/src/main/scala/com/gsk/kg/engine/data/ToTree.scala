@@ -11,6 +11,7 @@ import higherkindness.droste.Basis
 import higherkindness.droste.scheme
 
 import com.gsk.kg.sparqlparser.Expr
+import com.gsk.kg.sparqlparser.Expression
 
 import scala.collection.immutable.Nil
 
@@ -43,6 +44,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
       )
   }
 
+  // scalastyle:off
   implicit def dagToTree[T: Basis[DAG, *]]: ToTree[T] =
     new ToTree[T] {
       def toTree(tree: T): TreeRep[String] = {
@@ -58,7 +60,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
             )
           case DAG.Scan(graph, expr) => Node("Scan", Stream(graph.toTree, expr))
           case DAG.Project(variables, r) =>
-            Node("Project", Stream(Leaf(variables.toString), r))
+            val v: List[Expression] = variables
+            Node("Project", Stream(v.toTree, r))
           case DAG.Bind(variable, expression, r) =>
             Node(
               "Bind",
@@ -84,6 +87,10 @@ object ToTree extends LowPriorityToTreeInstances0 {
               "Limit",
               Stream(limit.toTree, r)
             )
+          case DAG.Group(vars, func, r) =>
+            val v: List[Expression]                 = vars
+            val f: Option[(Expression, Expression)] = func
+            Node("Group", Stream(v.toTree, f.toTree, r))
           case DAG.Distinct(r) => Node("Distinct", Stream(r))
           case DAG.Noop(str)   => Leaf(s"Noop($str)")
         }
@@ -93,6 +100,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
         t(tree)
       }
     }
+  // scalastyle:on
 
   implicit def expressionfToTree[T: Basis[ExpressionF, *]]: ToTree[T] =
     new ToTree[T] {
@@ -118,7 +126,14 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.ISBLANK(s) => Node("ISBLANK", Stream(s))
           case ExpressionF.REPLACE(st, pattern, by) =>
             Node("REPLACE", Stream(st, Leaf(pattern), Leaf(by)))
-
+          case ExpressionF.COUNT(e)  => Node("COUNT", Stream(e))
+          case ExpressionF.SUM(e)    => Node("SUM", Stream(e))
+          case ExpressionF.MIN(e)    => Node("MIN", Stream(e))
+          case ExpressionF.MAX(e)    => Node("MAX", Stream(e))
+          case ExpressionF.AVG(e)    => Node("AVG", Stream(e))
+          case ExpressionF.SAMPLE(e) => Node("SAMPLE", Stream(e))
+          case ExpressionF.GROUP_CONCAT(e, separator) =>
+            Node("GROUP_CONCAT", Stream(e, separator.toTree))
           case ExpressionF.STRING(s, tag) =>
             tag.fold(Leaf(s"STRING($s)"))(t => Leaf(s"STRING($s, $t)"))
           case ExpressionF.NUM(s)      => Leaf(s"NUM($s)")
@@ -157,6 +172,24 @@ object ToTree extends LowPriorityToTreeInstances0 {
       def toTree(t: NonEmptyChain[A]): TreeRep[String] =
         TreeRep.Node("NonEmptyChain", t.map(_.toTree).toList.toStream)
     }
+
+  implicit def tupleToTree[A: ToTree, B: ToTree]: ToTree[(A, B)] =
+    new ToTree[(A, B)] {
+      def toTree(t: (A, B)): TreeRep[String] =
+        TreeRep.Node(
+          "Tuple",
+          Stream(t._1.toTree, t._2.toTree)
+        )
+    }
+
+  implicit def optionToTree[A: ToTree]: ToTree[Option[A]] =
+    new ToTree[Option[A]] {
+      def toTree(t: Option[A]): TreeRep[String] =
+        t.fold[TreeRep[String]](TreeRep.Leaf("Node"))(a =>
+          TreeRep.Node("Some", Stream(a.toTree))
+        )
+    }
+
 }
 
 trait LowPriorityToTreeInstances0 {
