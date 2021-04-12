@@ -103,11 +103,14 @@ object Engine {
     l.union(r).pure[M]
 
   private def evaluateScan(graph: String, expr: Multiset): M[Multiset] = {
-    val df = expr.dataframe
-      .filter(expr.dataframe(GRAPH_VARIABLE.s) === graph)
-      .withColumn(GRAPH_VARIABLE.s, lit(""))
-    expr.copy(dataframe = df).pure[M]
-  }
+    val bindings =
+      expr.bindings.filter(_.s != GRAPH_VARIABLE.s) + VARIABLE(graph)
+    val df = expr.dataframe.withColumn(graph, expr.dataframe(GRAPH_VARIABLE.s))
+    Multiset(
+      bindings,
+      df
+    )
+  }.pure[M]
 
   private def evaluateBGP(
       quads: ChunkedList[Expr.Quad]
@@ -119,7 +122,11 @@ object Engine {
           val condition = composedConditionFromChunk(df, chunk)
           val current   = df.filter(condition)
           val vars =
-            chunk.map(_.getNamesAndPositions).toChain.toList.flatten
+            chunk
+              .map(_.getNamesAndPositions :+ (GRAPH_VARIABLE, "g"))
+              .toChain
+              .toList
+              .flatten
           val selected =
             current.select(vars.map(v => $"${v._2}".as(v._1.s)): _*)
 

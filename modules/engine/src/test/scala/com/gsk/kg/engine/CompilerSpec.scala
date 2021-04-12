@@ -3065,7 +3065,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           )
         }
 
-        "execute and obtain expected results when JOIN with no common variable bindings" ignore {
+        "execute and obtain expected results when JOIN with no common variable bindings" in {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
@@ -3666,10 +3666,9 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
       }
 
-      // TODO: Un-ignore support for variables on GRAPH statement. See: https://github.com/gsk-aiops/bellman/issues/173
-      "graph variables" ignore {
+      "graph variables" should {
 
-        "execute and obtain expected results when referenced graph is a variable instead of a specified graph" in {
+        "execute and obtain expected results when GRAPH with variable and same variable binding on default graph BGP" in {
           import sqlContext.implicits._
 
           val df: DataFrame = List(
@@ -3678,19 +3677,19 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               "http://example.org/bob",
               "http://purl.org/dc/elements/1.1/publisher",
               "Bob Hacker",
-              ""
+              "http://example.org/dft.ttl"
             ),
             (
               "http://example.org/alice",
               "http://purl.org/dc/elements/1.1/publisher",
               "Alice Hacker",
-              ""
+              "http://example.org/dft.ttl"
             ),
             (
               "http://example.org/charles",
               "http://purl.org/dc/elements/1.1/publisher",
               "Charles Hacker",
-              ""
+              "http://example.org/dft.ttl"
             ),
             // Alice graph
             (
@@ -3772,6 +3771,742 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               "mailto:charles@work.example.org"
             )
           )
+        }
+
+        "execute and obtain expected results when GRAPH with variable, one named graph and common variables" in {
+
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/charles",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Charles Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?mbox ?name ?g
+              |FROM <http://example.org/alice>
+              |FROM <http://example.org/charles>
+              |FROM NAMED <http://example.org/bob>
+              |WHERE
+              |{
+              |   ?x foaf:name ?name .
+              |   GRAPH ?g { ?x foaf:mbox ?mbox }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query, isExclusive = true)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 2
+          result.right.get.collect.toSet shouldEqual Set(
+            Row(
+              "_:a",
+              "mailto:bob@oldcorp.example.org",
+              "\"Alice\"",
+              "http://example.org/bob"
+            ),
+            Row(
+              "_:a",
+              "mailto:bob@oldcorp.example.org",
+              "\"Charles\"",
+              "http://example.org/bob"
+            )
+          )
+        }
+
+        "execute and obtain expected results when GRAPH with variable, two named graph and common variables" in {
+
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/charles",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Charles Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?mbox ?name ?g
+              |FROM <http://example.org/alice>
+              |FROM NAMED <http://example.org/charles>
+              |FROM NAMED <http://example.org/bob>
+              |WHERE
+              |{
+              |   ?x foaf:name ?name .
+              |   GRAPH ?g { ?x foaf:mbox ?mbox }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query, isExclusive = true)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 2
+          result.right.get.collect.toSet shouldEqual Set(
+            Row(
+              "_:a",
+              "mailto:charles@work.example.org",
+              "\"Alice\"",
+              "http://example.org/charles"
+            ),
+            Row(
+              "_:a",
+              "mailto:bob@oldcorp.example.org",
+              "\"Alice\"",
+              "http://example.org/bob"
+            )
+          )
+        }
+
+        "execute and obtain expected results when GRAPH with variable, two named graph and no common variables" in {
+
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/charles",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Charles Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?y ?mbox ?name ?g
+              |FROM <http://example.org/alice>
+              |FROM NAMED <http://example.org/charles>
+              |FROM NAMED <http://example.org/bob>
+              |WHERE
+              |{
+              |   ?x foaf:name ?name .
+              |   GRAPH ?g { ?y foaf:mbox ?mbox }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query, isExclusive = true)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 2
+          result.right.get.collect.toSet shouldEqual Set(
+            Row(
+              "_:a",
+              "_:a",
+              "mailto:charles@work.example.org",
+              "\"Alice\"",
+              "http://example.org/charles"
+            ),
+            Row(
+              "_:a",
+              "_:a",
+              "mailto:bob@oldcorp.example.org",
+              "\"Alice\"",
+              "http://example.org/bob"
+            )
+          )
+        }
+
+        "execute and obtain expected results when GRAPH with variable over mixed named and default graphs with JOIN" in {
+
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/charles",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Charles Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?mbox ?name ?g
+              |FROM <http://example.org/alice>
+              |FROM <http://example.org/charles>
+              |FROM NAMED <http://example.org/bob>
+              |WHERE
+              |{
+              |   GRAPH ?g {
+              |     ?x foaf:name ?name .
+              |     GRAPH ex:bob { ?x foaf:mbox ?mbox }
+              |   }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 1
+          result.right.get.collect.toSet shouldEqual Set(
+            Row(
+              "_:a",
+              "mailto:bob@oldcorp.example.org",
+              "\"Bob\"",
+              "http://example.org/bob"
+            )
+          )
+        }
+      }
+
+      "case of study graph queries" should {
+
+        // TODO: This query seems not to be consistent with Jena, shall be analyzed as a case of study
+        "execute and obtain expected results when GRAPH with variable over mixed named and default graphs with UNION" in {
+
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/charles",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Charles Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?mbox ?name ?g
+              |FROM <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |FROM NAMED <http://example.org/charles>
+              |WHERE
+              |{
+              | GRAPH ?g {
+              |   { ?x foaf:name ?name . }
+              |   UNION
+              |   { GRAPH ex:bob { ?x foaf:mbox ?mbox } }
+              | }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 3
+          result.right.get.collect.toSet shouldEqual Set(
+            Row(
+              "_:a",
+              null,
+              "\"Charles\"",
+              "http://example.org/charles"
+            ),
+            Row(
+              "_:a",
+              null,
+              "\"Bob\"",
+              "http://example.org/bob"
+            ),
+            Row(
+              "_:a",
+              "mailto:bob@oldcorp.example.org",
+              null,
+              "http://example.org/bob"
+            )
+          )
+        }
+
+        // TODO: This query seems not to be consistent with Jena, shall be analyzed as a case of study
+        "execute and obtain expected results when GRAPH over mixed named and default graphs with UNION" in {
+
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/charles",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Charles Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?mbox ?name
+              |FROM <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |FROM NAMED <http://example.org/charles>
+              |WHERE
+              |{
+              |  {
+              |    GRAPH ex:bob {
+              |     { ?x foaf:name ?name . }
+              |     UNION
+              |     { GRAPH ex:bob { ?x foaf:mbox ?mbox } }
+              |    }
+              |  }
+              |  UNION
+              |  {
+              |    GRAPH ex:charles {
+              |      { ?x foaf:name ?name . }
+              |      UNION
+              |      { GRAPH ex:bob { ?x foaf:mbox ?mbox } }
+              |    }
+              |  }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 4
+          result.right.get.collect.toSet shouldEqual Set(
+            Row(
+              "_:a",
+              null,
+              "\"Charles\""
+            ),
+            Row(
+              "_:a",
+              "mailto:bob@oldcorp.example.org",
+              null
+            ),
+            Row(
+              "_:a",
+              null,
+              "\"Bob\""
+            ),
+            Row(
+              "_:a",
+              "mailto:bob@oldcorp.example.org",
+              null
+            )
+          )
+        }
+
+        // TODO: This query seems not to be consistent with Jena, shall be analyzed as a case of study
+        "execute and obtain expected results when GRAPH with variable over mixed named and default graphs with JOIN" in {
+
+          import sqlContext.implicits._
+
+          val df: DataFrame = List(
+            // Default graph
+            (
+              "http://example.org/bob",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Bob Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/alice",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Alice Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            (
+              "http://example.org/charles",
+              "http://purl.org/dc/elements/1.1/publisher",
+              "Charles Hacker",
+              "http://example.org/dft.ttl"
+            ),
+            // Alice graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice",
+              "http://example.org/alice"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:alice@work.example.org",
+              "http://example.org/alice"
+            ),
+            // Bob graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob",
+              "http://example.org/bob"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:bob@oldcorp.example.org",
+              "http://example.org/bob"
+            ),
+            // Charles graph
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles",
+              "http://example.org/charles"
+            ),
+            (
+              "_:a",
+              "http://xmlns.com/foaf/0.1/mbox",
+              "mailto:charles@work.example.org",
+              "http://example.org/charles"
+            )
+          ).toDF("s", "p", "o", "g")
+
+          val query =
+            """
+              |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              |PREFIX ex: <http://example.org/>
+              |
+              |SELECT ?x ?mbox ?name
+              |FROM <http://example.org/alice>
+              |FROM NAMED <http://example.org/bob>
+              |FROM NAMED <http://example.org/charles>
+              |WHERE
+              |{
+              |  GRAPH ex:bob {
+              |   { ?x foaf:name ?name . }
+              |   UNION
+              |   { GRAPH ex:bob { ?x foaf:mbox ?mbox } }
+              |  } .
+              |  GRAPH ex:charles {
+              |    { ?x foaf:name ?name . }
+              |    UNION
+              |    { GRAPH ex:bob { ?x foaf:mbox ?mbox } }
+              |  }
+              |}
+              |""".stripMargin
+
+          val result = Compiler.compile(df, query)
+
+          result shouldBe a[Right[_, _]]
+          result.right.get.collect.length shouldEqual 0
+          result.right.get.collect.toSet shouldEqual Set()
         }
       }
     }
@@ -4125,7 +4860,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
     "inclusive/exclusive default graph" should {
 
-      "exclude graphs when no explicit FROM" ignore {
+      "exclude graphs when no explicit FROM" in {
         import sqlContext.implicits._
 
         val df: DataFrame = List(
@@ -4145,7 +4880,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         result.right.get.collect().toSet shouldEqual Set()
       }
 
-      "exclude graphs when explicit FROM" ignore {
+      "exclude graphs when explicit FROM" in {
         import sqlContext.implicits._
 
         val df: DataFrame = List(

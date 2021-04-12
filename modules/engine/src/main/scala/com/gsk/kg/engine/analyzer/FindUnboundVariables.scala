@@ -52,7 +52,9 @@ object FindUnboundVariables {
           declared <- State.get
         } yield (used diff declared) ++ r
       case Scan(graph, expr) =>
-        Set.empty.pure[ST]
+        State
+          .modify[Set[VARIABLE]](x => x + VARIABLE(graph))
+          .flatMap(_ => expr.pure[ST])
       case Project(variables, r) =>
         for {
           declared <- State.get

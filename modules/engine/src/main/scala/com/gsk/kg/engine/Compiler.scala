@@ -9,11 +9,11 @@ import higherkindness.droste.Basis
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SQLContext
 
+import com.gsk.kg.Graphs
 import com.gsk.kg.engine.analyzer.Analyzer
 import com.gsk.kg.engine.optimizer.Optimizer
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.QueryConstruct
-import com.gsk.kg.sparqlparser.StringVal
 
 object Compiler {
 
@@ -59,10 +59,10 @@ object Compiler {
 
   /** parser converts strings to our [[Query]] ADT
     */
-  val parser: Phase[(String, Boolean), (Query, List[StringVal])] =
+  val parser: Phase[(String, Boolean), (Query, Graphs)] =
     Arrow[Phase].lift(QueryConstruct.parse)
 
-  def optimizer[T: Basis[DAG, *]]: Phase[(T, List[StringVal]), T] =
+  def optimizer[T: Basis[DAG, *]]: Phase[(T, Graphs), T] =
     Optimizer.optimize
 
   def staticAnalysis[T: Basis[DAG, *]]: Phase[T, T] =
