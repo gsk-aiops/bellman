@@ -1,0 +1,12 @@
+options:
+  - title: Compilation
+    url: docs/compilation
+
+  - title: Optimization
+    url: docs/optimization
+
+  - title: Phases
+    url: docs/phases
+
+  - title: Techniques
+    url: docs/techniques

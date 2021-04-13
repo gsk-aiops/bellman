@@ -191,6 +191,32 @@ lazy val `bellman-spark-engine` = project
   )
   .dependsOn(`bellman-algebra-parser` % "compile->compile;test->test")
 
+lazy val `bellman-site` = project
+  .in(file("modules/site"))
+  .settings(moduleName := "bellman-site")
+  .settings(buildSettings)
+  .settings(commonDependencies)
+  .settings(compilerPlugins)
+  .settings(
+    micrositeName := "Bellman",
+    micrositeDescription := "Efficiently running SparQL queries in Spark",
+    micrositeGithubOwner := "gsk-aiops",
+    micrositeGithubRepo := "bellman",
+    micrositeOrganizationHomepage := "https://www.gsk.com",
+    micrositeDocumentationUrl := "/docs",
+    micrositeGitterChannel := false,
+    micrositePushSiteWith := GitHub4s,
+    mdocIn := (Compile / sourceDirectory).value / "docs",
+    micrositeGithubToken := Option(System.getenv().get("GITHUB_TOKEN")),
+    micrositePalette := Map(
+      "brand-primary"   -> "#001e38",
+      "brand-secondary" -> "#F44336",
+      "white-color"     -> "#E6E7EC"
+    ),
+    micrositeHighlightTheme := "github-gist"
+  )
+  .enablePlugins(MicrositesPlugin)
+
 addCommandAlias(
   "ci-test",
   ";scalafixAll --check ;scalafmtCheckAll ;scalastyle ;+test"
