@@ -208,10 +208,12 @@ lazy val `bellman-site` = project
     micrositePushSiteWith := GitHub4s,
     mdocIn := (Compile / sourceDirectory).value / "docs",
     micrositeGithubToken := Option(System.getenv().get("GITHUB_TOKEN")),
+    micrositeHighlightTheme := "tomorrow",
+    micrositeTheme := "light",
     micrositePalette := Map(
-      "brand-primary"   -> "#001e38",
-      "brand-secondary" -> "#F44336",
-      "white-color"     -> "#E6E7EC"
+      "brand-primary"   -> "#F3490C",
+      "brand-secondary" -> "#FFE586",
+      "white-color"     -> "#FFF"
     ),
     micrositeHighlightTheme := "github-gist"
   )

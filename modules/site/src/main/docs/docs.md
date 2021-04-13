@@ -4,6 +4,5 @@ title: Intro
 permalink: docs/
 ---
 
-# docs
+# Bellman
 
-## docs 

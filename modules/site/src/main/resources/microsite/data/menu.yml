@@ -7,6 +7,19 @@ options:
 
   - title: Phases
     url: docs/phases
+    nested_options:
+      - title: Parser
+        url: docs/phases/parser
+      - title: Graph transform
+        url: docs/phases/transformToGraph
+      - title: Optimizer
+        url: docs/phases/optimizer
+      - title: Static Analysis
+        url: docs/phases/staticAnalysis
+      - title: Engine
+        url: docs/phases/engine
+      - title: Rdf Formatter
+        url: docs/phases/rdfFormatter
 
   - title: Techniques
     url: docs/techniques
