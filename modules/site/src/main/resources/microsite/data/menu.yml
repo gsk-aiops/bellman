@@ -4,6 +4,11 @@ options:
 
   - title: Optimization
     url: docs/optimization
+    nested_options:
+      - title: Compact BGPs
+        url: docs/optimization/compactBgps
+      - title: Graph pushdown
+        url: docs/optimization/graphPushdown
 
   - title: Phases
     url: docs/phases
