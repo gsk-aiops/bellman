@@ -4,6 +4,7 @@ package optimizer
 import higherkindness.droste.data.Fix
 
 import com.gsk.kg.engine.DAG.Project
+import com.gsk.kg.sparqlparser.TestConfig
 import com.gsk.kg.sparqlparser.TestUtils
 
 import org.scalatest.flatspec.AnyFlatSpec
@@ -14,7 +15,8 @@ class RemoveNestedProjectSpec
     extends AnyFlatSpec
     with Matchers
     with ScalaCheckDrivenPropertyChecks
-    with TestUtils {
+    with TestUtils
+    with TestConfig {
 
   type T = Fix[DAG]
 

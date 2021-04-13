@@ -8,7 +8,7 @@ import scala.collection.mutable
 
 import org.scalatest.flatspec.AnyFlatSpec
 
-class QueryConstructSpec extends AnyFlatSpec with TestUtils {
+class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
 
   "Simple Query" should "parse Construct statement with correct number of Triples" in {
     query("/queries/q0-simple-basic-graph-pattern.sparql") match {

@@ -10,6 +10,7 @@ import com.gsk.kg.engine.DAG.Project
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.optics._
 import com.gsk.kg.sparqlparser.Expr.Quad
+import com.gsk.kg.sparqlparser.TestConfig
 import com.gsk.kg.sparqlparser.TestUtils
 
 import org.scalatest.flatspec.AnyFlatSpec
@@ -20,7 +21,8 @@ class CompactBGPsSpec
     extends AnyFlatSpec
     with Matchers
     with ScalaCheckDrivenPropertyChecks
-    with TestUtils {
+    with TestUtils
+    with TestConfig {
 
   type T = Fix[DAG]
 

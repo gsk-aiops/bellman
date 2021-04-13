@@ -14,7 +14,11 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
-class QuerySamplesTestSpec extends AnyFlatSpec with Matchers with TestUtils {
+class QuerySamplesTestSpec
+    extends AnyFlatSpec
+    with Matchers
+    with TestUtils
+    with TestConfig {
 
   def showAlgebra(q: String): Op = {
     val query = QueryFactory.create(q)
@@ -445,7 +449,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers with TestUtils {
 
   "Query with default and named graphs to match on specific graph" should "parse" in {
     val query = QuerySamples.q36
-    val q     = parse(query, isExclusive = true)
+    val q     = parse(query)(config.copy(isDefaultGraphExclusive = true))
     q match {
       case (
             Select(
@@ -469,7 +473,7 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers with TestUtils {
 
   "Query with default and named graphs to match on multiple graphs" should "parse" in {
     val query = QuerySamples.q37
-    val q     = parse(query, isExclusive = true)
+    val q     = parse(query)(config.copy(isDefaultGraphExclusive = true))
     q match {
       case (
             Select(

@@ -10,6 +10,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SQLContext
 
 import com.gsk.kg.Graphs
+import com.gsk.kg.config.Config
 import com.gsk.kg.engine.analyzer.Analyzer
 import com.gsk.kg.engine.optimizer.Optimizer
 import com.gsk.kg.sparqlparser.Query
@@ -17,11 +18,12 @@ import com.gsk.kg.sparqlparser.QueryConstruct
 
 object Compiler {
 
-  def compile(df: DataFrame, query: String, isExclusive: Boolean = false)(
-      implicit sc: SQLContext
+  def compile(df: DataFrame, query: String)(implicit
+      sc: SQLContext,
+      config: Config
   ): Result[DataFrame] =
     compiler(df)
-      .run((query, isExclusive))
+      .run(query)
       .runA(df)
 
   /** Put together all phases of the compiler
@@ -31,8 +33,9 @@ object Compiler {
     * @return
     */
   def compiler(df: DataFrame)(implicit
-      sc: SQLContext
-  ): Phase[(String, Boolean), DataFrame] =
+      sc: SQLContext,
+      config: Config
+  ): Phase[String, DataFrame] =
     parser >>>
       transformToGraph.first >>>
       optimizer >>>
@@ -59,7 +62,7 @@ object Compiler {
 
   /** parser converts strings to our [[Query]] ADT
     */
-  val parser: Phase[(String, Boolean), (Query, Graphs)] =
+  def parser(implicit config: Config): Phase[String, (Query, Graphs)] =
     Arrow[Phase].lift(QueryConstruct.parse)
 
   def optimizer[T: Basis[DAG, *]]: Phase[(T, Graphs), T] =

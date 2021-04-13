@@ -21,7 +21,8 @@ lazy val Versions = Map(
   "discipline"           -> "1.1.2",
   "discipline-scalatest" -> "2.0.1",
   "reftree"              -> "1.4.0",
-  "shims"                -> "2.1.0"
+  "shims"                -> "2.1.0",
+  "pureconfig"           -> "0.14.0"
 )
 
 inThisBuild(
@@ -90,10 +91,11 @@ lazy val compilerPlugins = Seq(
 
 lazy val commonDependencies = Seq(
   libraryDependencies ++= Seq(
-    "org.typelevel"     %% "cats-core"     % Versions("cats"),
-    "io.higherkindness" %% "droste-core"   % Versions("droste"),
-    "io.higherkindness" %% "droste-macros" % Versions("droste"),
-    "org.scalatest"     %% "scalatest"     % Versions("scalatest") % Test
+    "org.typelevel"         %% "cats-core"     % Versions("cats"),
+    "io.higherkindness"     %% "droste-core"   % Versions("droste"),
+    "io.higherkindness"     %% "droste-macros" % Versions("droste"),
+    "com.github.pureconfig" %% "pureconfig"    % Versions("pureconfig"),
+    "org.scalatest"         %% "scalatest"     % Versions("scalatest") % Test
   )
 )
 
@@ -170,6 +172,7 @@ lazy val `bellman-spark-engine` = project
     import higherkindness.droste.data.prelude._
     import higherkindness.droste.syntax.all._
 
+    import com.gsk.kg.config.Config
     import com.gsk.kg.sparql.syntax.all._
     import com.gsk.kg.sparqlparser._
     import com.gsk.kg.engine.data._
@@ -180,16 +183,21 @@ lazy val `bellman-spark-engine` = project
 
     import org.apache.spark._
     import org.apache.spark.sql._
+    
+    import pureconfig.generic.auto._
+    import pureconfig._
 
     val spark = SparkSession.builder()
       .appName("Spark Local")
       .master("local")
       .config("spark.driver.host", "localhost")
       .getOrCreate()
-
+      
+    implicit val config = ConfigSource.default.loadOrThrow[Config]
     implicit val sc: SQLContext = spark.sqlContext
 
     import sc.implicits._
+    
     """
   )
   .dependsOn(`bellman-algebra-parser` % "compile->compile;test->test")

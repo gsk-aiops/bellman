@@ -4,6 +4,7 @@ import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
 
 import com.gsk.kg.Graphs
+import com.gsk.kg.config.Config
 
 import scala.io.Source
 
@@ -11,31 +12,39 @@ trait TestUtils {
 
   def sparql2Algebra(fileLoc: String): String = {
     val path   = getClass.getResource(fileLoc).getPath
-    val sparql = Source.fromFile(path).mkString
+    val source = Source.fromFile(path)
+    val sparql = source.mkString
 
-    val query = QueryFactory.create(sparql)
-    Algebra.compile(query).toString
+    val query          = QueryFactory.create(sparql)
+    val result: String = Algebra.compile(query).toString
+
+    source.close
+    result
   }
 
-  def queryAlgebra(fileLoc: String): Expr = {
+  def queryAlgebra(fileLoc: String)(implicit config: Config): Expr = {
     val q = readOutputFile(fileLoc)
     QueryConstruct.parseADT(q)
   }
 
-  def query(fileLoc: String, isExclusive: Boolean = false): Query = {
+  def query(fileLoc: String)(implicit config: Config): Query = {
     val q = readOutputFile(fileLoc)
-    parse(q, isExclusive)._1
+    parse(q)._1
   }
 
   def readOutputFile(fileLoc: String): String = {
-    val path = getClass.getResource(fileLoc).getPath
-    Source.fromFile(path).mkString
+    val path   = getClass.getResource(fileLoc).getPath
+    val source = Source.fromFile(path)
+
+    val output = source.mkString
+
+    source.close()
+    output
   }
 
   def parse(
-      query: String,
-      isExclusive: Boolean = false
-  ): (Query, Graphs) =
-    QueryConstruct.parse((query, isExclusive))
+      query: String
+  )(implicit config: Config): (Query, Graphs) =
+    QueryConstruct.parse(query)
 
 }

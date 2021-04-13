@@ -8,13 +8,18 @@ import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
+import com.gsk.kg.sparqlparser.TestConfig
 import com.gsk.kg.sparqlparser.TestUtils
 
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
+class GraphsPushdownSpec
+    extends AnyWordSpec
+    with Matchers
+    with TestUtils
+    with TestConfig {
 
   type T = Fix[DAG]
 

@@ -3,12 +3,17 @@ package data
 
 import cats.instances.string._
 
+import com.gsk.kg.sparqlparser.TestConfig
 import com.gsk.kg.sparqlparser.TestUtils
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class TreeRepSpec extends AnyFlatSpec with Matchers with TestUtils {
+class TreeRepSpec
+    extends AnyFlatSpec
+    with Matchers
+    with TestUtils
+    with TestConfig {
 
   "TreeRep.draw" should "generate a tree representation" in {
 

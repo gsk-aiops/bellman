@@ -8,12 +8,17 @@ import higherkindness.droste.syntax.all._
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.engine.EngineError
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+import com.gsk.kg.sparqlparser.TestConfig
 import com.gsk.kg.sparqlparser.TestUtils
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class AnalyzerSpec extends AnyFlatSpec with Matchers with TestUtils {
+class AnalyzerSpec
+    extends AnyFlatSpec
+    with Matchers
+    with TestUtils
+    with TestConfig {
 
   "Analyzer.findUnboundVariables" should "find unbound variables in CONSTRUCT queries" in {
     val q =

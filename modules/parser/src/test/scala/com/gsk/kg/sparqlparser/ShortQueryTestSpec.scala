@@ -5,7 +5,7 @@ import com.gsk.kg.sparqlparser.StringVal._
 
 import org.scalatest.flatspec.AnyFlatSpec
 
-class ShortQueryTestSpec extends AnyFlatSpec with TestUtils {
+class ShortQueryTestSpec extends AnyFlatSpec with TestUtils with TestConfig {
 
   "test filtered left join with multiple filters" should "pass" in {
 
