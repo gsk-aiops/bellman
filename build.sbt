@@ -19,7 +19,8 @@ lazy val Versions = Map(
   "sansa"                -> "0.7.1",
   "monocle"              -> "1.5.1-cats",
   "discipline"           -> "1.1.2",
-  "discipline-scalatest" -> "2.0.1"
+  "discipline-scalatest" -> "2.0.1",
+  "reftree"              -> "1.4.0"
 )
 
 inThisBuild(
@@ -123,9 +124,10 @@ lazy val `bellman-spark-engine` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.spark"           %% "spark-sql"    % Versions("spark") % Provided,
-      "com.github.julien-truffaut" %% "monocle-core" % Versions("monocle"),
+      "org.apache.spark"           %% "spark-sql"     % Versions("spark") % Provided,
+      "com.github.julien-truffaut" %% "monocle-core"  % Versions("monocle"),
       "com.github.julien-truffaut" %% "monocle-macro" % Versions("monocle"),
+      "io.github.stanch"           %% "reftree" % Versions("reftree"),
       "com.github.julien-truffaut" %% "monocle-law" % Versions(
         "monocle"
       )                % Test,
@@ -217,6 +219,7 @@ lazy val `bellman-site` = project
     ),
     micrositeHighlightTheme := "github-gist"
   )
+  .dependsOn(`bellman-spark-engine`, `bellman-algebra-parser`)
   .enablePlugins(MicrositesPlugin)
 
 addCommandAlias(
