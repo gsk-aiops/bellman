@@ -3790,7 +3790,10 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query, isExclusive = true)
+          val result = Compiler.compile(df, query)(
+            sqlContext,
+            config.copy(isDefaultGraphExclusive = true)
+          )
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3889,7 +3892,10 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query, isExclusive = true)
+          val result = Compiler.compile(df, query)(
+            sqlContext,
+            config.copy(isDefaultGraphExclusive = true)
+          )
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3988,7 +3994,10 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query, isExclusive = true)
+          val result = Compiler.compile(df, query)(
+            sqlContext,
+            config.copy(isDefaultGraphExclusive = true)
+          )
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
