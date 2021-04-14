@@ -1,9 +1,12 @@
 package com.gsk.kg.engine.optimize
 
+import cats.implicits._
+
 import higherkindness.droste.Algebra
 import higherkindness.droste.Basis
 import higherkindness.droste.scheme
 
+import com.gsk.kg.Graphs
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
@@ -113,37 +116,56 @@ import com.gsk.kg.sparqlparser.StringVal.URIVAL
   */
 object GraphsPushdown {
 
-  def apply[T](implicit T: Basis[DAG, T]): (T, List[StringVal]) => T = {
-    case (t, defaultGraphs) =>
-      val alg: Algebra[DAG, List[StringVal] => T] =
-        Algebra[DAG, List[StringVal] => T] {
-          case DAG.Describe(vars, r) => graphs => DAG.describeR(vars, r(graphs))
-          case DAG.Ask(r)            => graphs => DAG.askR(r(graphs))
-          case DAG.Construct(bgp, r) => graphs => DAG.constructR(bgp, r(graphs))
+  type GraphsOrList = Either[List[StringVal], Graphs]
+
+  def apply[T](implicit T: Basis[DAG, T]): (T, Graphs) => T = {
+    case (t, graphs) =>
+      val alg: Algebra[DAG, GraphsOrList => T] =
+        Algebra[DAG, GraphsOrList => T] {
+          case DAG.Describe(vars, r) =>
+            graphsOrList => DAG.describeR(vars, r(graphsOrList))
+          case DAG.Ask(r) => graphsOrList => DAG.askR(r(graphsOrList))
+          case DAG.Construct(bgp, r) =>
+            graphsOrList => DAG.constructR(bgp, r(graphsOrList))
           case DAG.Scan(graph, expr) =>
-            graphs => expr(URIVAL(graph) :: Nil)
+            _ =>
+              if (graph.startsWith("?")) {
+                DAG.scanR(graph, expr(graphs.named.asLeft))
+              } else {
+                expr((URIVAL(graph) :: Nil).asLeft)
+              }
           case DAG.Project(variables, r) =>
-            graphs => DAG.projectR(variables, r(graphs))
+            graphsOrList => DAG.projectR(variables, r(graphsOrList))
           case DAG.Bind(variable, expression, r) =>
-            graphs => DAG.bindR(variable, expression, r(graphs))
+            graphsOrList => DAG.bindR(variable, expression, r(graphsOrList))
           case DAG.BGP(quads) =>
-            graphs => DAG.bgpR(quads.flatMapChunks(_.map(_.copy(g = graphs))))
+            graphsOrList =>
+              graphsOrList.fold(
+                list => DAG.bgpR(quads.flatMapChunks(_.map(_.copy(g = list)))),
+                graphs =>
+                  DAG.bgpR(
+                    quads.flatMapChunks(_.map(_.copy(g = graphs.default)))
+                  )
+              )
           case DAG.LeftJoin(l, r, filters) =>
-            graphs => DAG.leftJoinR(l(graphs), r(graphs), filters)
-          case DAG.Union(l, r) => graphs => DAG.unionR(l(graphs), r(graphs))
+            graphsOrList =>
+              DAG.leftJoinR(l(graphsOrList), r(graphsOrList), filters)
+          case DAG.Union(l, r) =>
+            graphsOrList => DAG.unionR(l(graphsOrList), r(graphsOrList))
           case DAG.Filter(funcs, expr) =>
-            graphs => DAG.filterR(funcs, expr(graphs))
-          case DAG.Join(l, r)   => graphs => DAG.joinR(l(graphs), r(graphs))
-          case DAG.Offset(o, r) => graphs => DAG.offsetR(o, r(graphs))
-          case DAG.Limit(l, r)  => graphs => DAG.limitR(l, r(graphs))
-          case DAG.Distinct(r)  => graphs => DAG.distinctR(r(graphs))
+            graphsOrList => DAG.filterR(funcs, expr(graphsOrList))
+          case DAG.Join(l, r) =>
+            graphsOrList => DAG.joinR(l(graphsOrList), r(graphsOrList))
+          case DAG.Offset(o, r) =>
+            graphsOrList => DAG.offsetR(o, r(graphsOrList))
+          case DAG.Limit(l, r) => graphsOrList => DAG.limitR(l, r(graphsOrList))
+          case DAG.Distinct(r) => graphsOrList => DAG.distinctR(r(graphsOrList))
           case DAG.Group(vars, func, r) =>
-            graphs => DAG.groupR(vars, func, r(graphs))
-          case DAG.Noop(graphs) => _ => DAG.noopR(graphs)
+            graphsOrList => DAG.groupR(vars, func, r(graphsOrList))
+          case DAG.Noop(graphsOrList) => _ => DAG.noopR(graphsOrList)
         }
 
       val eval = scheme.cata(alg)
-
-      eval(t)(defaultGraphs)
+      eval(t)(Right(graphs))
   }
 }

@@ -27,7 +27,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
 
   "GraphsPushdown" should {
 
-    "rename the graph column of quads when inside a GRAPH statement" when {
+    "set the graph column of quads when inside a GRAPH statement" when {
 
       "has BGP immediately after Scan" in {
 
@@ -49,7 +49,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
             | }
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = parse(q)
+        val (query, graphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -58,7 +58,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
           case _ => fail
         }
 
-        val renamed = GraphsPushdown[T].apply(dag, defaultGraphs)
+        val renamed = GraphsPushdown[T].apply(dag, graphs)
         Fix.un(renamed) match {
           case Project(_, Project(_, BGP(quads))) =>
             assertForAllQuads(quads)(
@@ -88,7 +88,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
             | }
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = parse(q)
+        val (query, graphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -108,7 +108,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
           case _ => fail
         }
 
-        val renamed = GraphsPushdown[T].apply(dag, defaultGraphs)
+        val renamed = GraphsPushdown[T].apply(dag, graphs)
         Fix.un(renamed) match {
           case Project(
                 _,
@@ -121,7 +121,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
               _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
             )
             assertForAllQuads(externalQuads)(
-              _.g shouldEqual defaultGraphs
+              _.g shouldEqual graphs.default
             )
           case _ => fail
         }
@@ -149,7 +149,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
             | }
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = parse(q)
+        val (query, graphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -172,7 +172,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
           case _ => fail
         }
 
-        val renamed = GraphsPushdown[T].apply(dag, defaultGraphs)
+        val renamed = GraphsPushdown[T].apply(dag, graphs)
         Fix.un(renamed) match {
           case Project(
                 _,
@@ -185,7 +185,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
                 )
               ) =>
             assertForAllQuads(externalQuads)(
-              _.g shouldEqual defaultGraphs
+              _.g shouldEqual graphs.default
             )
             assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
               _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
@@ -215,7 +215,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
             | }
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = parse(q)
+        val (query, graphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -238,7 +238,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
           case _ => fail
         }
 
-        val renamed = GraphsPushdown[T].apply(dag, defaultGraphs)
+        val renamed = GraphsPushdown[T].apply(dag, graphs)
         Fix.un(renamed) match {
           case Project(
                 _,
@@ -251,7 +251,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
                 )
               ) =>
             assertForAllQuads(externalQuads)(
-              _.g shouldEqual defaultGraphs
+              _.g shouldEqual graphs.default
             )
             assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
               _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
@@ -283,7 +283,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
             | }
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = parse(q)
+        val (query, graphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -306,7 +306,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
           case _ => fail
         }
 
-        val renamed = GraphsPushdown[T].apply(dag, defaultGraphs)
+        val renamed = GraphsPushdown[T].apply(dag, graphs)
         Fix.un(renamed) match {
           case Project(
                 _,
@@ -319,7 +319,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
                 )
               ) =>
             assertForAllQuads(externalQuads)(
-              _.g shouldEqual defaultGraphs
+              _.g shouldEqual graphs.default
             )
             assertForAllQuads(graph1Quads)(
               _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
@@ -332,7 +332,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
       }
     }
 
-    "rename the graph column of quads with the default graph" when {
+    "set the graph column of quads with the default graph" when {
 
       "we have multiple default graphs" in {
 
@@ -351,7 +351,7 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
             | ?x foaf:name ?name .
             |}
             |""".stripMargin
-        val (query, defaultGraphs) = parse(q)
+        val (query, graphs) = parse(q)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -360,10 +360,64 @@ class GraphsPushdownSpec extends AnyWordSpec with Matchers with TestUtils {
           case _ => fail
         }
 
-        val pushedDown = GraphsPushdown[T].apply(dag, defaultGraphs)
+        val pushedDown = GraphsPushdown[T].apply(dag, graphs)
         Fix.un(pushedDown) match {
           case Project(_, Project(_, BGP(quads))) =>
-            assertForAllQuads(quads)(_.g shouldEqual defaultGraphs)
+            assertForAllQuads(quads)(_.g shouldEqual graphs.default)
+          case _ => fail
+        }
+      }
+    }
+
+    "set the graph column of quads when variable in a GRAPH statement" when {
+
+      "default and named graphs" in {
+
+        val q =
+          """
+            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            |PREFIX ex: <http://example.org/>
+            |
+            |SELECT ?who ?g ?mbox
+            |FROM <http://example.org/dft.ttl>
+            |FROM NAMED <http://example.org/alice>
+            |FROM NAMED <http://example.org/bob>
+            |FROM NAMED <http://example.org/charles>
+            |WHERE
+            |{
+            |   ?g dc:publisher ?who .
+            |   GRAPH ?g { ?x foaf:mbox ?mbox }
+            |}
+            |""".stripMargin
+        val (query, graphs) = parse(q)
+
+        val dag: T = DAG.fromQuery.apply(query)
+        Fix.un(dag) match {
+          case Project(
+                _,
+                Project(
+                  _,
+                  Join(BGP(externalQuads), Scan(variable, BGP(internalQuads)))
+                )
+              ) =>
+            assertForAllQuads(externalQuads.concat(internalQuads))(
+              _.g shouldEqual GRAPH_VARIABLE :: Nil
+            )
+          case _ => fail
+        }
+
+        val pushedDown = GraphsPushdown[T].apply(dag, graphs)
+        Fix.un(pushedDown) match {
+          case Project(
+                _,
+                Project(
+                  _,
+                  Join(BGP(externalQuads), Scan(variable, BGP(internalQuads)))
+                )
+              ) =>
+            assertForAllQuads(externalQuads)(_.g shouldEqual graphs.default)
+            assertForAllQuads(internalQuads)(_.g shouldEqual graphs.named)
           case _ => fail
         }
       }

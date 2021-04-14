@@ -3,6 +3,8 @@ package com.gsk.kg.sparqlparser
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
 
+import com.gsk.kg.Graphs
+
 import scala.io.Source
 
 trait TestUtils {
@@ -33,7 +35,7 @@ trait TestUtils {
   def parse(
       query: String,
       isExclusive: Boolean = false
-  ): (Query, List[StringVal]) =
+  ): (Query, Graphs) =
     QueryConstruct.parse((query, isExclusive))
 
 }

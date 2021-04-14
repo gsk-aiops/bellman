@@ -41,7 +41,7 @@ class MultisetSpec
       import sqlContext.implicits._
       val empty = Multiset.empty
       val nonEmpty = Multiset(
-        Set(VARIABLE("d")),
+        Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s)),
         Seq(("test1", "graph1"), ("test2", "graph2"))
           .toDF("d", GRAPH_VARIABLE.s)
       )
@@ -51,14 +51,16 @@ class MultisetSpec
 
     "join other multiset when they have both the same single binding" in {
       import sqlContext.implicits._
-      val variables = Set(VARIABLE("d"))
+      val variables = Set(VARIABLE("d"), VARIABLE(GRAPH_VARIABLE.s))
       val df1 = List(
         ("test1", "graph1"),
-        ("test2", "graph2")
+        ("test2", "graph1"),
+        ("test3", "graph1")
       ).toDF("d", GRAPH_VARIABLE.s)
       val df2 = List(
-        ("test1", "graph1"),
-        ("test3", "graph3")
+        ("test2", "graph1"),
+        ("test3", "graph2"),
+        ("test4", "graph2")
       ).toDF("d", GRAPH_VARIABLE.s)
 
       val ms1 = Multiset(variables, df1)
@@ -67,7 +69,8 @@ class MultisetSpec
       ms1.join(ms2) should equalsMultiset(
         Multiset(
           variables,
-          List(("test1", "graph1")).toDF("d", GRAPH_VARIABLE.s)
+          List(("test2", "graph1"), ("test3", ""))
+            .toDF("d", GRAPH_VARIABLE.s)
         )
       )
     }
@@ -79,20 +82,31 @@ class MultisetSpec
       val f = VARIABLE("f")
 
       val ms1 = Multiset(
-        Set(d, e),
-        List(("test1", "234", "graph1"), ("test2", "123", "graph2"))
+        Set(d, e, VARIABLE(GRAPH_VARIABLE.s)),
+        List(
+          ("test1", "123", "graph1"),
+          ("test2", "456", "graph1"),
+          ("test3", "789", "graph1")
+        )
           .toDF(d.s, e.s, GRAPH_VARIABLE.s)
       )
       val ms2 = Multiset(
-        Set(d, f),
-        List(("test1", "hello", "graph1"), ("test3", "goodbye", "graph2"))
+        Set(d, f, VARIABLE(GRAPH_VARIABLE.s)),
+        List(
+          ("test2", "hello", "graph1"),
+          ("test3", "goodbye", "graph2"),
+          ("test4", "hola", "graph2")
+        )
           .toDF(d.s, f.s, GRAPH_VARIABLE.s)
       )
 
       ms1.join(ms2) should equalsMultiset(
         Multiset(
-          Set(d, e, f),
-          List(("test1", "234", "hello", "graph1"))
+          Set(d, e, f, VARIABLE(GRAPH_VARIABLE.s)),
+          List(
+            ("test2", "456", "hello", "graph1"),
+            ("test3", "789", "goodbye", "")
+          )
             .toDF("d", "e", "f", GRAPH_VARIABLE.s)
         )
       )
@@ -107,27 +121,29 @@ class MultisetSpec
       val h = VARIABLE("h")
 
       val ms1 = Multiset(
-        Set(d, e, g, h),
+        Set(d, e, g, h, VARIABLE(GRAPH_VARIABLE.s)),
         List(
-          ("test1", "234", "g1", "h1", "graph1"),
-          ("test2", "123", "g2", "h2", "graph2")
-        )
-          .toDF(d.s, e.s, g.s, h.s, GRAPH_VARIABLE.s)
+          ("test1", "123", "g1", "h1", "graph1"),
+          ("test2", "456", "g2", "h2", "graph1"),
+          ("test3", "789", "g3", "h3", "graph1")
+        ).toDF(d.s, e.s, g.s, h.s, GRAPH_VARIABLE.s)
       )
       val ms2 = Multiset(
-        Set(d, e, f),
+        Set(d, e, f, VARIABLE(GRAPH_VARIABLE.s)),
         List(
-          ("test1", "234", "hello", "graph1"),
-          ("test3", "e2", "goodbye", "graph3")
-        )
-          .toDF(d.s, e.s, f.s, GRAPH_VARIABLE.s)
+          ("test2", "456", "hello", "graph1"),
+          ("test3", "789", "goodbye", "graph2"),
+          ("test4", "012", "hola", "graph2")
+        ).toDF(d.s, e.s, f.s, GRAPH_VARIABLE.s)
       )
 
       val result = ms1.join(ms2)
       val expectedResult = Multiset(
-        Set(d, e, f, g, h),
-        List(("test1", "234", "g1", "h1", "hello", "graph1"))
-          .toDF("d", "e", "g", "h", "f", GRAPH_VARIABLE.s)
+        Set(d, e, f, g, h, VARIABLE(GRAPH_VARIABLE.s)),
+        List(
+          ("test2", "456", "g2", "h2", "hello", "graph1"),
+          ("test3", "789", "g3", "h3", "goodbye", "")
+        ).toDF("d", "e", "g", "h", "f", GRAPH_VARIABLE.s)
       )
 
       result should equalsMultiset(expectedResult)
@@ -143,33 +159,73 @@ class MultisetSpec
       val i = VARIABLE("i")
 
       val ms1 = Multiset(
-        Set(d, e, f),
-        List(("test1", "234", "g1", "graph1"), ("test2", "123", "g2", "graph1"))
-          .toDF(d.s, e.s, f.s, GRAPH_VARIABLE.s)
+        Set(d, e, f, VARIABLE(GRAPH_VARIABLE.s)),
+        List(
+          ("test1", "123", "g1", "graph1"),
+          ("test2", "456", "g2", "graph1"),
+          ("test3", "789", "g3", "graph1")
+        ).toDF(d.s, e.s, f.s, GRAPH_VARIABLE.s)
       )
       val ms2 = Multiset(
-        Set(g, h, i),
+        Set(g, h, i, VARIABLE(GRAPH_VARIABLE.s)),
         List(
-          ("test1", "234", "hello", "graph2"),
-          ("test3", "e2", "goodbye", "graph2")
-        )
-          .toDF(g.s, h.s, i.s, GRAPH_VARIABLE.s)
+          ("test2", "456", "hello", "graph1"),
+          ("test3", "789", "goodbye", "graph2"),
+          ("test4", "012", "hola", "graph2")
+        ).toDF(g.s, h.s, i.s, GRAPH_VARIABLE.s)
       )
 
       val result = ms1.join(ms2)
       result should equalsMultiset(
         Multiset(
-          Set(d, e, f, g, h, i),
+          Set(d, e, f, g, h, i, VARIABLE(GRAPH_VARIABLE.s)),
           List(
-            ("test1", "234", "g1", "test1", "234", "hello", "graph1"),
-            ("test1", "234", "g1", "test1", "234", "hello", "graph2"),
-            ("test1", "234", "g1", "test3", "e2", "goodbye", "graph1"),
-            ("test1", "234", "g1", "test3", "e2", "goodbye", "graph2"),
-            ("test2", "123", "g2", "test1", "234", "hello", "graph1"),
-            ("test2", "123", "g2", "test1", "234", "hello", "graph2"),
-            ("test2", "123", "g2", "test3", "e2", "goodbye", "graph1"),
-            ("test2", "123", "g2", "test3", "e2", "goodbye", "graph2")
-          ).toDF("d", "e", "g", "h", "f", "i", GRAPH_VARIABLE.s)
+            ("test1", "123", "g1", "graph1", "test2", "456", "hello", "graph1"),
+            (
+              "test1",
+              "123",
+              "g1",
+              "graph1",
+              "test3",
+              "789",
+              "goodbye",
+              "graph2"
+            ),
+            ("test1", "123", "g1", "graph1", "test4", "012", "hola", "graph2"),
+            ("test2", "456", "g2", "graph1", "test2", "456", "hello", "graph1"),
+            (
+              "test2",
+              "456",
+              "g2",
+              "graph1",
+              "test3",
+              "789",
+              "goodbye",
+              "graph2"
+            ),
+            ("test2", "456", "g2", "graph1", "test4", "012", "hola", "graph2"),
+            ("test3", "789", "g3", "graph1", "test2", "456", "hello", "graph1"),
+            (
+              "test3",
+              "789",
+              "g3",
+              "graph1",
+              "test3",
+              "789",
+              "goodbye",
+              "graph2"
+            ),
+            ("test3", "789", "g3", "graph1", "test4", "012", "hola", "graph2")
+          ).toDF(
+            "d",
+            "e",
+            "g",
+            GRAPH_VARIABLE.s,
+            "h",
+            "f",
+            "i",
+            GRAPH_VARIABLE.s
+          )
         )
       )
     }
