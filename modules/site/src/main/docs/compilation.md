@@ -6,9 +6,9 @@ permalink: docs/compilation
 
 # Compilation
 
-The process of querying the underlying Spark datasest is dictated by [[SparQL algebra]].  Bellman expects a three (or four) column dataset representing a graph, in which the first column represents the _subject_,the second one the _predicate_, and the third one the _object_. It's optional to add a fourth column representing the _graph_ to which the current edge belong.
+The process of querying the underlying Spark datasest is dictated by SparQL algebra.  Bellman expects a three (or four) column dataset representing a graph, in which the first column represents the _subject_,the second one the _predicate_, and the third one the _object_. It's optional to add a fourth column representing the _graph_ to which the edge belongs.
 
-What we will do in Bellman is, for each triple in the **Basic Graph Pattern**, query the dataframe, and then join them given their common variables, for example:
+What we do in Bellman is, for each triple in the **Basic Graph Pattern**, query the dataframe, and then join them given their common variables, for example:
 
 ```sparql
 SELECT ?d ?author
