@@ -416,7 +416,6 @@ object Multiset {
 
     // Generates a schema for the final DF (needed for the flatMap)
     val resultSchema = innerWithMergedGraphColunns
-      .drop(leftGraphCol, rightGraphCol)
       .withColumn(GRAPH_VARIABLE.s, lit(""))
       .schema
 
