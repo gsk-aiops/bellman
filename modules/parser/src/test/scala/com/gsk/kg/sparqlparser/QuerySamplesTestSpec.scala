@@ -452,11 +452,15 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers with TestUtils {
               _,
               Project(_, Graph(specifiedGraph, _))
             ),
-            defaultGraphs
+            graphs
           ) =>
-        defaultGraphs should (have size 2 and contain theSameElementsAs Seq(
+        graphs.default should (have size 2 and contain theSameElementsAs Seq(
           URIVAL("http://example.org/dft.ttl"),
           URIVAL("")
+        ))
+        graphs.named should (have size 2 and contain theSameElementsAs Seq(
+          URIVAL("http://example.org/alice"),
+          URIVAL("http://example.org/bob")
         ))
       case _ =>
         fail
@@ -472,11 +476,15 @@ class QuerySamplesTestSpec extends AnyFlatSpec with Matchers with TestUtils {
               vars,
               Project(_, Join(_, Graph(graphVariable, _)))
             ),
-            defaultGraphs
+            graphs
           ) =>
-        defaultGraphs should (have size 2 and contain theSameElementsAs Seq(
+        graphs.default should (have size 2 and contain theSameElementsAs Seq(
           URIVAL("http://example.org/dft.ttl"),
           URIVAL("")
+        ))
+        graphs.named should (have size 2 and contain theSameElementsAs Seq(
+          URIVAL("http://example.org/alice"),
+          URIVAL("http://example.org/bob")
         ))
         graphVariable shouldEqual vars(1)
       case _ =>
