@@ -99,7 +99,35 @@ object Animations extends App {
       .render("bgp-compaction"))
   }
 
+  def createGraphPushdownAnimation(): Unit = {
+    val query = QueryConstruct
+      .parse(
+        """
+        SELECT *
+        FROM NAMED <http://example.com/named-graph>
+        {
+          GRAPH <http://example.com/named-graph> {
+            ?s ?p ?o
+          }
+        }""",
+        false
+      )
+      ._1
+
+    val dag = DAG.fromQuery.apply(query)
+
+    (Animation
+      .startWith(dag)
+      .iterateWithIndex(1) { (dag, i) =>
+        GraphsPushdown[Fix[DAG]].apply(dag, List.empty)
+      }
+      .build(Diagram(_).withCaption("DAG").withColor(2))
+      .render("graph-pushdown"))
+
+  }
+
   createBasicAnimation()
   createCompactBGPAnimation()
   createChunkedListAnimation()
+  createGraphPushdownAnimation()
 }
