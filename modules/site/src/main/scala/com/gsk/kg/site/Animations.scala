@@ -107,7 +107,7 @@ object Animations extends App {
         FROM NAMED <http://example.com/named-graph>
         {
           GRAPH <http://example.com/named-graph> {
-            ?s ?p ?o
+            ?s <http://example.com/predicate> ?o
           }
         }""",
         false

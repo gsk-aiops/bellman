@@ -49,7 +49,7 @@ val list: ChunkedList[Int] = ???
 list.compact(fn).compact(fn) === list.compact(fn)
 ```
 
-Compaction looks like this, in this simple example we're compacting the list into chunks that share the leading letter:
+Here we can see how ChunkedList compaction looks.  In this example we're compacting it by the first letter of each element, making it group into two chunks, those elements starting with "a", and those starting with "b".
 
 ```scala
 val list: ChunkedList[String] =
