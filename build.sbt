@@ -17,7 +17,7 @@ lazy val Versions = Map(
   "scalacheck"           -> "1.15.2",
   "scalatestplus"        -> "3.2.3.0",
   "sansa"                -> "0.7.1",
-  "monocle"              -> "1.5.1-cats",
+  "monocle"              -> "1.5.0",
   "discipline"           -> "1.1.2",
   "discipline-scalatest" -> "2.0.1",
   "reftree"              -> "1.4.0"
@@ -124,10 +124,9 @@ lazy val `bellman-spark-engine` = project
   .settings(compilerPlugins)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.spark"           %% "spark-sql"     % Versions("spark") % Provided,
-      "com.github.julien-truffaut" %% "monocle-core"  % Versions("monocle"),
+      "org.apache.spark"           %% "spark-sql"    % Versions("spark") % Provided,
+      "com.github.julien-truffaut" %% "monocle-core" % Versions("monocle"),
       "com.github.julien-truffaut" %% "monocle-macro" % Versions("monocle"),
-      "io.github.stanch"           %% "reftree" % Versions("reftree"),
       "com.github.julien-truffaut" %% "monocle-law" % Versions(
         "monocle"
       )                % Test,
@@ -218,6 +217,9 @@ lazy val `bellman-site` = project
       "white-color"     -> "#FFF"
     ),
     micrositeHighlightTheme := "github-gist"
+  )
+  .settings(
+    libraryDependencies += "io.github.stanch" %% "reftree" % Versions("reftree")
   )
   .dependsOn(`bellman-spark-engine`, `bellman-algebra-parser`)
   .enablePlugins(MicrositesPlugin)

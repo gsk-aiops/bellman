@@ -1,6 +1,7 @@
-package com.gsk.kg.engine.contrib.reftree
+package com.gsk.kg.site.contrib.reftree
 
 import higherkindness.droste._
+import cats.implicits._
 import cats.Traverse
 import cats.data.State
 import reftree.core._
@@ -8,11 +9,10 @@ import higherkindness.droste.data.Fix
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.engine.data.ChunkedList
 import reftree.contrib.SimplifiedInstances._
-import com.gsk.kg.engine.ExpressionF
-import com.gsk.kg.sparqlparser.StringVal
-import reftree.contrib.SimplifiedInstances
+import com.gsk.kg.engine.DAG
 
 object prelude {
+
   def fixedToRefTreeAlgebra[F[_]](implicit
       evF: ToRefTree[F[RefTree]]
   ): Algebra[F, RefTree] =
@@ -88,4 +88,50 @@ object prelude {
         chunk.toChain.toList.map(_.refTree.toField)
       )
     )
+
+  implicit val dagToRefTree: ToRefTree[DAG[RefTree]] = ToRefTree[DAG[RefTree]] {
+    case dag @ DAG.Describe(vars, r) =>
+      RefTree.Ref(dag, vars.map(_.refTree.toField) ++ Seq(r.toField))
+    case dag @ DAG.Ask(r) => RefTree.Ref(dag, Seq(r.toField))
+    case dag @ DAG.Construct(bgp, r) =>
+      RefTree.Ref(
+        dag,
+        Seq(
+          DAG
+            .bgp[RefTree](ChunkedList.fromList(bgp.quads.toList))
+            .refTree
+            .toField,
+          r.toField
+        )
+      )
+    case dag @ DAG.Scan(graph, expr) =>
+      RefTree.Ref(dag, Seq(graph.refTree.toField, expr.toField))
+    case dag @ DAG.Project(variables, r) =>
+      RefTree.Ref(dag, variables.map(_.refTree.toField) ++ Seq(r.toField))
+    case dag @ DAG.Bind(variable, expression, r) =>
+      RefTree.Ref(
+        dag,
+        Seq(
+          variable.refTree.toField,
+          expression.toString.refTree.toField,
+          r.toField
+        )
+      )
+    case dag @ DAG.BGP(quads) =>
+      RefTree.Ref(dag, quads.mapChunks(_.refTree.toField).toList)
+    case dag @ DAG.LeftJoin(l, r, filters) =>
+      RefTree.Ref(dag, Seq(l.toField, r.toField))
+    case dag @ DAG.Union(l, r) => RefTree.Ref(dag, Seq(l.toField, r.toField))
+    case dag @ DAG.Filter(funcs, expr) =>
+      RefTree.Ref(dag, Seq(funcs.toString.refTree.toField, expr.toField))
+    case dag @ DAG.Join(l, r) => RefTree.Ref(dag, Seq(l.toField, r.toField))
+    case dag @ DAG.Offset(o, r) =>
+      RefTree.Ref(dag, Seq(o.refTree.toField, r.toField))
+    case dag @ DAG.Limit(l, r) =>
+      RefTree.Ref(dag, Seq(l.refTree.toField, r.toField))
+    case dag @ DAG.Distinct(r) => RefTree.Ref(dag, Seq(r.toField))
+    case dag @ DAG.Group(vars, func, r) =>
+      RefTree.Ref(dag, Seq(vars.refTree.toField, r.toField))
+    case dag @ DAG.Noop(str) => RefTree.Ref(dag, Seq())
+  }
 }
