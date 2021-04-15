@@ -20,7 +20,8 @@ lazy val Versions = Map(
   "monocle"              -> "1.5.0",
   "discipline"           -> "1.1.2",
   "discipline-scalatest" -> "2.0.1",
-  "reftree"              -> "1.4.0"
+  "reftree"              -> "1.4.0",
+  "shims"                -> "2.1.0"
 )
 
 inThisBuild(
@@ -129,9 +130,10 @@ lazy val `bellman-spark-engine` = project
       "com.github.julien-truffaut" %% "monocle-macro" % Versions("monocle"),
       "com.github.julien-truffaut" %% "monocle-law" % Versions(
         "monocle"
-      )                % Test,
-      "org.typelevel" %% "discipline-core" % Versions("discipline") % Test,
-      "org.typelevel" %% "discipline-scalatest" % Versions(
+      )                 % Test,
+      "com.codecommit" %% "shims" % Versions("shims") % Test,
+      "org.typelevel"  %% "discipline-core" % Versions("discipline") % Test,
+      "org.typelevel"  %% "discipline-scalatest" % Versions(
         "discipline-scalatest"
       )                    % Test,
       "io.chrisdavenport" %% "cats-scalacheck" % Versions(
