@@ -10,7 +10,7 @@ trait TestConfig {
   private lazy val stringConf =
     """
       |{
-      | is-default-graph-exclusive = false,
+      | is-default-graph-exclusive = true,
       | strip-question-marks-on-output = false
       |}
       |""".stripMargin

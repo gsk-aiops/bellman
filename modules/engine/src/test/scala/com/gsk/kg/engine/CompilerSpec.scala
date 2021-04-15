@@ -3294,10 +3294,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)(
-            sqlContext,
-            config.copy(isDefaultGraphExclusive = true)
-          )
+          val result = Compiler.compile(df, query)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3367,10 +3364,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)(
-            sqlContext,
-            config.copy(isDefaultGraphExclusive = true)
-          )
+          val result = Compiler.compile(df, query)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3440,10 +3434,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)(
-            sqlContext,
-            config.copy(isDefaultGraphExclusive = true)
-          )
+          val result = Compiler.compile(df, query)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3515,10 +3506,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)(
-            sqlContext,
-            config.copy(isDefaultGraphExclusive = true)
-          )
+          val result = Compiler.compile(df, query)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3590,10 +3578,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)(
-            sqlContext,
-            config.copy(isDefaultGraphExclusive = true)
-          )
+          val result = Compiler.compile(df, query)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3790,10 +3775,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)(
-            sqlContext,
-            config.copy(isDefaultGraphExclusive = true)
-          )
+          val result = Compiler.compile(df, query)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3892,10 +3874,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)(
-            sqlContext,
-            config.copy(isDefaultGraphExclusive = true)
-          )
+          val result = Compiler.compile(df, query)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3994,10 +3973,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)(
-            sqlContext,
-            config.copy(isDefaultGraphExclusive = true)
-          )
+          val result = Compiler.compile(df, query)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -4804,10 +4780,7 @@ class CompilerSpec
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)(
-          sqlContext,
-          config.copy(isDefaultGraphExclusive = true)
-        )
+        val result = Compiler.compile(df, query)
 
         result.right.get.collect().length shouldEqual 0
         result.right.get.collect().toSet shouldEqual Set()
@@ -4829,10 +4802,7 @@ class CompilerSpec
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)(
-          sqlContext,
-          config.copy(isDefaultGraphExclusive = true)
-        )
+        val result = Compiler.compile(df, query)
 
         result.right.get.collect().length shouldEqual 2
         result.right.get.collect().toSet shouldEqual Set(
@@ -4854,7 +4824,10 @@ class CompilerSpec
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query)(
+          sqlContext,
+          config.copy(isDefaultGraphExclusive = false)
+        )
 
         result.right.get.collect().length shouldEqual 2
         result.right.get.collect().toSet shouldEqual Set(
@@ -4877,7 +4850,10 @@ class CompilerSpec
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query)(
+          sqlContext,
+          config.copy(isDefaultGraphExclusive = false)
+        )
 
         result.right.get.collect().length shouldEqual 2
         result.right.get.collect().toSet shouldEqual Set(
