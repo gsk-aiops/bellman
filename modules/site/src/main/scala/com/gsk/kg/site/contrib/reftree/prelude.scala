@@ -89,6 +89,14 @@ object prelude {
       )
     )
 
+  implicit def chunkedListToRefTree[A: ToRefTree]: ToRefTree[ChunkedList[A]] =
+    ToRefTree(list =>
+      RefTree.Ref(
+        list,
+        list.mapChunks(_.refTree.toField).toList
+      )
+    )
+
   implicit val dagToRefTree: ToRefTree[DAG[RefTree]] = ToRefTree[DAG[RefTree]] {
     case dag @ DAG.Describe(vars, r) =>
       RefTree.Ref(dag, vars.map(_.refTree.toField) ++ Seq(r.toField))
@@ -118,7 +126,7 @@ object prelude {
         )
       )
     case dag @ DAG.BGP(quads) =>
-      RefTree.Ref(dag, quads.mapChunks(_.refTree.toField).toList)
+      RefTree.Ref(dag, Seq(quads.refTree.toField))
     case dag @ DAG.LeftJoin(l, r, filters) =>
       RefTree.Ref(dag, Seq(l.toField, r.toField))
     case dag @ DAG.Union(l, r) => RefTree.Ref(dag, Seq(l.toField, r.toField))

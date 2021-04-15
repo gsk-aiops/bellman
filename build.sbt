@@ -198,6 +198,7 @@ lazy val `bellman-site` = project
   .in(file("modules/site"))
   .settings(moduleName := "bellman-site")
   .settings(buildSettings)
+  .settings(noPublishSettings)
   .settings(commonDependencies)
   .settings(compilerPlugins)
   .settings(
@@ -206,11 +207,12 @@ lazy val `bellman-site` = project
     micrositeGithubOwner := "gsk-aiops",
     micrositeGithubRepo := "bellman",
     micrositeOrganizationHomepage := "https://www.gsk.com",
-    micrositeDocumentationUrl := "/docs",
+    micrositeDocumentationUrl := "/docs/compilation",
     micrositeGitterChannel := false,
     micrositePushSiteWith := GitHub4s,
     mdocIn := (Compile / sourceDirectory).value / "docs",
     micrositeGithubToken := Option(System.getenv().get("GITHUB_TOKEN")),
+    micrositeImgDirectory := (resourceDirectory in Compile).value / "site" / "images" / "overview",
     micrositeHighlightTheme := "tomorrow",
     micrositeTheme := "light",
     micrositePalette := Map(

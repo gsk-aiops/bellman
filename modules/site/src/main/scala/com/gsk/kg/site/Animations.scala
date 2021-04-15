@@ -1,35 +1,28 @@
 package com.gsk.kg.site
 
-import cats.data.State
 import com.gsk.kg.site.contrib.reftree.prelude._
 import com.gsk.kg.engine.optimize._
-import reftree.core._
 import reftree.diagram.Animation
 import reftree.diagram.Diagram
 import reftree.render.Renderer
 import reftree.render.RenderingOptions
 import reftree.contrib.SimplifiedInstances._
 import java.nio.file.Paths
-import com.gsk.kg.engine.data.ChunkedList._
-import cats._
 import cats.implicits._
 
-import higherkindness.droste._
 import higherkindness.droste.data._
-import higherkindness.droste.data.prelude._
-import higherkindness.droste.syntax.all._
 
-import com.gsk.kg.sparql.syntax.all._
 import com.gsk.kg.sparqlparser._
 import com.gsk.kg.engine.data._
-import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.engine._
 import com.gsk.kg.engine.DAG._
 import com.gsk.kg.engine.optimizer._
 
+/** This object generates all the diagrams and animations we have in our documentation.
+  */
 object Animations extends App {
 
-  val ImagePath = "/Users/pepe/projects/github.com/gsk-aiops/bellman"
+  val ImagePath = "modules/site/src/main/resources/site/images"
 
   val renderer = Renderer(
     renderingOptions = RenderingOptions(density = 75),
@@ -37,34 +30,76 @@ object Animations extends App {
   )
   import renderer._
 
-  val query = QueryConstruct
-    .parse(
-      """
-  SELECT ?d
-  WHERE {
-    ?d a <http://example.com/Doc> .
-    ?d <http://example.com/source> <http://source.com/source> .
-  }
-  """,
-      false
+  def createBasicAnimation(): Unit = {
+    val query = QueryConstruct
+      .parse(
+        """
+        SELECT ?d
+        WHERE {
+          ?d a <http://example.com/Doc> .
+          ?d <http://example.com/source> <http://example.com/mySource> .
+        }
+        """,
+        false
+      )
+      ._1
+
+    val dag = DAG.fromQuery.apply(query)
+
+    val optimizations: Map[Int, Fix[DAG] => Fix[DAG]] = Map(
+      1 -> RemoveNestedProject[Fix[DAG]].apply,
+      2 -> { dag => GraphsPushdown[Fix[DAG]].apply(dag, List.empty) },
+      3 -> CompactBGPs[Fix[DAG]].apply
     )
-    ._1
 
-  val dag = DAG.fromQuery.apply(query)
+    (Animation
+      .startWith(dag)
+      .iterateWithIndex(3) { (dag, i) =>
+        optimizations(i).apply(dag)
+      }
+      .build(Diagram(_).withCaption("DAG").withColor(2))
+      .render("animation-simple"))
+  }
 
-  Diagram.sourceCodeCaption[Fix[DAG]](dag).render("dag")
+  def createChunkedListAnimation(): Unit = {
+    val list: ChunkedList[String] =
+      ChunkedList.fromList(List("a", "as", "asterisk", "b", "bee", "burrito"))
 
-  val optimizations: Map[Int, Fix[DAG] => Fix[DAG]] = Map(
-    1 -> RemoveNestedProject[Fix[DAG]].apply,
-    2 -> { dag => GraphsPushdown[Fix[DAG]].apply(dag, List.empty) },
-    3 -> CompactBGPs[Fix[DAG]].apply
-  )
+    (Animation
+      .startWith(list)
+      .iterateWithIndex(1) { (list, i) =>
+        list.compact(_.head)
+      }
+      .build(Diagram(_).withCaption("ChunkedList compaction").withColor(2))
+      .render("chunkedlist"))
+  }
 
-  (Animation
-    .startWith(dag)
-    .iterateWithIndex(3) { (dag, i) =>
-      optimizations(i).apply(dag)
-    }
-    .build(Diagram(_).withCaption("DAG").withColor(2))
-    .render("animation-simple"))
+  def createCompactBGPAnimation(): Unit = {
+    val query = QueryConstruct
+      .parse(
+        """
+        SELECT ?d
+        WHERE {
+          ?d a <http://example.com/Doc> .
+          ?d <http://example.com/source> <http://example.com/mysource> .
+        }
+        """,
+        false
+      )
+      ._1
+
+    val dag = DAG.fromQuery.apply(query)
+
+    (Animation
+      .startWith(dag)
+      .iterateWithIndex(1) { (dag, i) =>
+        CompactBGPs[Fix[DAG]].apply(dag)
+      }
+      .build(Diagram(_).withCaption("DAG").withColor(2))
+      .render("bgp-compaction"))
+  }
+
+  createBasicAnimation()
+  createCompactBGPAnimation()
+  createChunkedListAnimation()
 }
