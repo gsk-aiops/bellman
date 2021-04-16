@@ -4,6 +4,7 @@ import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
 import org.apache.jena.sparql.core.{Quad => JenaQuad}
 
+import com.gsk.kg.Graphs
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.Query._
 import com.gsk.kg.sparqlparser.StringVal._
@@ -17,12 +18,11 @@ object QueryConstruct {
 
   final case class SparqlParsingError(s: String) extends Exception(s)
 
-  def parse(input: (String, Boolean)): (Query, List[StringVal]) = {
+  def parse(input: (String, Boolean)): (Query, Graphs) = {
     val sparql      = input._1
     val isExclusive = input._2
-
-    val query    = QueryFactory.create(sparql)
-    val compiled = Algebra.compile(query)
+    val query       = QueryFactory.create(sparql)
+    val compiled    = Algebra.compile(query)
     val parsed = fastparse.parse(
       compiled.toString,
       ExprParser.parser(_),
@@ -41,19 +41,22 @@ object QueryConstruct {
     } else {
       Nil
     }
+    val namedGraphs =
+      query.getNamedGraphURIs.asScala.toList.map(URIVAL)
+    val graphs = Graphs(defaultGraphs, namedGraphs)
 
     if (query.isConstructType) {
       val template = query.getConstructTemplate
       val vars     = getVars(query)
       val bgp      = toBGP(template.getQuads.asScala)
-      (Construct(vars, bgp, algebra), defaultGraphs)
+      (Construct(vars, bgp, algebra), graphs)
     } else if (query.isSelectType) {
       val vars = getVars(query)
-      (Select(vars, algebra), defaultGraphs)
+      (Select(vars, algebra), graphs)
     } else if (query.isDescribeType) {
-      (Describe(getVars(query), algebra), defaultGraphs)
+      (Describe(getVars(query), algebra), graphs)
     } else if (query.isAskType) {
-      (Ask(algebra), defaultGraphs)
+      (Ask(algebra), graphs)
     } else {
       throw SparqlParsingError(
         s"The query type: ${query.queryType()} is not supported yet"
@@ -79,5 +82,5 @@ object QueryConstruct {
   }
 
   def toBGP(quads: Iterable[JenaQuad]): BGP =
-    BGP(quads.flatMap(Quad(_).toIterable).toSeq)
+    BGP(quads.flatMap(Quad.toIter(_)).toSeq)
 }

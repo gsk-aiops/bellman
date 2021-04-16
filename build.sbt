@@ -17,9 +17,11 @@ lazy val Versions = Map(
   "scalacheck"           -> "1.15.2",
   "scalatestplus"        -> "3.2.3.0",
   "sansa"                -> "0.7.1",
-  "monocle"              -> "1.5.1-cats",
+  "monocle"              -> "1.5.0",
   "discipline"           -> "1.1.2",
-  "discipline-scalatest" -> "2.0.1"
+  "discipline-scalatest" -> "2.0.1",
+  "reftree"              -> "1.4.0",
+  "shims"                -> "2.1.0"
 )
 
 inThisBuild(
@@ -128,9 +130,10 @@ lazy val `bellman-spark-engine` = project
       "com.github.julien-truffaut" %% "monocle-macro" % Versions("monocle"),
       "com.github.julien-truffaut" %% "monocle-law" % Versions(
         "monocle"
-      )                % Test,
-      "org.typelevel" %% "discipline-core" % Versions("discipline") % Test,
-      "org.typelevel" %% "discipline-scalatest" % Versions(
+      )                 % Test,
+      "com.codecommit" %% "shims" % Versions("shims") % Test,
+      "org.typelevel"  %% "discipline-core" % Versions("discipline") % Test,
+      "org.typelevel"  %% "discipline-scalatest" % Versions(
         "discipline-scalatest"
       )                    % Test,
       "io.chrisdavenport" %% "cats-scalacheck" % Versions(
@@ -190,6 +193,40 @@ lazy val `bellman-spark-engine` = project
     """
   )
   .dependsOn(`bellman-algebra-parser` % "compile->compile;test->test")
+
+lazy val `bellman-site` = project
+  .in(file("modules/site"))
+  .settings(moduleName := "bellman-site")
+  .settings(buildSettings)
+  .settings(noPublishSettings)
+  .settings(commonDependencies)
+  .settings(compilerPlugins)
+  .settings(
+    micrositeName := "Bellman",
+    micrositeDescription := "Efficiently running SparQL queries in Spark",
+    micrositeGithubOwner := "gsk-aiops",
+    micrositeGithubRepo := "bellman",
+    micrositeOrganizationHomepage := "https://www.gsk.com",
+    micrositeDocumentationUrl := "/docs/compilation",
+    micrositeGitterChannel := false,
+    micrositePushSiteWith := GitHub4s,
+    mdocIn := (Compile / sourceDirectory).value / "docs",
+    micrositeGithubToken := Option(System.getenv().get("GITHUB_TOKEN")),
+    micrositeImgDirectory := (resourceDirectory in Compile).value / "site" / "images" / "overview",
+    micrositeHighlightTheme := "tomorrow",
+    micrositeTheme := "light",
+    micrositePalette := Map(
+      "brand-primary"   -> "#F3490C",
+      "brand-secondary" -> "#FFE586",
+      "white-color"     -> "#FFF"
+    ),
+    micrositeHighlightTheme := "github-gist"
+  )
+  .settings(
+    libraryDependencies += "io.github.stanch" %% "reftree" % Versions("reftree")
+  )
+  .dependsOn(`bellman-spark-engine`, `bellman-algebra-parser`)
+  .enablePlugins(MicrositesPlugin)
 
 addCommandAlias(
   "ci-test",

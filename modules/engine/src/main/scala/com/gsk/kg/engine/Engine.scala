@@ -96,30 +96,40 @@ object Engine {
     )
   )
 
-  private def evaluateJoin(l: Multiset, r: Multiset): M[Multiset] =
+  private def evaluateJoin(l: Multiset, r: Multiset)(implicit
+      sc: SQLContext
+  ): M[Multiset] =
     l.join(r).pure[M]
 
   private def evaluateUnion(l: Multiset, r: Multiset): M[Multiset] =
     l.union(r).pure[M]
 
   private def evaluateScan(graph: String, expr: Multiset): M[Multiset] = {
-    val df = expr.dataframe
-      .filter(expr.dataframe(GRAPH_VARIABLE.s) === graph)
-      .withColumn(GRAPH_VARIABLE.s, lit(""))
-    expr.copy(dataframe = df).pure[M]
-  }
+    val bindings =
+      expr.bindings.filter(_.s != GRAPH_VARIABLE.s) + VARIABLE(graph)
+    val df = expr.dataframe.withColumn(graph, expr.dataframe(GRAPH_VARIABLE.s))
+    Multiset(
+      bindings,
+      df
+    )
+  }.pure[M]
 
   private def evaluateBGP(
       quads: ChunkedList[Expr.Quad]
   )(implicit sc: SQLContext): M[Multiset] = {
     import sc.implicits._
+
     M.get[Result, DataFrame].map { df =>
       Foldable[ChunkedList].fold(
         quads.mapChunks { chunk =>
           val condition = composedConditionFromChunk(df, chunk)
           val current   = df.filter(condition)
           val vars =
-            chunk.map(_.getNamesAndPositions).toChain.toList.flatten
+            chunk
+              .map(_.getNamesAndPositions :+ (GRAPH_VARIABLE, "g"))
+              .toChain
+              .toList
+              .flatten
           val selected =
             current.select(vars.map(v => $"${v._2}".as(v._1.s)): _*)
 
@@ -184,7 +194,8 @@ object Engine {
       .map(df =>
         r.copy(
           dataframe = df,
-          bindings = r.bindings.union(func.map(x => x._1).toSet)
+          bindings =
+            r.bindings.union(func.toSet[(VARIABLE, Expression)].map(x => x._1))
         )
       )
   }
