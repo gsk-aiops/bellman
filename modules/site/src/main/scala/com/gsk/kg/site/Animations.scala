@@ -17,6 +17,8 @@ import com.gsk.kg.engine.data._
 import com.gsk.kg.engine._
 import com.gsk.kg.engine.DAG._
 import com.gsk.kg.engine.optimizer._
+import com.gsk.kg.Graphs
+import com.gsk.kg.config.Config
 
 /** This object generates all the diagrams and animations we have in our documentation.
   */
@@ -40,7 +42,7 @@ object Animations extends App {
           ?d <http://example.com/source> <http://example.com/mySource> .
         }
         """,
-        false
+        Config.default
       )
       ._1
 
@@ -48,7 +50,7 @@ object Animations extends App {
 
     val optimizations: Map[Int, Fix[DAG] => Fix[DAG]] = Map(
       1 -> RemoveNestedProject[Fix[DAG]].apply,
-      2 -> { dag => GraphsPushdown[Fix[DAG]].apply(dag, List.empty) },
+      2 -> { dag => GraphsPushdown[Fix[DAG]].apply(dag, Graphs.empty) },
       3 -> CompactBGPs[Fix[DAG]].apply
     )
 
@@ -84,7 +86,7 @@ object Animations extends App {
           ?d <http://example.com/source> <http://example.com/mysource> .
         }
         """,
-        false
+        Config.default
       )
       ._1
 
@@ -110,7 +112,7 @@ object Animations extends App {
             ?s <http://example.com/predicate> ?o
           }
         }""",
-        false
+        Config.default
       )
       ._1
 
@@ -119,7 +121,7 @@ object Animations extends App {
     (Animation
       .startWith(dag)
       .iterateWithIndex(1) { (dag, i) =>
-        GraphsPushdown[Fix[DAG]].apply(dag, List.empty)
+        GraphsPushdown[Fix[DAG]].apply(dag, Graphs.empty)
       }
       .build(Diagram(_).withCaption("DAG").withColor(2))
       .render("graph-pushdown"))

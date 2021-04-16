@@ -237,8 +237,18 @@ lazy val `bellman-site` = project
   .enablePlugins(MicrositesPlugin)
 
 addCommandAlias(
+  "build-microsite",
+  ";bellman-site/run ;bellman-site/makeMicrosite"
+)
+
+addCommandAlias(
   "ci-test",
-  ";scalafixAll --check ;scalafmtCheckAll ;scalastyle ;+test"
+  ";scalafixAll --check ;scalafmtCheckAll ;scalastyle ;+test ;build-microsite"
+)
+
+addCommandAlias(
+  "ci-docs",
+  ";build-microsite ;bellman-site/publishMicrosite"
 )
 
 addCommandAlias(
