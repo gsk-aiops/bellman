@@ -84,6 +84,7 @@ object Expr {
         case _ => None
       }
     }
+    def toIter(q: JenaQuad): Iterable[Quad] = apply(q).toIterable
   }
   final case class LeftJoin(l: Expr, r: Expr) extends Expr
   final case class FilteredLeftJoin(l: Expr, r: Expr, f: Seq[Expression])

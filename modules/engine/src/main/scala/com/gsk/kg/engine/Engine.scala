@@ -194,7 +194,8 @@ object Engine {
       .map(df =>
         r.copy(
           dataframe = df,
-          bindings = r.bindings.union(func.map(x => x._1).toSet)
+          bindings =
+            r.bindings.union(func.toSet[(VARIABLE, Expression)].map(x => x._1))
         )
       )
   }

@@ -14,6 +14,7 @@ import org.scalactic.anyvals.PosZInt
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.prop.Configuration
 import org.typelevel.discipline.scalatest.FlatSpecDiscipline
+import shims._
 
 class OpticsLawTests
     extends AnyFlatSpec
