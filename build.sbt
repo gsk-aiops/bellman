@@ -215,6 +215,7 @@ lazy val `bellman-site` = project
     micrositeGithubOwner := "gsk-aiops",
     micrositeGithubRepo := "bellman",
     micrositeOrganizationHomepage := "https://www.gsk.com",
+    micrositeBaseUrl := "bellman",
     micrositeDocumentationUrl := "/docs/compilation",
     micrositeGitterChannel := false,
     micrositePushSiteWith := GitHub4s,
