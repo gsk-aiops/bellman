@@ -225,9 +225,9 @@ lazy val `bellman-site` = project
     micrositeHighlightTheme := "tomorrow",
     micrositeTheme := "light",
     micrositePalette := Map(
-      "brand-primary"   -> "#F3490C",
-      "brand-secondary" -> "#FFE586",
-      "white-color"     -> "#FFF"
+      "brand-primary"   -> "#868b8e",
+      "brand-secondary" -> "#b9b7bd",
+      "white-color"     -> "#fff"
     ),
     micrositeHighlightTheme := "github-gist"
   )
