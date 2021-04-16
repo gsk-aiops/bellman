@@ -5,6 +5,7 @@ import org.apache.jena.sparql.algebra.Algebra
 import org.apache.jena.sparql.core.{Quad => JenaQuad}
 
 import com.gsk.kg.Graphs
+import com.gsk.kg.config.Config
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.Query._
 import com.gsk.kg.sparqlparser.StringVal._
@@ -18,11 +19,12 @@ object QueryConstruct {
 
   final case class SparqlParsingError(s: String) extends Exception(s)
 
-  def parse(input: (String, Boolean)): (Query, Graphs) = {
-    val sparql      = input._1
-    val isExclusive = input._2
-    val query       = QueryFactory.create(sparql)
-    val compiled    = Algebra.compile(query)
+  def parse(
+      sparql: String,
+      config: Config
+  ): (Query, Graphs) = {
+    val query    = QueryFactory.create(sparql)
+    val compiled = Algebra.compile(query)
     val parsed = fastparse.parse(
       compiled.toString,
       ExprParser.parser(_),
@@ -36,7 +38,7 @@ object QueryConstruct {
         throw SparqlParsingError(s"$sparql parsing failure.")
     }
 
-    val defaultGraphs = if (isExclusive) {
+    val defaultGraphs = if (config.isDefaultGraphExclusive) {
       query.getGraphURIs.asScala.toList.map(URIVAL) :+ URIVAL("")
     } else {
       Nil
@@ -69,8 +71,8 @@ object QueryConstruct {
       VARIABLE(v.toString().replace(".", ""))
     )
 
-  def parseADT(sparql: String, isExclusive: Boolean = false): Expr =
-    parse(sparql, isExclusive)._1.r
+  def parseADT(sparql: String, config: Config): Expr =
+    parse(sparql, config)._1.r
 
   def getAllVariableNames(bgp: BGP): Set[String] = {
     bgp.quads.foldLeft(Set.empty[String]) { (acc, q) =>

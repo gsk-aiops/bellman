@@ -6,11 +6,19 @@ import org.apache.jena.riot.lang.CollectorStreamTriples
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 
+import com.gsk.kg.sparqlparser.TestConfig
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
+class CompilerSpec
+    extends AnyWordSpec
+    with Matchers
+    with DataFrameSuiteBase
+    with TestConfig {
+
+  import sqlContext.implicits._
 
   override implicit def reuseContextIfPossible: Boolean = true
 
@@ -29,7 +37,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
   "Compiler" when {
 
     "format data type literals correctly" in {
-      import sqlContext.implicits._
 
       val df: DataFrame = List(
         (
@@ -59,7 +66,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           |}
           |""".stripMargin
 
-      val result = Compiler.compile(df, query)
+      val result = Compiler.compile(df, query, config)
 
       result shouldBe a[Right[_, _]]
       result.right.get.collect().length shouldEqual 4
@@ -101,7 +108,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       val inputDF  = readNTtoDF("fixtures/reference-q1-input.nt")
       val outputDF = readNTtoDF("fixtures/reference-q1-output.nt")
 
-      val result = Compiler.compile(inputDF, query)
+      val result = Compiler.compile(inputDF, query, config)
 
       result shouldBe a[Right[_, _]]
       result.right.get.collect.toSet shouldEqual outputDF
@@ -113,7 +120,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with BGPs" should {
 
       "will execute operations in the dataframe" in {
-        import sqlContext.implicits._
 
         val df = dfList.toDF("s", "p", "o", "g")
         val query =
@@ -125,7 +131,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             }
             """
 
-        Compiler.compile(df, query).right.get.collect() shouldEqual Array(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect() shouldEqual Array(
           Row(
             "\"test\"",
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
@@ -136,7 +146,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "will execute with two dependent BGPs" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = dfList.toDF("s", "p", "o", "g")
 
@@ -150,7 +159,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             }
             """
 
-        Compiler.compile(df, query).right.get.collect() shouldEqual Array(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect() shouldEqual Array(
           Row("\"test\"", "\"source\"")
         )
       }
@@ -159,7 +172,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with UNION statement" should {
 
       "execute with the same bindings" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = (("does", "not", "match", "") :: dfList)
           .toDF("s", "p", "o", "g")
@@ -175,14 +187,17 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-        Compiler.compile(df, query).right.get.collect() shouldEqual Array(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect() shouldEqual Array(
           Row("\"test\"", "http://id.gsk.com/dm/1.0/Document"),
           Row("\"test\"", "\"source\"")
         )
       }
 
       "execute with different bindings" in {
-        import sqlContext.implicits._
 
         val df: DataFrame =
           (("does", "not", "match", "") :: dfList).toDF("s", "p", "o", "g")
@@ -198,7 +213,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-        Compiler.compile(df, query).right.get.collect() shouldEqual Array(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect() shouldEqual Array(
           Row("\"test\"", "http://id.gsk.com/dm/1.0/Document", null, null),
           Row(null, null, "\"test\"", "\"source\"")
         )
@@ -208,7 +227,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform with CONSTRUCT statement" should {
 
       "execute with a single triple pattern" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = dfList.toDF("s", "p", "o", "g")
 
@@ -221,7 +239,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
         """
 
-        Compiler.compile(df, query).right.get.collect() shouldEqual Array(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect() shouldEqual Array(
           Row(
             "\"test\"",
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
@@ -231,7 +253,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "execute with more than one triple pattern" in {
-        import sqlContext.implicits._
 
         val positive = List(
           (
@@ -260,7 +281,8 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query).right.get.collect().toSet
+        val result =
+          Compiler.compile(df, query, config).right.get.collect().toSet
         result shouldEqual Set(
           Row(
             "\"doesmatch\"",
@@ -286,7 +308,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "execute with more than one triple pattern with common bindings" in {
-        import sqlContext.implicits._
 
         val negative = List(
           (
@@ -319,7 +340,12 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-        Compiler.compile(df, query).right.get.collect().toSet shouldEqual Set(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect()
+          .toSet shouldEqual Set(
           Row(
             "\"test\"",
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
@@ -337,7 +363,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with LIMIT modifier" should {
 
       "execute with limit greater than 0" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
@@ -355,7 +380,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |LIMIT   2
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -366,7 +391,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "execute with limit equal to 0 and obtain no results" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
@@ -384,7 +408,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |LIMIT   0
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 0
@@ -392,7 +416,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "execute with limit greater than Java MAX INTEGER and obtain an error" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
@@ -410,7 +433,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |LIMIT   2147483648
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Left[_, _]]
         result.left.get shouldEqual EngineError.NumericTypesDoNotMatch(
@@ -422,7 +445,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with OFFSET modifier" should {
 
       "execute with offset greater than 0 and obtain a non empty set" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
@@ -440,7 +462,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |OFFSET 1
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -451,7 +473,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "execute with offset equal to 0 and obtain same elements as the original set" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
@@ -469,7 +490,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |OFFSET 0
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 3
@@ -481,7 +502,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "execute with offset greater than the number of elements of the dataframe and obtain an empty set" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
@@ -499,7 +519,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |OFFSET 5
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 0
@@ -510,7 +530,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with Blank nodes" should {
 
       "execute and obtain expected results" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           (
@@ -539,7 +558,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |}LIMIT 10
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.toSet shouldEqual Set(
@@ -551,7 +570,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with REPLACE function" should {
 
       "execute and obtain expected results" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("example", "http://xmlns.com/foaf/0.1/lit", "abcd", ""),
@@ -571,7 +589,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 4
@@ -587,7 +605,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       // this can be done probably at the Engine level
       "execute and obtain an expected error, " +
         "because the pattern matches the zero-length string" ignore {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("example", "http://xmlns.com/foaf/0.1/lit", "abracadabra", "")
@@ -604,7 +621,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |}
             |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Left[_, _]]
           result.left.get shouldEqual EngineError.FunctionError(
@@ -616,7 +633,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with ISBLANK function" should {
 
       "execute and obtain expected results" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           (
@@ -657,7 +673,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |""".stripMargin
         }
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 1
@@ -670,7 +686,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with !ISBLANK function" should {
 
       "execute and obtain expected results" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
@@ -701,7 +716,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 1
@@ -716,8 +731,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "single condition" should {
 
         "execute and obtain expected results" in {
-
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("a", "b", "c", ""),
@@ -739,7 +752,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -747,8 +760,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when condition has embedded functions" in {
-
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("a", "b", "c", ""),
@@ -770,7 +781,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -778,8 +789,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when double filter" in {
-
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("a", "b", "c", ""),
@@ -802,7 +811,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -812,8 +821,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when filter over all select statement" in {
-
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             (
@@ -890,7 +897,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -901,8 +908,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         // TODO: Un-ignore when implemented EQUALS and GT
         "execute and obtain expected results when complex filter" ignore {
-
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
@@ -949,7 +954,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -964,8 +969,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         // TODO: Un-ignore when binary logical operations implemented
         "execute and obtain expected results when multiple conditions" ignore {
-
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("a", "b", "c", ""),
@@ -993,7 +996,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1001,7 +1004,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when there is AND condition" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("team", "http://xmlns.com/foaf/0.1/name", "_:", ""),
@@ -1022,7 +1024,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1032,7 +1034,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when there is OR condition" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("team", "http://xmlns.com/foaf/0.1/name", "_:", ""),
@@ -1053,7 +1054,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 3
@@ -1068,7 +1069,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "logical operation EQUALS" should {
 
         "execute on simple literal" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:a", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
@@ -1087,7 +1087,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1098,7 +1098,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         // TODO: Add support for string syntactic sugar, see: https://lists.w3.org/Archives/Public/public-sparql-dev/2013AprJun/0003.html
         "execute on strings" ignore {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             (
@@ -1128,7 +1127,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1138,7 +1137,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on numbers" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Perico", "http://xmlns.com/foaf/0.1/age", 15, ""),
@@ -1157,7 +1155,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1167,7 +1165,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on booleans" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
@@ -1186,7 +1183,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1196,7 +1193,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on datetimes" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
@@ -1235,7 +1231,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 2
@@ -1249,7 +1245,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "logical operation NOT EQUALS" should {
 
         "execute on simple literal" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:a", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
@@ -1268,7 +1263,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1279,7 +1274,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         // TODO: Add support for string syntactic sugar, see: https://lists.w3.org/Archives/Public/public-sparql-dev/2013AprJun/0003.html
         "execute on strings" ignore {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             (
@@ -1309,7 +1303,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1319,7 +1313,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on numbers" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Perico", "http://xmlns.com/foaf/0.1/age", 15, ""),
@@ -1338,7 +1331,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1348,7 +1341,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on booleans" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
@@ -1367,7 +1359,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1377,7 +1369,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on dateTimes" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
@@ -1416,7 +1407,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 1
@@ -1429,7 +1420,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "logical operation GT" should {
 
         "execute on simple literal" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
@@ -1448,7 +1438,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1459,7 +1449,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         // TODO: Add support for string syntactic sugar, see: https://lists.w3.org/Archives/Public/public-sparql-dev/2013AprJun/0003.html
         "execute on strings" ignore {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             (
@@ -1487,7 +1476,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1497,7 +1486,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on numbers" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
@@ -1517,7 +1505,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1527,7 +1515,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on booleans" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
@@ -1546,7 +1533,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 0
@@ -1555,7 +1542,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         // TODO: Implement Date Time support issue
         "execute on dateTimes" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
@@ -1594,7 +1580,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 2
@@ -1608,7 +1594,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "logical operation LT" should {
 
         "execute on simple literal" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
@@ -1627,7 +1612,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1638,7 +1623,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         // TODO: Add support for string syntactic sugar, see: https://lists.w3.org/Archives/Public/public-sparql-dev/2013AprJun/0003.html
         "execute on strings" ignore {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             (
@@ -1668,7 +1652,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1678,7 +1662,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on numbers" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
@@ -1698,7 +1681,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1708,7 +1691,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on booleans" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
@@ -1727,7 +1709,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1738,7 +1720,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         // TODO: Implement Date Time support issue
         "execute on dateTimes" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
@@ -1777,7 +1758,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 2
@@ -1792,7 +1773,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "logical operation GTE" should {
 
         "execute on simple literal" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
@@ -1812,7 +1792,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -1824,7 +1804,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         // TODO: Add support for string syntactic sugar, see: https://lists.w3.org/Archives/Public/public-sparql-dev/2013AprJun/0003.html
         "execute on strings" ignore {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             (
@@ -1860,7 +1839,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -1871,7 +1850,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on numbers" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
@@ -1891,7 +1869,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -1902,7 +1880,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on booleans" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
@@ -1921,7 +1898,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1931,7 +1908,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on dateTimes" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
@@ -1970,7 +1946,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 3
@@ -1985,7 +1961,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "logical operation LTE" should {
 
         "execute on simple literal" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
@@ -2005,7 +1980,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2017,7 +1992,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         // TODO: Add support for string syntactic sugar, see: https://lists.w3.org/Archives/Public/public-sparql-dev/2013AprJun/0003.html
         "execute on strings" ignore {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             (
@@ -2053,7 +2027,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2064,7 +2038,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on numbers" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
@@ -2084,7 +2057,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2095,7 +2068,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute on booleans" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
@@ -2114,7 +2086,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2126,7 +2098,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         // TODO: Implement Date Time support issue
         "execute on dateTimes" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
@@ -2165,7 +2136,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 3
@@ -2181,7 +2152,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with CONSTRUCT statement" should {
 
       "execute and apply default ordering CONSTRUCT queries" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           (
@@ -2237,7 +2207,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             }
             """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 6
@@ -2276,7 +2246,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "execute and make sense in the LIMIT cause when there's no ORDER BY" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           (
@@ -2333,7 +2302,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       LIMIT 1
       """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -2352,7 +2321,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "execute and work correctly with blank nodes in templates with a single blank label" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           (
@@ -2407,7 +2375,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         val arrayResult = result.right.get.collect
         result shouldBe a[Right[_, _]]
@@ -2433,7 +2401,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "execute and work correctly with blank nodes in templates with more than one blank label" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           (
@@ -2489,7 +2456,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
       """
 
-        val result      = Compiler.compile(df, query)
+        val result      = Compiler.compile(df, query, config)
         val resultDF    = result.right.get
         val arrayResult = resultDF.collect
 
@@ -2502,8 +2469,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with OPTIONAL" should {
 
       "execute and obtain expected results with simple optional" in {
-
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           (
@@ -2543,7 +2508,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |       }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 3
@@ -2555,7 +2520,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "execute and obtain expected results with constraints in optional" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           (
@@ -2589,7 +2553,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -2600,7 +2564,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "execute and obtain expected results with multiple optionals" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
@@ -2631,7 +2594,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -2645,7 +2608,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with DISTINCT modifier" should {
 
       "execute and obtain expected results" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
@@ -2663,7 +2625,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -2679,7 +2641,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "simple specific graph" should {
 
         "execute and obtain expected results with one graph specified" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph
@@ -2739,7 +2700,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -2749,7 +2710,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results with one graph specified and UNION inside GRAPH statement" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph
@@ -2813,7 +2773,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2824,7 +2784,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results with one graph specified and JOIN inside GRAPH statement" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph
@@ -2887,7 +2846,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -2902,7 +2861,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "multiple specific named graphs" should {
 
         "execute and obtain expected results when UNION with common variable bindings" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph
@@ -2984,7 +2942,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2995,7 +2953,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when JOIN with common variable bindings" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph
@@ -3056,7 +3013,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -3066,7 +3023,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when JOIN with no common variable bindings" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph
@@ -3127,7 +3083,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -3135,7 +3091,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when OPTIONAL with common variable bindings" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph
@@ -3216,7 +3171,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -3226,7 +3181,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when OPTIONAL with no common variable bindings" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph
@@ -3307,7 +3261,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -3320,7 +3274,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       "mixing default and named graph" should {
 
         "execute and obtain expected results when UNION with common variable bindings" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph - Alice
@@ -3367,7 +3320,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query, isExclusive = true)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3378,7 +3331,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when JOIN with common variable bindings" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph - Alice
@@ -3438,7 +3390,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query, isExclusive = true)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3449,7 +3401,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when JOIN with no common variable bindings" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph - Alice
@@ -3509,7 +3460,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query, isExclusive = true)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3520,7 +3471,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when OPTIONAL with common variable bindings" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph - Alice
@@ -3582,7 +3532,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query, isExclusive = true)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3593,7 +3543,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when OPTIONAL with no common variable bindings" in {
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph - Alice
@@ -3655,7 +3604,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query, isExclusive = true)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3750,7 +3699,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 3
@@ -3774,8 +3723,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when GRAPH with variable, one named graph and common variables" in {
-
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph
@@ -3854,7 +3801,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query, isExclusive = true)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3875,8 +3822,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when GRAPH with variable, two named graph and common variables" in {
-
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph
@@ -3955,7 +3900,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query, isExclusive = true)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3976,8 +3921,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
         }
 
         "execute and obtain expected results when GRAPH with variable, two named graph and no common variables" in {
-
-          import sqlContext.implicits._
 
           val df: DataFrame = List(
             // Default graph
@@ -4056,7 +3999,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query, isExclusive = true)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -4161,7 +4104,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -4263,7 +4206,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 3
@@ -4384,7 +4327,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 4
@@ -4502,7 +4445,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 0
@@ -4513,7 +4456,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
     "dealing with three column dataframes" should {
       "add the last column automatically" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           (
@@ -4541,7 +4483,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect().length shouldEqual 4
@@ -4557,7 +4499,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
     "dealing with wider or narrower datasets" should {
       "discard narrow ones before firing the Spark job" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           "example",
@@ -4575,7 +4516,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Left[_, _]]
         result.left.get shouldEqual EngineError.InvalidInputDataFrame(
@@ -4584,7 +4525,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "discard wide ones before running the spark job" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("example", "example", "example", "example", "example")
@@ -4601,7 +4541,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Left[_, _]]
         result.left.get shouldEqual EngineError.InvalidInputDataFrame(
@@ -4613,7 +4553,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "perform query with GROUP BY" should {
 
       "operate correctly when only GROUP BY appears" in {
-        import sqlContext.implicits._
 
         val df = List(
           (
@@ -4650,7 +4589,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1"),
@@ -4660,7 +4599,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "operate correctly there's GROUP BY and a COUNT function" in {
-        import sqlContext.implicits._
 
         val df = List(
           (
@@ -4697,7 +4635,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1", 2),
@@ -4707,7 +4645,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "operate correctly there's GROUP BY and a AVG function" in {
-        import sqlContext.implicits._
 
         val df = List(
           ("http://uri.com/subject/a1", "1", "http://uri.com/object"),
@@ -4724,7 +4661,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1", 1.5),
@@ -4734,7 +4671,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "operate correctly there's GROUP BY and a MIN function" in {
-        import sqlContext.implicits._
 
         val df = List(
           ("http://uri.com/subject/a1", "0", "http://uri.com/object"),
@@ -4751,7 +4687,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1", 0),
@@ -4761,7 +4697,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "operate correctly there's GROUP BY and a MAX function" in {
-        import sqlContext.implicits._
 
         val df = List(
           ("http://uri.com/subject/a1", "0", "http://uri.com/object"),
@@ -4778,7 +4713,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1", 0),
@@ -4788,7 +4723,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "operate correctly there's GROUP BY and a SUM function" in {
-        import sqlContext.implicits._
 
         val df = List(
           ("http://uri.com/subject/a1", "2", "http://uri.com/object"),
@@ -4805,7 +4739,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1", 3.0),
@@ -4815,7 +4749,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "operate correctly there's GROUP BY and a SAMPLE function" in {
-        import sqlContext.implicits._
 
         val df = List(
           (
@@ -4852,7 +4785,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect should have length 3
       }
@@ -4861,7 +4794,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
     "inclusive/exclusive default graph" should {
 
       "exclude graphs when no explicit FROM" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("_:s1", "p1", "o1", "http://example.org/graph1"),
@@ -4874,7 +4806,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query, isExclusive = true)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect().length shouldEqual 0
         result.right.get.collect().toSet shouldEqual Set()
@@ -4896,7 +4828,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query, isExclusive = true)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect().length shouldEqual 2
         result.right.get.collect().toSet shouldEqual Set(
@@ -4906,7 +4838,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "include graphs when no explicit FROM" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("_:s1", "p1", "o1", "http://example.org/graph1"),
@@ -4919,7 +4850,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(
+          df,
+          query,
+          config.copy(isDefaultGraphExclusive = false)
+        )
 
         result.right.get.collect().length shouldEqual 2
         result.right.get.collect().toSet shouldEqual Set(
@@ -4929,7 +4864,6 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
       }
 
       "include graphs when explicit FROM" in {
-        import sqlContext.implicits._
 
         val df: DataFrame = List(
           ("_:s1", "p1", "o1", "http://example.org/graph1"),
@@ -4943,7 +4877,11 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(
+          df,
+          query,
+          config.copy(isDefaultGraphExclusive = false)
+        )
 
         result.right.get.collect().length shouldEqual 2
         result.right.get.collect().toSet shouldEqual Set(
@@ -4955,7 +4893,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
   }
 
   private def readNTtoDF(path: String) = {
-    import sqlContext.implicits._
+
     import scala.collection.JavaConverters._
 
     val filename                            = s"modules/engine/src/test/resources/$path"

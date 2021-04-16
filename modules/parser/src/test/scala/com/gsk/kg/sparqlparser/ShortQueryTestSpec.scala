@@ -5,7 +5,7 @@ import com.gsk.kg.sparqlparser.StringVal._
 
 import org.scalatest.flatspec.AnyFlatSpec
 
-class ShortQueryTestSpec extends AnyFlatSpec with TestUtils {
+class ShortQueryTestSpec extends AnyFlatSpec with TestUtils with TestConfig {
 
   "test filtered left join with multiple filters" should "pass" in {
 
@@ -32,7 +32,7 @@ class ShortQueryTestSpec extends AnyFlatSpec with TestUtils {
     }
 
     """
-    val query = parse(q)
+    val query = parse(q, config)
     query._1.r match {
       case FilteredLeftJoin(BGP(_), Extend(to, from, _), funcs) =>
         assert(funcs.size == 2)
@@ -54,7 +54,7 @@ class ShortQueryTestSpec extends AnyFlatSpec with TestUtils {
           ?doc lita:contextText "cde" .
         }
       """
-    val query = parse(q)
+    val query = parse(q, config)
     query._1.r match {
       case Project(vs, BGP(triples)) =>
         assert(triples(0).o == BOOL("true"))
