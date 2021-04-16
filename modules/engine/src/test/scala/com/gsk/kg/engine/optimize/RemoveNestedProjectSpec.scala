@@ -32,7 +32,7 @@ class RemoveNestedProjectSpec
         | ?d dm:source "potato"
         |}
         |""".stripMargin
-    val (query, _) = parse(q)
+    val (query, _) = parse(q, config)
 
     val dag: T = DAG.fromQuery.apply(query)
 

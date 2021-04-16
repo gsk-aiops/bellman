@@ -11,7 +11,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
 
   "Simple Query" should "parse Construct statement with correct number of Triples" in {
-    query("/queries/q0-simple-basic-graph-pattern.sparql") match {
+    query("/queries/q0-simple-basic-graph-pattern.sparql", config) match {
       case Construct(vars, bgp, expr) =>
         assert(vars.size == 2 && bgp.quads.size == 2)
       case _ => fail
@@ -19,7 +19,7 @@ class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
   }
 
   "Construct" should "result in proper variables, a basic graph pattern, and algebra expression" in {
-    query("/queries/q3-union.sparql") match {
+    query("/queries/q3-union.sparql", config) match {
       case Construct(
             vars,
             bgp,
@@ -33,7 +33,7 @@ class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
   }
 
   "Construct with Bind" should "contains bind variable" in {
-    query("/queries/q4-simple-bind.sparql") match {
+    query("/queries/q4-simple-bind.sparql", config) match {
       case Construct(
             vars,
             bgp,
@@ -45,7 +45,7 @@ class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
   }
 
   "Complex named graph query" should "be captured properly in Construct" in {
-    query("/queries/q13-complex-named-graph.sparql") match {
+    query("/queries/q13-complex-named-graph.sparql", config) match {
       case Construct(vars, bgp, expr) =>
         assert(vars.size == 13)
         assert(vars.exists(va => va.s == "?ogihw"))
@@ -55,7 +55,7 @@ class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
 
   "Complex lit-search query" should "return proper Construct type" in {
     val a = 1
-    query("/queries/lit-search-3.sparql") match {
+    query("/queries/lit-search-3.sparql", config) match {
       case Construct(vars, bgp, expr) =>
         assert(bgp.quads.size == 11)
         assert(
@@ -69,7 +69,7 @@ class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
   }
 
   "Extra large query" should "return proper Construct type" in {
-    query("/queries/lit-search-xlarge.sparql") match {
+    query("/queries/lit-search-xlarge.sparql", config) match {
       case Construct(vars, bgp, expr) =>
         assert(bgp.quads.size == 67)
         assert(bgp.quads.head.s.asInstanceOf[VARIABLE].s == "?Year")
@@ -96,7 +96,7 @@ class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
         }
       """
 
-    parse(query) match {
+    parse(query, config) match {
       case (
             Construct(
               vars,
@@ -126,7 +126,7 @@ class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
         |} LIMIT 10
         |""".stripMargin
 
-    val x = parse(query)
+    val x = parse(query, config)
 
     x match {
       case (

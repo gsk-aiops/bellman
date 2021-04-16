@@ -12,7 +12,7 @@ package object syntax {
       config: Config
   ) {
     def sparql(query: String): DataFrame =
-      Compiler.compile(df, query).right.get
+      Compiler.compile(df, query, config).right.get
   }
 
 }

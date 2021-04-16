@@ -20,8 +20,9 @@ object QueryConstruct {
   final case class SparqlParsingError(s: String) extends Exception(s)
 
   def parse(
-      sparql: String
-  )(implicit config: Config): (Query, Graphs) = {
+      sparql: String,
+      config: Config
+  ): (Query, Graphs) = {
     val query    = QueryFactory.create(sparql)
     val compiled = Algebra.compile(query)
     val parsed = fastparse.parse(
@@ -70,8 +71,8 @@ object QueryConstruct {
       VARIABLE(v.toString().replace(".", ""))
     )
 
-  def parseADT(sparql: String)(implicit config: Config): Expr =
-    parse(sparql)._1.r
+  def parseADT(sparql: String, config: Config): Expr =
+    parse(sparql, config)._1.r
 
   def getAllVariableNames(bgp: BGP): Set[String] = {
     bgp.quads.foldLeft(Set.empty[String]) { (acc, q) =>

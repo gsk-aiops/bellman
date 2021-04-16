@@ -54,7 +54,7 @@ class GraphsPushdownSpec
             | }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q)
+        val (query, graphs) = parse(q, config)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -93,7 +93,7 @@ class GraphsPushdownSpec
             | }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q)
+        val (query, graphs) = parse(q, config)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -154,7 +154,7 @@ class GraphsPushdownSpec
             | }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q)
+        val (query, graphs) = parse(q, config)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -220,7 +220,7 @@ class GraphsPushdownSpec
             | }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q)
+        val (query, graphs) = parse(q, config)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -288,7 +288,7 @@ class GraphsPushdownSpec
             | }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q)
+        val (query, graphs) = parse(q, config)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -356,7 +356,7 @@ class GraphsPushdownSpec
             | ?x foaf:name ?name .
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q)
+        val (query, graphs) = parse(q, config)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {
@@ -395,7 +395,7 @@ class GraphsPushdownSpec
             |   GRAPH ?g { ?x foaf:mbox ?mbox }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q)
+        val (query, graphs) = parse(q, config)
 
         val dag: T = DAG.fromQuery.apply(query)
         Fix.un(dag) match {

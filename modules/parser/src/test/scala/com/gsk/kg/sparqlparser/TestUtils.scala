@@ -22,14 +22,14 @@ trait TestUtils {
     result
   }
 
-  def queryAlgebra(fileLoc: String)(implicit config: Config): Expr = {
+  def queryAlgebra(fileLoc: String, config: Config): Expr = {
     val q = readOutputFile(fileLoc)
-    QueryConstruct.parseADT(q)
+    QueryConstruct.parseADT(q, config)
   }
 
-  def query(fileLoc: String)(implicit config: Config): Query = {
+  def query(fileLoc: String, config: Config): Query = {
     val q = readOutputFile(fileLoc)
-    parse(q)._1
+    parse(q, config)._1
   }
 
   def readOutputFile(fileLoc: String): String = {
@@ -43,8 +43,9 @@ trait TestUtils {
   }
 
   def parse(
-      query: String
-  )(implicit config: Config): (Query, Graphs) =
-    QueryConstruct.parse(query)
+      query: String,
+      config: Config
+  ): (Query, Graphs) =
+    QueryConstruct.parse(query, config)
 
 }

@@ -18,11 +18,10 @@ import com.gsk.kg.sparqlparser.QueryConstruct
 
 object Compiler {
 
-  def compile(df: DataFrame, query: String)(implicit
-      sc: SQLContext,
-      config: Config
+  def compile(df: DataFrame, query: String, config: Config)(implicit
+      sc: SQLContext
   ): Result[DataFrame] =
-    compiler(df)
+    compiler(df, config)
       .run(query)
       .runA(df)
 
@@ -32,11 +31,10 @@ object Compiler {
     * @param sc
     * @return
     */
-  def compiler(df: DataFrame)(implicit
-      sc: SQLContext,
-      config: Config
+  def compiler(df: DataFrame, config: Config)(implicit
+      sc: SQLContext
   ): Phase[String, DataFrame] =
-    parser >>>
+    parser(config) >>>
       transformToGraph.first >>>
       optimizer >>>
       staticAnalysis >>>
@@ -62,8 +60,8 @@ object Compiler {
 
   /** parser converts strings to our [[Query]] ADT
     */
-  def parser(implicit config: Config): Phase[String, (Query, Graphs)] =
-    Arrow[Phase].lift(QueryConstruct.parse)
+  def parser(config: Config): Phase[String, (Query, Graphs)] =
+    Arrow[Phase].lift(query => QueryConstruct.parse(query, config))
 
   def optimizer[T: Basis[DAG, *]]: Phase[(T, Graphs), T] =
     Optimizer.optimize

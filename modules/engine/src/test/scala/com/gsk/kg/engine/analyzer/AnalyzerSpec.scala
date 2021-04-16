@@ -29,7 +29,7 @@ class AnalyzerSpec
         | ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o
         |}
         |""".stripMargin
-    val (query, _) = parse(q)
+    val (query, _) = parse(q, config)
 
     val dag = DAG.fromQuery.apply(query)
 
@@ -51,7 +51,7 @@ class AnalyzerSpec
         | <http://purl.obolibrary.org/obo/CLO_0037232> <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?derived_node .
         |}
         |""".stripMargin
-    val (query, _) = parse(q)
+    val (query, _) = parse(q, config)
 
     val dag = DAG.fromQuery.apply(query)
 
@@ -77,7 +77,7 @@ class AnalyzerSpec
         | BIND(REPLACE(?lit, "b", "Z") AS ?lit2)
         |}
         |""".stripMargin
-    val (query, _) = parse(q)
+    val (query, _) = parse(q, config)
 
     val dag = DAG.fromQuery.apply(query)
 

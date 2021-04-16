@@ -193,8 +193,8 @@ lazy val `bellman-spark-engine` = project
       .config("spark.driver.host", "localhost")
       .getOrCreate()
       
-    implicit val config = ConfigSource.default.loadOrThrow[Config]
     implicit val sc: SQLContext = spark.sqlContext
+    val config = ConfigSource.default.loadOrThrow[Config]
 
     import sc.implicits._
     

@@ -84,7 +84,7 @@ class TreeRepSpec
         | BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
         |}
         |""".stripMargin
-    val (query, _) = parse(q)
+    val (query, _) = parse(q, config)
 
     val dag = DAG.fromQuery.apply(query)
 

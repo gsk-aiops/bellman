@@ -66,7 +66,7 @@ class CompilerSpec
           |}
           |""".stripMargin
 
-      val result = Compiler.compile(df, query)
+      val result = Compiler.compile(df, query, config)
 
       result shouldBe a[Right[_, _]]
       result.right.get.collect().length shouldEqual 4
@@ -108,7 +108,7 @@ class CompilerSpec
       val inputDF  = readNTtoDF("fixtures/reference-q1-input.nt")
       val outputDF = readNTtoDF("fixtures/reference-q1-output.nt")
 
-      val result = Compiler.compile(inputDF, query)
+      val result = Compiler.compile(inputDF, query, config)
 
       result shouldBe a[Right[_, _]]
       result.right.get.collect.toSet shouldEqual outputDF
@@ -131,7 +131,11 @@ class CompilerSpec
             }
             """
 
-        Compiler.compile(df, query).right.get.collect() shouldEqual Array(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect() shouldEqual Array(
           Row(
             "\"test\"",
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
@@ -155,7 +159,11 @@ class CompilerSpec
             }
             """
 
-        Compiler.compile(df, query).right.get.collect() shouldEqual Array(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect() shouldEqual Array(
           Row("\"test\"", "\"source\"")
         )
       }
@@ -179,7 +187,11 @@ class CompilerSpec
       }
       """
 
-        Compiler.compile(df, query).right.get.collect() shouldEqual Array(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect() shouldEqual Array(
           Row("\"test\"", "http://id.gsk.com/dm/1.0/Document"),
           Row("\"test\"", "\"source\"")
         )
@@ -201,7 +213,11 @@ class CompilerSpec
       }
       """
 
-        Compiler.compile(df, query).right.get.collect() shouldEqual Array(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect() shouldEqual Array(
           Row("\"test\"", "http://id.gsk.com/dm/1.0/Document", null, null),
           Row(null, null, "\"test\"", "\"source\"")
         )
@@ -223,7 +239,11 @@ class CompilerSpec
         }
         """
 
-        Compiler.compile(df, query).right.get.collect() shouldEqual Array(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect() shouldEqual Array(
           Row(
             "\"test\"",
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
@@ -261,7 +281,8 @@ class CompilerSpec
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query).right.get.collect().toSet
+        val result =
+          Compiler.compile(df, query, config).right.get.collect().toSet
         result shouldEqual Set(
           Row(
             "\"doesmatch\"",
@@ -319,7 +340,12 @@ class CompilerSpec
       }
       """
 
-        Compiler.compile(df, query).right.get.collect().toSet shouldEqual Set(
+        Compiler
+          .compile(df, query, config)
+          .right
+          .get
+          .collect()
+          .toSet shouldEqual Set(
           Row(
             "\"test\"",
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
@@ -354,7 +380,7 @@ class CompilerSpec
             |LIMIT   2
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -382,7 +408,7 @@ class CompilerSpec
             |LIMIT   0
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 0
@@ -407,7 +433,7 @@ class CompilerSpec
             |LIMIT   2147483648
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Left[_, _]]
         result.left.get shouldEqual EngineError.NumericTypesDoNotMatch(
@@ -436,7 +462,7 @@ class CompilerSpec
             |OFFSET 1
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -464,7 +490,7 @@ class CompilerSpec
             |OFFSET 0
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 3
@@ -493,7 +519,7 @@ class CompilerSpec
             |OFFSET 5
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 0
@@ -532,7 +558,7 @@ class CompilerSpec
             |}LIMIT 10
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.toSet shouldEqual Set(
@@ -563,7 +589,7 @@ class CompilerSpec
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 4
@@ -595,7 +621,7 @@ class CompilerSpec
             |}
             |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Left[_, _]]
           result.left.get shouldEqual EngineError.FunctionError(
@@ -647,7 +673,7 @@ class CompilerSpec
             |""".stripMargin
         }
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 1
@@ -690,7 +716,7 @@ class CompilerSpec
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 1
@@ -726,7 +752,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -755,7 +781,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -785,7 +811,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -871,7 +897,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -928,7 +954,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -970,7 +996,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -998,7 +1024,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1028,7 +1054,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 3
@@ -1061,7 +1087,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1101,7 +1127,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1129,7 +1155,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1157,7 +1183,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1205,7 +1231,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 2
@@ -1237,7 +1263,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1277,7 +1303,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1305,7 +1331,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1333,7 +1359,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1381,7 +1407,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 1
@@ -1412,7 +1438,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1450,7 +1476,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1479,7 +1505,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1507,7 +1533,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 0
@@ -1554,7 +1580,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 2
@@ -1586,7 +1612,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1626,7 +1652,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1655,7 +1681,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1683,7 +1709,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1732,7 +1758,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 2
@@ -1766,7 +1792,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -1813,7 +1839,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -1843,7 +1869,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -1872,7 +1898,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -1920,7 +1946,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 3
@@ -1954,7 +1980,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2001,7 +2027,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2031,7 +2057,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2060,7 +2086,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2110,7 +2136,7 @@ class CompilerSpec
               |
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect should have length 3
@@ -2181,7 +2207,7 @@ class CompilerSpec
             }
             """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 6
@@ -2276,7 +2302,7 @@ class CompilerSpec
       LIMIT 1
       """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -2349,7 +2375,7 @@ class CompilerSpec
       }
       """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         val arrayResult = result.right.get.collect
         result shouldBe a[Right[_, _]]
@@ -2430,7 +2456,7 @@ class CompilerSpec
       }
       """
 
-        val result      = Compiler.compile(df, query)
+        val result      = Compiler.compile(df, query, config)
         val resultDF    = result.right.get
         val arrayResult = resultDF.collect
 
@@ -2482,7 +2508,7 @@ class CompilerSpec
             |       }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 3
@@ -2527,7 +2553,7 @@ class CompilerSpec
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -2568,7 +2594,7 @@ class CompilerSpec
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -2599,7 +2625,7 @@ class CompilerSpec
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
@@ -2674,7 +2700,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -2747,7 +2773,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2820,7 +2846,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -2916,7 +2942,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -2987,7 +3013,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -3057,7 +3083,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -3145,7 +3171,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -3235,7 +3261,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -3294,7 +3320,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3364,7 +3390,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3434,7 +3460,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3506,7 +3532,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3578,7 +3604,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3673,7 +3699,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 3
@@ -3775,7 +3801,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3874,7 +3900,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -3973,7 +3999,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
@@ -4078,7 +4104,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
@@ -4180,7 +4206,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 3
@@ -4301,7 +4327,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 4
@@ -4419,7 +4445,7 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          val result = Compiler.compile(df, query)
+          val result = Compiler.compile(df, query, config)
 
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 0
@@ -4457,7 +4483,7 @@ class CompilerSpec
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Right[_, _]]
         result.right.get.collect().length shouldEqual 4
@@ -4490,7 +4516,7 @@ class CompilerSpec
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Left[_, _]]
         result.left.get shouldEqual EngineError.InvalidInputDataFrame(
@@ -4515,7 +4541,7 @@ class CompilerSpec
             |}
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result shouldBe a[Left[_, _]]
         result.left.get shouldEqual EngineError.InvalidInputDataFrame(
@@ -4563,7 +4589,7 @@ class CompilerSpec
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1"),
@@ -4609,7 +4635,7 @@ class CompilerSpec
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1", 2),
@@ -4635,7 +4661,7 @@ class CompilerSpec
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1", 1.5),
@@ -4661,7 +4687,7 @@ class CompilerSpec
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1", 0),
@@ -4687,7 +4713,7 @@ class CompilerSpec
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1", 0),
@@ -4713,7 +4739,7 @@ class CompilerSpec
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
           Row("http://uri.com/subject/a1", 3.0),
@@ -4759,7 +4785,7 @@ class CompilerSpec
           } GROUP BY ?a
           """
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect should have length 3
       }
@@ -4780,7 +4806,7 @@ class CompilerSpec
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect().length shouldEqual 0
         result.right.get.collect().toSet shouldEqual Set()
@@ -4802,7 +4828,7 @@ class CompilerSpec
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)
+        val result = Compiler.compile(df, query, config)
 
         result.right.get.collect().length shouldEqual 2
         result.right.get.collect().toSet shouldEqual Set(
@@ -4824,8 +4850,9 @@ class CompilerSpec
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)(
-          sqlContext,
+        val result = Compiler.compile(
+          df,
+          query,
           config.copy(isDefaultGraphExclusive = false)
         )
 
@@ -4850,8 +4877,9 @@ class CompilerSpec
             |WHERE { ?s ?p ?o }
             |""".stripMargin
 
-        val result = Compiler.compile(df, query)(
-          sqlContext,
+        val result = Compiler.compile(
+          df,
+          query,
           config.copy(isDefaultGraphExclusive = false)
         )
 
