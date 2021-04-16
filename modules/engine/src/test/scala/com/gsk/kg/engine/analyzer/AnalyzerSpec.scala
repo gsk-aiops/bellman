@@ -8,12 +8,17 @@ import higherkindness.droste.syntax.all._
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.engine.EngineError
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+import com.gsk.kg.sparqlparser.TestConfig
 import com.gsk.kg.sparqlparser.TestUtils
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class AnalyzerSpec extends AnyFlatSpec with Matchers with TestUtils {
+class AnalyzerSpec
+    extends AnyFlatSpec
+    with Matchers
+    with TestUtils
+    with TestConfig {
 
   "Analyzer.findUnboundVariables" should "find unbound variables in CONSTRUCT queries" in {
     val q =
@@ -24,7 +29,7 @@ class AnalyzerSpec extends AnyFlatSpec with Matchers with TestUtils {
         | ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o
         |}
         |""".stripMargin
-    val (query, _) = parse(q)
+    val (query, _) = parse(q, config)
 
     val dag = DAG.fromQuery.apply(query)
 
@@ -46,7 +51,7 @@ class AnalyzerSpec extends AnyFlatSpec with Matchers with TestUtils {
         | <http://purl.obolibrary.org/obo/CLO_0037232> <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?derived_node .
         |}
         |""".stripMargin
-    val (query, _) = parse(q)
+    val (query, _) = parse(q, config)
 
     val dag = DAG.fromQuery.apply(query)
 
@@ -72,7 +77,7 @@ class AnalyzerSpec extends AnyFlatSpec with Matchers with TestUtils {
         | BIND(REPLACE(?lit, "b", "Z") AS ?lit2)
         |}
         |""".stripMargin
-    val (query, _) = parse(q)
+    val (query, _) = parse(q, config)
 
     val dag = DAG.fromQuery.apply(query)
 
