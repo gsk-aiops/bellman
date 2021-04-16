@@ -17,6 +17,12 @@ jobs:
       - name: Setup Scala
         uses: olafurpg/setup-scala@v10
       - uses: ts-graphviz/setup-graphviz@v1
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+          bundler-cache: true
+      - name: install Jekyll
+        run: gem install jekyll -v 4
       - name: Cache dependencies
         uses: actions/cache@v2.1.4
         with:
