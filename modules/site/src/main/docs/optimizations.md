@@ -12,4 +12,5 @@ There are some optimizations that Bellman performs to make queries run faster.
 - Compact BGPs
 - Remove Nested Project
 
-<img src="/img/animation-simple.gif" width="100%">
+
+<img src="/bellman/img/animation-simple.gif" width="100%">
