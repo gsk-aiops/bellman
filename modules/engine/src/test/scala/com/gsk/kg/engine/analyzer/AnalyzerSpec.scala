@@ -33,7 +33,7 @@ class AnalyzerSpec
 
     val dag = DAG.fromQuery.apply(query)
 
-    val result = Analyzer.analyze.apply(dag).runA(null)
+    val result = Analyzer.analyze.apply(dag).runA(config, null)
 
     result shouldEqual Left(
       EngineError.AnalyzerError(
@@ -55,7 +55,7 @@ class AnalyzerSpec
 
     val dag = DAG.fromQuery.apply(query)
 
-    val result = Analyzer.analyze.apply(dag).runA(null)
+    val result = Analyzer.analyze.apply(dag).runA(config, null)
 
     result shouldEqual Left(
       EngineError.AnalyzerError(
@@ -87,7 +87,7 @@ class AnalyzerSpec
       }
       .toSet
 
-    val result = Analyzer.analyze.apply(dag).runA(null)
+    val result = Analyzer.analyze.apply(dag).runA(config, null)
 
     result shouldBe a[Right[_, _]]
 

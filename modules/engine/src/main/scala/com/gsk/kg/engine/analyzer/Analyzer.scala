@@ -10,6 +10,8 @@ import higherkindness.droste.Basis
 
 import org.apache.spark.sql.DataFrame
 
+import com.gsk.kg.config.Config
+
 object Analyzer {
 
   def rules[T: Basis[DAG, *]]: List[Rule[T]] =
@@ -28,7 +30,9 @@ object Analyzer {
 
       x match {
         case Invalid(e) =>
-          M.lift[Result, DataFrame, T](EngineError.AnalyzerError(e).asLeft)
+          M.liftF[Result, Config, Log, DataFrame, T](
+            EngineError.AnalyzerError(e).asLeft
+          )
         case Valid(e) => t.pure[M]
       }
     }

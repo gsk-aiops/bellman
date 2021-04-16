@@ -18,6 +18,7 @@ import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
+import com.gsk.kg.config.Config
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.data.ChunkedList.Chunk
 import com.gsk.kg.sparqlparser.Expr.Quad
@@ -54,7 +55,8 @@ object Engine {
 
   def evaluate[T: Basis[DAG, *]](
       dataframe: DataFrame,
-      dag: T
+      dag: T,
+      config: Config
   )(implicit
       sc: SQLContext
   ): Result[DataFrame] = {
@@ -63,7 +65,7 @@ object Engine {
 
     validateInputDataFrame(dataframe).flatMap { df =>
       eval(dag)
-        .runA(df)
+        .runA(config, df)
         .map(_.dataframe)
     }
   }
@@ -119,7 +121,7 @@ object Engine {
   )(implicit sc: SQLContext): M[Multiset] = {
     import sc.implicits._
 
-    M.get[Result, DataFrame].map { df =>
+    M.get[Result, Config, Log, DataFrame].map { df =>
       Foldable[ChunkedList].fold(
         quads.mapChunks { chunk =>
           val condition = composedConditionFromChunk(df, chunk)
@@ -227,7 +229,7 @@ object Engine {
         .withColumnRenamed(v, name)
         .pure[M]
     case fn =>
-      M.liftF[Result, DataFrame, DataFrame](
+      M.liftF[Result, Config, Log, DataFrame, DataFrame](
         EngineError
           .UnknownFunction("Aggregate function: " + fn.toString)
           .asLeft[DataFrame]
@@ -253,24 +255,24 @@ object Engine {
       funcs: NonEmptyList[Expression],
       expr: Multiset
   ): M[Multiset] = {
-    val compiledFuncs: NonEmptyList[DataFrame => Result[Column]] =
-      funcs.map(ExpressionF.compile[Expression])
-
-    M.liftF[Result, DataFrame, Multiset] {
-      compiledFuncs.foldLeft(expr.asRight: Result[Multiset]) {
-        case (eitherAcc, f) =>
-          for {
-            acc       <- eitherAcc
-            filterCol <- f(acc.dataframe)
-            result <-
-              expr
-                .filter(filterCol)
-                .map(r =>
-                  expr.copy(dataframe = r.dataframe intersect acc.dataframe)
-                )
-          } yield result
+    val compiledFuncs: M[NonEmptyList[DataFrame => Result[Column]]] =
+      M.ask[Result, Config, Log, DataFrame].map { config =>
+        funcs.map(t => ExpressionF.compile[Expression](t, config))
       }
-    }
+
+    compiledFuncs.flatMapF(_.foldLeft(expr.asRight: Result[Multiset]) {
+      case (eitherAcc, f) =>
+        for {
+          acc       <- eitherAcc
+          filterCol <- f(acc.dataframe)
+          result <-
+            expr
+              .filter(filterCol)
+              .map(r =>
+                expr.copy(dataframe = r.dataframe intersect acc.dataframe)
+              )
+        } yield result
+    })
   }
 
   private def evaluateOffset(offset: Long, r: Multiset): M[Multiset] =
@@ -336,18 +338,17 @@ object Engine {
       bindTo: VARIABLE,
       bindFrom: Expression,
       r: Multiset
-  ) = {
-    val getColumn = ExpressionF.compile(bindFrom)
-
-    M.liftF[Result, DataFrame, Multiset](
+  ): M[Multiset] = {
+    M.ask[Result, Config, Log, DataFrame].flatMapF { config =>
+      val getColumn = ExpressionF.compile(bindFrom, config)
       getColumn(r.dataframe).map { col =>
         r.withColumn(bindTo, col)
       }
-    )
+    }
   }
 
   private def notImplemented(constructor: String): M[Multiset] =
-    M.liftF[Result, DataFrame, Multiset](
+    M.liftF[Result, Config, Log, DataFrame, Multiset](
       EngineError.General(s"$constructor not implemented").asLeft[Multiset]
     )
 
