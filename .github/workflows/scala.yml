@@ -16,6 +16,7 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: Setup Scala
         uses: olafurpg/setup-scala@v10
+      - uses: ts-graphviz/setup-graphviz@v1
       - name: Cache dependencies
         uses: actions/cache@v2.1.4
         with:
