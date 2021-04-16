@@ -5,6 +5,8 @@ import org.apache.spark.sql.Encoder
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 
+import com.gsk.kg.config.Config
+
 import java.net.URI
 
 import scala.annotation.tailrec
@@ -20,11 +22,27 @@ object RdfFormatter {
     * @param df
     * @return
     */
-  def formatDataFrame(df: DataFrame): DataFrame = {
+  def formatDataFrame(df: DataFrame, config: Config): DataFrame = {
     implicit val encoder: Encoder[Row] = RowEncoder(df.schema)
 
-    df.map { row =>
+    val result = df.map { row =>
       Row.fromSeq(row.toSeq.map(formatField))
+    }
+
+    if (config.stripQuestionMarksOnOutput) {
+      removeDataFrameColumnsQuestionMarks(result)
+    } else {
+      result
+    }
+  }
+
+  def removeDataFrameColumnsQuestionMarks(df: DataFrame): DataFrame = {
+    df.columns.foldLeft(df) { case (acc, column) =>
+      if (column.startsWith("?")) {
+        acc.withColumnRenamed(column, column.replace("?", ""))
+      } else {
+        acc
+      }
     }
   }
 
