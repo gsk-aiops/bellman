@@ -18,6 +18,7 @@ import com.gsk.kg.engine._
 import com.gsk.kg.engine.DAG._
 import com.gsk.kg.engine.optimizer._
 import com.gsk.kg.Graphs
+import com.gsk.kg.config.Config
 
 /** This object generates all the diagrams and animations we have in our documentation.
   */
@@ -41,7 +42,7 @@ object Animations extends App {
           ?d <http://example.com/source> <http://example.com/mySource> .
         }
         """,
-        false
+        Config.default
       )
       ._1
 
@@ -85,7 +86,7 @@ object Animations extends App {
           ?d <http://example.com/source> <http://example.com/mysource> .
         }
         """,
-        false
+        Config.default
       )
       ._1
 
@@ -111,7 +112,7 @@ object Animations extends App {
             ?s <http://example.com/predicate> ?o
           }
         }""",
-        false
+        Config.default
       )
       ._1
 
