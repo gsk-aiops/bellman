@@ -8,6 +8,8 @@ import org.apache.spark.sql.Row
 
 import com.gsk.kg.sparqlparser.TestConfig
 
+import java.io.ByteArrayOutputStream
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -76,6 +78,50 @@ class CompilerSpec
         Row("\"foo\"^^xsd:string"),
         Row("\"true\"^^xsd:boolean")
       )
+    }
+
+    "remove question marks from variable columns when flag setup" in {
+
+      val df: DataFrame = List(
+        ("a", "b", "c", ""),
+        ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
+        ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
+        ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+      ).toDF("s", "p", "o", "g")
+
+      val query =
+        """
+          |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+          |
+          |SELECT  ?s ?o
+          |WHERE   { ?s foaf:name ?o }
+          |""".stripMargin
+
+      val result = Compiler.compile(
+        df,
+        query,
+        config.copy(stripQuestionMarksOnOutput = true)
+      )
+
+      val expectedOut =
+        """+------+---------+
+          ||     s|        o|
+          |+------+---------+
+          ||"team"|"Anthony"|
+          ||"team"| "Perico"|
+          ||"team"|  "Henry"|
+          |+------+---------+
+          |
+          |""".stripMargin
+
+      result shouldBe a[Right[_, _]]
+
+      val outCapture = new ByteArrayOutputStream
+      Console.withOut(outCapture) {
+        result.right.get.show()
+      }
+
+      outCapture.toString shouldEqual expectedOut
     }
 
     /** TODO(pepegar): In order to make this test pass we need the

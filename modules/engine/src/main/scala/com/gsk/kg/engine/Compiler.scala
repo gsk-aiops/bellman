@@ -75,7 +75,12 @@ object Compiler {
   def staticAnalysis[T: Basis[DAG, *]]: Phase[T, T] =
     Analyzer.analyze
 
-  def rdfFormatter: Phase[DataFrame, DataFrame] =
-    Arrow[Phase].lift(RdfFormatter.formatDataFrame)
+  def rdfFormatter: Phase[DataFrame, DataFrame] = {
+    Kleisli[M, DataFrame, DataFrame] { inDf =>
+      M.ask[Result, Config, Log, DataFrame].map { config =>
+        RdfFormatter.formatDataFrame(inDf, config)
+      }
+    }
+  }
 
 }
