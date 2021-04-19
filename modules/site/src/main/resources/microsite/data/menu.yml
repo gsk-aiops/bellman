@@ -5,6 +5,8 @@ options:
   - title: Optimization
     url: docs/optimization
     nested_options:
+      - title: Join BGPs
+        url: docs/optimization/joinBgps
       - title: Compact BGPs
         url: docs/optimization/compactBgps
       - title: Graph pushdown
