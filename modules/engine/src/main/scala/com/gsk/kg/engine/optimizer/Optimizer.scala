@@ -7,7 +7,6 @@ import cats.implicits._
 import higherkindness.droste.Basis
 
 import com.gsk.kg.Graphs
-import com.gsk.kg.engine.optimize.GraphsPushdown
 
 object Optimizer {
 

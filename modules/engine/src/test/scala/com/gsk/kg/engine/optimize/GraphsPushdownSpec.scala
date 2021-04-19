@@ -1,4 +1,4 @@
-package com.gsk.kg.engine.optimize
+package com.gsk.kg.engine.optimizer
 
 import higherkindness.droste.data.Fix
 
