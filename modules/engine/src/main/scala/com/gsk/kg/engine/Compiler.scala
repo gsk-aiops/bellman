@@ -25,6 +25,7 @@ object Compiler {
       .run(query)
       .runA(config, df)
 
+  // scalastyle:off
   def explain(query: String)(implicit sc: SQLContext): Unit = {
     import sc.implicits._
     val df = List.empty[(String, String, String)].toDF("s", "p", "o")
