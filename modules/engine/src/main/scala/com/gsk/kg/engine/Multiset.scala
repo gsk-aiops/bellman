@@ -128,7 +128,7 @@ final case class Multiset(
     *
     * @return
     */
-  def isEmpty: Boolean = bindings.isEmpty && dataframe.isEmpty
+  def isEmpty: Boolean = bindings.isEmpty && dataframe.columns.isEmpty
 
   /** Get a new multiset with only the projected [[vars]].
     *
