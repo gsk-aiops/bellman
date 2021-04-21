@@ -1,0 +1,73 @@
+package com.gsk.kg.engine.optimizer
+
+import com.gsk.kg.engine.DAG
+import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+import higherkindness.droste.Algebra
+import higherkindness.droste.Basis
+import higherkindness.droste.scheme
+
+object SubqueryPushdown {
+
+  private def toSubquery[T](dag: DAG[Boolean => T], isFromSubquery: Boolean)(
+      implicit T: Basis[DAG, T]
+  ): T = dag match {
+    case DAG.Describe(vars, r) if !isFromSubquery =>
+      DAG.describeR(vars, r(true))
+    case DAG.Describe(vars, r) =>
+      DAG.describeR(vars :+ VARIABLE(GRAPH_VARIABLE.s), r(isFromSubquery))
+    case DAG.Ask(r) if !isFromSubquery =>
+      DAG.askR(r(true))
+    case DAG.Ask(r) =>
+      DAG.askR(r(isFromSubquery))
+    case DAG.Construct(bgp, r) if !isFromSubquery =>
+      DAG.constructR(bgp, r(true))
+    case DAG.Construct(bgp, r) =>
+      DAG.constructR(bgp, r(isFromSubquery))
+    case DAG.Project(variables, r) if !isFromSubquery =>
+      DAG.projectR(variables, r(true))
+    case DAG.Project(variables, r) =>
+      DAG.projectR(variables :+ VARIABLE(GRAPH_VARIABLE.s), r(isFromSubquery))
+  }
+
+  def apply[T](implicit T: Basis[DAG, T]): T => T = { t =>
+    val alg: Algebra[DAG, Boolean => T] =
+      Algebra[DAG, Boolean => T] {
+        case dag @ DAG.Describe(vars, r) =>
+          isFromSubquery => toSubquery(dag, isFromSubquery)
+        case dag @ DAG.Ask(r) =>
+          isFromSubquery => toSubquery(dag, isFromSubquery)
+        case dag @ DAG.Construct(bgp, r) =>
+          isFromSubquery => toSubquery(dag, isFromSubquery)
+        case dag @ DAG.Project(variables, r) =>
+          isFromSubquery => toSubquery(dag, isFromSubquery)
+
+        case DAG.Scan(graph, expr) =>
+          isFromSubquery => DAG.scanR(graph, expr(isFromSubquery))
+        case DAG.Bind(variable, expression, r) =>
+          isFromSubquery => DAG.bindR(variable, expression, r(isFromSubquery))
+        case DAG.BGP(quads) => _ => DAG.bgpR(quads)
+        case DAG.LeftJoin(l, r, filters) =>
+          isFromSubquery =>
+            DAG.leftJoinR(l(isFromSubquery), r(isFromSubquery), filters)
+        case DAG.Union(l, r) =>
+          isFromSubquery => DAG.unionR(l(isFromSubquery), r(isFromSubquery))
+        case DAG.Filter(funcs, expr) =>
+          isFromSubquery => DAG.filterR(funcs, expr(isFromSubquery))
+        case DAG.Join(l, r) =>
+          isFromSubquery => DAG.joinR(l(isFromSubquery), r(isFromSubquery))
+        case DAG.Offset(o, r) =>
+          isFromSubquery => DAG.offsetR(o, r(isFromSubquery))
+        case DAG.Limit(l, r) =>
+          isFromSubquery => DAG.limitR(l, r(isFromSubquery))
+        case DAG.Distinct(r) =>
+          isFromSubquery => DAG.distinctR(r(isFromSubquery))
+        case DAG.Group(vars, func, r) =>
+          isFromSubquery => DAG.groupR(vars, func, r(isFromSubquery))
+        case DAG.Noop(s) => _ => DAG.noopR(s)
+      }
+
+    val eval = scheme.cata(alg)
+    eval(t)(false)
+  }
+}

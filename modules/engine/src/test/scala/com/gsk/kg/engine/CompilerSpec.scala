@@ -4936,6 +4936,160 @@ class CompilerSpec
         )
       }
     }
+
+    "perform SUBQUERY" should {
+
+      "execute and obtain expected results" when {
+
+        "outer SELECT and" when {
+
+          "inner SELECT" in {}
+
+          "inner CONSTRUCT" in {}
+
+          // TODO: Un-ignore when implemented ASK
+          "inner ASK" ignore {}
+
+          // TODO: Un-ignore when implemented DESCRIBE
+          "inner DESCRIBE" ignore {}
+        }
+
+        "outer CONSTRUCT and" when {
+
+          "inner SELECT" in {}
+
+          "inner CONSTRUCT" in {}
+
+          // TODO: Un-ignore when implemented ASK
+          "inner ASK" ignore {}
+
+          // TODO: Un-ignore when implemented DESCRIBE
+          "inner DESCRIBE" ignore {}
+        }
+
+        // TODO: Un-ignore when implemented ASK
+        "outer ASK and" ignore {
+
+          "inner SELECT" in {}
+
+          "inner CONSTRUCT" in {}
+
+          "inner ASK" in {}
+
+          "inner DESCRIBE" in {}
+        }
+
+        // TODO: Un-ignore when implemented DESCRIBE
+        "outer DESCRIBE and" when {
+
+          "inner SELECT" in {}
+
+          "inner CONSTRUCT" in {}
+
+          "inner ASK" in {}
+
+          "inner DESCRIBE" in {}
+        }
+
+        "multiple inner sub-queries" when {}
+
+        "mixing graphs" when {}
+
+        "other cases" when {
+
+          // TODO: Un-ignore when fixed MIN, MAX aggregate functions
+          "execute and obtain expected results from sub-query with SELECT and GROUP BY" ignore {
+
+            val df: DataFrame = List(
+              (
+                "http://people.example/alice",
+                "http://people.example/name",
+                "Alice Foo",
+                ""
+              ),
+              (
+                "http://people.example/alice",
+                "http://people.example/name",
+                "A. Foo",
+                ""
+              ),
+              (
+                "http://people.example/alice",
+                "http://people.example/knows",
+                "http://people.example/bob",
+                ""
+              ),
+              (
+                "http://people.example/alice",
+                "http://people.example/knows",
+                "http://people.example/carol",
+                ""
+              ),
+              (
+                "http://people.example/bob",
+                "http://people.example/name",
+                "Bob",
+                ""
+              ),
+              (
+                "http://people.example/bob",
+                "http://people.example/name",
+                "Bob Bar",
+                ""
+              ),
+              (
+                "http://people.example/bob",
+                "http://people.example/name",
+                "B. Bar",
+                ""
+              ),
+              (
+                "http://people.example/carol",
+                "http://people.example/name",
+                "Carol",
+                ""
+              ),
+              (
+                "http://people.example/carol",
+                "http://people.example/name",
+                "Carol Baz",
+                ""
+              ),
+              (
+                "http://people.example/carol",
+                "http://people.example/name",
+                "C. Baz",
+                ""
+              )
+            ).toDF("s", "p", "o", "g")
+
+            val query =
+              """
+                |PREFIX peop: <http://people.example/>
+                |
+                |SELECT ?y ?minName
+                |WHERE {
+                |  peop:alice peop:knows ?y .
+                |  {
+                |    SELECT ?y (MIN(?name) AS ?minName)
+                |    WHERE {
+                |      ?y peop:name ?name .
+                |    } GROUP BY ?y
+                |  }
+                |}
+                |""".stripMargin
+
+            val result = Compiler.compile(df, query, config)
+
+            result.right.get.collect().length shouldEqual 2
+            result.right.get.collect().toSet shouldEqual Set(
+              ("http://people.example/bob", "\"B. Bar\""),
+              ("http://people.example/carol", "\"C. Baz\"")
+            )
+          }
+        }
+      }
+    }
   }
 
   private def readNTtoDF(path: String) = {

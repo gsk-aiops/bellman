@@ -190,9 +190,11 @@ object Engine {
   ): M[Multiset] = {
     val df = r.dataframe
 
-    val groupedDF = df.groupBy(vars.map(_.s).map(df.apply): _*)
+    val groupedDF = df.groupBy(
+      (vars :+ VARIABLE(GRAPH_VARIABLE.s)).map(_.s).map(df.apply): _*
+    )
 
-    evaluateAggregation(vars, groupedDF, func)
+    evaluateAggregation(vars :+ VARIABLE(GRAPH_VARIABLE.s), groupedDF, func)
       .map(df =>
         r.copy(
           dataframe = df,
