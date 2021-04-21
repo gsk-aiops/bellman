@@ -30,8 +30,10 @@ object Compiler {
     val df = List.empty[(String, String, String)].toDF("s", "p", "o")
     compiler(df)
       .run(query)
-      .runA(Config.default, df)
-      .foreach(_.explain(true))
+      .runA(Config.default, df) match {
+      case Left(x)   => println(x)
+      case Right(df) => df.explain(true)
+    }
   }
 
   /** Put together all phases of the compiler
