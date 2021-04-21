@@ -233,7 +233,7 @@ object QuerySamples {
     PREFIX  schema: <http://schema.org/>
     PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
     PREFIX  prism: <http://prismstandard.org/namespaces/basic/2.0/>
-    SELECT ?objText ?objStartIdx ?objEndIdx ?subjText ?subjStartIdx ?subjEndIdx ?predText ?doc ?doi ?src ?year ?month ?title ?te ?text
+    SELECT ?objText ?objStartIdx ?objEndIdx ?subjText ?subjStartIdx ?subjEndIdx ?doc ?doi ?src ?year ?month ?title ?te ?text
     WHERE
     {
       ?pred dm:hasSubject ?subjde .

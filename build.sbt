@@ -21,7 +21,8 @@ lazy val Versions = Map(
   "discipline"           -> "1.1.2",
   "discipline-scalatest" -> "2.0.1",
   "reftree"              -> "1.4.0",
-  "shims"                -> "2.1.0"
+  "shims"                -> "2.1.0",
+  "pureconfig"           -> "0.14.0"
 )
 
 inThisBuild(
@@ -90,10 +91,11 @@ lazy val compilerPlugins = Seq(
 
 lazy val commonDependencies = Seq(
   libraryDependencies ++= Seq(
-    "org.typelevel"     %% "cats-core"     % Versions("cats"),
-    "io.higherkindness" %% "droste-core"   % Versions("droste"),
-    "io.higherkindness" %% "droste-macros" % Versions("droste"),
-    "org.scalatest"     %% "scalatest"     % Versions("scalatest") % Test
+    "org.typelevel"         %% "cats-core"     % Versions("cats"),
+    "io.higherkindness"     %% "droste-core"   % Versions("droste"),
+    "io.higherkindness"     %% "droste-macros" % Versions("droste"),
+    "com.github.pureconfig" %% "pureconfig"    % Versions("pureconfig"),
+    "org.scalatest"         %% "scalatest"     % Versions("scalatest") % Test
   )
 )
 
@@ -170,6 +172,8 @@ lazy val `bellman-spark-engine` = project
     import higherkindness.droste.data.prelude._
     import higherkindness.droste.syntax.all._
 
+    import com.gsk.kg.Graphs
+    import com.gsk.kg.config.Config
     import com.gsk.kg.sparql.syntax.all._
     import com.gsk.kg.sparqlparser._
     import com.gsk.kg.engine.data._
@@ -177,19 +181,60 @@ lazy val `bellman-spark-engine` = project
     import com.gsk.kg.engine._
     import com.gsk.kg.engine.DAG._
     import com.gsk.kg.engine.optimizer._
+    import com.gsk.kg.engine.syntax._
 
     import org.apache.spark._
     import org.apache.spark.sql._
+    
+    import pureconfig.generic.auto._
+    import pureconfig._
 
     val spark = SparkSession.builder()
       .appName("Spark Local")
       .master("local")
       .config("spark.driver.host", "localhost")
       .getOrCreate()
-
+      
     implicit val sc: SQLContext = spark.sqlContext
+    val config = ConfigSource.default.loadOrThrow[Config]
 
     import sc.implicits._
+
+    def readNTtoDF(path: String) = {
+      import org.apache.jena.riot.RDFParser
+      import org.apache.jena.riot.lang.CollectorStreamTriples
+      import scala.collection.JavaConverters._
+
+      val filename                            = s"modules/engine/src/test/resources/$path"
+      val inputStream: CollectorStreamTriples = new CollectorStreamTriples()
+      RDFParser.source(filename).parse(inputStream)
+
+      inputStream
+        .getCollected()
+        .asScala
+        .toList
+        .map(triple =>
+          (
+            triple.getSubject().toString(),
+            triple.getPredicate().toString(),
+            triple.getObject().toString(),
+            ""
+          )
+        )
+        .toDF("s", "p", "o", "g")
+    }
+
+    def printTree(query: String): Unit = {
+      val q = QueryConstruct.parse(query, Config.default)._1
+      val dag = DAG.fromQuery.apply(q)
+      println(dag.toTree.drawTree)
+    }
+    
+    def printOptimizedTree(query: String): Unit = {
+      val q = QueryConstruct.parse(query, Config.default)._1
+      val dag = Optimizer.optimize.apply((DAG.fromQuery.apply(q), Graphs.empty)).runA(Config.default, null).right.get
+      println(dag.toTree.drawTree)
+    }
     """
   )
   .dependsOn(`bellman-algebra-parser` % "compile->compile;test->test")
@@ -207,7 +252,8 @@ lazy val `bellman-site` = project
     micrositeGithubOwner := "gsk-aiops",
     micrositeGithubRepo := "bellman",
     micrositeOrganizationHomepage := "https://www.gsk.com",
-    micrositeDocumentationUrl := "/docs/compilation",
+    micrositeBaseUrl := "bellman",
+    micrositeDocumentationUrl := "docs/compilation",
     micrositeGitterChannel := false,
     micrositePushSiteWith := GitHub4s,
     mdocIn := (Compile / sourceDirectory).value / "docs",
@@ -216,9 +262,9 @@ lazy val `bellman-site` = project
     micrositeHighlightTheme := "tomorrow",
     micrositeTheme := "light",
     micrositePalette := Map(
-      "brand-primary"   -> "#F3490C",
-      "brand-secondary" -> "#FFE586",
-      "white-color"     -> "#FFF"
+      "brand-primary"   -> "#868b8e",
+      "brand-secondary" -> "#b9b7bd",
+      "white-color"     -> "#fff"
     ),
     micrositeHighlightTheme := "github-gist"
   )
@@ -229,8 +275,18 @@ lazy val `bellman-site` = project
   .enablePlugins(MicrositesPlugin)
 
 addCommandAlias(
+  "build-microsite",
+  ";bellman-site/run ;bellman-site/makeMicrosite"
+)
+
+addCommandAlias(
   "ci-test",
-  ";scalafixAll --check ;scalafmtCheckAll ;scalastyle ;+test"
+  ";scalafixAll --check ;scalafmtCheckAll ;scalastyle ;+test ;build-microsite"
+)
+
+addCommandAlias(
+  "ci-docs",
+  ";build-microsite ;bellman-site/publishMicrosite"
 )
 
 addCommandAlias(

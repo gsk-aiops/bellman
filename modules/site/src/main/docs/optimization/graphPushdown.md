@@ -22,6 +22,6 @@ By default GRAPH is captured as a node in the AST but what we do is treat the gr
 
 In our Graph Pushdown optimization we send graph information to the quad level, removing the GRAPH node from the AST.
 
-<img src="/img/graph-pushdown.gif" width="100%">
+<img src="/bellman/img/graph-pushdown.gif" width="100%">
 
 We use that information as any other element from the triple when querying the underlying DataFrame.
