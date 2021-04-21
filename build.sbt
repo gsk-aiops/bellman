@@ -172,6 +172,7 @@ lazy val `bellman-spark-engine` = project
     import higherkindness.droste.data.prelude._
     import higherkindness.droste.syntax.all._
 
+    import com.gsk.kg.Graphs
     import com.gsk.kg.config.Config
     import com.gsk.kg.sparql.syntax.all._
     import com.gsk.kg.sparqlparser._
@@ -180,6 +181,7 @@ lazy val `bellman-spark-engine` = project
     import com.gsk.kg.engine._
     import com.gsk.kg.engine.DAG._
     import com.gsk.kg.engine.optimizer._
+    import com.gsk.kg.engine.syntax._
 
     import org.apache.spark._
     import org.apache.spark.sql._
@@ -197,7 +199,42 @@ lazy val `bellman-spark-engine` = project
     val config = ConfigSource.default.loadOrThrow[Config]
 
     import sc.implicits._
+
+    def readNTtoDF(path: String) = {
+      import org.apache.jena.riot.RDFParser
+      import org.apache.jena.riot.lang.CollectorStreamTriples
+      import scala.collection.JavaConverters._
+
+      val filename                            = s"modules/engine/src/test/resources/$path"
+      val inputStream: CollectorStreamTriples = new CollectorStreamTriples()
+      RDFParser.source(filename).parse(inputStream)
+
+      inputStream
+        .getCollected()
+        .asScala
+        .toList
+        .map(triple =>
+          (
+            triple.getSubject().toString(),
+            triple.getPredicate().toString(),
+            triple.getObject().toString(),
+            ""
+          )
+        )
+        .toDF("s", "p", "o", "g")
+    }
+
+    def printTree(query: String): Unit = {
+      val q = QueryConstruct.parse(query, Config.default)._1
+      val dag = DAG.fromQuery.apply(q)
+      println(dag.toTree.drawTree)
+    }
     
+    def printOptimizedTree(query: String): Unit = {
+      val q = QueryConstruct.parse(query, Config.default)._1
+      val dag = Optimizer.optimize.apply((DAG.fromQuery.apply(q), Graphs.empty)).runA(Config.default, null).right.get
+      println(dag.toTree.drawTree)
+    }
     """
   )
   .dependsOn(`bellman-algebra-parser` % "compile->compile;test->test")
