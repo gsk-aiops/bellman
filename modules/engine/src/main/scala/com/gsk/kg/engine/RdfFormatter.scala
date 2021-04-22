@@ -53,7 +53,7 @@ object RdfFormatter {
       ).otherwise(
         when(
           isUri(col),
-          ltrim(rtrim(col, ">"), "<")
+          col.cast(DataTypes.StringType)
         ).otherwise(
           when(
             isBlank(col),
@@ -107,7 +107,7 @@ object RdfFormatter {
     column === lit("null") || column.isNull
 
   private def isLocalizedString(column: Column): Column =
-    column.startsWith("\"") && not(column.contains("\"@")) && not(
+    column.startsWith("\"") && column.contains("\"@") && not(
       column.endsWith("\"")
     )
 
