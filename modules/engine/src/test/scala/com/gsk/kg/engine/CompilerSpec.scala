@@ -5126,6 +5126,9 @@ class CompilerSpec
           )
         }
 
+        // TODO: Un-ignore when implemented ASK
+        "outer SELECT and inner ASK as graph pattern" ignore {}
+
         "outer CONSTRUCT and inner SELECT as graph pattern" in {
           val df: DataFrame = List(
             (
@@ -5246,7 +5249,7 @@ class CompilerSpec
         }
 
         // TODO: Un-ignore when implemented ASK
-        "outer SELECT and inner ASK as graph pattern" ignore {}
+        "outer CONSTRUCT and inner ASK as graph pattern" ignore {}
 
         // TODO: Un-ignore when implemented ASK
         "outer ASK and inner SELECT as graph pattern" ignore {}
