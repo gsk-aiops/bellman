@@ -113,17 +113,20 @@ object RdfFormatter {
   }
 
   object RDFNum {
-    def unapply(str: String): Option[Any] =
-      Try(Integer.parseInt(str)).recoverWith { case _ =>
-        Try(java.lang.Float.parseFloat(str))
-      }.toOption
+    def unapply(str: String): Option[String] =
+      Try(Integer.parseInt(str))
+        .recoverWith { case _ =>
+          Try(java.lang.Float.parseFloat(str))
+        }
+        .toOption
+        .map(_.toString)
   }
 
   object RDFBoolean {
-    def unapply(str: String): Option[Boolean] =
+    def unapply(str: String): Option[String] =
       str match {
-        case "true"  => Some(true)
-        case "false" => Some(false)
+        case "true"  => Some("true")
+        case "false" => Some("false")
         case _       => None
       }
   }

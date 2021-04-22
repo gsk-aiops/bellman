@@ -6,12 +6,19 @@ import org.scalacheck.Gen
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import com.gsk.kg.config.Config
 
 class RdfFormatterSpec
     extends AnyFlatSpec
     with ScalaCheckDrivenPropertyChecks
     with Matchers
-    with CommonGenerators {
+    with CommonGenerators
+    with DataFrameSuiteBase {
+
+  override implicit def reuseContextIfPossible: Boolean = true
+
+  override implicit def enableHiveSupport: Boolean = false
 
   import RdfFormatter._
 
@@ -72,8 +79,9 @@ class RdfFormatterSpec
     ("\"\"bar\"\"", "\"bar\""),
     ("<http://test.com>", "<http://test.com>"),
     ("http://test.com", "http://test.com"),
-    ("1", 1),
-    ("1.333", 1.333f),
+    ("1", "1"),
+    ("1.333", "1.333"),
+    ("true", "true"),
     ("_:potato", "_:potato")
   )
 
@@ -81,6 +89,24 @@ class RdfFormatterSpec
     it should s"format nodes correctly: $str -> $expected" in {
       formatField(str) shouldEqual expected
     }
+  }
+
+  "RdfFormatter" should "format all fields from a dataframe" in {
+    import sqlContext.implicits._
+
+    val df = List(
+      ("string", "_:blanknode", "http://uri.com"),
+      ("false", "true", "another string")
+    ).toDF("s", "p", "o")
+
+    val expected = List(
+      ("\"string\"", "_:blanknode", "http://uri.com"),
+      ("false", "true", "\"another string\"")
+    ).toDF("s", "p", "o")
+
+    val result = RdfFormatter.formatDataFrame(df, Config.default)
+
+    expected.collect() shouldEqual result.collect()
   }
 
 }
