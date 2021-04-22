@@ -1206,7 +1206,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Henry", 21)
+            Row("_:Henry", "21")
           )
         }
 
@@ -1234,7 +1234,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Martha", true)
+            Row("_:Martha", "true")
           )
         }
 
@@ -1382,7 +1382,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Perico", 15)
+            Row("_:Perico", "15")
           )
         }
 
@@ -1410,7 +1410,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Henry", false)
+            Row("_:Henry", "false")
           )
         }
 
@@ -1556,7 +1556,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Henry", 21)
+            Row("_:Henry", "21")
           )
         }
 
@@ -1732,7 +1732,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Bob", 15)
+            Row("_:Bob", "15")
           )
         }
 
@@ -1760,7 +1760,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Henry", false)
+            Row("_:Henry", "false")
           )
         }
 
@@ -1920,8 +1920,8 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Alice", 18),
-            Row("_:Henry", 21)
+            Row("_:Alice", "18"),
+            Row("_:Henry", "21")
           )
         }
 
@@ -1949,7 +1949,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Martha", true)
+            Row("_:Martha", "true")
           )
         }
 
@@ -2108,8 +2108,8 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Bob", 15),
-            Row("_:Alice", 18)
+            Row("_:Bob", "15"),
+            Row("_:Alice", "18")
           )
         }
 
@@ -2137,8 +2137,8 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:Martha", true),
-            Row("_:Henry", false)
+            Row("_:Martha", "true"),
+            Row("_:Henry", "false")
           )
         }
 
@@ -4684,9 +4684,9 @@ class CompilerSpec
         val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
-          Row("http://uri.com/subject/a1", 2),
-          Row("http://uri.com/subject/a2", 2),
-          Row("http://uri.com/subject/a3", 1)
+          Row("http://uri.com/subject/a1", "2"),
+          Row("http://uri.com/subject/a2", "2"),
+          Row("http://uri.com/subject/a3", "1")
         )
       }
 
@@ -4710,9 +4710,9 @@ class CompilerSpec
         val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
-          Row("http://uri.com/subject/a1", 1.5),
-          Row("http://uri.com/subject/a2", 3.5),
-          Row("http://uri.com/subject/a3", 5.0)
+          Row("http://uri.com/subject/a1", "1.5"),
+          Row("http://uri.com/subject/a2", "3.5"),
+          Row("http://uri.com/subject/a3", "5.0")
         )
       }
 
@@ -4736,9 +4736,9 @@ class CompilerSpec
         val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
-          Row("http://uri.com/subject/a1", 0),
-          Row("http://uri.com/subject/a2", 0),
-          Row("http://uri.com/subject/a3", 0)
+          Row("http://uri.com/subject/a1", "0.0"),
+          Row("http://uri.com/subject/a2", "0.0"),
+          Row("http://uri.com/subject/a3", "0.0")
         )
       }
 
@@ -4753,7 +4753,7 @@ class CompilerSpec
         ).toDF("s", "p", "o")
 
         val query = """
-          SELECT ?a MIN(?b)
+          SELECT ?a MAX(?b)
           WHERE {
             ?a ?b <http://uri.com/object>
           } GROUP BY ?a
@@ -4762,9 +4762,9 @@ class CompilerSpec
         val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
-          Row("http://uri.com/subject/a1", 0),
-          Row("http://uri.com/subject/a2", 0),
-          Row("http://uri.com/subject/a3", 0)
+          Row("http://uri.com/subject/a1", "1.0"),
+          Row("http://uri.com/subject/a2", "1.0"),
+          Row("http://uri.com/subject/a3", "0.0")
         )
       }
 
@@ -4788,9 +4788,9 @@ class CompilerSpec
         val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
-          Row("http://uri.com/subject/a1", 3.0),
-          Row("http://uri.com/subject/a2", 3.0),
-          Row("http://uri.com/subject/a3", 1.0)
+          Row("http://uri.com/subject/a1", "3.0"),
+          Row("http://uri.com/subject/a2", "3.0"),
+          Row("http://uri.com/subject/a3", "1.0")
         )
       }
 

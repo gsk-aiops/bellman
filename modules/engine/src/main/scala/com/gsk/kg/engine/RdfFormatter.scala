@@ -1,17 +1,11 @@
 package com.gsk.kg.engine
 
+import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.Encoder
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.DataTypes
 
 import com.gsk.kg.config.Config
-
-import java.net.URI
-
-import scala.annotation.tailrec
-import scala.util.Success
-import scala.util.Try
 
 object RdfFormatter {
 
@@ -23,20 +17,22 @@ object RdfFormatter {
     * @return
     */
   def formatDataFrame(df: DataFrame, config: Config): DataFrame = {
-    implicit val encoder: Encoder[Row] = RowEncoder(df.schema)
-
-    val result = df.map { row =>
-      Row.fromSeq(row.toSeq.map(formatField))
+    val formatted = if (config.formatRdfOutput) {
+      df.columns.foldLeft(df) { (d, column) =>
+        d.withColumn(column, format(col(column)))
+      }
+    } else {
+      df
     }
 
     if (config.stripQuestionMarksOnOutput) {
-      removeDataFrameColumnsQuestionMarks(result)
+      removeDataFrameColumnsQuestionMarks(formatted)
     } else {
-      result
+      formatted
     }
   }
 
-  def removeDataFrameColumnsQuestionMarks(df: DataFrame): DataFrame = {
+  private def removeDataFrameColumnsQuestionMarks(df: DataFrame): DataFrame = {
     df.columns.foldLeft(df) { case (acc, column) =>
       if (column.startsWith("?")) {
         acc.withColumnRenamed(column, column.replace("?", ""))
@@ -46,86 +42,73 @@ object RdfFormatter {
     }
   }
 
-  def formatField(field: Any): Any =
-    Option(field)
-      .map(_.toString match {
-        case RDFUri(uri)             => uri
-        case RDFBlank(blank)         => blank
-        case RDFNum(num)             => num
-        case RDFBoolean(bool)        => bool
-        case RDFDataTypeLiteral(lit) => lit
-        case RDFLocalizedString(str) => str
-        case RDFString(str)          => str
-      })
-      .getOrElse(null) // scalastyle:off
-
-  object RDFString {
-    def unapply(str: String): Option[String] = {
-
-      @tailrec
-      def removeExtraDoubleQuotes(str: String): String = {
-        if (str.startsWith("\"") && str.endsWith("\"")) {
-          removeExtraDoubleQuotes(str.replace("\"", ""))
-        } else {
-          str
-        }
-      }
-
-      Some(s""""${removeExtraDoubleQuotes(str)}"""")
-    }
+  private def format(col: Column): Column = {
+    when(
+      isBoolean(col),
+      col.cast(DataTypes.StringType)
+    ).otherwise(
+      when(
+        isLocalizedString(col),
+        col.cast(DataTypes.StringType)
+      ).otherwise(
+        when(
+          isUri(col),
+          col.cast(DataTypes.StringType)
+        ).otherwise(
+          when(
+            isBlank(col),
+            col.cast(DataTypes.StringType)
+          ).otherwise(
+            when(
+              isDatatypeLiteral(col),
+              col.cast(DataTypes.StringType)
+            ).otherwise(
+              when(
+                isNumber(col),
+                col.cast(DataTypes.StringType)
+              ).otherwise(
+                when(
+                  isNull(col),
+                  col.cast(DataTypes.StringType)
+                ).otherwise(
+                  format_string("\"%s\"", col)
+                )
+              )
+            )
+          )
+        )
+      )
+    )
   }
 
-  object RDFLocalizedString {
-    def unapply(str: String): Option[String] =
-      if (str.startsWith("\"") && str.contains("\"@") && !str.endsWith("\"")) {
-        Some(str)
-      } else {
-        None
-      }
-  }
+  private def isDatatypeLiteral(column: Column): Column =
+    column.startsWith("\"") && column.contains("\"^^")
 
-  object RDFDataTypeLiteral {
-    def unapply(str: String): Option[String] =
-      if (str.contains("^^")) {
-        Some(str.replace("\".", ""))
-      } else {
-        None
-      }
-  }
+  private def isBlank(column: Column): Column =
+    column.startsWith("_:")
 
-  object RDFUri {
-    def unapply(str: String): Option[String] =
-      if (str.startsWith("<") && str.endsWith(">")) {
-        Some(str)
-      } else if (Try(new URI(str).isAbsolute) == Success(true)) {
-        Some(str)
-      } else {
-        None
-      }
-  }
+  private def isBoolean(column: Column): Column =
+    column === lit("true") || column === lit("false")
 
-  object RDFBlank {
-    def unapply(str: String): Option[String] =
-      if (str.startsWith("_:"))
-        Some(str)
-      else
-        None
-  }
+  private def isUri(column: Column): Column =
+    column.startsWith("<") && column.endsWith(">") ||
+      column.startsWith("http://") ||
+      column.startsWith("https://") ||
+      column.startsWith("mailto:")
 
-  object RDFNum {
-    def unapply(str: String): Option[Any] =
-      Try(Integer.parseInt(str)).recoverWith { case _ =>
-        Try(java.lang.Float.parseFloat(str))
-      }.toOption
-  }
+  private def isNumber(column: Column): Column =
+    column.cast(DataTypes.DoubleType).isNotNull ||
+      column.cast(DataTypes.FloatType).isNotNull ||
+      column.cast(DataTypes.LongType).isNotNull ||
+      column.cast(DataTypes.ShortType).isNotNull ||
+      column.cast(DataTypes.IntegerType).isNotNull
 
-  object RDFBoolean {
-    def unapply(str: String): Option[Boolean] =
-      str match {
-        case "true"  => Some(true)
-        case "false" => Some(false)
-        case _       => None
-      }
-  }
+  private def isNull(column: Column): Column =
+    column === lit("null") || column.isNull
+
+  private def isLocalizedString(column: Column): Column =
+    column.startsWith("\"") && column.contains("\"@") && not(
+      column.endsWith("\"")
+    )
 
 }

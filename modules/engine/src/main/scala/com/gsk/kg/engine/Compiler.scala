@@ -90,11 +90,7 @@ object Compiler {
   private def rdfFormatter: Phase[DataFrame, DataFrame] = {
     Kleisli[M, DataFrame, DataFrame] { inDf =>
       M.ask[Result, Config, Log, DataFrame].map { config =>
-        if (config.formatRdfOutput) {
-          RdfFormatter.formatDataFrame(inDf, config)
-        } else {
-          inDf
-        }
+        RdfFormatter.formatDataFrame(inDf, config)
       }
     }
   }

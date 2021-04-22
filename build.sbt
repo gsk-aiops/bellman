@@ -73,7 +73,7 @@ lazy val noPublishSettings = Seq(
   publish := {},
   publishLocal := {},
   publishArtifact := false,
-  skip in publish := true
+  publish / skip := true
 )
 
 lazy val compilerPlugins = Seq(
@@ -160,10 +160,10 @@ lazy val `bellman-spark-engine` = project
     )
   )
   .settings(
-    scalacOptions in (Compile, console) ~= {
+    Compile / console / scalacOptions ~= {
       _.filterNot(Set("-Ywarn-unused-import", "-Ywarn-unused:imports"))
     },
-    initialCommands in console := """
+    console / initialCommands := """
     import cats._
     import cats.implicits._
 
@@ -237,6 +237,12 @@ lazy val `bellman-spark-engine` = project
     }
     """
   )
+  .settings(
+    assembly / assemblyMergeStrategy := {
+      case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+      case _                                   => MergeStrategy.last
+    }
+  )
   .dependsOn(`bellman-algebra-parser` % "compile->compile;test->test")
 
 lazy val `bellman-site` = project
@@ -258,7 +264,7 @@ lazy val `bellman-site` = project
     micrositePushSiteWith := GitHub4s,
     mdocIn := (Compile / sourceDirectory).value / "docs",
     micrositeGithubToken := Option(System.getenv().get("GITHUB_TOKEN")),
-    micrositeImgDirectory := (resourceDirectory in Compile).value / "site" / "images" / "overview",
+    micrositeImgDirectory := (Compile / resourceDirectory).value / "site" / "images" / "overview",
     micrositeHighlightTheme := "tomorrow",
     micrositeTheme := "light",
     micrositePalette := Map(
