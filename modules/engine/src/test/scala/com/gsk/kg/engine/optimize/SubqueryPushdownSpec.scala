@@ -1,9 +1,11 @@
 package com.gsk.kg.engine.optimize
 
+import higherkindness.droste.data.Fix
+
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.sparqlparser.TestConfig
 import com.gsk.kg.sparqlparser.TestUtils
-import higherkindness.droste.data.Fix
+
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

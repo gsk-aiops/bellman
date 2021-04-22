@@ -1,21 +1,18 @@
 package com.gsk.kg.engine.optimizer
 
-import com.gsk.kg.engine.DAG
-import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import higherkindness.droste.Algebra
 import higherkindness.droste.Basis
 import higherkindness.droste.scheme
+
+import com.gsk.kg.engine.DAG
+import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 object SubqueryPushdown {
 
   private def toSubquery[T](dag: DAG[Boolean => T], isFromSubquery: Boolean)(
       implicit T: Basis[DAG, T]
   ): T = dag match {
-    case DAG.Describe(vars, r) if !isFromSubquery =>
-      DAG.describeR(vars, r(true))
-    case DAG.Describe(vars, r) =>
-      DAG.describeR(vars :+ VARIABLE(GRAPH_VARIABLE.s), r(isFromSubquery))
     case DAG.Ask(r) if !isFromSubquery =>
       DAG.askR(r(true))
     case DAG.Ask(r) =>
@@ -33,15 +30,15 @@ object SubqueryPushdown {
   def apply[T](implicit T: Basis[DAG, T]): T => T = { t =>
     val alg: Algebra[DAG, Boolean => T] =
       Algebra[DAG, Boolean => T] {
-        case dag @ DAG.Describe(vars, r) =>
+        case dag @ DAG.Ask(_) =>
           isFromSubquery => toSubquery(dag, isFromSubquery)
-        case dag @ DAG.Ask(r) =>
+        case dag @ DAG.Construct(_, _) =>
           isFromSubquery => toSubquery(dag, isFromSubquery)
-        case dag @ DAG.Construct(bgp, r) =>
-          isFromSubquery => toSubquery(dag, isFromSubquery)
-        case dag @ DAG.Project(variables, r) =>
+        case dag @ DAG.Project(_, _) =>
           isFromSubquery => toSubquery(dag, isFromSubquery)
 
+        case DAG.Describe(vars, r) =>
+          isFromSubquery => DAG.describeR(vars, r(isFromSubquery))
         case DAG.Scan(graph, expr) =>
           isFromSubquery => DAG.scanR(graph, expr(isFromSubquery))
         case DAG.Bind(variable, expression, r) =>
