@@ -53,7 +53,10 @@ object RdfFormatter {
       ).otherwise(
         when(
           isUri(col),
-          col.cast(DataTypes.StringType)
+          when(
+            col.startsWith("<") && col.endsWith(">"),
+            col
+          ).otherwise(format_string("<%s>", col))
         ).otherwise(
           when(
             isBlank(col),

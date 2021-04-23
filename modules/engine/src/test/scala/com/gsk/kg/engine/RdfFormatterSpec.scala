@@ -23,12 +23,14 @@ class RdfFormatterSpec
     import sqlContext.implicits._
 
     val df = List(
+      ("\"string\"@en", "_:blanknode", "http://uri.com"),
       ("\"string\"@en", "_:blanknode", "<http://uri.com>"),
       ("false", "true", "another string"),
       ("\"false\"^^xsd:boolean", "\"true\"^^xsd:boolean", "1")
     ).toDF("s", "p", "o")
 
     val expected = List(
+      ("\"string\"@en", "_:blanknode", "<http://uri.com>"),
       ("\"string\"@en", "_:blanknode", "<http://uri.com>"),
       ("false", "true", "\"another string\""),
       ("\"false\"^^xsd:boolean", "\"true\"^^xsd:boolean", "1")
