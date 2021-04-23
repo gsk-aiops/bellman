@@ -49,7 +49,7 @@ object Compiler {
     parser >>>
       transformToGraph.first >>>
       optimizer >>>
-//      staticAnalysis >>>
+      staticAnalysis >>>
       engine(df) >>>
       rdfFormatter
 
