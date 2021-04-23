@@ -7,7 +7,6 @@ import cats.implicits._
 import higherkindness.droste.Basis
 
 import com.gsk.kg.Graphs
-import com.gsk.kg.engine.optimize.GraphsPushdown
 
 object Optimizer {
 
@@ -18,6 +17,7 @@ object Optimizer {
 
   def optimize[T: Basis[DAG, *]]: Phase[(T, Graphs), T] =
     graphsPushdownPhase >>>
+      Arrow[Phase].lift(JoinBGPs[T]) >>>
       Arrow[Phase].lift(CompactBGPs[T]) >>>
       Arrow[Phase].lift(RemoveNestedProject[T])
 }

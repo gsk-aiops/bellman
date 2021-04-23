@@ -58,12 +58,12 @@ val list: ChunkedList[String] =
 list.compact(_.head)
 ```
 
-<img src="/img/chunkedlist.gif">
+<img src="/bellman/img/chunkedlist.gif">
 
 ## Compacting BGPs by shared variables
 
 The auxiliary function we have for compacting BGPs looks for shared variables in the same positions in the triples.
 
-<img src="/img/bgp-compaction.gif" width="100%">
+<img src="/bellman/img/bgp-compaction.gif" width="100%">
 
 Now that we have the triples compacted in the BGP, what we do is that we query the underlying datafram once **per chunk**, not once per triple.  You can take a look at the `Engine` file to see how we iterate over all chunks to query the dataframe.

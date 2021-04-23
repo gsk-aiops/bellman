@@ -73,7 +73,7 @@ lazy val noPublishSettings = Seq(
   publish := {},
   publishLocal := {},
   publishArtifact := false,
-  skip in publish := true
+  publish / skip := true
 )
 
 lazy val compilerPlugins = Seq(
@@ -160,10 +160,10 @@ lazy val `bellman-spark-engine` = project
     )
   )
   .settings(
-    scalacOptions in (Compile, console) ~= {
+    Compile / console / scalacOptions ~= {
       _.filterNot(Set("-Ywarn-unused-import", "-Ywarn-unused:imports"))
     },
-    initialCommands in console := """
+    console / initialCommands := """
     import cats._
     import cats.implicits._
 
@@ -172,6 +172,7 @@ lazy val `bellman-spark-engine` = project
     import higherkindness.droste.data.prelude._
     import higherkindness.droste.syntax.all._
 
+    import com.gsk.kg.Graphs
     import com.gsk.kg.config.Config
     import com.gsk.kg.sparql.syntax.all._
     import com.gsk.kg.sparqlparser._
@@ -180,6 +181,7 @@ lazy val `bellman-spark-engine` = project
     import com.gsk.kg.engine._
     import com.gsk.kg.engine.DAG._
     import com.gsk.kg.engine.optimizer._
+    import com.gsk.kg.engine.syntax._
 
     import org.apache.spark._
     import org.apache.spark.sql._
@@ -197,8 +199,49 @@ lazy val `bellman-spark-engine` = project
     val config = ConfigSource.default.loadOrThrow[Config]
 
     import sc.implicits._
+
+    def readNTtoDF(path: String) = {
+      import org.apache.jena.riot.RDFParser
+      import org.apache.jena.riot.lang.CollectorStreamTriples
+      import scala.collection.JavaConverters._
+
+      val filename                            = s"modules/engine/src/test/resources/$path"
+      val inputStream: CollectorStreamTriples = new CollectorStreamTriples()
+      RDFParser.source(filename).parse(inputStream)
+
+      inputStream
+        .getCollected()
+        .asScala
+        .toList
+        .map(triple =>
+          (
+            triple.getSubject().toString(),
+            triple.getPredicate().toString(),
+            triple.getObject().toString(),
+            ""
+          )
+        )
+        .toDF("s", "p", "o", "g")
+    }
+
+    def printTree(query: String): Unit = {
+      val q = QueryConstruct.parse(query, Config.default)._1
+      val dag = DAG.fromQuery.apply(q)
+      println(dag.toTree.drawTree)
+    }
     
+    def printOptimizedTree(query: String): Unit = {
+      val q = QueryConstruct.parse(query, Config.default)._1
+      val dag = Optimizer.optimize.apply((DAG.fromQuery.apply(q), Graphs.empty)).runA(Config.default, null).right.get
+      println(dag.toTree.drawTree)
+    }
     """
+  )
+  .settings(
+    assembly / assemblyMergeStrategy := {
+      case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+      case _                                   => MergeStrategy.last
+    }
   )
   .dependsOn(`bellman-algebra-parser` % "compile->compile;test->test")
 
@@ -215,18 +258,19 @@ lazy val `bellman-site` = project
     micrositeGithubOwner := "gsk-aiops",
     micrositeGithubRepo := "bellman",
     micrositeOrganizationHomepage := "https://www.gsk.com",
-    micrositeDocumentationUrl := "/docs/compilation",
+    micrositeBaseUrl := "bellman",
+    micrositeDocumentationUrl := "docs/compilation",
     micrositeGitterChannel := false,
     micrositePushSiteWith := GitHub4s,
     mdocIn := (Compile / sourceDirectory).value / "docs",
     micrositeGithubToken := Option(System.getenv().get("GITHUB_TOKEN")),
-    micrositeImgDirectory := (resourceDirectory in Compile).value / "site" / "images" / "overview",
+    micrositeImgDirectory := (Compile / resourceDirectory).value / "site" / "images" / "overview",
     micrositeHighlightTheme := "tomorrow",
     micrositeTheme := "light",
     micrositePalette := Map(
-      "brand-primary"   -> "#F3490C",
-      "brand-secondary" -> "#FFE586",
-      "white-color"     -> "#FFF"
+      "brand-primary"   -> "#868b8e",
+      "brand-secondary" -> "#b9b7bd",
+      "white-color"     -> "#fff"
     ),
     micrositeHighlightTheme := "github-gist"
   )

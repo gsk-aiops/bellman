@@ -9,6 +9,7 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
+import com.gsk.kg.config.Config
 import com.gsk.kg.sparqlparser._
 
 /** [[ExpressionF]] is a pattern functor for the recursive
@@ -145,7 +146,8 @@ object ExpressionF {
     )
 
   def compile[T](
-      t: T
+      t: T,
+      config: Config
   )(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
     val algebraM: AlgebraM[M, ExpressionF, Column] =
       AlgebraM.apply[M, ExpressionF, Column] {
@@ -175,19 +177,20 @@ object ExpressionF {
         case STRING(s, None)            => lit(s).pure[M]
         case STRING(s, Some(tag))       => lit(s""""$s"^^$tag""").pure[M]
         case NUM(s)                     => lit(s).pure[M]
-        case VARIABLE(s)                => M.inspect[Result, DataFrame, Column](_(s))
-        case URIVAL(s)                  => lit(s).pure[M]
-        case BLANK(s)                   => lit(s).pure[M]
-        case BOOL(s)                    => lit(s).pure[M]
+        case VARIABLE(s) =>
+          M.inspect[Result, Config, Log, DataFrame, Column](_(s))
+        case URIVAL(s) => lit(s).pure[M]
+        case BLANK(s)  => lit(s).pure[M]
+        case BOOL(s)   => lit(s).pure[M]
       }
 
     val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)
 
-    eval(t).runA(df)
+    eval(t).runA(config, df)
   }
 
   private def unknownFunction(name: String): M[Column] =
-    M.liftF[Result, DataFrame, Column](
+    M.liftF[Result, Config, Log, DataFrame, Column](
       EngineError.UnknownFunction(name).asLeft[Column]
     )
 

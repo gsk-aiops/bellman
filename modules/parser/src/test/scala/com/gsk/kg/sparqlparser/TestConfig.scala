@@ -11,7 +11,8 @@ trait TestConfig {
     """
       |{
       | is-default-graph-exclusive = true,
-      | strip-question-marks-on-output = false
+      | strip-question-marks-on-output = false,
+      | format-rdf-output = true
       |}
       |""".stripMargin
 
