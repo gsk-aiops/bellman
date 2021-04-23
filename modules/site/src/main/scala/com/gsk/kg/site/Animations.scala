@@ -194,6 +194,43 @@ object Animations extends App {
           tweakAnimation = tweakAnimation
         )
     )
+  }
+
+  def createSubqueryPushdownAnimation(): Unit = {
+    val (query, _) = QueryConstruct
+      .parse(
+        """
+          |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+          |
+          |CONSTRUCT {
+          |  ?y foaf:knows ?name .
+          |} WHERE {
+          |  ?y foaf:knows ?x .
+          |  {
+          |    SELECT ?x ?name
+          |    WHERE {
+          |      ?x foaf:name ?name . 
+          |    }
+          |  }
+          |}
+          |""".stripMargin,
+        Config.default
+      )
+
+    val dag = DAG.fromQuery.apply(query)
+
+    (
+      Animation
+        .startWith(dag)
+        .iterateWithIndex(1) { (dag, i) =>
+          SubqueryPushdown[Fix[DAG]].apply(dag)
+        }
+        .build(Diagram(_).withCaption("DAG").withColor(2))
+        .render(
+          "subquery-pushdown",
+          tweakAnimation = tweakAnimation
+        )
+    )
 
   }
 
@@ -202,4 +239,5 @@ object Animations extends App {
   createCompactBGPAnimation()
   createChunkedListAnimation()
   createGraphPushdownAnimation()
+  createSubqueryPushdownAnimation()
 }

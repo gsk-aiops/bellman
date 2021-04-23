@@ -11,6 +11,8 @@ options:
         url: docs/optimization/compactBgps
       - title: Graph pushdown
         url: docs/optimization/graphPushdown
+      - title: Subquery pushdown
+        url: docs/optimization/subqueryPushdown
 
   - title: Phases
     url: docs/phases

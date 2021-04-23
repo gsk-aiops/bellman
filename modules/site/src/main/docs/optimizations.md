@@ -9,6 +9,7 @@ permalink: docs/optimization
 There are some optimizations that Bellman performs to make queries run faster.
 
 - Graph pushdown
+- Subquery pushdown
 - Join BGPs
 - Compact BGPs
 - Remove Nested Project
