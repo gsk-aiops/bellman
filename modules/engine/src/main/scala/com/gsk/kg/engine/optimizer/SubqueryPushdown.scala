@@ -146,32 +146,33 @@ import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 object SubqueryPushdown {
 
-  private def toSubquery[T](dag: DAG[Boolean => T], isFromSubquery: Boolean)(
-      implicit T: Basis[DAG, T]
-  ): T = dag match {
-    case DAG.Ask(r) if !isFromSubquery =>
-      DAG.askR(r(true))
-    case DAG.Ask(r) =>
-      DAG.askR(r(isFromSubquery))
-    case DAG.Construct(bgp, r) if !isFromSubquery =>
-      DAG.constructR(bgp, r(true))
-    case DAG.Construct(bgp, r) =>
-      DAG.constructR(bgp, r(isFromSubquery))
-    case DAG.Project(variables, r) if !isFromSubquery =>
-      DAG.projectR(variables, r(true))
-    case DAG.Project(variables, r) =>
-      DAG.projectR(variables :+ VARIABLE(GRAPH_VARIABLE.s), r(isFromSubquery))
-  }
-
   def apply[T](implicit T: Basis[DAG, T]): T => T = { t =>
     val alg: Algebra[DAG, Boolean => T] =
       Algebra[DAG, Boolean => T] {
-        case dag @ DAG.Ask(_) =>
-          isFromSubquery => toSubquery(dag, isFromSubquery)
-        case dag @ DAG.Construct(_, _) =>
-          isFromSubquery => toSubquery(dag, isFromSubquery)
-        case dag @ DAG.Project(_, _) =>
-          isFromSubquery => toSubquery(dag, isFromSubquery)
+        case DAG.Ask(r) =>
+          isSubquery =>
+            if (isSubquery) {
+              DAG.askR(r(isSubquery))
+            } else {
+              DAG.askR(r(true))
+            }
+        case DAG.Construct(bgp, r) =>
+          isSubquery =>
+            if (isSubquery) {
+              DAG.constructR(bgp, r(isSubquery))
+            } else {
+              DAG.constructR(bgp, r(true))
+            }
+        case DAG.Project(variables, r) =>
+          isSubquery =>
+            if (isSubquery) {
+              DAG.projectR(
+                variables :+ VARIABLE(GRAPH_VARIABLE.s),
+                r(isSubquery)
+              )
+            } else {
+              DAG.projectR(variables, r(true))
+            }
         case DAG.Describe(vars, r) =>
           isFromSubquery => DAG.describeR(vars, r(isFromSubquery))
         case DAG.Scan(graph, expr) =>

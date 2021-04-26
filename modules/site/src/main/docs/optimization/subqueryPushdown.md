@@ -10,15 +10,20 @@ SparQL supports nesting queries, this is called sub-queries. Eg:
 
 ````sparql
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX ex: <http://example.org/>
 
 CONSTRUCT {
   ?y foaf:knows ?name .
-} WHERE {
+} 
+FROM NAMED <http://example.org/alice>
+WHERE {
   ?y foaf:knows ?x .
-  {
-    SELECT ?x ?name
-    WHERE {
-      ?x foaf:name ?name . 
+  GRAPH ex:alice {
+    {
+      SELECT ?x ?name
+      WHERE {
+        ?x foaf:name ?name . 
+      }
     }
   }
 }
