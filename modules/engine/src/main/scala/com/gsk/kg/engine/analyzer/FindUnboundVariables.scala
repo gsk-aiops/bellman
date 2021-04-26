@@ -9,6 +9,7 @@ import higherkindness.droste.{Project => _, _}
 
 import com.gsk.kg.engine.DAG._
 import com.gsk.kg.engine.data.ChunkedList
+import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 /** This rule performs a bottom-up traverse of the DAG (with a
@@ -28,7 +29,10 @@ object FindUnboundVariables {
   def apply[T](implicit T: Basis[DAG, T]): Rule[T] = { t =>
     val analyze = scheme.cataM[ST, DAG, T, Set[VARIABLE]](findUnboundVariables)
 
-    val unbound: Set[VARIABLE] = analyze(t).runA(Set.empty).value
+    val unbound: Set[VARIABLE] = analyze(t)
+      .runA(Set.empty)
+      .value
+      .filterNot(_ == VARIABLE(GRAPH_VARIABLE.s))
 
     if (unbound.nonEmpty) {
       val msg = "found free variables " + unbound.mkString(", ")

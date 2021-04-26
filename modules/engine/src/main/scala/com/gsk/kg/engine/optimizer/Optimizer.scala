@@ -19,5 +19,6 @@ object Optimizer {
     graphsPushdownPhase >>>
       Arrow[Phase].lift(JoinBGPs[T]) >>>
       Arrow[Phase].lift(CompactBGPs[T]) >>>
-      Arrow[Phase].lift(RemoveNestedProject[T])
+      Arrow[Phase].lift(RemoveNestedProject[T]) >>>
+      Arrow[Phase].lift(SubqueryPushdown[T])
 }

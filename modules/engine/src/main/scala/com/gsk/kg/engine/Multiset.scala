@@ -410,18 +410,18 @@ object Multiset {
     val innerJoin = renamedLeft.join(renamedRight, intersect, "inner")
 
     // Merges the *l and *r columns into a *g column with Array(l, r)
-    val innerWithMergedGraphColunns = innerJoin
+    val innerWithMergedGraphColumns = innerJoin
       .withColumn(GRAPH_VARIABLE.s, array(leftGraphCol, rightGraphCol))
       .drop(leftGraphCol, rightGraphCol)
 
     // Generates a schema for the final DF (needed for the flatMap)
-    val resultSchema = innerWithMergedGraphColunns
+    val resultSchema = innerWithMergedGraphColumns
       .withColumn(GRAPH_VARIABLE.s, lit(""))
       .schema
 
     // For each element on the array of *g column if all the graphs are the same we assign the graph
     // if not we assign default graph
-    val result = innerWithMergedGraphColunns.map { r =>
+    val result = innerWithMergedGraphColumns.map { r =>
       val index  = r.fieldIndex(GRAPH_VARIABLE.s)
       val graphs = r.getSeq[String](index)
       if (graphs.forall(_ == graphs.head)) {
