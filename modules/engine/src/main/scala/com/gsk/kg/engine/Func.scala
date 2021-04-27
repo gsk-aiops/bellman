@@ -134,8 +134,8 @@ object Func {
     *
     * =Examples=
     *
-    * | Function call                                     | Result |
-    * |:--------------------------------------------------|:-------|
+    * | Function call                                      | Result |
+    * |:---------------------------------------------------|:-------|
     * | strstarts("foobar", "foo")                         | true   |
     * | strstarts("foobar"@en, "foo"@en)                   | true   |
     * | strstarts("foobar"^^xsd:string, "foo"^^xsd:string) | true   |
