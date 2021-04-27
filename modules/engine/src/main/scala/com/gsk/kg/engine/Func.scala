@@ -130,6 +130,35 @@ object Func {
     when(substring_index(col, str, -1) === col, lit(""))
       .otherwise(substring_index(col, str, -1))
 
+  /** Implementation of SparQL STRSTARTS on Spark dataframes.
+    *
+    * =Examples=
+    *
+    * | Function call                                     | Result |
+    * |:--------------------------------------------------|:-------|
+    * | strafter("foobar", "foo")                         | true   |
+    * | strafter("foobar"@en, "foo"@en)                   | true   |
+    * | strafter("foobar"^^xsd:string, "foo"^^xsd:string) | true   |
+    * | strafter("foobar"^^xsd:string, "foo")             | true   |
+    * | strafter("foobar", "foo"^^xsd:string)             | true   |
+    * | strafter("foobar"@en, "foo")                      | true   |
+    * | strafter("foobar"@en, "foo"^^xsd:string)          | true   |
+    * | strafter("bar", "foo"^^xsd:string)                | false  |
+    * | strafter("bar", "foo")                            | false  |
+    * | strafter("foobar"@fr, "foo"@en)                   | error  |
+    * | strafter("foobar", "foo"@en)                      | error  |
+    * | strafter("foobar"^^xsd:string, "foo"@en)          | error  |
+    * TODO (pepegar): Implement argument compatibility checks
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-strstarts]]
+    * @param col
+    * @param str
+    * @return
+    */
+  def strstarts(col: Column, str: String): Column =
+    when(col.startsWith(str), lit(true))
+      .otherwise(lit(false))
+
   /** The IRI function constructs an IRI by resolving the string
     * argument (see RFC 3986 and RFC 3987 or any later RFC that
     * superceeds RFC 3986 or RFC 3987). The IRI is resolved against
