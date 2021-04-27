@@ -1,15 +1,18 @@
 package com.gsk.kg.site.contrib.reftree
 
-import higherkindness.droste._
-import cats.implicits._
 import cats.Traverse
 import cats.data.State
-import reftree.core._
+import cats.implicits._
+
+import higherkindness.droste._
 import higherkindness.droste.data.Fix
-import com.gsk.kg.sparqlparser.Expr
-import com.gsk.kg.engine.data.ChunkedList
-import reftree.contrib.SimplifiedInstances._
+
 import com.gsk.kg.engine.DAG
+import com.gsk.kg.engine.data.ChunkedList
+import com.gsk.kg.sparqlparser.Expr
+
+import reftree.contrib.SimplifiedInstances._
+import reftree.core._
 
 object prelude {
 

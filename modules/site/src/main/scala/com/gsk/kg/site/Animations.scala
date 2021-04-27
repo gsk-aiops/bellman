@@ -1,27 +1,30 @@
 package com.gsk.kg.site
 
-import scala.concurrent.duration._
-
-import com.gsk.kg.site.contrib.reftree.prelude._
-import com.gsk.kg.engine.optimizer._
-import reftree.diagram.Animation
-import reftree.diagram.Diagram
-import reftree.render.Renderer
-import reftree.render.RenderingOptions
-import reftree.contrib.SimplifiedInstances._
-import java.nio.file.Paths
 import cats.implicits._
+import cats.syntax.either._
 
 import higherkindness.droste.data._
 
-import com.gsk.kg.sparqlparser._
-import com.gsk.kg.engine.data._
-import com.gsk.kg.engine._
-import com.gsk.kg.engine.DAG._
-import com.gsk.kg.engine.optimizer._
 import com.gsk.kg.Graphs
 import com.gsk.kg.config.Config
+import com.gsk.kg.engine.DAG._
+import com.gsk.kg.engine._
+import com.gsk.kg.engine.data._
+import com.gsk.kg.engine.optimizer._
+import com.gsk.kg.engine.optimizer._
+import com.gsk.kg.site.contrib.reftree.prelude._
+import com.gsk.kg.sparqlparser._
+
+import java.nio.file.Paths
+
+import scala.concurrent.duration._
+
+import reftree.contrib.SimplifiedInstances._
+import reftree.diagram.Animation
+import reftree.diagram.Diagram
 import reftree.render.AnimationOptions
+import reftree.render.Renderer
+import reftree.render.RenderingOptions
 
 /** This object generates all the diagrams and animations we have in our documentation.
   */
@@ -41,8 +44,8 @@ object Animations extends App {
       interpolationDuration = 0.5.seconds
     )
 
-  def createBasicAnimation(): Unit = {
-    val query = QueryConstruct
+  def createBasicAnimation(): Result[Unit] = {
+    QueryConstruct
       .parse(
         """
         SELECT ?d
@@ -55,36 +58,36 @@ object Animations extends App {
         """,
         Config.default
       )
-      ._1
+      .map { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
 
-    val dag = DAG.fromQuery.apply(query)
-
-    val optimizations: Map[Int, Fix[DAG] => Fix[DAG]] = Map(
-      1 -> RemoveNestedProject[Fix[DAG]].apply,
-      2 -> { dag => GraphsPushdown[Fix[DAG]].apply(dag, Graphs.empty) },
-      3 -> JoinBGPs[Fix[DAG]].apply,
-      4 -> CompactBGPs[Fix[DAG]].apply
-    )
-
-    (
-      Animation
-        .startWith(dag)
-        .iterateWithIndex(4) { (dag, i) =>
-          optimizations(i).apply(dag)
-        }
-        .build(Diagram(_).withCaption("DAG").withColor(2))
-        .render(
-          "animation-simple",
-          tweakAnimation = tweakAnimation
+        val optimizations: Map[Int, Fix[DAG] => Fix[DAG]] = Map(
+          1 -> RemoveNestedProject[Fix[DAG]].apply,
+          2 -> { dag => GraphsPushdown[Fix[DAG]].apply(dag, Graphs.empty) },
+          3 -> JoinBGPs[Fix[DAG]].apply,
+          4 -> CompactBGPs[Fix[DAG]].apply
         )
-    )
+
+        (
+          Animation
+            .startWith(dag)
+            .iterateWithIndex(4) { (dag, i) =>
+              optimizations(i).apply(dag)
+            }
+            .build(Diagram(_).withCaption("DAG").withColor(2))
+            .render(
+              "animation-simple",
+              tweakAnimation = tweakAnimation
+            )
+        )
+      }
   }
 
-  def createChunkedListAnimation(): Unit = {
+  def createChunkedListAnimation(): Result[Unit] = {
     val list: ChunkedList[String] =
       ChunkedList.fromList(List("a", "as", "asterisk", "b", "bee", "burrito"))
 
-    (
+    Right(
       Animation
         .startWith(list)
         .iterateWithIndex(1) { (list, i) =>
@@ -98,8 +101,8 @@ object Animations extends App {
     )
   }
 
-  def createCompactBGPAnimation(): Unit = {
-    val query = QueryConstruct
+  def createCompactBGPAnimation(): Result[Unit] = {
+    QueryConstruct
       .parse(
         """
         SELECT ?d
@@ -110,26 +113,26 @@ object Animations extends App {
         """,
         Config.default
       )
-      ._1
+      .map { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
 
-    val dag = DAG.fromQuery.apply(query)
-
-    (
-      Animation
-        .startWith(dag)
-        .iterateWithIndex(1) { (dag, i) =>
-          CompactBGPs[Fix[DAG]].apply(dag)
-        }
-        .build(Diagram(_).withCaption("DAG").withColor(2))
-        .render(
-          "bgp-compaction",
-          tweakAnimation = tweakAnimation
+        (
+          Animation
+            .startWith(dag)
+            .iterateWithIndex(1) { (dag, i) =>
+              CompactBGPs[Fix[DAG]].apply(dag)
+            }
+            .build(Diagram(_).withCaption("DAG").withColor(2))
+            .render(
+              "bgp-compaction",
+              tweakAnimation = tweakAnimation
+            )
         )
-    )
+      }
   }
 
-  def createJoinBGPsAnimation(): Unit = {
-    val query = QueryConstruct
+  def createJoinBGPsAnimation(): Result[Unit] = {
+    QueryConstruct
       .parse(
         """
         CONSTRUCT {
@@ -142,31 +145,31 @@ object Animations extends App {
         """,
         Config.default
       )
-      ._1
-
-    val optimizations: Map[Int, Fix[DAG] => Fix[DAG]] = Map(
-      1 -> { dag => GraphsPushdown[Fix[DAG]].apply(dag, Graphs.empty) },
-      2 -> JoinBGPs[Fix[DAG]].apply
-    )
-
-    val dag = DAG.fromQuery.apply(query)
-
-    (
-      Animation
-        .startWith(dag)
-        .iterateWithIndex(2) { (dag, i) =>
-          optimizations(i).apply(dag)
-        }
-        .build(Diagram(_).withCaption("DAG").withColor(2))
-        .render(
-          "join-bgps",
-          tweakAnimation = tweakAnimation
+      .map { case (query, _) =>
+        val optimizations: Map[Int, Fix[DAG] => Fix[DAG]] = Map(
+          1 -> { dag => GraphsPushdown[Fix[DAG]].apply(dag, Graphs.empty) },
+          2 -> JoinBGPs[Fix[DAG]].apply
         )
-    )
+
+        val dag = DAG.fromQuery.apply(query)
+
+        (
+          Animation
+            .startWith(dag)
+            .iterateWithIndex(2) { (dag, i) =>
+              optimizations(i).apply(dag)
+            }
+            .build(Diagram(_).withCaption("DAG").withColor(2))
+            .render(
+              "join-bgps",
+              tweakAnimation = tweakAnimation
+            )
+        )
+      }
   }
 
-  def createGraphPushdownAnimation(): Unit = {
-    val query = QueryConstruct
+  def createGraphPushdownAnimation(): Result[Unit] = {
+    QueryConstruct
       .parse(
         """
         SELECT *
@@ -178,26 +181,26 @@ object Animations extends App {
         }""",
         Config.default
       )
-      ._1
+      .map { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
 
-    val dag = DAG.fromQuery.apply(query)
-
-    (
-      Animation
-        .startWith(dag)
-        .iterateWithIndex(1) { (dag, i) =>
-          GraphsPushdown[Fix[DAG]].apply(dag, Graphs.empty)
-        }
-        .build(Diagram(_).withCaption("DAG").withColor(2))
-        .render(
-          "graph-pushdown",
-          tweakAnimation = tweakAnimation
+        (
+          Animation
+            .startWith(dag)
+            .iterateWithIndex(1) { (dag, i) =>
+              GraphsPushdown[Fix[DAG]].apply(dag, Graphs.empty)
+            }
+            .build(Diagram(_).withCaption("DAG").withColor(2))
+            .render(
+              "graph-pushdown",
+              tweakAnimation = tweakAnimation
+            )
         )
-    )
+      }
   }
 
-  def createSubqueryPushdownAnimation(): Unit = {
-    val (query, _) = QueryConstruct
+  def createSubqueryPushdownAnimation(): Result[Unit] = {
+    QueryConstruct
       .parse(
         """
           |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -209,35 +212,37 @@ object Animations extends App {
           |  {
           |    SELECT ?x ?name
           |    WHERE {
-          |      ?x foaf:name ?name . 
+          |      ?x foaf:name ?name .
           |    }
           |  }
           |}
           |""".stripMargin,
         Config.default
       )
+      .map { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
 
-    val dag = DAG.fromQuery.apply(query)
-
-    (
-      Animation
-        .startWith(dag)
-        .iterateWithIndex(1) { (dag, i) =>
-          SubqueryPushdown[Fix[DAG]].apply(dag)
-        }
-        .build(Diagram(_).withCaption("DAG").withColor(2))
-        .render(
-          "subquery-pushdown",
-          tweakAnimation = tweakAnimation
+        (
+          Animation
+            .startWith(dag)
+            .iterateWithIndex(1) { (dag, i) =>
+              SubqueryPushdown[Fix[DAG]].apply(dag)
+            }
+            .build(Diagram(_).withCaption("DAG").withColor(2))
+            .render(
+              "subquery-pushdown",
+              tweakAnimation = tweakAnimation
+            )
         )
-    )
-
+      }
   }
 
-  createBasicAnimation()
-  createJoinBGPsAnimation()
-  createCompactBGPAnimation()
-  createChunkedListAnimation()
-  createGraphPushdownAnimation()
-  createSubqueryPushdownAnimation()
+  (for {
+    _ <- createBasicAnimation()
+    _ <- createJoinBGPsAnimation()
+    _ <- createCompactBGPAnimation()
+    _ <- createChunkedListAnimation()
+    _ <- createGraphPushdownAnimation()
+    _ <- createSubqueryPushdownAnimation()
+  } yield ()).right.get
 }
