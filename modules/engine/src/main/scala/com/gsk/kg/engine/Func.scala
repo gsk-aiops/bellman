@@ -134,20 +134,21 @@ object Func {
     *
     * =Examples=
     *
-    * | Function call                                     | Result |
-    * |:--------------------------------------------------|:-------|
-    * | strafter("foobar", "foo")                         | true   |
-    * | strafter("foobar"@en, "foo"@en)                   | true   |
-    * | strafter("foobar"^^xsd:string, "foo"^^xsd:string) | true   |
-    * | strafter("foobar"^^xsd:string, "foo")             | true   |
-    * | strafter("foobar", "foo"^^xsd:string)             | true   |
-    * | strafter("foobar"@en, "foo")                      | true   |
-    * | strafter("foobar"@en, "foo"^^xsd:string)          | true   |
-    * | strafter("bar", "foo"^^xsd:string)                | false  |
-    * | strafter("bar", "foo")                            | false  |
-    * | strafter("foobar"@fr, "foo"@en)                   | error  |
-    * | strafter("foobar", "foo"@en)                      | error  |
-    * | strafter("foobar"^^xsd:string, "foo"@en)          | error  |
+    * | Function call                                      | Result |
+    * |:---------------------------------------------------|:-------|
+    * | strstarts("foobar", "foo")                         | true   |
+    * | strstarts("foobar"@en, "foo"@en)                   | true   |
+    * | strstarts("foobar"^^xsd:string, "foo"^^xsd:string) | true   |
+    * | strstarts("foobar"^^xsd:string, "foo")             | true   |
+    * | strstarts("foobar", "foo"^^xsd:string)             | true   |
+    * | strstarts("foobar"@en, "foo")                      | true   |
+    * | strstarts("foobar"@en, "foo"^^xsd:string)          | true   |
+    * | strstarts("bar", "foo"^^xsd:string)                | false  |
+    * | strstarts("bar", "foo")                            | false  |
+    * | strstarts("foobar"@fr, "foo"@en)                   | error  |
+    * | strstarts("foobar", "foo"@en)                      | error  |
+    * | strstarts("foobar"^^xsd:string, "foo"@en)          | error  |
+    *
     * TODO (pepegar): Implement argument compatibility checks
     *
     * @see [[https://www.w3.org/TR/sparql11-query/#func-strstarts]]
