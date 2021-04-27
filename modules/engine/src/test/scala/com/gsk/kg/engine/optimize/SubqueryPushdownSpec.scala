@@ -1,5 +1,7 @@
 package com.gsk.kg.engine.optimize
 
+import cats.syntax.either._
+
 import higherkindness.droste.data.Fix
 
 import com.gsk.kg.engine.DAG
@@ -48,31 +50,33 @@ class SubqueryPushdownSpec
             |}
             |""".stripMargin
 
-        val (query, _) = parse(q, config)
+        parse(q, config)
+          .map { case (query, _) =>
+            val dag: T = DAG.fromQuery.apply(query)
+            Fix.un(dag) match {
+              case Project(
+                    outerVars,
+                    Project(innerVars1, Join(_, Project(innerVars2, _)))
+                  ) =>
+                (outerVars ++ innerVars1 ++ innerVars2) should not contain VARIABLE(
+                  GRAPH_VARIABLE.s
+                )
+              case _ => fail
+            }
 
-        val dag: T = DAG.fromQuery.apply(query)
-        Fix.un(dag) match {
-          case Project(
-                outerVars,
-                Project(innerVars1, Join(_, Project(innerVars2, _)))
-              ) =>
-            (outerVars ++ innerVars1 ++ innerVars2) should not contain VARIABLE(
-              GRAPH_VARIABLE.s
-            )
-          case _ => fail
-        }
-
-        val pushed = SubqueryPushdown[T].apply(dag)
-        Fix.un(pushed) match {
-          case Project(
-                outerVars,
-                Project(innerVars1, Join(_, Project(innerVars2, _)))
-              ) =>
-            outerVars should not contain VARIABLE(GRAPH_VARIABLE.s)
-            innerVars1 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
-            innerVars2 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
-          case _ => fail
-        }
+            val pushed = SubqueryPushdown[T].apply(dag)
+            Fix.un(pushed) match {
+              case Project(
+                    outerVars,
+                    Project(innerVars1, Join(_, Project(innerVars2, _)))
+                  ) =>
+                outerVars should not contain VARIABLE(GRAPH_VARIABLE.s)
+                innerVars1 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
+                innerVars2 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
+              case _ => fail
+            }
+          }
+          .getOrElse(fail)
       }
 
       // TODO: Un-ignore when implemented ASK
@@ -97,21 +101,23 @@ class SubqueryPushdownSpec
             |}
             |""".stripMargin
 
-        val (query, _) = parse(q, config)
+        parse(q, config)
+          .map { case (query, _) =>
+            val dag: T = DAG.fromQuery.apply(query)
+            Fix.un(dag) match {
+              case Construct(_, Join(_, Project(innerVars, _))) =>
+                innerVars should not contain VARIABLE(GRAPH_VARIABLE.s)
+              case _ => fail
+            }
 
-        val dag: T = DAG.fromQuery.apply(query)
-        Fix.un(dag) match {
-          case Construct(_, Join(_, Project(innerVars, _))) =>
-            innerVars should not contain VARIABLE(GRAPH_VARIABLE.s)
-          case _ => fail
-        }
-
-        val pushed = SubqueryPushdown[T].apply(dag)
-        Fix.un(pushed) match {
-          case Construct(_, Join(_, Project(innerVars, _))) =>
-            innerVars should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
-          case _ => fail
-        }
+            val pushed = SubqueryPushdown[T].apply(dag)
+            Fix.un(pushed) match {
+              case Construct(_, Join(_, Project(innerVars, _))) =>
+                innerVars should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
+              case _ => fail
+            }
+          }
+          .getOrElse(fail)
       }
 
       // TODO: Un-ignore when implemented ASK
@@ -144,38 +150,46 @@ class SubqueryPushdownSpec
             |}
             |""".stripMargin
 
-        val (query, _) = parse(q, config)
-
-        val dag: T = DAG.fromQuery.apply(query)
-        Fix.un(dag) match {
-          case Project(
-                outerVars,
-                Project(
-                  innerVars1,
-                  Join(_, Project(innerVars2, Join(_, Project(innerVars3, _))))
+        parse(q, config)
+          .map { case (query, _) =>
+            val dag: T = DAG.fromQuery.apply(query)
+            Fix.un(dag) match {
+              case Project(
+                    outerVars,
+                    Project(
+                      innerVars1,
+                      Join(
+                        _,
+                        Project(innerVars2, Join(_, Project(innerVars3, _)))
+                      )
+                    )
+                  ) =>
+                (outerVars ++ innerVars1 ++ innerVars2 ++ innerVars3) should not contain VARIABLE(
+                  GRAPH_VARIABLE.s
                 )
-              ) =>
-            (outerVars ++ innerVars1 ++ innerVars2 ++ innerVars3) should not contain VARIABLE(
-              GRAPH_VARIABLE.s
-            )
-          case _ => fail
-        }
+              case _ => fail
+            }
 
-        val pushed = SubqueryPushdown[T].apply(dag)
-        Fix.un(pushed) match {
-          case Project(
-                outerVars,
-                Project(
-                  innerVars1,
-                  Join(_, Project(innerVars2, Join(_, Project(innerVars3, _))))
-                )
-              ) =>
-            outerVars should not contain VARIABLE(GRAPH_VARIABLE.s)
-            innerVars1 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
-            innerVars2 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
-            innerVars3 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
-          case _ => fail
-        }
+            val pushed = SubqueryPushdown[T].apply(dag)
+            Fix.un(pushed) match {
+              case Project(
+                    outerVars,
+                    Project(
+                      innerVars1,
+                      Join(
+                        _,
+                        Project(innerVars2, Join(_, Project(innerVars3, _)))
+                      )
+                    )
+                  ) =>
+                outerVars should not contain VARIABLE(GRAPH_VARIABLE.s)
+                innerVars1 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
+                innerVars2 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
+                innerVars3 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
+              case _ => fail
+            }
+          }
+          .getOrElse(fail)
       }
 
       "mixing graphs" in {
@@ -198,31 +212,33 @@ class SubqueryPushdownSpec
             |}
             |""".stripMargin
 
-        val (query, _) = parse(q, config)
+        parse(q, config)
+          .map { case (query, _) =>
+            val dag: T = DAG.fromQuery.apply(query)
+            Fix.un(dag) match {
+              case Project(
+                    outerVars,
+                    Project(innerVars1, Scan(_, Project(innerVars2, _)))
+                  ) =>
+                (outerVars ++ innerVars1 ++ innerVars2) should not contain VARIABLE(
+                  GRAPH_VARIABLE.s
+                )
+              case _ => fail
+            }
 
-        val dag: T = DAG.fromQuery.apply(query)
-        Fix.un(dag) match {
-          case Project(
-                outerVars,
-                Project(innerVars1, Scan(_, Project(innerVars2, _)))
-              ) =>
-            (outerVars ++ innerVars1 ++ innerVars2) should not contain VARIABLE(
-              GRAPH_VARIABLE.s
-            )
-          case _ => fail
-        }
-
-        val pushed = SubqueryPushdown[T].apply(dag)
-        Fix.un(pushed) match {
-          case Project(
-                outerVars,
-                Project(innerVars1, Scan(_, Project(innerVars2, _)))
-              ) =>
-            outerVars should not contain VARIABLE(GRAPH_VARIABLE.s)
-            innerVars1 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
-            innerVars2 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
-          case _ => fail
-        }
+            val pushed = SubqueryPushdown[T].apply(dag)
+            Fix.un(pushed) match {
+              case Project(
+                    outerVars,
+                    Project(innerVars1, Scan(_, Project(innerVars2, _)))
+                  ) =>
+                outerVars should not contain VARIABLE(GRAPH_VARIABLE.s)
+                innerVars1 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
+                innerVars2 should containExactlyOnce(VARIABLE(GRAPH_VARIABLE.s))
+              case _ => fail
+            }
+          }
+          .getOrElse(fail)
       }
     }
   }

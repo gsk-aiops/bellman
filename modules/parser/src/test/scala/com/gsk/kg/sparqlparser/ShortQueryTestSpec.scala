@@ -1,5 +1,7 @@
 package com.gsk.kg.sparqlparser
 
+import cats.syntax.either._
+
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.StringVal._
 
@@ -9,7 +11,7 @@ class ShortQueryTestSpec extends AnyFlatSpec with TestUtils with TestConfig {
 
   "test filtered left join with multiple filters" should "pass" in {
 
-    val q     = """
+    val q = """
     PREFIX  rdf:  <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
     PREFIX  litp:  <http://lit-search-api/property/>
@@ -32,12 +34,14 @@ class ShortQueryTestSpec extends AnyFlatSpec with TestUtils with TestConfig {
     }
 
     """
-    val query = parse(q, config)
-    query._1.r match {
-      case FilteredLeftJoin(BGP(_), Extend(to, from, _), funcs) =>
-        assert(funcs.size == 2)
-      case _ => fail
-    }
+    parse(q, config)
+      .map(_._1.r)
+      .map {
+        case FilteredLeftJoin(BGP(_), Extend(to, from, _), funcs) =>
+          assert(funcs.size == 2)
+        case _ => fail
+      }
+      .getOrElse(fail)
   }
 
   "test literal" should "create proper StringVal case classes" in {
@@ -54,15 +58,17 @@ class ShortQueryTestSpec extends AnyFlatSpec with TestUtils with TestConfig {
           ?doc lita:contextText "cde" .
         }
       """
-    val query = parse(q, config)
-    query._1.r match {
-      case Project(vs, BGP(triples)) =>
-        assert(triples(0).o == BOOL("true"))
-        assert(triples(1).s == NUM("0.3"))
-        assert(triples(2).o == NUM("-1234"))
-        assert(triples(3).o == STRING("xyz", Some("@en")))
-        assert(triples(4).o == STRING("cde", None))
-      case _ => fail
-    }
+    parse(q, config)
+      .map(_._1.r)
+      .map {
+        case Project(vs, BGP(triples)) =>
+          assert(triples(0).o == BOOL("true"))
+          assert(triples(1).s == NUM("0.3"))
+          assert(triples(2).o == NUM("-1234"))
+          assert(triples(3).o == STRING("xyz", Some("@en")))
+          assert(triples(4).o == STRING("cde", None))
+        case _ => fail
+      }
+      .getOrElse(fail)
   }
 }

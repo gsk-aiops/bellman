@@ -13,6 +13,8 @@ import org.apache.spark.sql.functions._
 
 import com.gsk.kg.engine.Multiset._
 import com.gsk.kg.engine.Multiset.filterGraph
+import com.gsk.kg.sparqlparser.EngineError
+import com.gsk.kg.sparqlparser.Result
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 

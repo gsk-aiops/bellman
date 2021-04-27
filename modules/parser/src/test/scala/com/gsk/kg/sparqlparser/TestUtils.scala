@@ -1,5 +1,7 @@
 package com.gsk.kg.sparqlparser
 
+import cats.syntax.either._
+
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
 
@@ -22,14 +24,14 @@ trait TestUtils {
     result
   }
 
-  def queryAlgebra(fileLoc: String, config: Config): Expr = {
+  def queryAlgebra(fileLoc: String, config: Config): Result[Expr] = {
     val q = readOutputFile(fileLoc)
     QueryConstruct.parseADT(q, config)
   }
 
-  def query(fileLoc: String, config: Config): Query = {
+  def query(fileLoc: String, config: Config): Result[Query] = {
     val q = readOutputFile(fileLoc)
-    parse(q, config)._1
+    parse(q, config).map(_._1)
   }
 
   def readOutputFile(fileLoc: String): String = {
@@ -45,7 +47,7 @@ trait TestUtils {
   def parse(
       query: String,
       config: Config
-  ): (Query, Graphs) =
+  ): Result[(Query, Graphs)] =
     QueryConstruct.parse(query, config)
 
 }

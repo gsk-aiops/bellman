@@ -1,12 +1,13 @@
 package com.gsk.kg.engine
 
-import org.apache.jena.query.QueryParseException
 import org.apache.jena.riot.RDFParser
 import org.apache.jena.riot.lang.CollectorStreamTriples
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 
+import com.gsk.kg.sparqlparser.EngineError
+import com.gsk.kg.sparqlparser.EngineError.ParsingError
 import com.gsk.kg.sparqlparser.TestConfig
 
 import java.io.ByteArrayOutputStream
@@ -5024,8 +5025,9 @@ class CompilerSpec
               |}
               |""".stripMargin
 
-          an[QueryParseException] should be thrownBy
-            Compiler.compile(df, query, config)
+          val result = Compiler.compile(df, query, config)
+          result shouldBe a[Left[_, _]]
+          result.left.get shouldBe a[ParsingError]
         }
       }
 

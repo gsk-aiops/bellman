@@ -2,6 +2,7 @@ package com.gsk.kg.engine
 package data
 
 import cats.instances.string._
+import cats.syntax.either._
 
 import com.gsk.kg.sparqlparser.TestConfig
 import com.gsk.kg.sparqlparser.TestUtils
@@ -84,12 +85,11 @@ class TreeRepSpec
         | BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
         |}
         |""".stripMargin
-    val (query, _) = parse(q, config)
 
-    val dag = DAG.fromQuery.apply(query)
-
-    val result = dag.toTree.drawTree.trim
-    result shouldEqual """
+    parse(q, config)
+      .map { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
+        dag.toTree.drawTree.trim shouldEqual """
 Construct
 |
 +- BGP
@@ -159,6 +159,8 @@ Construct
                   +- http://gsk-kg.rdip.gsk.com/dm/1.0/Document
                   |
                   `- List(GRAPH_VARIABLE)""".trim
+      }
+      .getOrElse(fail)
   }
 
 }

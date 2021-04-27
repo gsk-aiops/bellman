@@ -3,11 +3,10 @@ package com.gsk.kg.engine.analyzer
 import cats.data.NonEmptyChain
 import cats.implicits._
 
-import higherkindness.droste.syntax.all._
-
+import com.gsk.kg.Graphs
 import com.gsk.kg.engine.DAG
-import com.gsk.kg.engine.EngineError
-import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+import com.gsk.kg.sparqlparser.EngineError
+import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.TestConfig
 import com.gsk.kg.sparqlparser.TestUtils
 
@@ -21,6 +20,7 @@ class AnalyzerSpec
     with TestConfig {
 
   "Analyzer.findUnboundVariables" should "find unbound variables in CONSTRUCT queries" in {
+
     val q =
       """
         |CONSTRUCT {
@@ -29,19 +29,23 @@ class AnalyzerSpec
         | ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o
         |}
         |""".stripMargin
-    val (query, _) = parse(q, config)
 
-    val dag = DAG.fromQuery.apply(query)
-
-    val result = Analyzer.analyze.apply(dag).runA(config, null)
-
-    result shouldEqual Left(
-      EngineError.AnalyzerError(
-        NonEmptyChain(
-          "found free variables VARIABLE(?notBound), VARIABLE(?other)"
-        )
+    val parsed: Either[EngineError, (Query, Graphs)] = parse(q, config)
+    parsed
+      .flatMap { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
+        Analyzer.analyze.apply(dag).runA(config, null)
+      }
+      .fold(
+        { error =>
+          error shouldEqual EngineError.AnalyzerError(
+            NonEmptyChain(
+              "found free variables VARIABLE(?notBound), VARIABLE(?other)"
+            )
+          )
+        },
+        _ => fail
       )
-    )
   }
 
   it should "find unbound variables in SELECT queries" in {
@@ -51,19 +55,23 @@ class AnalyzerSpec
         | <http://purl.obolibrary.org/obo/CLO_0037232> <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?derived_node .
         |}
         |""".stripMargin
-    val (query, _) = parse(q, config)
 
-    val dag = DAG.fromQuery.apply(query)
-
-    val result = Analyzer.analyze.apply(dag).runA(config, null)
-
-    result shouldEqual Left(
-      EngineError.AnalyzerError(
-        NonEmptyChain(
-          "found free variables VARIABLE(?species_node)"
-        )
+    val parsed: Either[EngineError, (Query, Graphs)] = parse(q, config)
+    parsed
+      .flatMap { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
+        Analyzer.analyze.apply(dag).runA(config, null)
+      }
+      .fold(
+        { error =>
+          error shouldEqual EngineError.AnalyzerError(
+            NonEmptyChain(
+              "found free variables VARIABLE(?species_node)"
+            )
+          )
+        },
+        _ => fail
       )
-    )
   }
 
   it should "find bound variables even when they're bound as part of expressions" in {
@@ -77,20 +85,15 @@ class AnalyzerSpec
         | BIND(REPLACE(?lit, "b", "Z") AS ?lit2)
         |}
         |""".stripMargin
-    val (query, _) = parse(q, config)
 
-    val dag = DAG.fromQuery.apply(query)
+    val parsed: Either[EngineError, (Query, Graphs)] = parse(q, config)
 
-    val variablesBoundInBind = dag
-      .collect[List[VARIABLE], VARIABLE] { case DAG.Bind(variable, _, _) =>
-        variable
+    parsed
+      .flatMap { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
+        Analyzer.analyze.apply(dag).runA(config, null)
       }
-      .toSet
-
-    val result = Analyzer.analyze.apply(dag).runA(config, null)
-
-    result shouldBe a[Right[_, _]]
-
+      .fold(_ => fail, _ => succeed)
   }
 
 }

@@ -1,6 +1,8 @@
 package com.gsk.kg.engine
 package optimizer
 
+import cats.syntax.either._
+
 import higherkindness.droste.data.Fix
 
 import com.gsk.kg.engine.DAG.Project
@@ -32,23 +34,26 @@ class RemoveNestedProjectSpec
         | ?d dm:source "potato"
         |}
         |""".stripMargin
-    val (query, _) = parse(q, config)
 
-    val dag: T = DAG.fromQuery.apply(query)
+    parse(q, config)
+      .map { case (query, _) =>
+        val dag: T = DAG.fromQuery.apply(query)
 
-    Fix.un(dag) match {
-      case Project(v1, Fix(Project(v2, r))) =>
-        v1 shouldEqual v2
-      case _ => fail()
-    }
+        Fix.un(dag) match {
+          case Project(v1, Fix(Project(v2, r))) =>
+            v1 shouldEqual v2
+          case _ => fail()
+        }
 
-    val optimized = RemoveNestedProject[T].apply(dag)
-    Fix.un(optimized) match {
-      case Project(v1, Fix(Project(v2, r))) =>
-        fail("RemoveNestedProject should have deduplicated Project nodes")
-      case _ => succeed
-    }
+        val optimized = RemoveNestedProject[T].apply(dag)
+        Fix.un(optimized) match {
+          case Project(v1, Fix(Project(v2, r))) =>
+            fail("RemoveNestedProject should have deduplicated Project nodes")
+          case _ => succeed
+        }
 
+      }
+      .getOrElse(fail)
   }
 
 }

@@ -11,6 +11,8 @@ import higherkindness.droste.Basis
 import org.apache.spark.sql.DataFrame
 
 import com.gsk.kg.config.Config
+import com.gsk.kg.sparqlparser.EngineError
+import com.gsk.kg.sparqlparser.Result
 
 object Analyzer {
 

@@ -1,4 +1,4 @@
-package com.gsk.kg.engine
+package com.gsk.kg.sparqlparser
 
 import cats.data.NonEmptyChain
 
@@ -13,5 +13,7 @@ object EngineError {
   final case class FunctionError(description: String) extends EngineError
   final case class AnalyzerError(errors: NonEmptyChain[String])
       extends EngineError
-  final case class InvalidInputDataFrame(msg: String) extends EngineError
+  final case class InvalidInputDataFrame(msg: String)  extends EngineError
+  final case class ParsingError(description: String)   extends EngineError
+  final case class UnExpectedType(description: String) extends EngineError
 }

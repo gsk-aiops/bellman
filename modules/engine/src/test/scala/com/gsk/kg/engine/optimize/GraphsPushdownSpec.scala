@@ -1,5 +1,7 @@
 package com.gsk.kg.engine.optimizer
 
+import cats.syntax.either._
+
 import higherkindness.droste.data.Fix
 
 import com.gsk.kg.engine.DAG
@@ -54,23 +56,26 @@ class GraphsPushdownSpec
             | }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q, config)
 
-        val dag: T = DAG.fromQuery.apply(query)
-        Fix.un(dag) match {
-          case Project(_, Project(_, Scan(_, BGP(quads)))) =>
-            assertForAllQuads(quads)(_.g shouldEqual GRAPH_VARIABLE :: Nil)
-          case _ => fail
-        }
+        parse(q, config)
+          .map { case (query, graphs) =>
+            val dag: T = DAG.fromQuery.apply(query)
+            Fix.un(dag) match {
+              case Project(_, Project(_, Scan(_, BGP(quads)))) =>
+                assertForAllQuads(quads)(_.g shouldEqual GRAPH_VARIABLE :: Nil)
+              case _ => fail
+            }
 
-        val renamed = GraphsPushdown[T].apply(dag, graphs)
-        Fix.un(renamed) match {
-          case Project(_, Project(_, BGP(quads))) =>
-            assertForAllQuads(quads)(
-              _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
-            )
-          case _ => fail
-        }
+            val renamed = GraphsPushdown[T].apply(dag, graphs)
+            Fix.un(renamed) match {
+              case Project(_, Project(_, BGP(quads))) =>
+                assertForAllQuads(quads)(
+                  _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
+                )
+              case _ => fail
+            }
+          }
+          .getOrElse(fail)
       }
 
       "has BGP before and immediately after Scan" in {
@@ -93,42 +98,43 @@ class GraphsPushdownSpec
             | }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q, config)
 
-        val dag: T = DAG.fromQuery.apply(query)
-        Fix.un(dag) match {
-          case Project(
-                _,
-                Project(
+        parse(q, config).map { case (query, graphs) =>
+          val dag: T = DAG.fromQuery.apply(query)
+          Fix.un(dag) match {
+            case Project(
                   _,
-                  Join(BGP(externalQuads), Scan(_, BGP(internalQuads)))
-                )
-              ) =>
-            assertForAllQuads(externalQuads)(
-              _.g shouldEqual GRAPH_VARIABLE :: Nil
-            )
-            assertForAllQuads(internalQuads.concat(externalQuads))(
-              _.g shouldEqual GRAPH_VARIABLE :: Nil
-            )
-          case _ => fail
-        }
+                  Project(
+                    _,
+                    Join(BGP(externalQuads), Scan(_, BGP(internalQuads)))
+                  )
+                ) =>
+              assertForAllQuads(externalQuads)(
+                _.g shouldEqual GRAPH_VARIABLE :: Nil
+              )
+              assertForAllQuads(internalQuads.concat(externalQuads))(
+                _.g shouldEqual GRAPH_VARIABLE :: Nil
+              )
+            case _ => fail
+          }
 
-        val renamed = GraphsPushdown[T].apply(dag, graphs)
-        Fix.un(renamed) match {
-          case Project(
-                _,
-                Project(
+          val renamed = GraphsPushdown[T].apply(dag, graphs)
+          Fix.un(renamed) match {
+            case Project(
                   _,
-                  Join(BGP(externalQuads), BGP(internalQuads))
-                )
-              ) =>
-            assertForAllQuads(internalQuads)(
-              _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
-            )
-            assertForAllQuads(externalQuads)(
-              _.g shouldEqual graphs.default
-            )
-          case _ => fail
+                  Project(
+                    _,
+                    Join(BGP(externalQuads), BGP(internalQuads))
+                  )
+                ) =>
+              assertForAllQuads(internalQuads)(
+                _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
+              )
+              assertForAllQuads(externalQuads)(
+                _.g shouldEqual graphs.default
+              )
+            case _ => fail
+          }
         }
       }
 
@@ -154,49 +160,51 @@ class GraphsPushdownSpec
             | }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q, config)
-
-        val dag: T = DAG.fromQuery.apply(query)
-        Fix.un(dag) match {
-          case Project(
-                _,
-                Project(
-                  _,
-                  Join(
-                    BGP(externalQuads),
-                    Scan(
-                      graph,
-                      Union(BGP(leftInsideQuads), BGP(rightInsideQuads))
+        parse(q, config)
+          .map { case (query, graphs) =>
+            val dag: T = DAG.fromQuery.apply(query)
+            Fix.un(dag) match {
+              case Project(
+                    _,
+                    Project(
+                      _,
+                      Join(
+                        BGP(externalQuads),
+                        Scan(
+                          graph,
+                          Union(BGP(leftInsideQuads), BGP(rightInsideQuads))
+                        )
+                      )
                     )
-                  )
-                )
-              ) =>
-            assertForAllQuads(
-              externalQuads.concat(leftInsideQuads).concat(rightInsideQuads)
-            )(_.g shouldEqual GRAPH_VARIABLE :: Nil)
-          case _ => fail
-        }
+                  ) =>
+                assertForAllQuads(
+                  externalQuads.concat(leftInsideQuads).concat(rightInsideQuads)
+                )(_.g shouldEqual GRAPH_VARIABLE :: Nil)
+              case _ => fail
+            }
 
-        val renamed = GraphsPushdown[T].apply(dag, graphs)
-        Fix.un(renamed) match {
-          case Project(
-                _,
-                Project(
-                  _,
-                  Join(
-                    BGP(externalQuads),
-                    Union(BGP(leftInsideQuads), BGP(rightInsideQuads))
-                  )
+            val renamed = GraphsPushdown[T].apply(dag, graphs)
+            Fix.un(renamed) match {
+              case Project(
+                    _,
+                    Project(
+                      _,
+                      Join(
+                        BGP(externalQuads),
+                        Union(BGP(leftInsideQuads), BGP(rightInsideQuads))
+                      )
+                    )
+                  ) =>
+                assertForAllQuads(externalQuads)(
+                  _.g shouldEqual graphs.default
                 )
-              ) =>
-            assertForAllQuads(externalQuads)(
-              _.g shouldEqual graphs.default
-            )
-            assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
-              _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
-            )
-          case _ => fail
-        }
+                assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
+                  _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
+                )
+              case _ => fail
+            }
+          }
+          .getOrElse(fail)
       }
 
       "has BGP before and LeftJoin after Scan" in {
@@ -220,49 +228,56 @@ class GraphsPushdownSpec
             | }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q, config)
 
-        val dag: T = DAG.fromQuery.apply(query)
-        Fix.un(dag) match {
-          case Project(
-                _,
-                Project(
-                  _,
-                  Join(
-                    BGP(externalQuads),
-                    Scan(
-                      graph,
-                      LeftJoin(BGP(leftInsideQuads), BGP(rightInsideQuads), _)
+        parse(q, config)
+          .map { case (query, graphs) =>
+            val dag: T = DAG.fromQuery.apply(query)
+            Fix.un(dag) match {
+              case Project(
+                    _,
+                    Project(
+                      _,
+                      Join(
+                        BGP(externalQuads),
+                        Scan(
+                          graph,
+                          LeftJoin(
+                            BGP(leftInsideQuads),
+                            BGP(rightInsideQuads),
+                            _
+                          )
+                        )
+                      )
                     )
-                  )
-                )
-              ) =>
-            assertForAllQuads(
-              externalQuads.concat(leftInsideQuads).concat(rightInsideQuads)
-            )(_.g shouldEqual GRAPH_VARIABLE :: Nil)
-          case _ => fail
-        }
+                  ) =>
+                assertForAllQuads(
+                  externalQuads.concat(leftInsideQuads).concat(rightInsideQuads)
+                )(_.g shouldEqual GRAPH_VARIABLE :: Nil)
+              case _ => fail
+            }
 
-        val renamed = GraphsPushdown[T].apply(dag, graphs)
-        Fix.un(renamed) match {
-          case Project(
-                _,
-                Project(
-                  _,
-                  Join(
-                    BGP(externalQuads),
-                    LeftJoin(BGP(leftInsideQuads), BGP(rightInsideQuads), _)
-                  )
+            val renamed = GraphsPushdown[T].apply(dag, graphs)
+            Fix.un(renamed) match {
+              case Project(
+                    _,
+                    Project(
+                      _,
+                      Join(
+                        BGP(externalQuads),
+                        LeftJoin(BGP(leftInsideQuads), BGP(rightInsideQuads), _)
+                      )
+                    )
+                  ) =>
+                assertForAllQuads(externalQuads)(
+                  _.g shouldEqual graphs.default
                 )
-              ) =>
-            assertForAllQuads(externalQuads)(
-              _.g shouldEqual graphs.default
-            )
-            assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
-              _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
-            )
-          case _ => fail
-        }
+                assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
+                  _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
+                )
+              case _ => fail
+            }
+          }
+          .getOrElse(fail)
       }
 
       "has BGP before and a Join with Scan after first Scan" in {
@@ -288,52 +303,54 @@ class GraphsPushdownSpec
             | }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q, config)
-
-        val dag: T = DAG.fromQuery.apply(query)
-        Fix.un(dag) match {
-          case Project(
-                _,
-                Project(
-                  _,
-                  Join(
-                    BGP(externalQuads),
-                    Scan(
-                      graph1,
-                      Join(BGP(graph1Quads), Scan(graph2, BGP(graph2Quads)))
+        parse(q, config)
+          .map { case (query, graphs) =>
+            val dag: T = DAG.fromQuery.apply(query)
+            Fix.un(dag) match {
+              case Project(
+                    _,
+                    Project(
+                      _,
+                      Join(
+                        BGP(externalQuads),
+                        Scan(
+                          graph1,
+                          Join(BGP(graph1Quads), Scan(graph2, BGP(graph2Quads)))
+                        )
+                      )
                     )
-                  )
-                )
-              ) =>
-            assertForAllQuads(
-              externalQuads.concat(graph1Quads).concat(graph2Quads)
-            )(_.g shouldEqual GRAPH_VARIABLE :: Nil)
-          case _ => fail
-        }
+                  ) =>
+                assertForAllQuads(
+                  externalQuads.concat(graph1Quads).concat(graph2Quads)
+                )(_.g shouldEqual GRAPH_VARIABLE :: Nil)
+              case _ => fail
+            }
 
-        val renamed = GraphsPushdown[T].apply(dag, graphs)
-        Fix.un(renamed) match {
-          case Project(
-                _,
-                Project(
-                  _,
-                  Join(
-                    BGP(externalQuads),
-                    Join(BGP(graph1Quads), BGP(graph2Quads))
-                  )
+            val renamed = GraphsPushdown[T].apply(dag, graphs)
+            Fix.un(renamed) match {
+              case Project(
+                    _,
+                    Project(
+                      _,
+                      Join(
+                        BGP(externalQuads),
+                        Join(BGP(graph1Quads), BGP(graph2Quads))
+                      )
+                    )
+                  ) =>
+                assertForAllQuads(externalQuads)(
+                  _.g shouldEqual graphs.default
                 )
-              ) =>
-            assertForAllQuads(externalQuads)(
-              _.g shouldEqual graphs.default
-            )
-            assertForAllQuads(graph1Quads)(
-              _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
-            )
-            assertForAllQuads(graph2Quads)(
-              _.g shouldEqual URIVAL("http://example.org/bob") :: Nil
-            )
-          case _ => fail
-        }
+                assertForAllQuads(graph1Quads)(
+                  _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
+                )
+                assertForAllQuads(graph2Quads)(
+                  _.g shouldEqual URIVAL("http://example.org/bob") :: Nil
+                )
+              case _ => fail
+            }
+          }
+          .getOrElse(fail)
       }
     }
 
@@ -356,21 +373,24 @@ class GraphsPushdownSpec
             | ?x foaf:name ?name .
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q, config)
 
-        val dag: T = DAG.fromQuery.apply(query)
-        Fix.un(dag) match {
-          case Project(_, Project(_, BGP(quads))) =>
-            assertForAllQuads(quads)(_.g shouldEqual GRAPH_VARIABLE :: Nil)
-          case _ => fail
-        }
+        parse(q, config)
+          .map { case (query, graphs) =>
+            val dag: T = DAG.fromQuery.apply(query)
+            Fix.un(dag) match {
+              case Project(_, Project(_, BGP(quads))) =>
+                assertForAllQuads(quads)(_.g shouldEqual GRAPH_VARIABLE :: Nil)
+              case _ => fail
+            }
 
-        val pushedDown = GraphsPushdown[T].apply(dag, graphs)
-        Fix.un(pushedDown) match {
-          case Project(_, Project(_, BGP(quads))) =>
-            assertForAllQuads(quads)(_.g shouldEqual graphs.default)
-          case _ => fail
-        }
+            val pushedDown = GraphsPushdown[T].apply(dag, graphs)
+            Fix.un(pushedDown) match {
+              case Project(_, Project(_, BGP(quads))) =>
+                assertForAllQuads(quads)(_.g shouldEqual graphs.default)
+              case _ => fail
+            }
+          }
+          .getOrElse(fail)
       }
     }
 
@@ -395,36 +415,45 @@ class GraphsPushdownSpec
             |   GRAPH ?g { ?x foaf:mbox ?mbox }
             |}
             |""".stripMargin
-        val (query, graphs) = parse(q, config)
 
-        val dag: T = DAG.fromQuery.apply(query)
-        Fix.un(dag) match {
-          case Project(
-                _,
-                Project(
-                  _,
-                  Join(BGP(externalQuads), Scan(variable, BGP(internalQuads)))
+        parse(q, config)
+          .map { case (query, graphs) =>
+            val dag: T = DAG.fromQuery.apply(query)
+            Fix.un(dag) match {
+              case Project(
+                    _,
+                    Project(
+                      _,
+                      Join(
+                        BGP(externalQuads),
+                        Scan(variable, BGP(internalQuads))
+                      )
+                    )
+                  ) =>
+                assertForAllQuads(externalQuads.concat(internalQuads))(
+                  _.g shouldEqual GRAPH_VARIABLE :: Nil
                 )
-              ) =>
-            assertForAllQuads(externalQuads.concat(internalQuads))(
-              _.g shouldEqual GRAPH_VARIABLE :: Nil
-            )
-          case _ => fail
-        }
+              case _ => fail
+            }
 
-        val pushedDown = GraphsPushdown[T].apply(dag, graphs)
-        Fix.un(pushedDown) match {
-          case Project(
-                _,
-                Project(
-                  _,
-                  Join(BGP(externalQuads), Scan(variable, BGP(internalQuads)))
-                )
-              ) =>
-            assertForAllQuads(externalQuads)(_.g shouldEqual graphs.default)
-            assertForAllQuads(internalQuads)(_.g shouldEqual graphs.named)
-          case _ => fail
-        }
+            val pushedDown = GraphsPushdown[T].apply(dag, graphs)
+            Fix.un(pushedDown) match {
+              case Project(
+                    _,
+                    Project(
+                      _,
+                      Join(
+                        BGP(externalQuads),
+                        Scan(variable, BGP(internalQuads))
+                      )
+                    )
+                  ) =>
+                assertForAllQuads(externalQuads)(_.g shouldEqual graphs.default)
+                assertForAllQuads(internalQuads)(_.g shouldEqual graphs.named)
+              case _ => fail
+            }
+          }
+          .getOrElse(fail)
       }
     }
   }

@@ -15,6 +15,7 @@ import com.gsk.kg.engine.analyzer.Analyzer
 import com.gsk.kg.engine.optimizer.Optimizer
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.QueryConstruct
+import com.gsk.kg.sparqlparser.Result
 
 object Compiler {
 
@@ -76,7 +77,7 @@ object Compiler {
     */
   private def parser: Phase[String, (Query, Graphs)] =
     Kleisli[M, String, (Query, Graphs)] { query =>
-      M.ask[Result, Config, Log, DataFrame].map { config =>
+      M.ask[Result, Config, Log, DataFrame].flatMapF { config =>
         QueryConstruct.parse(query, config)
       }
     }
