@@ -24,7 +24,7 @@ object ExpressionF {
 
   final case class EQUALS[A](l: A, r: A)             extends ExpressionF[A]
   final case class REGEX[A](l: A, r: A)              extends ExpressionF[A]
-  final case class STRSTARTS[A](l: A, r: A)          extends ExpressionF[A]
+  final case class STRSTARTS[A](s: A, f: String)     extends ExpressionF[A]
   final case class GT[A](l: A, r: A)                 extends ExpressionF[A]
   final case class LT[A](l: A, r: A)                 extends ExpressionF[A]
   final case class GTE[A](l: A, r: A)                extends ExpressionF[A]
@@ -38,7 +38,7 @@ object ExpressionF {
   final case class STRAFTER[A](s: A, f: String)      extends ExpressionF[A]
   final case class ISBLANK[A](s: A)                  extends ExpressionF[A]
   final case class REPLACE[A](st: A, pattern: String, by: String)
-      extends ExpressionF[A]
+    extends ExpressionF[A]
   final case class COUNT[A](e: A)  extends ExpressionF[A]
   final case class SUM[A](e: A)    extends ExpressionF[A]
   final case class MIN[A](e: A)    extends ExpressionF[A]
@@ -46,9 +46,9 @@ object ExpressionF {
   final case class AVG[A](e: A)    extends ExpressionF[A]
   final case class SAMPLE[A](e: A) extends ExpressionF[A]
   final case class GROUP_CONCAT[A](e: A, separator: String)
-      extends ExpressionF[A]
+    extends ExpressionF[A]
   final case class STRING[A](s: String, tag: Option[String])
-      extends ExpressionF[A]
+    extends ExpressionF[A]
   final case class NUM[A](s: String)      extends ExpressionF[A]
   final case class VARIABLE[A](s: String) extends ExpressionF[A]
   final case class URIVAL[A](s: String)   extends ExpressionF[A]
@@ -71,13 +71,13 @@ object ExpressionF {
       case BuiltInFunc.STRAFTER(s, StringVal.STRING(f, _)) => STRAFTER(s, f)
       case BuiltInFunc.ISBLANK(s)                          => ISBLANK(s)
       case BuiltInFunc.REPLACE(
-            st,
-            StringVal.STRING(pattern, _),
-            StringVal.STRING(by, _)
-          ) =>
+      st,
+      StringVal.STRING(pattern, _),
+      StringVal.STRING(by, _)
+      ) =>
         REPLACE(st, pattern, by)
       case BuiltInFunc.REGEX(l, r)              => REGEX(l, r)
-      case BuiltInFunc.STRSTARTS(l, r)          => STRSTARTS(l, r)
+      case BuiltInFunc.STRSTARTS(s, StringVal.STRING(f, _)) => STRSTARTS(s, f)
       case Aggregate.COUNT(e)                   => COUNT(e)
       case Aggregate.SUM(e)                     => SUM(e)
       case Aggregate.MIN(e)                     => MIN(e)
@@ -104,7 +104,11 @@ object ExpressionF {
       case AND(l, r)       => Conditional.AND(l, r)
       case NEGATE(s)       => Conditional.NEGATE(s)
       case REGEX(l, r)     => BuiltInFunc.REGEX(l, r)
-      case STRSTARTS(l, r) => BuiltInFunc.STRSTARTS(l, r)
+      case STRSTARTS(s, f) =>
+        BuiltInFunc.STRAFTER(
+          s.asInstanceOf[StringLike],
+          f.asInstanceOf[StringLike]
+        )
       case URI(s)          => BuiltInFunc.URI(s.asInstanceOf[StringLike])
       case CONCAT(appendTo, append) =>
         BuiltInFunc.CONCAT(
@@ -146,14 +150,14 @@ object ExpressionF {
     )
 
   def compile[T](
-      t: T,
-      config: Config
-  )(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
+                  t: T,
+                  config: Config
+                )(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
     val algebraM: AlgebraM[M, ExpressionF, Column] =
       AlgebraM.apply[M, ExpressionF, Column] {
         case EQUALS(l, r)               => Func.equals(l, r).pure[M]
         case REGEX(l, r)                => unknownFunction("REGEX")
-        case STRSTARTS(l, r)            => unknownFunction("STRSTARTS")
+        case STRSTARTS(s, f)            => Func.strstarts(s, f).pure[M]
         case GT(l, r)                   => Func.gt(l, r).pure[M]
         case LT(l, r)                   => Func.lt(l, r).pure[M]
         case GTE(l, r)                  => Func.gte(l, r).pure[M]
