@@ -2,6 +2,7 @@ package com.gsk.kg.engine
 package optimizer
 
 import cats.Traverse
+import cats.syntax.either._
 
 import higherkindness.droste.data.Fix
 
@@ -38,13 +39,16 @@ class CompactBGPsSpec
         | ?d dm:source "potato"
         |}
         |""".stripMargin
-    val (query, _) = parse(q, config)
 
-    val dag: T = DAG.fromQuery.apply(query)
-    countChunksInBGP(dag) shouldEqual 2
+    parse(q, config)
+      .map { case (query, _) =>
+        val dag: T = DAG.fromQuery.apply(query)
+        countChunksInBGP(dag) shouldEqual 2
 
-    val optimized = CompactBGPs[T].apply(dag)
-    countChunksInBGP(optimized) shouldEqual 1
+        val optimized = CompactBGPs[T].apply(dag)
+        countChunksInBGP(optimized) shouldEqual 1
+      }
+      .getOrElse(fail)
   }
 
   it should "not change the order when compacting" in {
@@ -60,15 +64,18 @@ class CompactBGPsSpec
         | ?d dm:source "potato" .
         |}
         |""".stripMargin
-    val (query, _) = parse(q, config)
 
-    val dag: T       = DAG.fromQuery.apply(query)
-    val optimized: T = CompactBGPs[T].apply(dag)
+    parse(q, config)
+      .map { case (query, _) =>
+        val dag: T       = DAG.fromQuery.apply(query)
+        val optimized: T = CompactBGPs[T].apply(dag)
 
-    Traverse[ChunkedList]
-      .toList(getQuads(dag)) shouldEqual Traverse[ChunkedList].toList(
-      getQuads(optimized)
-    )
+        Traverse[ChunkedList]
+          .toList(getQuads(dag)) shouldEqual Traverse[ChunkedList].toList(
+          getQuads(optimized)
+        )
+      }
+      .getOrElse(fail)
   }
 
   def getQuads(dag: T): ChunkedList[Quad] =

@@ -1,5 +1,7 @@
 package com.gsk.kg.sparql.syntax
 
+import cats.syntax.either._
+
 import com.gsk.kg.config.Config
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.QueryConstruct
@@ -21,7 +23,7 @@ trait Interpolators {
         buf.append(expressions.next())
         buf.append(strings.next())
       }
-      QueryConstruct.parse(buf.toString(), Config.default)._1
+      QueryConstruct.parse(buf.toString(), Config.default).map(_._1).right.get
     }
 
   }

@@ -1,7 +1,6 @@
 package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.Expr._
-import com.gsk.kg.sparqlparser.ParserError.UnExpectedType
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 
 import fastparse.MultiLineWhitespace._
@@ -62,15 +61,15 @@ object ExprParser {
   def filterExprList[_: P]: P[Seq[Expression]] =
     P("(" ~ exprList ~ exprFunc.rep(2) ~ ")")
 
-  def exprFuncList[_: P]: P[Seq[Expression]] = (filterExprList | exprFunc).map {
+  def exprFuncList[_: P]: P[Seq[Expression]] =
+    (filterExprList | exprFunc).flatMap {
 
-    case e: Seq[_]     => e.asInstanceOf[Seq[Expression]]
-    case e: Expression => Seq(e)
-    case e =>
-      throw UnExpectedType(
-        s"${e} does not match any sparql expression type."
-      )
-  }
+      case e: Seq[_] =>
+        ParsingRun.current.freshSuccess(e.asInstanceOf[Seq[Expression]])
+      case e: Expression => ParsingRun.current.freshSuccess(Seq(e))
+      case _ =>
+        ParsingRun.current.freshFailure()
+    }
 
   def assignment[_: P]: P[(StringVal.VARIABLE, Expression)] = P(
     "((" ~ StringValParser.variable ~ exprFunc ~ "))"

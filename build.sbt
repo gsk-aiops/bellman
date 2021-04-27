@@ -104,7 +104,7 @@ lazy val bellman = project
   .settings(buildSettings)
   .settings(noPublishSettings)
   .dependsOn(`bellman-algebra-parser`, `bellman-spark-engine`)
-  .aggregate(`bellman-algebra-parser`, `bellman-spark-engine`)
+  .aggregate(`bellman-algebra-parser`, `bellman-spark-engine`, `bellman-site`)
 
 lazy val `bellman-algebra-parser` = project
   .in(file("modules/parser"))
@@ -277,7 +277,11 @@ lazy val `bellman-site` = project
   .settings(
     libraryDependencies += "io.github.stanch" %% "reftree" % Versions("reftree")
   )
+  .settings(
+    Global / excludeLintKeys += scalastyleFailOnWarning
+  )
   .dependsOn(`bellman-spark-engine`, `bellman-algebra-parser`)
+  .disablePlugins(ScalastylePlugin)
   .enablePlugins(MicrositesPlugin)
 
 addCommandAlias(

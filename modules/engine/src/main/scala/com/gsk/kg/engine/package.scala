@@ -7,15 +7,11 @@ import cats.data.ReaderWriterStateT
 import org.apache.spark.sql.DataFrame
 
 import com.gsk.kg.config.Config
+import com.gsk.kg.sparqlparser.Result
 
 package object engine {
 
   type Log = Chain[String]
-
-  /** the type for operations that may fail
-    */
-  type Result[A] = Either[EngineError, A]
-  val Result = Either
 
   type M[A] = ReaderWriterStateT[Result, Config, Log, DataFrame, A]
   val M = ReaderWriterStateT

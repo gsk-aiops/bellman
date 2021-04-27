@@ -1,5 +1,7 @@
 package com.gsk.kg.sparqlparser
 
+import cats.syntax.either._
+
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.Query._
 import com.gsk.kg.sparqlparser.StringVal._
@@ -11,72 +13,84 @@ import org.scalatest.flatspec.AnyFlatSpec
 class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
 
   "Simple Query" should "parse Construct statement with correct number of Triples" in {
-    query("/queries/q0-simple-basic-graph-pattern.sparql", config) match {
-      case Construct(vars, bgp, expr) =>
-        assert(vars.size == 2 && bgp.quads.size == 2)
-      case _ => fail
-    }
+    query("/queries/q0-simple-basic-graph-pattern.sparql", config)
+      .map {
+        case Construct(vars, bgp, expr) =>
+          assert(vars.size == 2 && bgp.quads.size == 2)
+        case _ => fail
+      }
+      .getOrElse(fail)
   }
 
   "Construct" should "result in proper variables, a basic graph pattern, and algebra expression" in {
-    query("/queries/q3-union.sparql", config) match {
-      case Construct(
-            vars,
-            bgp,
-            Union(BGP(quadsL: Seq[Quad]), BGP(quadsR: Seq[Quad]))
-          ) =>
-        val temp = QueryConstruct.getAllVariableNames(bgp)
-        val all  = vars.map(_.s).toSet
-        assert((all -- temp) == Set("?lnk"))
-      case _ => fail
-    }
+    query("/queries/q3-union.sparql", config)
+      .map {
+        case Construct(
+              vars,
+              bgp,
+              Union(BGP(quadsL: Seq[Quad]), BGP(quadsR: Seq[Quad]))
+            ) =>
+          val temp = QueryConstruct.getAllVariableNames(bgp)
+          val all  = vars.map(_.s).toSet
+          assert((all -- temp) == Set("?lnk"))
+        case _ => fail
+      }
+      .getOrElse(fail)
   }
 
   "Construct with Bind" should "contains bind variable" in {
-    query("/queries/q4-simple-bind.sparql", config) match {
-      case Construct(
-            vars,
-            bgp,
-            Extend(l: StringVal, r: StringVal, BGP(quads: Seq[Quad]))
-          ) =>
-        vars.exists(_.s == "?dbind")
-      case _ => fail
-    }
+    query("/queries/q4-simple-bind.sparql", config)
+      .map {
+        case Construct(
+              vars,
+              bgp,
+              Extend(l: StringVal, r: StringVal, BGP(quads: Seq[Quad]))
+            ) =>
+          vars.exists(_.s == "?dbind")
+        case _ => fail
+      }
+      .getOrElse(fail)
   }
 
   "Complex named graph query" should "be captured properly in Construct" in {
-    query("/queries/q13-complex-named-graph.sparql", config) match {
-      case Construct(vars, bgp, expr) =>
-        assert(vars.size == 13)
-        assert(vars.exists(va => va.s == "?ogihw"))
-      case _ => fail
-    }
+    query("/queries/q13-complex-named-graph.sparql", config)
+      .map {
+        case Construct(vars, bgp, expr) =>
+          assert(vars.size == 13)
+          assert(vars.exists(va => va.s == "?ogihw"))
+        case _ => fail
+      }
+      .getOrElse(fail)
   }
 
   "Complex lit-search query" should "return proper Construct type" in {
     val a = 1
-    query("/queries/lit-search-3.sparql", config) match {
-      case Construct(vars, bgp, expr) =>
-        assert(bgp.quads.size == 11)
-        assert(
-          bgp.quads.head.o
-            .asInstanceOf[BLANK]
-            .s == bgp.quads(1).s.asInstanceOf[BLANK].s
-        )
-        assert(vars.exists(v => v.s == "?secid"))
-      case _ => fail
-    }
+    query("/queries/lit-search-3.sparql", config)
+      .map {
+        case Construct(vars, bgp, expr) =>
+          assert(bgp.quads.size == 11)
+          assert(
+            bgp.quads.head.o
+              .asInstanceOf[BLANK]
+              .s == bgp.quads(1).s.asInstanceOf[BLANK].s
+          )
+          assert(vars.exists(v => v.s == "?secid"))
+        case _ => fail
+      }
+      .getOrElse(fail)
   }
 
   "Extra large query" should "return proper Construct type" in {
-    query("/queries/lit-search-xlarge.sparql", config) match {
-      case Construct(vars, bgp, expr) =>
-        assert(bgp.quads.size == 67)
-        assert(bgp.quads.head.s.asInstanceOf[VARIABLE].s == "?Year")
-        assert(bgp.quads.last.s.asInstanceOf[VARIABLE].s == "?Predication")
-        assert(vars.exists(v => v.s == "?de"))
-      case _ => fail
-    }
+    query("/queries/lit-search-xlarge.sparql", config)
+      .map {
+        case Construct(vars, bgp, expr) =>
+          assert(bgp.quads.size == 67)
+          assert(bgp.quads.head.s.asInstanceOf[VARIABLE].s == "?Year")
+          assert(bgp.quads.last.s.asInstanceOf[VARIABLE].s == "?Predication")
+          assert(vars.exists(v => v.s == "?de"))
+        case _ => fail
+      }
+      .getOrElse(fail)
   }
 
   "Select query" should "be supported even it is nested" in {
@@ -96,21 +110,23 @@ class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
         }
       """
 
-    parse(query, config) match {
-      case (
-            Construct(
-              vars,
-              bgp,
-              Project(
-                Seq(VARIABLE("?name"), VARIABLE("?person")),
-                Filter(funcs, expr)
-              )
-            ),
-            _
-          ) =>
-        succeed
-      case _ => fail
-    }
+    parse(query, config)
+      .map {
+        case (
+              Construct(
+                vars,
+                bgp,
+                Project(
+                  Seq(VARIABLE("?name"), VARIABLE("?person")),
+                  Filter(funcs, expr)
+                )
+              ),
+              _
+            ) =>
+          succeed
+        case _ => fail
+      }
+      .getOrElse(fail)
   }
 
   "Query with blank nodes" should "be supported in the QueryConstruct" in {
@@ -128,7 +144,7 @@ class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
 
     val x = parse(query, config)
 
-    x match {
+    x.map {
       case (
             Select(
               mutable.ArrayBuffer(VARIABLE("?de"), VARIABLE("?et")),
@@ -162,7 +178,7 @@ class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
           ) =>
         succeed
       case _ => fail
-    }
+    }.getOrElse(fail)
 
   }
 }
