@@ -310,6 +310,39 @@ class FuncSpec
     }
   }
 
+  "Func.regex" should {
+
+    "return true if a field matches the given regex pattern" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "Alice",
+        "Alison"
+      ).toDF("text")
+
+      df.select(Func.regex(df("text"), "^Ali").as("result"))
+        .collect shouldEqual Array(
+        Row(true),
+        Row(true)
+      )
+    }
+
+    "return false otherwise" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "Alice",
+        "Alison"
+      ).toDF("text")
+
+      df.select(Func.regex(df("text"), "^ali").as("result"))
+        .collect shouldEqual Array(
+        Row(false),
+        Row(false)
+      )
+    }
+  }
+
   "Func.concat" should {
 
     "concatenate two string columns" in {

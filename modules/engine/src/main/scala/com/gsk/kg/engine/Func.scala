@@ -77,6 +77,23 @@ object Func {
     when(regexp_extract(col, "^_:.*$", 0) =!= "", true)
       .otherwise(false)
 
+  /** Implementation of SparQL REGEX (without flags) on Spark dataframes.
+    *
+    * =Examples=
+    *
+    * | Function call          | Result |
+    * |:-----------------------|:-------|
+    * | regex("Alice", "^Ali") | true   |
+    * | regex("Alice", "^ali") | false  |
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-regex]]
+    * @param col
+    * @param pattern
+    * @return
+    */
+  def regex(col: Column, pattern: String): Column =
+    col.rlike(pattern)
+
   /** Implementation of SparQL REPLACE (without flags) on Spark dataframes.
     *
     * =Examples=
