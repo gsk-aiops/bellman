@@ -38,7 +38,7 @@ object ExpressionF {
   final case class STRAFTER[A](s: A, f: String)      extends ExpressionF[A]
   final case class ISBLANK[A](s: A)                  extends ExpressionF[A]
   final case class REPLACE[A](st: A, pattern: String, by: String)
-    extends ExpressionF[A]
+      extends ExpressionF[A]
   final case class COUNT[A](e: A)  extends ExpressionF[A]
   final case class SUM[A](e: A)    extends ExpressionF[A]
   final case class MIN[A](e: A)    extends ExpressionF[A]
@@ -46,9 +46,9 @@ object ExpressionF {
   final case class AVG[A](e: A)    extends ExpressionF[A]
   final case class SAMPLE[A](e: A) extends ExpressionF[A]
   final case class GROUP_CONCAT[A](e: A, separator: String)
-    extends ExpressionF[A]
+      extends ExpressionF[A]
   final case class STRING[A](s: String, tag: Option[String])
-    extends ExpressionF[A]
+      extends ExpressionF[A]
   final case class NUM[A](s: String)      extends ExpressionF[A]
   final case class VARIABLE[A](s: String) extends ExpressionF[A]
   final case class URIVAL[A](s: String)   extends ExpressionF[A]
@@ -71,10 +71,10 @@ object ExpressionF {
       case BuiltInFunc.STRAFTER(s, StringVal.STRING(f, _)) => STRAFTER(s, f)
       case BuiltInFunc.ISBLANK(s)                          => ISBLANK(s)
       case BuiltInFunc.REPLACE(
-      st,
-      StringVal.STRING(pattern, _),
-      StringVal.STRING(by, _)
-      ) =>
+            st,
+            StringVal.STRING(pattern, _),
+            StringVal.STRING(by, _)
+          ) =>
         REPLACE(st, pattern, by)
       case BuiltInFunc.REGEX(l, r)                          => REGEX(l, r)
       case BuiltInFunc.STRSTARTS(s, StringVal.STRING(f, _)) => STRSTARTS(s, f)
@@ -150,9 +150,9 @@ object ExpressionF {
     )
 
   def compile[T](
-                  t: T,
-                  config: Config
-                )(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
+      t: T,
+      config: Config
+  )(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
     val algebraM: AlgebraM[M, ExpressionF, Column] =
       AlgebraM.apply[M, ExpressionF, Column] {
         case EQUALS(l, r)               => Func.equals(l, r).pure[M]
