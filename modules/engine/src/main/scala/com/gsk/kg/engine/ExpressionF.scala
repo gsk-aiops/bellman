@@ -24,7 +24,7 @@ object ExpressionF {
 
   final case class EQUALS[A](l: A, r: A)             extends ExpressionF[A]
   final case class REGEX[A](l: A, r: A)              extends ExpressionF[A]
-  final case class STRSTARTS[A](l: A, r: A)          extends ExpressionF[A]
+  final case class STRSTARTS[A](s: A, f: String)     extends ExpressionF[A]
   final case class GT[A](l: A, r: A)                 extends ExpressionF[A]
   final case class LT[A](l: A, r: A)                 extends ExpressionF[A]
   final case class GTE[A](l: A, r: A)                extends ExpressionF[A]
@@ -76,36 +76,40 @@ object ExpressionF {
             StringVal.STRING(by, _)
           ) =>
         REPLACE(st, pattern, by)
-      case BuiltInFunc.REGEX(l, r)              => REGEX(l, r)
-      case BuiltInFunc.STRSTARTS(l, r)          => STRSTARTS(l, r)
-      case Aggregate.COUNT(e)                   => COUNT(e)
-      case Aggregate.SUM(e)                     => SUM(e)
-      case Aggregate.MIN(e)                     => MIN(e)
-      case Aggregate.MAX(e)                     => MAX(e)
-      case Aggregate.AVG(e)                     => AVG(e)
-      case Aggregate.SAMPLE(e)                  => SAMPLE(e)
-      case Aggregate.GROUP_CONCAT(e, separator) => GROUP_CONCAT(e, separator)
-      case StringVal.STRING(s, tag)             => STRING(s, tag)
-      case StringVal.NUM(s)                     => NUM(s)
-      case StringVal.VARIABLE(s)                => VARIABLE(s)
-      case StringVal.URIVAL(s)                  => URIVAL(s)
-      case StringVal.BLANK(s)                   => BLANK(s)
-      case StringVal.BOOL(s)                    => BOOL(s)
+      case BuiltInFunc.REGEX(l, r)                          => REGEX(l, r)
+      case BuiltInFunc.STRSTARTS(s, StringVal.STRING(f, _)) => STRSTARTS(s, f)
+      case Aggregate.COUNT(e)                               => COUNT(e)
+      case Aggregate.SUM(e)                                 => SUM(e)
+      case Aggregate.MIN(e)                                 => MIN(e)
+      case Aggregate.MAX(e)                                 => MAX(e)
+      case Aggregate.AVG(e)                                 => AVG(e)
+      case Aggregate.SAMPLE(e)                              => SAMPLE(e)
+      case Aggregate.GROUP_CONCAT(e, separator)             => GROUP_CONCAT(e, separator)
+      case StringVal.STRING(s, tag)                         => STRING(s, tag)
+      case StringVal.NUM(s)                                 => NUM(s)
+      case StringVal.VARIABLE(s)                            => VARIABLE(s)
+      case StringVal.URIVAL(s)                              => URIVAL(s)
+      case StringVal.BLANK(s)                               => BLANK(s)
+      case StringVal.BOOL(s)                                => BOOL(s)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
     Algebra {
-      case EQUALS(l, r)    => Conditional.EQUALS(l, r)
-      case GT(l, r)        => Conditional.GT(l, r)
-      case LT(l, r)        => Conditional.LT(l, r)
-      case GTE(l, r)       => Conditional.GTE(l, r)
-      case LTE(l, r)       => Conditional.LTE(l, r)
-      case OR(l, r)        => Conditional.OR(l, r)
-      case AND(l, r)       => Conditional.AND(l, r)
-      case NEGATE(s)       => Conditional.NEGATE(s)
-      case REGEX(l, r)     => BuiltInFunc.REGEX(l, r)
-      case STRSTARTS(l, r) => BuiltInFunc.STRSTARTS(l, r)
-      case URI(s)          => BuiltInFunc.URI(s.asInstanceOf[StringLike])
+      case EQUALS(l, r) => Conditional.EQUALS(l, r)
+      case GT(l, r)     => Conditional.GT(l, r)
+      case LT(l, r)     => Conditional.LT(l, r)
+      case GTE(l, r)    => Conditional.GTE(l, r)
+      case LTE(l, r)    => Conditional.LTE(l, r)
+      case OR(l, r)     => Conditional.OR(l, r)
+      case AND(l, r)    => Conditional.AND(l, r)
+      case NEGATE(s)    => Conditional.NEGATE(s)
+      case REGEX(l, r)  => BuiltInFunc.REGEX(l, r)
+      case STRSTARTS(s, f) =>
+        BuiltInFunc.STRAFTER(
+          s.asInstanceOf[StringLike],
+          f.asInstanceOf[StringLike]
+        )
+      case URI(s) => BuiltInFunc.URI(s.asInstanceOf[StringLike])
       case CONCAT(appendTo, append) =>
         BuiltInFunc.CONCAT(
           appendTo.asInstanceOf[StringLike],
@@ -153,7 +157,7 @@ object ExpressionF {
       AlgebraM.apply[M, ExpressionF, Column] {
         case EQUALS(l, r)               => Func.equals(l, r).pure[M]
         case REGEX(l, r)                => unknownFunction("REGEX")
-        case STRSTARTS(l, r)            => unknownFunction("STRSTARTS")
+        case STRSTARTS(s, f)            => Func.strstarts(s, f).pure[M]
         case GT(l, r)                   => Func.gt(l, r).pure[M]
         case LT(l, r)                   => Func.lt(l, r).pure[M]
         case GTE(l, r)                  => Func.gte(l, r).pure[M]

@@ -277,6 +277,39 @@ class FuncSpec
     }
   }
 
+  "Func.strstarts" should {
+
+    "return true if a field starts with a given string" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "hello world",
+        "hello universe"
+      ).toDF("text")
+
+      df.select(Func.strstarts(df("text"), "hello").as("result"))
+        .collect shouldEqual Array(
+        Row(true),
+        Row(true)
+      )
+    }
+
+    "return false otherwise" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "hello world",
+        "hello universe"
+      ).toDF("text")
+
+      df.select(Func.strstarts(df("text"), "help").as("result"))
+        .collect shouldEqual Array(
+        Row(false),
+        Row(false)
+      )
+    }
+  }
+
   "Func.concat" should {
 
     "concatenate two string columns" in {
