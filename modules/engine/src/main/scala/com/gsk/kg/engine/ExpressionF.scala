@@ -95,21 +95,21 @@ object ExpressionF {
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
     Algebra {
-      case EQUALS(l, r)    => Conditional.EQUALS(l, r)
-      case GT(l, r)        => Conditional.GT(l, r)
-      case LT(l, r)        => Conditional.LT(l, r)
-      case GTE(l, r)       => Conditional.GTE(l, r)
-      case LTE(l, r)       => Conditional.LTE(l, r)
-      case OR(l, r)        => Conditional.OR(l, r)
-      case AND(l, r)       => Conditional.AND(l, r)
-      case NEGATE(s)       => Conditional.NEGATE(s)
-      case REGEX(l, r)     => BuiltInFunc.REGEX(l, r)
+      case EQUALS(l, r) => Conditional.EQUALS(l, r)
+      case GT(l, r)     => Conditional.GT(l, r)
+      case LT(l, r)     => Conditional.LT(l, r)
+      case GTE(l, r)    => Conditional.GTE(l, r)
+      case LTE(l, r)    => Conditional.LTE(l, r)
+      case OR(l, r)     => Conditional.OR(l, r)
+      case AND(l, r)    => Conditional.AND(l, r)
+      case NEGATE(s)    => Conditional.NEGATE(s)
+      case REGEX(l, r)  => BuiltInFunc.REGEX(l, r)
       case STRSTARTS(s, f) =>
         BuiltInFunc.STRAFTER(
           s.asInstanceOf[StringLike],
           f.asInstanceOf[StringLike]
         )
-      case URI(s)          => BuiltInFunc.URI(s.asInstanceOf[StringLike])
+      case URI(s) => BuiltInFunc.URI(s.asInstanceOf[StringLike])
       case CONCAT(appendTo, append) =>
         BuiltInFunc.CONCAT(
           appendTo.asInstanceOf[StringLike],
