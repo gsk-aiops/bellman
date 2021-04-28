@@ -174,8 +174,7 @@ object Func {
     * @return
     */
   def strstarts(col: Column, str: String): Column =
-    when(col.startsWith(str), lit(true))
-      .otherwise(lit(false))
+    col.startsWith(str)
 
   /** The IRI function constructs an IRI by resolving the string
     * argument (see RFC 3986 and RFC 3987 or any later RFC that
