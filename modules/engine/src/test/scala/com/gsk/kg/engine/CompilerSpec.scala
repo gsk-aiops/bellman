@@ -4718,56 +4718,224 @@ class CompilerSpec
         )
       }
 
-      "operate correctly there's GROUP BY and a MIN function" in {
+      "operate correctly there's GROUP BY and a MIN function" when {
 
-        val df = List(
-          ("http://uri.com/subject/a1", "0", "http://uri.com/object"),
-          ("http://uri.com/subject/a1", "1", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "0", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "1", "http://uri.com/object"),
-          ("http://uri.com/subject/a3", "0", "http://uri.com/object")
-        ).toDF("s", "p", "o")
+        "applied on strings" in {
+          val df = List(
+            (
+              "http://uri.com/subject/a1",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice"
+            ),
+            (
+              "http://uri.com/subject/a1",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob"
+            ),
+            (
+              "http://uri.com/subject/a2",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles"
+            ),
+            (
+              "http://uri.com/subject/a2",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charlie"
+            ),
+            (
+              "http://uri.com/subject/a3",
+              "http://xmlns.com/foaf/0.1/name",
+              "megan"
+            ),
+            (
+              "http://uri.com/subject/a3",
+              "http://xmlns.com/foaf/0.1/name",
+              "Megan"
+            )
+          ).toDF("s", "p", "o")
 
-        val query = """
-          SELECT ?a MIN(?b)
+          val query =
+            """
+          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+          SELECT ?s (MIN(?name) AS ?o)
           WHERE {
-            ?a ?b <http://uri.com/object>
-          } GROUP BY ?a
+            ?s foaf:name ?name .
+          } GROUP BY ?s
           """
 
-        val result = Compiler.compile(df, query, config)
+          val result = Compiler.compile(df, query, config)
 
-        result.right.get.collect.toSet shouldEqual Set(
-          Row("http://uri.com/subject/a1", "0.0"),
-          Row("http://uri.com/subject/a2", "0.0"),
-          Row("http://uri.com/subject/a3", "0.0")
-        )
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("http://uri.com/subject/a1", "\"Alice\""),
+            Row("http://uri.com/subject/a2", "\"Charles\""),
+            Row("http://uri.com/subject/a3", "\"Megan\"")
+          )
+        }
+
+        "applied on numbers" in {
+
+          val df = List(
+            (
+              "http://uri.com/subject/a1",
+              "http://xmlns.com/foaf/0.1/age",
+              "18.1"
+            ),
+            (
+              "http://uri.com/subject/a1",
+              "http://xmlns.com/foaf/0.1/age",
+              "19"
+            ),
+            (
+              "http://uri.com/subject/a2",
+              "http://xmlns.com/foaf/0.1/age",
+              "30"
+            ),
+            (
+              "http://uri.com/subject/a2",
+              "http://xmlns.com/foaf/0.1/age",
+              "31.5"
+            ),
+            (
+              "http://uri.com/subject/a3",
+              "http://xmlns.com/foaf/0.1/age",
+              "45"
+            ),
+            (
+              "http://uri.com/subject/a3",
+              "http://xmlns.com/foaf/0.1/age",
+              "50"
+            )
+          ).toDF("s", "p", "o")
+
+          val query =
+            """
+          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+          
+          SELECT ?s (MIN(?age) AS ?o)
+          WHERE {
+            ?s foaf:age ?age .
+          } GROUP BY ?s
+          """
+
+          val result = Compiler.compile(df, query, config)
+
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("http://uri.com/subject/a1", "18.1"),
+            Row("http://uri.com/subject/a2", "30"),
+            Row("http://uri.com/subject/a3", "45")
+          )
+        }
       }
 
-      "operate correctly there's GROUP BY and a MAX function" in {
+      "operate correctly there's GROUP BY and a MAX function" when {
 
-        val df = List(
-          ("http://uri.com/subject/a1", "0", "http://uri.com/object"),
-          ("http://uri.com/subject/a1", "1", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "0", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "1", "http://uri.com/object"),
-          ("http://uri.com/subject/a3", "0", "http://uri.com/object")
-        ).toDF("s", "p", "o")
+        "applied on strings" in {
+          val df = List(
+            (
+              "http://uri.com/subject/a1",
+              "http://xmlns.com/foaf/0.1/name",
+              "Alice"
+            ),
+            (
+              "http://uri.com/subject/a1",
+              "http://xmlns.com/foaf/0.1/name",
+              "Bob"
+            ),
+            (
+              "http://uri.com/subject/a2",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charles"
+            ),
+            (
+              "http://uri.com/subject/a2",
+              "http://xmlns.com/foaf/0.1/name",
+              "Charlie"
+            ),
+            (
+              "http://uri.com/subject/a3",
+              "http://xmlns.com/foaf/0.1/name",
+              "megan"
+            ),
+            (
+              "http://uri.com/subject/a3",
+              "http://xmlns.com/foaf/0.1/name",
+              "Megan"
+            )
+          ).toDF("s", "p", "o")
 
-        val query = """
-          SELECT ?a MAX(?b)
+          val query =
+            """
+          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+          SELECT ?s (MAX(?name) AS ?o)
           WHERE {
-            ?a ?b <http://uri.com/object>
-          } GROUP BY ?a
+            ?s foaf:name ?name .
+          } GROUP BY ?s
           """
 
-        val result = Compiler.compile(df, query, config)
+          val result = Compiler.compile(df, query, config)
 
-        result.right.get.collect.toSet shouldEqual Set(
-          Row("http://uri.com/subject/a1", "1.0"),
-          Row("http://uri.com/subject/a2", "1.0"),
-          Row("http://uri.com/subject/a3", "0.0")
-        )
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("http://uri.com/subject/a1", "\"Bob\""),
+            Row("http://uri.com/subject/a2", "\"Charlie\""),
+            Row("http://uri.com/subject/a3", "\"megan\"")
+          )
+        }
+
+        "applied on numbers" in {
+
+          val df = List(
+            (
+              "http://uri.com/subject/a1",
+              "http://xmlns.com/foaf/0.1/age",
+              "18.1"
+            ),
+            (
+              "http://uri.com/subject/a1",
+              "http://xmlns.com/foaf/0.1/age",
+              "19"
+            ),
+            (
+              "http://uri.com/subject/a2",
+              "http://xmlns.com/foaf/0.1/age",
+              "30"
+            ),
+            (
+              "http://uri.com/subject/a2",
+              "http://xmlns.com/foaf/0.1/age",
+              "31.5"
+            ),
+            (
+              "http://uri.com/subject/a3",
+              "http://xmlns.com/foaf/0.1/age",
+              "45"
+            ),
+            (
+              "http://uri.com/subject/a3",
+              "http://xmlns.com/foaf/0.1/age",
+              "50"
+            )
+          ).toDF("s", "p", "o")
+
+          val query =
+            """
+          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+          
+          SELECT ?s (MAX(?age) AS ?o)
+          WHERE {
+            ?s foaf:age ?age .
+          } GROUP BY ?s
+          """
+
+          val result = Compiler.compile(df, query, config)
+
+          result.right.get.collect.toSet shouldEqual Set(
+            Row("http://uri.com/subject/a1", "19"),
+            Row("http://uri.com/subject/a2", "31.5"),
+            Row("http://uri.com/subject/a3", "50")
+          )
+        }
       }
 
       "operate correctly there's GROUP BY and a SUM function" in {
@@ -5524,8 +5692,7 @@ class CompilerSpec
 
         "other cases" when {
 
-          // TODO: Un-ignore when fixed MIN, MAX aggregate functions
-          "execute and obtain expected results from sub-query with SELECT and GROUP BY" ignore {
+          "execute and obtain expected results from sub-query with SELECT and GROUP BY" in {
 
             val df: DataFrame = List(
               (
@@ -5610,8 +5777,8 @@ class CompilerSpec
 
             result.right.get.collect().length shouldEqual 2
             result.right.get.collect().toSet shouldEqual Set(
-              ("http://people.example/bob", "\"B. Bar\""),
-              ("http://people.example/carol", "\"C. Baz\"")
+              Row("http://people.example/bob", "\"B. Bar\""),
+              Row("http://people.example/carol", "\"C. Baz\"")
             )
           }
         }

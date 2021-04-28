@@ -217,9 +217,9 @@ object Engine {
     case Some((VARIABLE(name), Aggregate.SUM(VARIABLE(v)))) =>
       df.agg(sum(v).cast("float").as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.MIN(VARIABLE(v)))) =>
-      df.agg(min(v).cast("float").as(name)).pure[M]
+      df.agg(min(v).as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.MAX(VARIABLE(v)))) =>
-      df.agg(max(v).cast("float").as(name)).pure[M]
+      df.agg(max(v).as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.AVG(VARIABLE(v)))) =>
       df.agg(avg(v).cast("float").as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v)))) =>
