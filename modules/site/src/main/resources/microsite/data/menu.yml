@@ -30,5 +30,8 @@ options:
       - title: Rdf Formatter
         url: docs/phases/rdfFormatter
 
+  - title: Configuration
+    url: docs/configuration
+
   - title: Techniques
     url: docs/techniques
