@@ -23,7 +23,7 @@ import com.gsk.kg.sparqlparser._
 object ExpressionF {
 
   final case class EQUALS[A](l: A, r: A)             extends ExpressionF[A]
-  final case class REGEX[A](s: A, f: String)         extends ExpressionF[A]
+  final case class REGEX[A](s: A, pattern: String)   extends ExpressionF[A]
   final case class STRSTARTS[A](s: A, f: String)     extends ExpressionF[A]
   final case class GT[A](l: A, r: A)                 extends ExpressionF[A]
   final case class LT[A](l: A, r: A)                 extends ExpressionF[A]
