@@ -77,6 +77,16 @@ object Func {
     when(regexp_extract(col, "^_:.*$", 0) =!= "", true)
       .otherwise(false)
 
+  /** Implementation of SparQL REGEX (without flags) on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-regex]]
+    * @param col
+    * @param pattern
+    * @return
+    */
+  def regex(col: Column, pattern: String): Column =
+    col.rlike(pattern)
+
   /** Implementation of SparQL REPLACE (without flags) on Spark dataframes.
     *
     * =Examples=
@@ -132,23 +142,6 @@ object Func {
 
   /** Implementation of SparQL STRSTARTS on Spark dataframes.
     *
-    * =Examples=
-    *
-    * | Function call                                      | Result |
-    * |:---------------------------------------------------|:-------|
-    * | strstarts("foobar", "foo")                         | true   |
-    * | strstarts("foobar"@en, "foo"@en)                   | true   |
-    * | strstarts("foobar"^^xsd:string, "foo"^^xsd:string) | true   |
-    * | strstarts("foobar"^^xsd:string, "foo")             | true   |
-    * | strstarts("foobar", "foo"^^xsd:string)             | true   |
-    * | strstarts("foobar"@en, "foo")                      | true   |
-    * | strstarts("foobar"@en, "foo"^^xsd:string)          | true   |
-    * | strstarts("bar", "foo"^^xsd:string)                | false  |
-    * | strstarts("bar", "foo")                            | false  |
-    * | strstarts("foobar"@fr, "foo"@en)                   | error  |
-    * | strstarts("foobar", "foo"@en)                      | error  |
-    * | strstarts("foobar"^^xsd:string, "foo"@en)          | error  |
-    *
     * TODO (pepegar): Implement argument compatibility checks
     *
     * @see [[https://www.w3.org/TR/sparql11-query/#func-strstarts]]
@@ -157,8 +150,7 @@ object Func {
     * @return
     */
   def strstarts(col: Column, str: String): Column =
-    when(col.startsWith(str), lit(true))
-      .otherwise(lit(false))
+    col.startsWith(str)
 
   /** The IRI function constructs an IRI by resolving the string
     * argument (see RFC 3986 and RFC 3987 or any later RFC that
