@@ -81,10 +81,11 @@ object Func {
     *
     * =Examples=
     *
-    * | Function call          | Result |
-    * |:-----------------------|:-------|
-    * | regex("Alice", "^Ali") | true   |
-    * | regex("Alice", "^ali") | false  |
+    * | Function call              | Result |
+    * |:-------------------------- |:-------|
+    * | regex("Alice", "^Ali")     | true   |
+    * | regex("Alice", "(?i)^ali)" | true   |
+    * | regex("Alice", "^ali")     | false  |
     *
     * @see [[https://www.w3.org/TR/sparql11-query/#func-regex]]
     * @param col
