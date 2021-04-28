@@ -79,14 +79,6 @@ object Func {
 
   /** Implementation of SparQL REGEX (without flags) on Spark dataframes.
     *
-    * =Examples=
-    *
-    * | Function call              | Result |
-    * |:-------------------------- |:-------|
-    * | regex("Alice", "^Ali")     | true   |
-    * | regex("Alice", "(?i)^ali)" | true   |
-    * | regex("Alice", "^ali")     | false  |
-    *
     * @see [[https://www.w3.org/TR/sparql11-query/#func-regex]]
     * @param col
     * @param pattern
@@ -149,23 +141,6 @@ object Func {
       .otherwise(substring_index(col, str, -1))
 
   /** Implementation of SparQL STRSTARTS on Spark dataframes.
-    *
-    * =Examples=
-    *
-    * | Function call                                      | Result |
-    * |:---------------------------------------------------|:-------|
-    * | strstarts("foobar", "foo")                         | true   |
-    * | strstarts("foobar"@en, "foo"@en)                   | true   |
-    * | strstarts("foobar"^^xsd:string, "foo"^^xsd:string) | true   |
-    * | strstarts("foobar"^^xsd:string, "foo")             | true   |
-    * | strstarts("foobar", "foo"^^xsd:string)             | true   |
-    * | strstarts("foobar"@en, "foo")                      | true   |
-    * | strstarts("foobar"@en, "foo"^^xsd:string)          | true   |
-    * | strstarts("bar", "foo"^^xsd:string)                | false  |
-    * | strstarts("bar", "foo")                            | false  |
-    * | strstarts("foobar"@fr, "foo"@en)                   | error  |
-    * | strstarts("foobar", "foo"@en)                      | error  |
-    * | strstarts("foobar"^^xsd:string, "foo"@en)          | error  |
     *
     * TODO (pepegar): Implement argument compatibility checks
     *
