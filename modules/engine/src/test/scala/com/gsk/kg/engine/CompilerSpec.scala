@@ -5045,9 +5045,9 @@ class CompilerSpec
 
         result.right.get.collect().length shouldEqual 3
         result.right.get.collect.toList shouldEqual List(
-          Row("\"Charlie\""),
+          Row("\"Alice\""),
           Row("\"Bob\""),
-          Row("\"Alice\"")
+          Row("\"Charlie\"")
         )
       }
 

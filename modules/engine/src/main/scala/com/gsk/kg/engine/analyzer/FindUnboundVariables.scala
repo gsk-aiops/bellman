@@ -7,7 +7,7 @@ import cats.{Group => _, _}
 
 import higherkindness.droste.{Project => _, _}
 
-import com.gsk.kg.engine.DAG._
+import com.gsk.kg.engine.DAG.{Order => DAGOrder, _}
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
@@ -85,6 +85,7 @@ object FindUnboundVariables {
       case Limit(limit, r)         => r.pure[ST]
       case Distinct(r)             => r.pure[ST]
       case Group(vars, func, r)    => r.pure[ST]
+      case DAGOrder(variable, r)   => r.pure[ST]
       case Noop(trace)             => Set.empty.pure[ST]
     }
 }

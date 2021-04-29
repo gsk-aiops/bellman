@@ -59,9 +59,10 @@ object DAG {
       vars: List[VARIABLE],
       func: Option[(VARIABLE, Expression)],
       r: A
-  )                                               extends DAG[A]
-  @Lenses final case class Distinct[A](r: A)      extends DAG[A]
-  @Lenses final case class Noop[A](trace: String) extends DAG[A]
+  )                                                           extends DAG[A]
+  @Lenses final case class Order[A](variable: VARIABLE, r: A) extends DAG[A]
+  @Lenses final case class Distinct[A](r: A)                  extends DAG[A]
+  @Lenses final case class Noop[A](trace: String)             extends DAG[A]
 
   implicit val traverse: Traverse[DAG] = new DefaultTraverse[DAG] {
     def traverse[G[_]: Applicative, A, B](fa: DAG[A])(f: A => G[B]): G[DAG[B]] =
@@ -89,6 +90,7 @@ object DAG {
           f(r).map(limit(l, _))
         case DAG.Distinct(r)          => f(r).map(distinct)
         case DAG.Group(vars, func, r) => f(r).map(group(vars, func, _))
+        case DAG.Order(variable, r)   => f(r).map(order(variable, _))
         case DAG.Noop(str)            => noop(str).pure[G]
       }
   }
@@ -120,6 +122,8 @@ object DAG {
       r: A
   ): DAG[A] =
     Group[A](vars, func, r)
+  def order[A](variable: VARIABLE, r: A): DAG[A] =
+    Order[A](variable, r)
   def noop[A](trace: String): DAG[A] = Noop[A](trace)
 
   // Smart constructors for building the recursive version directly
@@ -161,7 +165,11 @@ object DAG {
       vars: List[VARIABLE],
       func: Option[(VARIABLE, Expression)],
       r: T
-  ): T                                          = group[T](vars, func, r).embed
+  ): T = group[T](vars, func, r).embed
+  def orderR[T: Embed[DAG, *]](
+      variable: VARIABLE,
+      r: T
+  ): T                                          = order[T](variable, r).embed
   def noopR[T: Embed[DAG, *]](trace: String): T = noop[T](trace).embed
 
   /** Transform a [[Query]] into its [[Fix[DAG]]] representation
@@ -195,6 +203,7 @@ object DAG {
       case QuadF(s, p, o, g)                 => noop("QuadF not supported")
       case DistinctF(r)                      => distinct(r)
       case GroupF(vars, func, r)             => group(vars.toList, func, r)
+      case OrderF(variable, r)               => order(variable, r)
       case OffsetLimitF(None, None, r)       => T.coalgebra(r)
       case OffsetLimitF(None, Some(l), r)    => limit(l, r)
       case OffsetLimitF(Some(o), None, r)    => offset(o, r)
@@ -226,6 +235,7 @@ object DAG {
   implicit def eqOffset[A]: Eq[Offset[A]]       = Eq.fromUniversalEquals
   implicit def eqLimit[A]: Eq[Limit[A]]         = Eq.fromUniversalEquals
   implicit def eqGroup[A]: Eq[Group[A]]         = Eq.fromUniversalEquals
+  implicit def eqOrder[A]: Eq[Order[A]]         = Eq.fromUniversalEquals
   implicit def eqDistinct[A]: Eq[Distinct[A]]   = Eq.fromUniversalEquals
   implicit def eqNoop[A]: Eq[Noop[A]]           = Eq.fromUniversalEquals
 }
@@ -287,6 +297,8 @@ object optics {
     .partial[DAG[T], Distinct[T]] { case dag @ Distinct(r) => dag }(identity)
   def _group[T: Basis[DAG, *]]: Prism[DAG[T], Group[T]] = Prism
     .partial[DAG[T], Group[T]] { case dag @ Group(_, _, _) => dag }(identity)
+  def _order[T: Basis[DAG, *]]: Prism[DAG[T], Order[T]] = Prism
+    .partial[DAG[T], Order[T]] { case dag @ Order(_, _) => dag }(identity)
   def _noop[T: Basis[DAG, *]]: Prism[DAG[T], Noop[T]] =
     Prism.partial[DAG[T], Noop[T]] { case dag @ Noop(trace: String) => dag }(
       identity
@@ -322,6 +334,8 @@ object optics {
     basisIso[DAG, T] composePrism _distinct
   def _groupR[T: Basis[DAG, *]]: Prism[T, Group[T]] =
     basisIso[DAG, T] composePrism _group
+  def _orderR[T: Basis[DAG, *]]: Prism[T, Order[T]] =
+    basisIso[DAG, T] composePrism _order
   def _noopR[T: Basis[DAG, *]]: Prism[T, Noop[T]] =
     basisIso[DAG, T] composePrism _noop
 

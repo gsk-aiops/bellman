@@ -162,6 +162,8 @@ object GraphsPushdown {
           case DAG.Distinct(r) => graphsOrList => DAG.distinctR(r(graphsOrList))
           case DAG.Group(vars, func, r) =>
             graphsOrList => DAG.groupR(vars, func, r(graphsOrList))
+          case DAG.Order(variable, r) =>
+            graphsOrList => DAG.orderR(variable, r(graphsOrList))
           case DAG.Noop(graphsOrList) => _ => DAG.noopR(graphsOrList)
         }
 
