@@ -85,7 +85,7 @@ object Func {
     * @param flags
     * @return
     */
-  def regex(col: Column, pattern: String, flags: String = ""): Column =
+  def regex(col: Column, pattern: String, flags: String): Column =
     col.rlike(s"(?$flags)$pattern")
 
   /** Implementation of SparQL REPLACE (without flags) on Spark dataframes.
