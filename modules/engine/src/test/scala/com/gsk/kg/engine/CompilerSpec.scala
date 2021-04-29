@@ -5007,6 +5007,55 @@ class CompilerSpec
       }
     }
 
+    "perform query with ORDER BY" should {
+
+      "execute and obtain expected results when no order modifier" in {
+
+        val df: DataFrame = List(
+          (
+            "_:a",
+            "http://xmlns.com/foaf/0.1/name",
+            "Alice",
+            ""
+          ),
+          (
+            "_:b",
+            "http://xmlns.com/foaf/0.1/name",
+            "Bob",
+            ""
+          ),
+          (
+            "_:c",
+            "http://xmlns.com/foaf/0.1/name",
+            "Charlie",
+            ""
+          )
+        ).toDF("s", "p", "o", "g")
+
+        val query =
+          """
+            |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+            |
+            |SELECT ?name
+            |WHERE { ?x foaf:name ?name }
+            |ORDER BY ?name
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query, config)
+
+        result.right.get.collect().length shouldEqual 3
+        result.right.get.collect.toList shouldEqual List(
+          Row("\"Charlie\""),
+          Row("\"Bob\""),
+          Row("\"Alice\"")
+        )
+      }
+
+      "execute and obtain expected results when ASC modifier" in {}
+
+      "execute and obtain expected results when DESC modifier" in {}
+    }
+
     "inclusive/exclusive default graph" should {
 
       "exclude graphs when no explicit FROM" in {
