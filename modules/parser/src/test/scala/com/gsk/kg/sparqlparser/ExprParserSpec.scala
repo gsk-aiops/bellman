@@ -147,7 +147,7 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
       case Filter(
             Seq(
               EQUALS(sl1: StringLike, sl2: StringLike),
-              REGEX(sl3: StringLike, sl4: StringLike)
+              REGEX(sl3: StringLike, sl4: StringLike, sl15: StringLike)
             ),
             b: BGP
           ) =>

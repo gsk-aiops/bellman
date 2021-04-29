@@ -320,7 +320,7 @@ class FuncSpec
         "Alison"
       ).toDF("text")
 
-      df.select(Func.regex(df("text"), "(?i)^ali").as("result"))
+      df.select(Func.regex(df("text"), "^ali", "i").as("result"))
         .collect shouldEqual Array(
         Row(true),
         Row(true)
