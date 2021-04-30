@@ -22,8 +22,9 @@ import com.gsk.kg.sparqlparser._
 
 object ExpressionF {
 
-  final case class EQUALS[A](l: A, r: A)             extends ExpressionF[A]
-  final case class REGEX[A](s: A, pattern: String)   extends ExpressionF[A]
+  final case class EQUALS[A](l: A, r: A) extends ExpressionF[A]
+  final case class REGEX[A](s: A, pattern: String, flags: String)
+      extends ExpressionF[A]
   final case class STRSTARTS[A](s: A, f: String)     extends ExpressionF[A]
   final case class GT[A](l: A, r: A)                 extends ExpressionF[A]
   final case class LT[A](l: A, r: A)                 extends ExpressionF[A]
@@ -76,8 +77,12 @@ object ExpressionF {
             StringVal.STRING(by, _)
           ) =>
         REPLACE(st, pattern, by)
-      case BuiltInFunc.REGEX(s, StringVal.STRING(pattern, _)) =>
-        REGEX(s, pattern)
+      case BuiltInFunc.REGEX(
+            s,
+            StringVal.STRING(pattern, _),
+            StringVal.STRING(flags, _)
+          ) =>
+        REGEX(s, pattern, flags)
       case BuiltInFunc.STRSTARTS(s, StringVal.STRING(f, _)) => STRSTARTS(s, f)
       case Aggregate.COUNT(e)                               => COUNT(e)
       case Aggregate.SUM(e)                                 => SUM(e)
@@ -104,10 +109,11 @@ object ExpressionF {
       case OR(l, r)     => Conditional.OR(l, r)
       case AND(l, r)    => Conditional.AND(l, r)
       case NEGATE(s)    => Conditional.NEGATE(s)
-      case REGEX(s, pattern) =>
+      case REGEX(s, pattern, flags) =>
         BuiltInFunc.REGEX(
           s.asInstanceOf[StringLike],
-          pattern.asInstanceOf[StringLike]
+          pattern.asInstanceOf[StringLike],
+          flags.asInstanceOf[StringLike]
         )
       case STRSTARTS(s, f) =>
         BuiltInFunc.STRAFTER(
@@ -161,7 +167,7 @@ object ExpressionF {
     val algebraM: AlgebraM[M, ExpressionF, Column] =
       AlgebraM.apply[M, ExpressionF, Column] {
         case EQUALS(l, r)               => Func.equals(l, r).pure[M]
-        case REGEX(s, pattern)          => Func.regex(s, pattern).pure[M]
+        case REGEX(s, pattern, flags)   => Func.regex(s, pattern, flags).pure[M]
         case STRSTARTS(s, f)            => Func.strstarts(s, f).pure[M]
         case GT(l, r)                   => Func.gt(l, r).pure[M]
         case LT(l, r)                   => Func.lt(l, r).pure[M]

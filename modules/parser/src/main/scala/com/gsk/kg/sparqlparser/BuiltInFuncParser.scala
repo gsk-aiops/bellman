@@ -46,6 +46,12 @@ object BuiltInFuncParser {
     P("(" ~ regex ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
       .map(f => REGEX(f._1, f._2))
 
+  def regexWithFlagsParen[_: P]: P[REGEX] =
+    P(
+      "(" ~ regex ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")"
+    )
+      .map(f => REGEX(f._1, f._2, f._3))
+
   def strstartsParen[_: P]: P[STRSTARTS] =
     P("(" ~ strstarts ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
       .map(f => STRSTARTS(f._1, f._2))
@@ -60,6 +66,7 @@ object BuiltInFuncParser {
         | isBlankParen
         | replaceParen
         | regexParen
+        | regexWithFlagsParen
     )
 //      | StringValParser.string
 //      | StringValParser.variable)

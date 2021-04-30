@@ -93,8 +93,22 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val p =
       fastparse.parse("""(regex ?d "Hello")""", BuiltInFuncParser.regexParen(_))
     p.get.value match {
-      case REGEX(VARIABLE("?d"), STRING("Hello", None)) => succeed
-      case _                                            => fail
+      case REGEX(VARIABLE("?d"), STRING("Hello", None), _) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "Regex with flags parser" should "return REGEX type" in {
+    val p =
+      fastparse.parse(
+        """(regex ?d "Hello" "i")""",
+        BuiltInFuncParser.regexWithFlagsParen(_)
+      )
+    p.get.value match {
+      case REGEX(VARIABLE("?d"), STRING("Hello", None), STRING("i", None)) =>
+        succeed
+      case _ => fail
     }
   }
 }

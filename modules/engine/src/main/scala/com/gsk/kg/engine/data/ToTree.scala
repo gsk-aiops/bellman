@@ -115,8 +115,11 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.OR(l, r)     => Node("OR", Stream(l, r))
           case ExpressionF.AND(l, r)    => Node("AND", Stream(l, r))
           case ExpressionF.NEGATE(s)    => Node("NEGATE", Stream(s))
-          case ExpressionF.REGEX(s, pattern) =>
-            Node("REGEX", Stream(s, Leaf(pattern.toString)))
+          case ExpressionF.REGEX(s, pattern, flags) =>
+            Node(
+              "REGEX",
+              Stream(s, Leaf(pattern.toString), Leaf(flags.toString))
+            )
           case ExpressionF.STRSTARTS(s, f) =>
             Node("STRSTARTS", Stream(s, Leaf(f.toString)))
           case ExpressionF.URI(s) => Node("URI", Stream(s))
