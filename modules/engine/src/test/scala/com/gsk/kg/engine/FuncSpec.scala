@@ -116,7 +116,7 @@ class FuncSpec
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "bra", "*" , "")).collect
+      val result = df.select(Func.replace(df("text"), "bra", "*", "")).collect
 
       result shouldEqual Array(
         Row("a*cada*")
@@ -164,7 +164,8 @@ class FuncSpec
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "a(.)", "a$1$1", "")).collect
+      val result =
+        df.select(Func.replace(df("text"), "a(.)", "a$1$1", "")).collect
 
       result shouldEqual Array(
         Row("abbraccaddabbra")
