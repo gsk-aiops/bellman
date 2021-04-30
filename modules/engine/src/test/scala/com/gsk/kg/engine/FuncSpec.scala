@@ -298,6 +298,39 @@ class FuncSpec
     }
   }
 
+  "Func.strends" should {
+
+    "return true if a field ends with a given string" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "sports car",
+        "sedan car"
+      ).toDF("text")
+
+      df.select(Func.strends(df("text"), "car").as("result"))
+        .collect shouldEqual Array(
+        Row(true),
+        Row(true)
+      )
+    }
+
+    "return false otherwise" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "hello world",
+        "hello universe"
+      ).toDF("text")
+
+      df.select(Func.strends(df("text"), "dses").as("result"))
+        .collect shouldEqual Array(
+        Row(false),
+        Row(false)
+      )
+    }
+  }
+
   "Func.strstarts" should {
 
     "return true if a field starts with a given string" in {
