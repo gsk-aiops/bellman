@@ -114,9 +114,17 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
 
   "Replace parser" should "return REPLACE type" in {
     val p =
-      fastparse.parse("""(replace ?d "Hello" "Olleh")""", BuiltInFuncParser.replaceParen(_))
+      fastparse.parse(
+        """(replace ?d "Hello" "Olleh")""",
+        BuiltInFuncParser.replaceParen(_)
+      )
     p.get.value match {
-      case REPLACE(VARIABLE("?d"), STRING("Hello", None), STRING("Olleh", None), _) =>
+      case REPLACE(
+            VARIABLE("?d"),
+            STRING("Hello", None),
+            STRING("Olleh", None),
+            _
+          ) =>
         succeed
       case _ => fail
     }
@@ -124,9 +132,17 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
 
   "Replace with flags parser" should "return REPLACE type" in {
     val p =
-      fastparse.parse("""(replace ?d "Hello" "Olleh" "i")""", BuiltInFuncParser.replaceWithFlagsParen(_))
+      fastparse.parse(
+        """(replace ?d "Hello" "Olleh" "i")""",
+        BuiltInFuncParser.replaceWithFlagsParen(_)
+      )
     p.get.value match {
-      case REPLACE(VARIABLE("?d"), STRING("Hello", None), STRING("Olleh", None), STRING("i", None)) =>
+      case REPLACE(
+            VARIABLE("?d"),
+            STRING("Hello", None),
+            STRING("Olleh", None),
+            STRING("i", None)
+          ) =>
         succeed
       case _ => fail
     }
