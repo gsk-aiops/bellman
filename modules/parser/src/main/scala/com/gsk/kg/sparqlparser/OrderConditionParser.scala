@@ -24,7 +24,7 @@ object OrderConditionParser {
     "(" ~ desc ~ (StringValParser.variable | conditionParen) ~ ")"
   ).map(p => DESC(p))
 
-  def parser[_: P]: P[Expression] = P(
+  def parser[_: P]: P[ConditionOrder] = P(
     ascParen |
       descParen
   )

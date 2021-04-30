@@ -3,18 +3,16 @@ package com.gsk.kg.engine
 import cats._
 import cats.data.NonEmptyList
 import cats.implicits._
-
 import higherkindness.droste._
 import higherkindness.droste.syntax.all._
 import higherkindness.droste.util.DefaultTraverse
-
 import com.gsk.kg.engine.data.ChunkedList
+import com.gsk.kg.sparqlparser.ConditionOrder
 import com.gsk.kg.sparqlparser.Expr
-import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.Query
+import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-
 import monocle._
 import monocle.macros.Lenses
 
@@ -60,7 +58,7 @@ object DAG {
       func: Option[(VARIABLE, Expression)],
       r: A
   ) extends DAG[A]
-  @Lenses final case class Order[A](conds: NonEmptyList[Expression], r: A)
+  @Lenses final case class Order[A](conds: NonEmptyList[ConditionOrder], r: A)
       extends DAG[A]
   @Lenses final case class Distinct[A](r: A)      extends DAG[A]
   @Lenses final case class Noop[A](trace: String) extends DAG[A]
@@ -123,7 +121,7 @@ object DAG {
       r: A
   ): DAG[A] =
     Group[A](vars, func, r)
-  def order[A](conds: NonEmptyList[Expression], r: A): DAG[A] =
+  def order[A](conds: NonEmptyList[ConditionOrder], r: A): DAG[A] =
     Order[A](conds, r)
   def noop[A](trace: String): DAG[A] = Noop[A](trace)
 
@@ -168,7 +166,7 @@ object DAG {
       r: T
   ): T = group[T](vars, func, r).embed
   def orderR[T: Embed[DAG, *]](
-      conds: NonEmptyList[Expression],
+      conds: NonEmptyList[ConditionOrder],
       r: T
   ): T                                          = order[T](conds, r).embed
   def noopR[T: Embed[DAG, *]](trace: String): T = noop[T](trace).embed

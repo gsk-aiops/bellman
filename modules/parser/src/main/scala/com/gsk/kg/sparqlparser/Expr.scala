@@ -105,9 +105,9 @@ object Expr {
       vars: Seq[VARIABLE],
       func: Option[(VARIABLE, Expression)],
       r: Expr
-  )                                                       extends Expr
-  final case class Order(conds: Seq[Expression], r: Expr) extends Expr
-  final case class Distinct(r: Expr)                      extends Expr
-  final case class OpNil()                                extends Expr
-  final case class TabUnit()                              extends Expr
+  )                                                           extends Expr
+  final case class Order(conds: Seq[ConditionOrder], r: Expr) extends Expr
+  final case class Distinct(r: Expr)                          extends Expr
+  final case class OpNil()                                    extends Expr
+  final case class TabUnit()                                  extends Expr
 }

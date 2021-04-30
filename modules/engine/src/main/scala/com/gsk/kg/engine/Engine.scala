@@ -5,9 +5,7 @@ import cats.data.NonEmptyList
 import cats.instances.all._
 import cats.syntax.applicative._
 import cats.syntax.either._
-
 import higherkindness.droste._
-
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Encoder
@@ -17,10 +15,11 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-
 import com.gsk.kg.config.Config
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.data.ChunkedList.Chunk
+import com.gsk.kg.sparqlparser.ConditionOrder.ASC
+import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr.Quad
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.StringVal
@@ -240,11 +239,26 @@ object Engine {
   }
 
   private def evaluateOrder(
-      conds: NonEmptyList[Expression],
+      conds: NonEmptyList[ConditionOrder],
       r: Multiset
-  ): M[Multiset] = ???
-//    r.copy(dataframe = r.dataframe.orderBy(col(variable.s).asc)).pure[M]
-//    r.copy(dataframe = r.dataframe.sort(col(variable.s).asc)).pure[M]
+  ): M[Multiset] = {
+
+    val condsColumns: NonEmptyList[Column] = conds.map {
+      case ASC(e) =>
+        e match {
+          case VARIABLE(v) => col(v).asc
+          case _           => ???
+        }
+      case DESC(e) =>
+        e match {
+          case VARIABLE(v) => col(v).desc
+          case _           => ???
+        }
+    }
+    val result: DataFrame = r.dataframe.orderBy(condsColumns.toList: _*)
+
+    r.copy(dataframe = result).pure[M]
+  }
 
   private def evaluateLeftJoin(
       l: Multiset,
