@@ -133,6 +133,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
               "REGEX",
               Stream(s, Leaf(pattern.toString), Leaf(flags.toString))
             )
+          case ExpressionF.STRENDS(s, f) =>
+            Node("STRENDS", Stream(s, Leaf(f.toString)))
           case ExpressionF.STRSTARTS(s, f) =>
             Node("STRSTARTS", Stream(s, Leaf(f.toString)))
           case ExpressionF.URI(s) => Node("URI", Stream(s))

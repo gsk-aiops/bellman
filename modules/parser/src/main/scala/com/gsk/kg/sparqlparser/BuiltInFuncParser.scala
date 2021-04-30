@@ -16,6 +16,7 @@ object BuiltInFuncParser {
   def isBlank[_: P]: P[Unit]   = P("isBlank")
   def replace[_: P]: P[Unit]   = P("replace")
   def regex[_: P]: P[Unit]     = P("regex")
+  def strends[_: P]: P[Unit]   = P("strends")
   def strstarts[_: P]: P[Unit] = P("strstarts")
 
   def uriParen[_: P]: P[URI] =
@@ -58,6 +59,10 @@ object BuiltInFuncParser {
     )
       .map(f => REGEX(f._1, f._2, f._3))
 
+  def strendsParen[_: P]: P[STRENDS] =
+    P("(" ~ strends ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
+      .map(f => STRENDS(f._1, f._2))
+
   def strstartsParen[_: P]: P[STRSTARTS] =
     P("(" ~ strstarts ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
       .map(f => STRSTARTS(f._1, f._2))
@@ -68,6 +73,7 @@ object BuiltInFuncParser {
         | concatParen
         | strParen
         | strafterParen
+        | strendsParen
         | strstartsParen
         | isBlankParen
         | replaceParen

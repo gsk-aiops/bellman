@@ -142,6 +142,18 @@ object Func {
     when(substring_index(col, str, -1) === col, lit(""))
       .otherwise(substring_index(col, str, -1))
 
+  /** Implementation of SparQL STRENDS on Spark dataframes.
+    *
+    * TODO (pepegar): Implement argument compatibility checks
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-strstarts]]
+    * @param col
+    * @param str
+    * @return
+    */
+  def strends(col: Column, str: String): Column =
+    col.endsWith(str)
+
   /** Implementation of SparQL STRSTARTS on Spark dataframes.
     *
     * TODO (pepegar): Implement argument compatibility checks
