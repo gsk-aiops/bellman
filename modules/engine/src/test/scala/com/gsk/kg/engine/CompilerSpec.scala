@@ -617,7 +617,7 @@ class CompilerSpec
 
     "perform query with REPLACE function" should {
 
-      "execute and obtain expected results" in {
+      "execute and obtain expected results without flags" in {
 
         val df: DataFrame = List(
           ("example", "http://xmlns.com/foaf/0.1/lit", "abcd", ""),
@@ -645,6 +645,38 @@ class CompilerSpec
           Row("\"abcd\"", "\"aZcd\""),
           Row("\"abaB\"", "\"aZaB\""),
           Row("\"bbBB\"", "\"ZZBB\""),
+          Row("\"aaaa\"", "\"aaaa\"")
+        )
+      }
+
+      "execute and obtain expected results with flags" in {
+
+        val df: DataFrame = List(
+          ("example", "http://xmlns.com/foaf/0.1/lit", "abcd", ""),
+          ("example", "http://xmlns.com/foaf/0.1/lit", "abaB", ""),
+          ("example", "http://xmlns.com/foaf/0.1/lit", "bbBB", ""),
+          ("example", "http://xmlns.com/foaf/0.1/lit", "aaaa", "")
+        ).toDF("s", "p", "o", "g")
+
+        val query =
+          """
+            |PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+            |
+            |SELECT   ?lit ?lit2
+            |WHERE    {
+            |  ?x foaf:lit ?lit .
+            |  BIND(REPLACE(?lit, "b", "Z", "i") AS ?lit2)
+            |}
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query, config)
+
+        result shouldBe a[Right[_, _]]
+        result.right.get.collect.length shouldEqual 4
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("\"abcd\"", "\"aZcd\""),
+          Row("\"abaB\"", "\"aZaZ\""),
+          Row("\"bbBB\"", "\"ZZZZ\""),
           Row("\"aaaa\"", "\"aaaa\"")
         )
       }

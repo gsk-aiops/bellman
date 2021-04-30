@@ -38,7 +38,7 @@ object ExpressionF {
   final case class STR[A](s: A)                      extends ExpressionF[A]
   final case class STRAFTER[A](s: A, f: String)      extends ExpressionF[A]
   final case class ISBLANK[A](s: A)                  extends ExpressionF[A]
-  final case class REPLACE[A](st: A, pattern: String, by: String)
+  final case class REPLACE[A](st: A, pattern: String, by: String, flags: String)
       extends ExpressionF[A]
   final case class COUNT[A](e: A)  extends ExpressionF[A]
   final case class SUM[A](e: A)    extends ExpressionF[A]
@@ -74,9 +74,10 @@ object ExpressionF {
       case BuiltInFunc.REPLACE(
             st,
             StringVal.STRING(pattern, _),
-            StringVal.STRING(by, _)
+            StringVal.STRING(by, _),
+            StringVal.STRING(flags, _)
           ) =>
-        REPLACE(st, pattern, by)
+        REPLACE(st, pattern, by, flags)
       case BuiltInFunc.REGEX(
             s,
             StringVal.STRING(pattern, _),
@@ -133,11 +134,12 @@ object ExpressionF {
           f.asInstanceOf[StringLike]
         )
       case ISBLANK(s) => BuiltInFunc.ISBLANK(s.asInstanceOf[StringLike])
-      case REPLACE(st, pattern, by) =>
+      case REPLACE(st, pattern, by, flags) =>
         BuiltInFunc.REPLACE(
           st.asInstanceOf[StringLike],
           pattern.asInstanceOf[StringLike],
-          by.asInstanceOf[StringLike]
+          by.asInstanceOf[StringLike],
+          flags.asInstanceOf[StringLike]
         )
       case COUNT(e)                   => Aggregate.COUNT(e)
       case SUM(e)                     => Aggregate.SUM(e)
@@ -166,22 +168,23 @@ object ExpressionF {
   )(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
     val algebraM: AlgebraM[M, ExpressionF, Column] =
       AlgebraM.apply[M, ExpressionF, Column] {
-        case EQUALS(l, r)               => Func.equals(l, r).pure[M]
-        case REGEX(s, pattern, flags)   => Func.regex(s, pattern, flags).pure[M]
-        case STRSTARTS(s, f)            => Func.strstarts(s, f).pure[M]
-        case GT(l, r)                   => Func.gt(l, r).pure[M]
-        case LT(l, r)                   => Func.lt(l, r).pure[M]
-        case GTE(l, r)                  => Func.gte(l, r).pure[M]
-        case LTE(l, r)                  => Func.lte(l, r).pure[M]
-        case OR(l, r)                   => Func.or(l, r).pure[M]
-        case AND(l, r)                  => Func.and(l, r).pure[M]
-        case NEGATE(s)                  => Func.negate(s).pure[M]
-        case URI(s)                     => Func.iri(s).pure[M]
-        case CONCAT(appendTo, append)   => Func.concat(appendTo, append).pure[M]
-        case STR(s)                     => s.pure[M]
-        case STRAFTER(s, f)             => Func.strafter(s, f).pure[M]
-        case ISBLANK(s)                 => Func.isBlank(s).pure[M]
-        case REPLACE(st, pattern, by)   => Func.replace(st, pattern, by).pure[M]
+        case EQUALS(l, r)             => Func.equals(l, r).pure[M]
+        case REGEX(s, pattern, flags) => Func.regex(s, pattern, flags).pure[M]
+        case STRSTARTS(s, f)          => Func.strstarts(s, f).pure[M]
+        case GT(l, r)                 => Func.gt(l, r).pure[M]
+        case LT(l, r)                 => Func.lt(l, r).pure[M]
+        case GTE(l, r)                => Func.gte(l, r).pure[M]
+        case LTE(l, r)                => Func.lte(l, r).pure[M]
+        case OR(l, r)                 => Func.or(l, r).pure[M]
+        case AND(l, r)                => Func.and(l, r).pure[M]
+        case NEGATE(s)                => Func.negate(s).pure[M]
+        case URI(s)                   => Func.iri(s).pure[M]
+        case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]
+        case STR(s)                   => s.pure[M]
+        case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
+        case ISBLANK(s)               => Func.isBlank(s).pure[M]
+        case REPLACE(st, pattern, by, flags) =>
+          Func.replace(st, pattern, by, flags).pure[M]
         case COUNT(e)                   => unknownFunction("COUNT")
         case SUM(e)                     => unknownFunction("SUM")
         case MIN(e)                     => unknownFunction("MIN")
