@@ -50,7 +50,7 @@ object Engine {
       case DAG.Limit(limit, r)         => evaluateLimit(limit, r)
       case DAG.Distinct(r)             => evaluateDistinct(r)
       case DAG.Group(vars, func, r)    => evaluateGroup(vars, func, r)
-      case DAG.Order(variable, r)      => evaluateOrder(variable, r)
+      case DAG.Order(conds, r)         => evaluateOrder(conds, r)
       case DAG.Noop(str)               => notImplemented("Noop")
     }
 
@@ -239,8 +239,11 @@ object Engine {
       )
   }
 
-  private def evaluateOrder(variable: VARIABLE, r: Multiset): M[Multiset] =
-    r.copy(dataframe = r.dataframe.orderBy(col(variable.s).asc)).pure[M]
+  private def evaluateOrder(
+      conds: NonEmptyList[Expression],
+      r: Multiset
+  ): M[Multiset] = ???
+//    r.copy(dataframe = r.dataframe.orderBy(col(variable.s).asc)).pure[M]
 //    r.copy(dataframe = r.dataframe.sort(col(variable.s).asc)).pure[M]
 
   private def evaluateLeftJoin(

@@ -128,7 +128,9 @@ object ExprParser {
   }
 
   def orderParen[_: P]: P[Order] = P(
-    "(" ~ order ~ "(" ~ StringValParser.variable ~ ")" ~ graphPattern ~ ")"
+    "(" ~ order ~ "(" ~ OrderConditionParser.parser.rep(
+      1
+    ) ~ ")" ~ graphPattern ~ ")"
   ).map { p =>
     Order(p._1, p._2)
   }

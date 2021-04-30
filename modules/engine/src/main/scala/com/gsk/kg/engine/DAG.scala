@@ -59,10 +59,11 @@ object DAG {
       vars: List[VARIABLE],
       func: Option[(VARIABLE, Expression)],
       r: A
-  )                                                           extends DAG[A]
-  @Lenses final case class Order[A](variable: VARIABLE, r: A) extends DAG[A]
-  @Lenses final case class Distinct[A](r: A)                  extends DAG[A]
-  @Lenses final case class Noop[A](trace: String)             extends DAG[A]
+  ) extends DAG[A]
+  @Lenses final case class Order[A](conds: NonEmptyList[Expression], r: A)
+      extends DAG[A]
+  @Lenses final case class Distinct[A](r: A)      extends DAG[A]
+  @Lenses final case class Noop[A](trace: String) extends DAG[A]
 
   implicit val traverse: Traverse[DAG] = new DefaultTraverse[DAG] {
     def traverse[G[_]: Applicative, A, B](fa: DAG[A])(f: A => G[B]): G[DAG[B]] =
@@ -90,7 +91,7 @@ object DAG {
           f(r).map(limit(l, _))
         case DAG.Distinct(r)          => f(r).map(distinct)
         case DAG.Group(vars, func, r) => f(r).map(group(vars, func, _))
-        case DAG.Order(variable, r)   => f(r).map(order(variable, _))
+        case DAG.Order(conds, r)      => f(r).map(order(conds, _))
         case DAG.Noop(str)            => noop(str).pure[G]
       }
   }
@@ -122,8 +123,8 @@ object DAG {
       r: A
   ): DAG[A] =
     Group[A](vars, func, r)
-  def order[A](variable: VARIABLE, r: A): DAG[A] =
-    Order[A](variable, r)
+  def order[A](conds: NonEmptyList[Expression], r: A): DAG[A] =
+    Order[A](conds, r)
   def noop[A](trace: String): DAG[A] = Noop[A](trace)
 
   // Smart constructors for building the recursive version directly
@@ -167,9 +168,9 @@ object DAG {
       r: T
   ): T = group[T](vars, func, r).embed
   def orderR[T: Embed[DAG, *]](
-      variable: VARIABLE,
+      conds: NonEmptyList[Expression],
       r: T
-  ): T                                          = order[T](variable, r).embed
+  ): T                                          = order[T](conds, r).embed
   def noopR[T: Embed[DAG, *]](trace: String): T = noop[T](trace).embed
 
   /** Transform a [[Query]] into its [[Fix[DAG]]] representation
@@ -191,19 +192,20 @@ object DAG {
 
   def transExpr[T](implicit T: Basis[DAG, T]): Trans[ExprF, DAG, T] =
     Trans {
-      case ExtendF(bindTo, bindFrom, r)      => bind(bindTo, bindFrom, r)
-      case FilteredLeftJoinF(l, r, f)        => leftJoin(l, r, f.toList)
-      case UnionF(l, r)                      => union(l, r)
-      case BGPF(quads)                       => bgp(ChunkedList.fromList(quads.toList))
-      case OpNilF()                          => noop("OpNilF not supported yet")
-      case GraphF(g, e)                      => scan(g.s, e)
-      case JoinF(l, r)                       => join(l, r)
-      case LeftJoinF(l, r)                   => leftJoin(l, r, Nil)
-      case ProjectF(vars, r)                 => project(vars.toList, r)
-      case QuadF(s, p, o, g)                 => noop("QuadF not supported")
-      case DistinctF(r)                      => distinct(r)
-      case GroupF(vars, func, r)             => group(vars.toList, func, r)
-      case OrderF(variable, r)               => order(variable, r)
+      case ExtendF(bindTo, bindFrom, r) => bind(bindTo, bindFrom, r)
+      case FilteredLeftJoinF(l, r, f)   => leftJoin(l, r, f.toList)
+      case UnionF(l, r)                 => union(l, r)
+      case BGPF(quads)                  => bgp(ChunkedList.fromList(quads.toList))
+      case OpNilF()                     => noop("OpNilF not supported yet")
+      case GraphF(g, e)                 => scan(g.s, e)
+      case JoinF(l, r)                  => join(l, r)
+      case LeftJoinF(l, r)              => leftJoin(l, r, Nil)
+      case ProjectF(vars, r)            => project(vars.toList, r)
+      case QuadF(s, p, o, g)            => noop("QuadF not supported")
+      case DistinctF(r)                 => distinct(r)
+      case GroupF(vars, func, r)        => group(vars.toList, func, r)
+      case OrderF(conds, r) =>
+        order(NonEmptyList.fromListUnsafe(conds.toList), r)
       case OffsetLimitF(None, None, r)       => T.coalgebra(r)
       case OffsetLimitF(None, Some(l), r)    => limit(l, r)
       case OffsetLimitF(Some(o), None, r)    => offset(o, r)
