@@ -1,7 +1,9 @@
 package com.gsk.kg.engine
 
+import cats.Applicative
 import cats.Foldable
 import cats.data.NonEmptyList
+import cats.implicits.toTraverseOps
 import cats.instances.all._
 import cats.syntax.applicative._
 import cats.syntax.either._
@@ -242,22 +244,28 @@ object Engine {
       conds: NonEmptyList[ConditionOrder],
       r: Multiset
   ): M[Multiset] = {
-
-    val condsColumns: NonEmptyList[Column] = conds.map {
-      case ASC(e) =>
-        e match {
-          case VARIABLE(v) => col(v).asc
-          case _           => ???
+    M.ask[Result, Config, Log, DataFrame].flatMapF { config =>
+      conds
+        .map {
+          case ASC(VARIABLE(v)) =>
+            col(v).asc.asRight: Result[Column]
+          case ASC(e) =>
+            ExpressionF
+              .compile[Expression](e, config)
+              .apply(r.dataframe)
+              .map(_.asc)
+          case DESC(VARIABLE(v)) =>
+            col(v).desc.asRight: Result[Column]
+          case DESC(e) =>
+            ExpressionF
+              .compile[Expression](e, config)
+              .apply(r.dataframe)
+              .map(_.desc)
         }
-      case DESC(e) =>
-        e match {
-          case VARIABLE(v) => col(v).desc
-          case _           => ???
-        }
+        .toList
+        .traverse[Either[EngineError, *], Column](identity)
+        .map(columns => r.copy(dataframe = r.dataframe.orderBy(columns: _*)))
     }
-    val result: DataFrame = r.dataframe.orderBy(condsColumns.toList: _*)
-
-    r.copy(dataframe = result).pure[M]
   }
 
   private def evaluateLeftJoin(
