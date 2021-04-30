@@ -3,16 +3,19 @@ package com.gsk.kg.engine
 import cats._
 import cats.data.NonEmptyList
 import cats.implicits._
+
 import higherkindness.droste._
 import higherkindness.droste.syntax.all._
 import higherkindness.droste.util.DefaultTraverse
+
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.sparqlparser.ConditionOrder
 import com.gsk.kg.sparqlparser.Expr
+import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.Query
-import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+
 import monocle._
 import monocle.macros.Lenses
 

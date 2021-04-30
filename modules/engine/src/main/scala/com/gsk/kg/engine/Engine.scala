@@ -1,13 +1,14 @@
 package com.gsk.kg.engine
 
-import cats.Applicative
 import cats.Foldable
 import cats.data.NonEmptyList
 import cats.implicits.toTraverseOps
 import cats.instances.all._
 import cats.syntax.applicative._
 import cats.syntax.either._
+
 import higherkindness.droste._
+
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Encoder
@@ -17,6 +18,7 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+
 import com.gsk.kg.config.Config
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.data.ChunkedList.Chunk
@@ -248,14 +250,14 @@ object Engine {
       conds
         .map {
           case ASC(VARIABLE(v)) =>
-            col(v).asc.asRight: Result[Column]
+            col(v).asc.asRight
           case ASC(e) =>
             ExpressionF
               .compile[Expression](e, config)
               .apply(r.dataframe)
               .map(_.asc)
           case DESC(VARIABLE(v)) =>
-            col(v).desc.asRight: Result[Column]
+            col(v).desc.asRight
           case DESC(e) =>
             ExpressionF
               .compile[Expression](e, config)
@@ -263,7 +265,7 @@ object Engine {
               .map(_.desc)
         }
         .toList
-        .traverse[Either[EngineError, *], Column](identity)
+        .sequence[Either[EngineError, *], Column]
         .map(columns => r.copy(dataframe = r.dataframe.orderBy(columns: _*)))
     }
   }

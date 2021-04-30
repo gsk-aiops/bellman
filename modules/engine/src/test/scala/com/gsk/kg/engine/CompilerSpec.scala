@@ -5181,17 +5181,17 @@ class CompilerSpec
             |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
             |
             |SELECT ?name
-            |WHERE { ?x foaf:name ?name ; foaf:empId ?emp }
-            |ORDER BY ?name DESC(?emp)
+            |WHERE { ?x foaf:name ?name ; foaf:age ?age }
+            |ORDER BY ?name DESC(?age)
             |""".stripMargin
 
         val result = Compiler.compile(df, query, config)
 
         result.right.get.collect().length shouldEqual 3
         result.right.get.collect.toList shouldEqual List(
-          Row("\"Charlie\""),
-          Row("\"Bob\""),
-          Row("\"Alice\"")
+          Row("\"A. Alice\""),
+          Row("\"A. Bob\""),
+          Row("\"A. Charlie\"")
         )
       }
 
@@ -5241,19 +5241,17 @@ class CompilerSpec
             |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
             |
             |SELECT ?name
-            |WHERE { ?x foaf:name ?name ; foaf:empId ?emp }
-            |ORDER BY ?name ?emp DESC(?emp) ASC(?name) DESC((isBlank(?x) || isBlank(?emp)))
+            |WHERE { ?x foaf:name ?name ; foaf:age ?age }
+            |ORDER BY DESC(?name) ?age DESC(?age) ASC(?name) DESC((isBlank(?x) || isBlank(?age)))
             |""".stripMargin
 
         val result = Compiler.compile(df, query, config)
 
-        println(result)
-
         result.right.get.collect().length shouldEqual 3
         result.right.get.collect.toList shouldEqual List(
-          Row("\"Charlie\""),
-          Row("\"Bob\""),
-          Row("\"Alice\"")
+          Row("\"A. Charlie\""),
+          Row("\"A. Bob\""),
+          Row("\"A. Alice\"")
         )
       }
     }

@@ -10,6 +10,9 @@ import higherkindness.droste.Algebra
 import higherkindness.droste.Basis
 import higherkindness.droste.scheme
 
+import com.gsk.kg.sparqlparser.ConditionOrder
+import com.gsk.kg.sparqlparser.ConditionOrder.ASC
+import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.Expression
 
@@ -43,6 +46,14 @@ object ToTree extends LowPriorityToTreeInstances0 {
         )
       )
   }
+
+  implicit val conditionOrderToTree: ToTree[ConditionOrder] =
+    new ToTree[ConditionOrder] {
+      override def toTree(t: ConditionOrder): TreeRep[String] = t match {
+        case ASC(e)  => TreeRep.Node("Asc", Stream(e.toTree))
+        case DESC(e) => TreeRep.Node("Desc", Stream(e.toTree))
+      }
+    }
 
   // scalastyle:off
   implicit def dagToTree[T: Basis[DAG, *]]: ToTree[T] =
@@ -91,6 +102,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
             val v: List[Expression]                 = vars
             val f: Option[(Expression, Expression)] = func
             Node("Group", Stream(v.toTree, f.toTree, r))
+          case DAG.Order(conds, r) =>
+            Node("Order", conds.map(_.toTree).toList.toStream #::: Stream(r))
           case DAG.Distinct(r) => Node("Distinct", Stream(r))
           case DAG.Noop(str)   => Leaf(s"Noop($str)")
         }
