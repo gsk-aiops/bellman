@@ -1,6 +1,8 @@
 package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.BuiltInFunc._
+import com.gsk.kg.sparqlparser.ConditionOrder.ASC
+import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Conditional._
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.StringVal._
@@ -408,6 +410,119 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
                       VARIABLE("?ad"),
                       List(GRAPH_VARIABLE)
                     )
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "Order By" should "return proper type when simple variable" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q41-orderby-simple-variable.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?name")),
+            Order(
+              Seq(ASC(VARIABLE("?name"))),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?x"),
+                    URIVAL("http://xmlns.com/foaf/0.1/name"),
+                    VARIABLE("?name"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  it should "return proper type when simple condition" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q42-orderby-simple-condition.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?name")),
+            Order(
+              Seq(DESC(ISBLANK(VARIABLE("?x")))),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?x"),
+                    URIVAL("http://xmlns.com/foaf/0.1/name"),
+                    VARIABLE("?name"),
+                    List(GRAPH_VARIABLE)
+                  ),
+                  Quad(
+                    VARIABLE("?x"),
+                    URIVAL("http://xmlns.com/foaf/0.1/age"),
+                    VARIABLE("?age"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  it should "return proper type when mixing multiple variables and multiple conditions" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q43-orderby-multi-mixing.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?name")),
+            Order(
+              Seq(
+                DESC(VARIABLE("?name")),
+                ASC(VARIABLE("?age")),
+                DESC(VARIABLE("?age")),
+                ASC(VARIABLE("?name")),
+                DESC(
+                  OR(
+                    ISBLANK(VARIABLE("?x")),
+                    ISBLANK(VARIABLE("?age"))
+                  )
+                )
+              ),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?x"),
+                    URIVAL("http://xmlns.com/foaf/0.1/name"),
+                    VARIABLE("?name"),
+                    List(GRAPH_VARIABLE)
+                  ),
+                  Quad(
+                    VARIABLE("?x"),
+                    URIVAL("http://xmlns.com/foaf/0.1/age"),
+                    VARIABLE("?age"),
+                    List(GRAPH_VARIABLE)
                   )
                 )
               )
