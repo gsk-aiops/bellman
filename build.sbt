@@ -3,7 +3,7 @@ import xerial.sbt.Sonatype._
 lazy val Versions = Map(
   "kind-projector"       -> "0.11.3",
   "cats"                 -> "2.0.0",
-  "cats-scalacheck"      -> "0.2.0",
+  "cats-scalacheck"      -> "0.3.0",
   "jena"                 -> "3.17.0",
   "scalatest"            -> "3.2.8",
   "fastparse"            -> "2.1.2",
