@@ -21,7 +21,7 @@ lazy val Versions = Map(
   "discipline"           -> "1.1.2",
   "discipline-scalatest" -> "2.0.1",
   "reftree"              -> "1.4.0",
-  "shims"                -> "2.1.0",
+  "shims"                -> "2.2.0",
   "pureconfig"           -> "0.14.0"
 )
 
