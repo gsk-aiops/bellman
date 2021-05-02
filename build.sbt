@@ -18,7 +18,7 @@ lazy val Versions = Map(
   "scalatestplus"        -> "3.2.3.0",
   "sansa"                -> "0.7.1",
   "monocle"              -> "1.5.0",
-  "discipline"           -> "1.1.2",
+  "discipline"           -> "1.1.4",
   "discipline-scalatest" -> "2.0.1",
   "reftree"              -> "1.4.0",
   "shims"                -> "2.1.0",
