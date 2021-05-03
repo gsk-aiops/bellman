@@ -6256,6 +6256,37 @@ class CompilerSpec
         )
       }
     }
+
+    "perform STRBEFORE function correctly" in {
+      val query =
+        """
+      PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+      PREFIX  litn:  <http://lit-search-api/node/>
+      PREFIX  litp:  <http://lit-search-api/property/>
+
+      CONSTRUCT {
+        ?Document a litn:Document .
+        ?Document litp:docDate ?docdate .
+      }
+      WHERE{
+        ?d a dm:Document .
+        BIND(STRAFTER(str(?d), "#") as ?docid) .
+        BIND(STRBEFORE(?docid, ".") as ?docdate) .
+        BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
+      }
+      """
+
+      val inputDF  = readNTtoDF("fixtures/reference-q2-input.nt")
+      val outputDF = readNTtoDF("fixtures/reference-q2-output.nt")
+
+      val result = Compiler.compile(inputDF, query, config)
+
+      result shouldBe a[Right[_, _]]
+      result.right.get.collect.toSet shouldEqual outputDF
+        .drop("g")
+        .collect()
+        .toSet
+    }
   }
 
   private def readNTtoDF(path: String) = {
