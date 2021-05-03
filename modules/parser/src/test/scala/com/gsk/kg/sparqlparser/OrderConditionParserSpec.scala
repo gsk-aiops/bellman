@@ -85,31 +85,3 @@ class OrderConditionParserSpec extends AnyWordSpec {
     }
   }
 }
-
-//(project (?name)
-//(order (?name (desc ?emp))
-//(bgp
-//(triple ?x <http://xmlns.com/foaf/0.1/name> ?name)
-//(triple ?x <http://xmlns.com/foaf/0.1/empId> ?emp)
-//)))
-//
-//(project (?name)
-//(order (?name (desc ?emp) (|| (isBlank ?x) (isBlank ?emp)))
-//(bgp
-//(triple ?x <http://xmlns.com/foaf/0.1/name> ?name)
-//(triple ?x <http://xmlns.com/foaf/0.1/empId> ?emp)
-//)))
-//
-//(project (?name)
-//(order (?name ?emp (desc ?emp) (asc ?name) (|| (isBlank ?x) (isBlank ?emp)))
-//(bgp
-//(triple ?x <http://xmlns.com/foaf/0.1/name> ?name)
-//(triple ?x <http://xmlns.com/foaf/0.1/empId> ?emp)
-//)))
-//
-//(project (?name)
-//(order (?name ?emp (desc ?emp) (asc ?name) (desc (|| (isBlank ?x) (isBlank ?emp))))
-//(bgp
-//(triple ?x <http://xmlns.com/foaf/0.1/name> ?name)
-//(triple ?x <http://xmlns.com/foaf/0.1/empId> ?emp)
-//)))

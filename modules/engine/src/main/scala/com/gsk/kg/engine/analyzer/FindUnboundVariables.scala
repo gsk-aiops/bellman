@@ -85,7 +85,7 @@ object FindUnboundVariables {
       case Limit(limit, r)         => r.pure[ST]
       case Distinct(r)             => r.pure[ST]
       case Group(vars, func, r)    => r.pure[ST]
-      case DAGOrder(variable, r)   => r.pure[ST]
+      case DAGOrder(conds, r)      => r.pure[ST]
       case Noop(trace)             => Set.empty.pure[ST]
     }
 }
