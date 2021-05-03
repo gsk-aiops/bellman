@@ -22,6 +22,7 @@ object ExprParser {
   def offsetLimit[_: P]: P[Unit] = P("slice")
   def distinct[_: P]: P[Unit]    = P("distinct")
   def group[_: P]: P[Unit]       = P("group")
+  def order[_: P]: P[Unit]       = P("order")
 
   def opNull[_: P]: P[OpNil]      = P("(null)").map(_ => OpNil())
   def tableUnit[_: P]: P[TabUnit] = P("(table unit)").map(_ => TabUnit())
@@ -126,6 +127,14 @@ object ExprParser {
     Graph(p._1, p._2)
   }
 
+  def orderParen[_: P]: P[Order] = P(
+    "(" ~ order ~ "(" ~ OrderConditionParser.parser.rep(
+      1
+    ) ~ ")" ~ graphPattern ~ ")"
+  ).map { p =>
+    Order(p._1, p._2)
+  }
+
   def graphPattern[_: P]: P[Expr] =
     P(
       selectParen
@@ -141,6 +150,7 @@ object ExprParser {
         | filterSingleParen
         | filterListParen
         | groupParen
+        | orderParen
         | opNull
         | tableUnit
     )

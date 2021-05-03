@@ -2,6 +2,7 @@ package com.gsk.kg.engine
 
 import cats.Foldable
 import cats.data.NonEmptyList
+import cats.implicits.toTraverseOps
 import cats.instances.all._
 import cats.syntax.applicative._
 import cats.syntax.either._
@@ -21,6 +22,8 @@ import org.apache.spark.sql.types._
 import com.gsk.kg.config.Config
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.data.ChunkedList.Chunk
+import com.gsk.kg.sparqlparser.ConditionOrder.ASC
+import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr.Quad
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.StringVal
@@ -50,6 +53,7 @@ object Engine {
       case DAG.Limit(limit, r)         => evaluateLimit(limit, r)
       case DAG.Distinct(r)             => evaluateDistinct(r)
       case DAG.Group(vars, func, r)    => evaluateGroup(vars, func, r)
+      case DAG.Order(conds, r)         => evaluateOrder(conds, r)
       case DAG.Noop(str)               => notImplemented("Noop")
     }
 
@@ -236,6 +240,34 @@ object Engine {
           .UnknownFunction("Aggregate function: " + fn.toString)
           .asLeft[DataFrame]
       )
+  }
+
+  private def evaluateOrder(
+      conds: NonEmptyList[ConditionOrder],
+      r: Multiset
+  ): M[Multiset] = {
+    M.ask[Result, Config, Log, DataFrame].flatMapF { config =>
+      conds
+        .map {
+          case ASC(VARIABLE(v)) =>
+            col(v).asc.asRight
+          case ASC(e) =>
+            ExpressionF
+              .compile[Expression](e, config)
+              .apply(r.dataframe)
+              .map(_.asc)
+          case DESC(VARIABLE(v)) =>
+            col(v).desc.asRight
+          case DESC(e) =>
+            ExpressionF
+              .compile[Expression](e, config)
+              .apply(r.dataframe)
+              .map(_.desc)
+        }
+        .toList
+        .sequence[Either[EngineError, *], Column]
+        .map(columns => r.copy(dataframe = r.dataframe.orderBy(columns: _*)))
+    }
   }
 
   private def evaluateLeftJoin(

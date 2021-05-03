@@ -81,3 +81,9 @@ object Aggregate {
   final case class GROUP_CONCAT(e: Expression, separator: String)
       extends Aggregate
 }
+
+sealed trait ConditionOrder extends Expression
+object ConditionOrder {
+  final case class ASC(e: Expression)  extends ConditionOrder
+  final case class DESC(e: Expression) extends ConditionOrder
+}

@@ -9,6 +9,9 @@ import higherkindness.droste.data.Fix
 
 import com.gsk.kg.engine.DAG
 import com.gsk.kg.engine.data.ChunkedList
+import com.gsk.kg.sparqlparser.ConditionOrder
+import com.gsk.kg.sparqlparser.ConditionOrder.ASC
+import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr
 
 import reftree.contrib.SimplifiedInstances._
@@ -84,6 +87,13 @@ object prelude {
     )
   )
 
+  implicit val conditionOrderRefTree: ToRefTree[ConditionOrder] = ToRefTree {
+    case tree @ ASC(e) =>
+      RefTree.Ref(tree, Seq(e.refTree.toField.withName("Asc")))
+    case tree @ DESC(e) =>
+      RefTree.Ref(tree, Seq(e.refTree.toField.withName("Desc")))
+  }
+
   implicit def chunkToRefTree[A: ToRefTree]: ToRefTree[ChunkedList.Chunk[A]] =
     ToRefTree(chunk =>
       RefTree.Ref(
@@ -143,6 +153,8 @@ object prelude {
     case dag @ DAG.Distinct(r) => RefTree.Ref(dag, Seq(r.toField))
     case dag @ DAG.Group(vars, func, r) =>
       RefTree.Ref(dag, Seq(vars.refTree.toField, r.toField))
+    case dag @ DAG.Order(conds, r) =>
+      RefTree.Ref(dag, Seq(conds.refTree.toField, r.toField))
     case dag @ DAG.Noop(str) => RefTree.Ref(dag, Seq())
   }
 }
