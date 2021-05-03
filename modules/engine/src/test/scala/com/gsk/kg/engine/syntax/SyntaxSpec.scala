@@ -94,12 +94,12 @@ class SyntaxSpec
     result.collect.toSet shouldEqual Set(
       Row(
         "\"test\"",
-        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        "http://id.gsk.com/dm/1.0/Document"
+        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+        "<http://id.gsk.com/dm/1.0/Document>"
       ),
       Row(
         "\"test\"",
-        "http://id.gsk.com/dm/1.0/docSource",
+        "<http://id.gsk.com/dm/1.0/docSource>",
         "\"source\""
       )
     )
