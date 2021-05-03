@@ -46,41 +46,29 @@ object RdfFormatter {
     when(
       isBoolean(col),
       col.cast(DataTypes.StringType)
-    ).otherwise(
+    ).when(
+      isLocalizedString(col),
+      col.cast(DataTypes.StringType)
+    ).when(
+      isUri(col),
       when(
-        isLocalizedString(col),
+        col.startsWith("<") && col.endsWith(">"),
         col.cast(DataTypes.StringType)
-      ).otherwise(
-        when(
-          isUri(col),
-          when(
-            col.startsWith("<") && col.endsWith(">"),
-            col
-          ).otherwise(format_string("<%s>", col))
-        ).otherwise(
-          when(
-            isBlank(col),
-            col.cast(DataTypes.StringType)
-          ).otherwise(
-            when(
-              isDatatypeLiteral(col),
-              col.cast(DataTypes.StringType)
-            ).otherwise(
-              when(
-                isNumber(col),
-                col.cast(DataTypes.StringType)
-              ).otherwise(
-                when(
-                  isNull(col),
-                  col.cast(DataTypes.StringType)
-                ).otherwise(
-                  format_string("\"%s\"", col)
-                )
-              )
-            )
-          )
-        )
-      )
+      ).otherwise(format_string("<%s>", col))
+    ).when(
+      isBlank(col),
+      col.cast(DataTypes.StringType)
+    ).when(
+      isDatatypeLiteral(col),
+      col.cast(DataTypes.StringType)
+    ).when(
+      isNumber(col),
+      col.cast(DataTypes.StringType)
+    ).when(
+      isNull(col),
+      col.cast(DataTypes.StringType)
+    ).otherwise(
+      format_string("\"%s\"", col)
     )
   }
 

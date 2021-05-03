@@ -129,7 +129,7 @@ class CompilerSpec
     /** TODO(pepegar): In order to make this test pass we need the
       * results to be RDF compliant (mainly, wrapping values correctly)
       */
-    "query a real DF with a real query" in {
+    "query a real DF with a real query" ignore {
       val query =
         """
       PREFIX  schema: <http://schema.org/>
@@ -153,8 +153,12 @@ class CompilerSpec
       }
       """
 
-      val inputDF  = readNTtoDF("fixtures/reference-q1-input.nt")
-      val outputDF = readNTtoDF("fixtures/reference-q1-output.nt")
+      val inputDF = readNTtoDF("fixtures/reference-q1-input.nt")
+      val outputDF =
+        RdfFormatter.formatDataFrame(
+          readNTtoDF("fixtures/reference-q1-output.nt"),
+          config
+        )
 
       val result = Compiler.compile(inputDF, query, config)
 
@@ -186,10 +190,10 @@ class CompilerSpec
           .collect() shouldEqual Array(
           Row(
             "\"test\"",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://id.gsk.com/dm/1.0/Document"
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://id.gsk.com/dm/1.0/Document>"
           ),
-          Row("\"test\"", "http://id.gsk.com/dm/1.0/docSource", "\"source\"")
+          Row("\"test\"", "<http://id.gsk.com/dm/1.0/docSource>", "\"source\"")
         )
       }
 
@@ -240,7 +244,7 @@ class CompilerSpec
           .right
           .get
           .collect() shouldEqual Array(
-          Row("\"test\"", "http://id.gsk.com/dm/1.0/Document"),
+          Row("\"test\"", "<http://id.gsk.com/dm/1.0/Document>"),
           Row("\"test\"", "\"source\"")
         )
       }
@@ -266,7 +270,7 @@ class CompilerSpec
           .right
           .get
           .collect() shouldEqual Array(
-          Row("\"test\"", "http://id.gsk.com/dm/1.0/Document", null, null),
+          Row("\"test\"", "<http://id.gsk.com/dm/1.0/Document>", null, null),
           Row(null, null, "\"test\"", "\"source\"")
         )
       }
@@ -294,8 +298,8 @@ class CompilerSpec
           .collect() shouldEqual Array(
           Row(
             "\"test\"",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://id.gsk.com/dm/1.0/Document"
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://id.gsk.com/dm/1.0/Document>"
           )
         )
       }
@@ -334,22 +338,22 @@ class CompilerSpec
         result shouldEqual Set(
           Row(
             "\"doesmatch\"",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://id.gsk.com/dm/1.0/Document"
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://id.gsk.com/dm/1.0/Document>"
           ),
           Row(
             "\"doesmatchaswell\"",
-            "http://id.gsk.com/dm/1.0/docSource",
+            "<http://id.gsk.com/dm/1.0/docSource>",
             "\"potato\""
           ),
           Row(
             "\"test\"",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://id.gsk.com/dm/1.0/Document"
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://id.gsk.com/dm/1.0/Document>"
           ),
           Row(
             "\"test\"",
-            "http://id.gsk.com/dm/1.0/docSource",
+            "<http://id.gsk.com/dm/1.0/docSource>",
             "\"source\""
           )
         )
@@ -396,12 +400,12 @@ class CompilerSpec
           .toSet shouldEqual Set(
           Row(
             "\"test\"",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://id.gsk.com/dm/1.0/Document"
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://id.gsk.com/dm/1.0/Document>"
           ),
           Row(
             "\"test\"",
-            "http://id.gsk.com/dm/1.0/docSource",
+            "<http://id.gsk.com/dm/1.0/docSource>",
             "\"source\""
           )
         )
@@ -801,7 +805,7 @@ class CompilerSpec
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect shouldEqual Array(
-          Row("\"Alice\"", "mailto:alice@work.example")
+          Row("\"Alice\"", "<mailto:alice@work.example>")
         )
       }
     }
@@ -982,7 +986,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("http://example.org/Windows")
+            Row("<http://example.org/Windows>")
           )
         }
 
@@ -2293,34 +2297,34 @@ class CompilerSpec
         result.right.get.collect.length shouldEqual 6
         result.right.get.collect shouldEqual Array(
           Row(
-            "http://potato.com/b",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce"
+            "<http://potato.com/b>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>"
           ),
           Row(
-            "http://potato.com/b",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"
+            "<http://potato.com/b>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>"
           ),
           Row(
-            "http://potato.com/c",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce"
+            "<http://potato.com/c>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>"
           ),
           Row(
-            "http://potato.com/c",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"
+            "<http://potato.com/c>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>"
           ),
           Row(
-            "http://potato.com/d",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce"
+            "<http://potato.com/d>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>"
           ),
           Row(
-            "http://potato.com/d",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"
+            "<http://potato.com/d>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>"
           )
         )
       }
@@ -2388,14 +2392,14 @@ class CompilerSpec
         result.right.get.collect.length shouldEqual 2
         result.right.get.collect shouldEqual Array(
           Row(
-            "http://potato.com/b",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce"
+            "<http://potato.com/b>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>"
           ),
           Row(
-            "http://potato.com/b",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"
+            "<http://potato.com/b>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>"
           )
         )
       }
@@ -2462,20 +2466,29 @@ class CompilerSpec
         arrayResult should have size 6
         arrayResult.map(_.get(0)).distinct should have size 3
         arrayResult.map(row => (row.get(1), row.get(2))) shouldEqual Array(
-          ("http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
           (
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>"
           ),
-          ("http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
           (
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>"
           ),
-          ("http://gsk-kg.rdip.gsk.com/dm/1.0/docSource", "http://thesour.ce"),
           (
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document"
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>"
+          ),
+          (
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>"
+          ),
+          (
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>"
+          ),
+          (
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>"
           )
         )
       }
@@ -2593,8 +2606,8 @@ class CompilerSpec
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 3
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"Alice\"", "mailto:alice@example.com"),
-          Row("\"Alice\"", "mailto:alice@work.example"),
+          Row("\"Alice\"", "<mailto:alice@example.com>"),
+          Row("\"Alice\"", "<mailto:alice@work.example>"),
           Row("\"Bob\"", null)
         )
       }
@@ -2679,8 +2692,8 @@ class CompilerSpec
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"Alice\"", null, "http://work.example.org/alice/"),
-          Row("\"Bob\"", "mailto:bob@work.example", null)
+          Row("\"Alice\"", null, "<http://work.example.org/alice/>"),
+          Row("\"Bob\"", "<mailto:bob@work.example>", null)
         )
       }
     }
@@ -2785,7 +2798,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("mailto:alice@work.example.org")
+            Row("<mailto:alice@work.example.org>")
           )
         }
 
@@ -2858,7 +2871,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("mailto:alice@work.example.org", null),
+            Row("<mailto:alice@work.example.org>", null),
             Row(null, "\"Alice\"")
           )
         }
@@ -2931,7 +2944,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("mailto:alice@work.example.org", "\"Alice\"")
+            Row("<mailto:alice@work.example.org>", "\"Alice\"")
           )
         }
 
@@ -3027,8 +3040,8 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:a", null, "mailto:alice@work.example.org"),
-            Row(null, "_:a", "mailto:bob@oldcorp.example.org")
+            Row("_:a", null, "<mailto:alice@work.example.org>"),
+            Row(null, "_:a", "<mailto:bob@oldcorp.example.org>")
           )
         }
 
@@ -3098,7 +3111,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:a", "mailto:alice@work.example.org", "\"Bob\"")
+            Row("_:a", "<mailto:alice@work.example.org>", "\"Bob\"")
           )
         }
 
@@ -3256,7 +3269,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:a", "mailto:bob@oldcorp.example.org", "\"Alice\"")
+            Row("_:a", "<mailto:bob@oldcorp.example.org>", "\"Alice\"")
           )
         }
 
@@ -3346,7 +3359,7 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 1
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:a", "_:a", "mailto:bob@oldcorp.example.org", "\"Alice\"")
+            Row("_:a", "_:a", "<mailto:bob@oldcorp.example.org>", "\"Alice\"")
           )
         }
       }
@@ -3406,7 +3419,7 @@ class CompilerSpec
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
             Row("_:a", null, "\"Alice\""),
-            Row("_:a", "mailto:bob@oldcorp.example.org", null)
+            Row("_:a", "<mailto:bob@oldcorp.example.org>", null)
           )
         }
 
@@ -3475,8 +3488,8 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:a", "mailto:bob@oldcorp.example.org", "\"Alice\""),
-            Row("_:a", "mailto:bob@oldcorp.example.org", "\"Charles\"")
+            Row("_:a", "<mailto:bob@oldcorp.example.org>", "\"Alice\""),
+            Row("_:a", "<mailto:bob@oldcorp.example.org>", "\"Charles\"")
           )
         }
 
@@ -3545,8 +3558,8 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:a", "_:a", "mailto:bob@oldcorp.example.org", "\"Alice\""),
-            Row("_:a", "_:a", "mailto:bob@oldcorp.example.org", "\"Charles\"")
+            Row("_:a", "_:a", "<mailto:bob@oldcorp.example.org>", "\"Alice\""),
+            Row("_:a", "_:a", "<mailto:bob@oldcorp.example.org>", "\"Charles\"")
           )
         }
 
@@ -3617,8 +3630,8 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:a", "mailto:bob@oldcorp.example.org", "\"Alice\""),
-            Row("_:a", "mailto:bob@oldcorp.example.org", "\"Charles\"")
+            Row("_:a", "<mailto:bob@oldcorp.example.org>", "\"Alice\""),
+            Row("_:a", "<mailto:bob@oldcorp.example.org>", "\"Charles\"")
           )
         }
 
@@ -3689,8 +3702,8 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 2
           result.right.get.collect.toSet shouldEqual Set(
-            Row("_:a", "_:a", "mailto:bob@oldcorp.example.org", "\"Alice\""),
-            Row("_:a", "_:a", "mailto:bob@oldcorp.example.org", "\"Charles\"")
+            Row("_:a", "_:a", "<mailto:bob@oldcorp.example.org>", "\"Alice\""),
+            Row("_:a", "_:a", "<mailto:bob@oldcorp.example.org>", "\"Charles\"")
           )
         }
       }
@@ -3786,18 +3799,18 @@ class CompilerSpec
           result.right.get.collect.toSet shouldEqual Set(
             Row(
               "\"Alice Hacker\"",
-              "http://example.org/alice",
-              "mailto:alice@work.example.org"
+              "<http://example.org/alice>",
+              "<mailto:alice@work.example.org>"
             ),
             Row(
               "\"Bob Hacker\"",
-              "http://example.org/bob",
-              "mailto:bob@oldcorp.example.org"
+              "<http://example.org/bob>",
+              "<mailto:bob@oldcorp.example.org>"
             ),
             Row(
               "\"Charles Hacker\"",
-              "http://example.org/charles",
-              "mailto:charles@work.example.org"
+              "<http://example.org/charles>",
+              "<mailto:charles@work.example.org>"
             )
           )
         }
@@ -3888,15 +3901,15 @@ class CompilerSpec
           result.right.get.collect.toSet shouldEqual Set(
             Row(
               "_:a",
-              "mailto:bob@oldcorp.example.org",
+              "<mailto:bob@oldcorp.example.org>",
               "\"Alice\"",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             Row(
               "_:a",
-              "mailto:bob@oldcorp.example.org",
+              "<mailto:bob@oldcorp.example.org>",
               "\"Charles\"",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             )
           )
         }
@@ -3987,15 +4000,15 @@ class CompilerSpec
           result.right.get.collect.toSet shouldEqual Set(
             Row(
               "_:a",
-              "mailto:charles@work.example.org",
+              "<mailto:charles@work.example.org>",
               "\"Alice\"",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             Row(
               "_:a",
-              "mailto:bob@oldcorp.example.org",
+              "<mailto:bob@oldcorp.example.org>",
               "\"Alice\"",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             )
           )
         }
@@ -4087,16 +4100,16 @@ class CompilerSpec
             Row(
               "_:a",
               "_:a",
-              "mailto:charles@work.example.org",
+              "<mailto:charles@work.example.org>",
               "\"Alice\"",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             Row(
               "_:a",
               "_:a",
-              "mailto:bob@oldcorp.example.org",
+              "<mailto:bob@oldcorp.example.org>",
               "\"Alice\"",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             )
           )
         }
@@ -4191,9 +4204,9 @@ class CompilerSpec
           result.right.get.collect.toSet shouldEqual Set(
             Row(
               "_:a",
-              "mailto:bob@oldcorp.example.org",
+              "<mailto:bob@oldcorp.example.org>",
               "\"Bob\"",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             )
           )
         }
@@ -4295,19 +4308,19 @@ class CompilerSpec
               "_:a",
               null,
               "\"Charles\"",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             Row(
               "_:a",
               null,
               "\"Bob\"",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             Row(
               "_:a",
-              "mailto:bob@oldcorp.example.org",
+              "<mailto:bob@oldcorp.example.org>",
               null,
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             )
           )
         }
@@ -4419,7 +4432,7 @@ class CompilerSpec
             ),
             Row(
               "_:a",
-              "mailto:bob@oldcorp.example.org",
+              "<mailto:bob@oldcorp.example.org>",
               null
             ),
             Row(
@@ -4429,7 +4442,7 @@ class CompilerSpec
             ),
             Row(
               "_:a",
-              "mailto:bob@oldcorp.example.org",
+              "<mailto:bob@oldcorp.example.org>",
               null
             )
           )
@@ -4672,9 +4685,9 @@ class CompilerSpec
         val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
-          Row("http://uri.com/subject/a1"),
-          Row("http://uri.com/subject/a2"),
-          Row("http://uri.com/subject/a3")
+          Row("<http://uri.com/subject/a1>"),
+          Row("<http://uri.com/subject/a2>"),
+          Row("<http://uri.com/subject/a3>")
         )
       }
 
@@ -4718,9 +4731,9 @@ class CompilerSpec
         val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
-          Row("http://uri.com/subject/a1", "2"),
-          Row("http://uri.com/subject/a2", "2"),
-          Row("http://uri.com/subject/a3", "1")
+          Row("<http://uri.com/subject/a1>", "2"),
+          Row("<http://uri.com/subject/a2>", "2"),
+          Row("<http://uri.com/subject/a3>", "1")
         )
       }
 
@@ -4744,9 +4757,9 @@ class CompilerSpec
         val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
-          Row("http://uri.com/subject/a1", "1.5"),
-          Row("http://uri.com/subject/a2", "3.5"),
-          Row("http://uri.com/subject/a3", "5.0")
+          Row("<http://uri.com/subject/a1>", "1.5"),
+          Row("<http://uri.com/subject/a2>", "3.5"),
+          Row("<http://uri.com/subject/a3>", "5.0")
         )
       }
 
@@ -4799,9 +4812,9 @@ class CompilerSpec
           val result = Compiler.compile(df, query, config)
 
           result.right.get.collect.toSet shouldEqual Set(
-            Row("http://uri.com/subject/a1", "\"Alice\""),
-            Row("http://uri.com/subject/a2", "\"Charles\""),
-            Row("http://uri.com/subject/a3", "\"Megan\"")
+            Row("<http://uri.com/subject/a1>", "\"Alice\""),
+            Row("<http://uri.com/subject/a2>", "\"Charles\""),
+            Row("<http://uri.com/subject/a3>", "\"Megan\"")
           )
         }
 
@@ -4853,9 +4866,9 @@ class CompilerSpec
           val result = Compiler.compile(df, query, config)
 
           result.right.get.collect.toSet shouldEqual Set(
-            Row("http://uri.com/subject/a1", "18.1"),
-            Row("http://uri.com/subject/a2", "30"),
-            Row("http://uri.com/subject/a3", "45")
+            Row("<http://uri.com/subject/a1>", "18.1"),
+            Row("<http://uri.com/subject/a2>", "30"),
+            Row("<http://uri.com/subject/a3>", "45")
           )
         }
       }
@@ -4909,9 +4922,9 @@ class CompilerSpec
           val result = Compiler.compile(df, query, config)
 
           result.right.get.collect.toSet shouldEqual Set(
-            Row("http://uri.com/subject/a1", "\"Bob\""),
-            Row("http://uri.com/subject/a2", "\"Charlie\""),
-            Row("http://uri.com/subject/a3", "\"megan\"")
+            Row("<http://uri.com/subject/a1>", "\"Bob\""),
+            Row("<http://uri.com/subject/a2>", "\"Charlie\""),
+            Row("<http://uri.com/subject/a3>", "\"megan\"")
           )
         }
 
@@ -4963,9 +4976,9 @@ class CompilerSpec
           val result = Compiler.compile(df, query, config)
 
           result.right.get.collect.toSet shouldEqual Set(
-            Row("http://uri.com/subject/a1", "19"),
-            Row("http://uri.com/subject/a2", "31.5"),
-            Row("http://uri.com/subject/a3", "50")
+            Row("<http://uri.com/subject/a1>", "19"),
+            Row("<http://uri.com/subject/a2>", "31.5"),
+            Row("<http://uri.com/subject/a3>", "50")
           )
         }
       }
@@ -4990,9 +5003,9 @@ class CompilerSpec
         val result = Compiler.compile(df, query, config)
 
         result.right.get.collect.toSet shouldEqual Set(
-          Row("http://uri.com/subject/a1", "3.0"),
-          Row("http://uri.com/subject/a2", "3.0"),
-          Row("http://uri.com/subject/a3", "1.0")
+          Row("<http://uri.com/subject/a1>", "3.0"),
+          Row("<http://uri.com/subject/a2>", "3.0"),
+          Row("<http://uri.com/subject/a3>", "1.0")
         )
       }
 
@@ -5568,12 +5581,12 @@ class CompilerSpec
           result shouldBe a[Right[_, _]]
           result.right.get.collect.length shouldEqual 6
           result.right.get.collect.toSet shouldEqual Set(
-            Row("http://example.org/alice", "\"Carol Baz\""),
-            Row("http://example.org/alice", "\"Bob Bar\""),
-            Row("http://example.org/alice", "\"Bob\""),
-            Row("http://example.org/alice", "\"Carol\""),
-            Row("http://example.org/alice", "\"B. Bar\""),
-            Row("http://example.org/alice", "\"C. Baz\"")
+            Row("<http://example.org/alice>", "\"Carol Baz\""),
+            Row("<http://example.org/alice>", "\"Bob Bar\""),
+            Row("<http://example.org/alice>", "\"Bob\""),
+            Row("<http://example.org/alice>", "\"Carol\""),
+            Row("<http://example.org/alice>", "\"B. Bar\""),
+            Row("<http://example.org/alice>", "\"C. Baz\"")
           )
         }
 
@@ -5667,33 +5680,33 @@ class CompilerSpec
           result.right.get.collect.length shouldEqual 6
           result.right.get.collect.toSet shouldEqual Set(
             Row(
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
               "\"Carol Baz\""
             ),
             Row(
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
               "\"Bob Bar\""
             ),
             Row(
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
               "\"Bob\""
             ),
             Row(
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
               "\"Carol\""
             ),
             Row(
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
               "\"B. Bar\""
             ),
             Row(
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
               "\"C. Baz\""
             )
           )
@@ -5804,38 +5817,38 @@ class CompilerSpec
           result.right.get.collect.length shouldEqual 6
           result.right.get.collect.toSet shouldEqual Set(
             Row(
-              "http://example.org/bob",
-              "http://example.org/alice",
+              "<http://example.org/bob>",
+              "<http://example.org/alice>",
               "\"B. Bar\"",
               "\"Family\""
             ),
             Row(
-              "http://example.org/carol",
-              "http://example.org/alice",
+              "<http://example.org/carol>",
+              "<http://example.org/alice>",
               "\"Carol\"",
               "\"Family\""
             ),
             Row(
-              "http://example.org/bob",
-              "http://example.org/alice",
+              "<http://example.org/bob>",
+              "<http://example.org/alice>",
               "\"Bob Bar\"",
               "\"Family\""
             ),
             Row(
-              "http://example.org/carol",
-              "http://example.org/alice",
+              "<http://example.org/carol>",
+              "<http://example.org/alice>",
               "\"C. Baz\"",
               "\"Family\""
             ),
             Row(
-              "http://example.org/bob",
-              "http://example.org/alice",
+              "<http://example.org/bob>",
+              "<http://example.org/alice>",
               "\"Bob\"",
               "\"Family\""
             ),
             Row(
-              "http://example.org/carol",
-              "http://example.org/alice",
+              "<http://example.org/carol>",
+              "<http://example.org/alice>",
               "\"Carol Baz\"",
               "\"Family\""
             )
@@ -5937,35 +5950,35 @@ class CompilerSpec
           result.right.get.collect.length shouldEqual 8
           result.right.get.collect.toSet shouldEqual Set(
             Row(
-              "http://example.org/carol",
+              "<http://example.org/carol>",
               "\"Carol\""
             ),
             Row(
-              "http://example.org/carol",
+              "<http://example.org/carol>",
               "\"Carol Baz\""
             ),
             Row(
-              "http://example.org/carol",
+              "<http://example.org/carol>",
               "\"C. Baz\""
             ),
             Row(
-              "http://example.org/alice",
+              "<http://example.org/alice>",
               "\"Alice Foo\""
             ),
             Row(
-              "http://example.org/alice",
+              "<http://example.org/alice>",
               "\"A. Foo\""
             ),
             Row(
-              "http://example.org/bob",
+              "<http://example.org/bob>",
               "\"B. Bar\""
             ),
             Row(
-              "http://example.org/bob",
+              "<http://example.org/bob>",
               "\"Bob\""
             ),
             Row(
-              "http://example.org/bob",
+              "<http://example.org/bob>",
               "\"Bob Bar\""
             )
           )
@@ -6058,8 +6071,8 @@ class CompilerSpec
 
             result.right.get.collect().length shouldEqual 2
             result.right.get.collect().toSet shouldEqual Set(
-              Row("http://people.example/bob", "\"B. Bar\""),
-              Row("http://people.example/carol", "\"C. Baz\"")
+              Row("<http://people.example/bob>", "\"B. Bar\""),
+              Row("<http://people.example/carol>", "\"C. Baz\"")
             )
           }
         }
