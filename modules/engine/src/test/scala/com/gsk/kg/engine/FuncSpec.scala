@@ -281,6 +281,39 @@ class FuncSpec
     }
   }
 
+  "Func.strbefore" should {
+
+    "find the correct string if it exists" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "hello#potato",
+        "goodbye#tomato"
+      ).toDF("text")
+
+      df.select(Func.strbefore(df("text"), "#").as("result"))
+        .collect shouldEqual Array(
+        Row("hello"),
+        Row("goodbye")
+      )
+    }
+
+    "return empty strings otherwise" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "hello potato",
+        "goodbye tomato"
+      ).toDF("text")
+
+      df.select(Func.strbefore(df("text"), "#").as("result"))
+        .collect shouldEqual Array(
+        Row(""),
+        Row("")
+      )
+    }
+  }
+
   "Func.iri" should {
 
     "do nothing for IRIs" in {

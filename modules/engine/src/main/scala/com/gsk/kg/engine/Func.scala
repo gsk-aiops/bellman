@@ -142,6 +142,19 @@ object Func {
     when(substring_index(col, str, -1) === col, lit(""))
       .otherwise(substring_index(col, str, -1))
 
+  /** Implementation of SparQL STRBEFORE on Spark dataframes.
+    *
+    * TODO (pepegar): Implement argument compatibility checks
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-strafter]]
+    * @param col
+    * @param str
+    * @return
+    */
+  def strbefore(col: Column, str: String): Column =
+    when(substring_index(col, str, 1) === col, lit(""))
+      .otherwise(substring_index(col, str, 1))
+
   /** Implementation of SparQL STRENDS on Spark dataframes.
     *
     * TODO (pepegar): Implement argument compatibility checks

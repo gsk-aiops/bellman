@@ -38,6 +38,7 @@ object ExpressionF {
   final case class CONCAT[A](appendTo: A, append: A) extends ExpressionF[A]
   final case class STR[A](s: A)                      extends ExpressionF[A]
   final case class STRAFTER[A](s: A, f: String)      extends ExpressionF[A]
+  final case class STRBEFORE[A](s: A, f: String)     extends ExpressionF[A]
   final case class ISBLANK[A](s: A)                  extends ExpressionF[A]
   final case class REPLACE[A](st: A, pattern: String, by: String, flags: String)
       extends ExpressionF[A]
@@ -59,19 +60,20 @@ object ExpressionF {
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
-      case Conditional.EQUALS(l, r)                        => EQUALS(l, r)
-      case Conditional.GT(l, r)                            => GT(l, r)
-      case Conditional.LT(l, r)                            => LT(l, r)
-      case Conditional.GTE(l, r)                           => GTE(l, r)
-      case Conditional.LTE(l, r)                           => LTE(l, r)
-      case Conditional.OR(l, r)                            => OR(l, r)
-      case Conditional.AND(l, r)                           => AND(l, r)
-      case Conditional.NEGATE(s)                           => NEGATE(s)
-      case BuiltInFunc.URI(s)                              => URI(s)
-      case BuiltInFunc.CONCAT(appendTo, append)            => CONCAT(appendTo, append)
-      case BuiltInFunc.STR(s)                              => STR(s)
-      case BuiltInFunc.STRAFTER(s, StringVal.STRING(f, _)) => STRAFTER(s, f)
-      case BuiltInFunc.ISBLANK(s)                          => ISBLANK(s)
+      case Conditional.EQUALS(l, r)                         => EQUALS(l, r)
+      case Conditional.GT(l, r)                             => GT(l, r)
+      case Conditional.LT(l, r)                             => LT(l, r)
+      case Conditional.GTE(l, r)                            => GTE(l, r)
+      case Conditional.LTE(l, r)                            => LTE(l, r)
+      case Conditional.OR(l, r)                             => OR(l, r)
+      case Conditional.AND(l, r)                            => AND(l, r)
+      case Conditional.NEGATE(s)                            => NEGATE(s)
+      case BuiltInFunc.URI(s)                               => URI(s)
+      case BuiltInFunc.CONCAT(appendTo, append)             => CONCAT(appendTo, append)
+      case BuiltInFunc.STR(s)                               => STR(s)
+      case BuiltInFunc.STRAFTER(s, StringVal.STRING(f, _))  => STRAFTER(s, f)
+      case BuiltInFunc.STRBEFORE(s, StringVal.STRING(f, _)) => STRBEFORE(s, f)
+      case BuiltInFunc.ISBLANK(s)                           => ISBLANK(s)
       case BuiltInFunc.REPLACE(
             st,
             StringVal.STRING(pattern, _),
@@ -140,6 +142,11 @@ object ExpressionF {
           s.asInstanceOf[StringLike],
           f.asInstanceOf[StringLike]
         )
+      case STRBEFORE(s, f) =>
+        BuiltInFunc.STRBEFORE(
+          s.asInstanceOf[StringLike],
+          f.asInstanceOf[StringLike]
+        )
       case ISBLANK(s) => BuiltInFunc.ISBLANK(s.asInstanceOf[StringLike])
       case REPLACE(st, pattern, by, flags) =>
         BuiltInFunc.REPLACE(
@@ -190,6 +197,7 @@ object ExpressionF {
         case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]
         case STR(s)                   => s.pure[M]
         case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
+        case STRBEFORE(s, f)          => Func.strbefore(s, f).pure[M]
         case ISBLANK(s)               => Func.isBlank(s).pure[M]
         case REPLACE(st, pattern, by, flags) =>
           Func.replace(st, pattern, by, flags).pure[M]

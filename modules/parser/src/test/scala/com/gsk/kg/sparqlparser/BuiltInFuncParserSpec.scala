@@ -79,6 +79,31 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     }
   }
 
+  "strbefore function" should "return STRBEFORE type" in {
+    val s = "(strbefore ( str ?d) \"#\")"
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case STRBEFORE(STR(VARIABLE(s1: String)), STRING(s2: String, _)) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "Deeply nested strbefore function" should "return nested STRBEFORE type" in {
+    val s = "(uri (strbefore (concat (str ?d) (str ?src)) \"#\"))"
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case URI(
+            STRBEFORE(
+              CONCAT(STR(VARIABLE(a1: String)), STR(VARIABLE(a2: String))),
+              STRING("#", _)
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
   "strends function" should "return STRENDS type" in {
     val s = """(strends (str ?modelname) "ner:")"""
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
