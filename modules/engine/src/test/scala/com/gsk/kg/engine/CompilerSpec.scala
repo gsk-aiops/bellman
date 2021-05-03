@@ -6257,35 +6257,47 @@ class CompilerSpec
       }
     }
 
-    "perform STRBEFORE function correctly" in {
-      val query =
-        """
-      PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
-      PREFIX  litn:  <http://lit-search-api/node/>
-      PREFIX  litp:  <http://lit-search-api/property/>
+    "perform STRBEFORE function correctly" when {
 
-      CONSTRUCT {
-        ?Document a litn:Document .
-        ?Document litp:docDate ?docdate .
+      "used on string literals" in {
+        val df = List(
+          (
+            "http://uri.com/subject/#a1",
+            "http://xmlns.com/foaf/0.1/name",
+            "Alice#Person"
+          ),
+          (
+            "http://uri.com/subject/#a2",
+            "http://xmlns.com/foaf/0.1/name",
+            "Alex#Person"
+          ),
+          (
+            "http://uri.com/subject/#a3",
+            "http://xmlns.com/foaf/0.1/name",
+            "Alison"
+          )
+        ).toDF("s", "p", "o")
+
+        val query =
+          """
+          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+          CONSTRUCT {
+            ?x foaf:firstName ?firstName .
+          }
+          WHERE{
+            ?x foaf:name ?name .
+            BIND(STRBEFORE(?name, "#") as ?firstName) .
+          }
+          """
+
+        val result = Compiler.compile(df, query, config)
+
+        result.right.get.drop("s", "p").collect.toSet shouldEqual Set(
+          Row("\"Alice\""),
+          Row("\"Alex\""),
+          Row("\"\"")
+        )
       }
-      WHERE{
-        ?d a dm:Document .
-        BIND(STRAFTER(str(?d), "#") as ?docid) .
-        BIND(STRBEFORE(?docid, ".") as ?docdate) .
-        BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
-      }
-      """
-
-      val inputDF  = readNTtoDF("fixtures/reference-q2-input.nt")
-      val outputDF = readNTtoDF("fixtures/reference-q2-output.nt")
-
-      val result = Compiler.compile(inputDF, query, config)
-
-      result shouldBe a[Right[_, _]]
-      result.right.get.collect.toSet shouldEqual outputDF
-        .drop("g")
-        .collect()
-        .toSet
     }
   }
 

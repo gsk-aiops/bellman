@@ -287,11 +287,11 @@ class FuncSpec
       import sqlContext.implicits._
 
       val df = List(
-        "hello#potato",
-        "goodbye#tomato"
+        "hello potato",
+        "goodbye tomato"
       ).toDF("text")
 
-      df.select(Func.strbefore(df("text"), "#").as("result"))
+      df.select(Func.strbefore(df("text"), " ").as("result"))
         .collect shouldEqual Array(
         Row("hello"),
         Row("goodbye")
