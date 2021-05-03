@@ -79,6 +79,16 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     }
   }
 
+  "strends function" should "return STRENDS type" in {
+    val s = """(strends (str ?modelname) "ner:")"""
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case STRENDS(STR(VARIABLE("?modelname")), STRING("ner:", None)) =>
+        succeed
+      case _ => fail
+    }
+  }
+
   "strstarts function" should "return STRSTARTS type" in {
     val s = """(strstarts (str ?modelname) "ner:")"""
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))

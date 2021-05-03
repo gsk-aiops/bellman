@@ -28,6 +28,7 @@ object BuiltInFunc {
   final case class STR(s: Expression)                      extends BuiltInFunc
   final case class STRAFTER(s: Expression, f: Expression)  extends BuiltInFunc
   final case class STRSTARTS(s: Expression, f: Expression) extends BuiltInFunc
+  final case class STRENDS(s: Expression, f: Expression)   extends BuiltInFunc
   final case class ISBLANK(s: Expression)                  extends BuiltInFunc
   final case class REPLACE(
       st: Expression,
