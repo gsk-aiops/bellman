@@ -101,7 +101,7 @@ class FuncSpec
         "aaaa"
       ).toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "b", "Z")).collect
+      val result = df.select(Func.replace(df("text"), "b", "Z", "")).collect
 
       result shouldEqual Array(
         Row("aZcd"),
@@ -116,7 +116,7 @@ class FuncSpec
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "bra", "*")).collect
+      val result = df.select(Func.replace(df("text"), "bra", "*", "")).collect
 
       result shouldEqual Array(
         Row("a*cada*")
@@ -128,7 +128,7 @@ class FuncSpec
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "a.*a", "*")).collect
+      val result = df.select(Func.replace(df("text"), "a.*a", "*", "")).collect
 
       result shouldEqual Array(
         Row("*")
@@ -140,7 +140,7 @@ class FuncSpec
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "a.*?a", "*")).collect
+      val result = df.select(Func.replace(df("text"), "a.*?a", "*", "")).collect
 
       result shouldEqual Array(
         Row("*c*bra")
@@ -152,7 +152,7 @@ class FuncSpec
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "a", "")).collect
+      val result = df.select(Func.replace(df("text"), "a", "", "")).collect
 
       result shouldEqual Array(
         Row("brcdbr")
@@ -164,7 +164,8 @@ class FuncSpec
 
       val df = List("abracadabra").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "a(.)", "a$1$1")).collect
+      val result =
+        df.select(Func.replace(df("text"), "a(.)", "a$1$1", "")).collect
 
       result shouldEqual Array(
         Row("abbraccaddabbra")
@@ -179,7 +180,7 @@ class FuncSpec
       ).toDF("text")
 
       val caught = intercept[IndexOutOfBoundsException] {
-        df.select(Func.replace(df("text"), ".*?", "$1")).collect
+        df.select(Func.replace(df("text"), ".*?", "$1", "")).collect
       }
 
       caught.getMessage shouldEqual "No group 1"
@@ -190,7 +191,7 @@ class FuncSpec
 
       val df = List("AAAA").toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "A+", "b")).collect
+      val result = df.select(Func.replace(df("text"), "A+", "b", "")).collect
 
       result shouldEqual Array(
         Row("b")
@@ -204,7 +205,7 @@ class FuncSpec
         "AAAA"
       ).toDF("text")
 
-      val result = df.select(Func.replace(df("text"), "A+?", "b")).collect
+      val result = df.select(Func.replace(df("text"), "A+?", "b", "")).collect
 
       result shouldEqual Array(
         Row("bbbb")
@@ -219,10 +220,30 @@ class FuncSpec
       ).toDF("text")
 
       val result =
-        df.select(Func.replace(df("text"), "^(.*?)d(.*)$", "$1c$2")).collect
+        df.select(Func.replace(df("text"), "^(.*?)d(.*)$", "$1c$2", "")).collect
 
       result shouldEqual Array(
         Row("carted")
+      )
+    }
+
+    "replace when pattern occurs with flags" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "abcd",
+        "abaB",
+        "bbBB",
+        "aaaa"
+      ).toDF("text")
+
+      val result = df.select(Func.replace(df("text"), "b", "Z", "i")).collect
+
+      result shouldEqual Array(
+        Row("aZcd"),
+        Row("aZaZ"),
+        Row("ZZZZ"),
+        Row("aaaa")
       )
     }
   }

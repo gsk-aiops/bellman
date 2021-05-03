@@ -42,6 +42,12 @@ object BuiltInFuncParser {
     REPLACE(s._1, s._2, s._3)
   }
 
+  def replaceWithFlagsParen[_: P]: P[REPLACE] = P(
+    "(" ~ replace ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")"
+  ).map { s =>
+    REPLACE(s._1, s._2, s._3, s._4)
+  }
+
   def regexParen[_: P]: P[REGEX] =
     P("(" ~ regex ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
       .map(f => REGEX(f._1, f._2))
@@ -65,6 +71,7 @@ object BuiltInFuncParser {
         | strstartsParen
         | isBlankParen
         | replaceParen
+        | replaceWithFlagsParen
         | regexParen
         | regexWithFlagsParen
     )

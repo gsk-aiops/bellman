@@ -142,8 +142,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.STRAFTER(s, f) =>
             Node("STRAFTER", Stream(s, Leaf(f.toString)))
           case ExpressionF.ISBLANK(s) => Node("ISBLANK", Stream(s))
-          case ExpressionF.REPLACE(st, pattern, by) =>
-            Node("REPLACE", Stream(st, Leaf(pattern), Leaf(by)))
+          case ExpressionF.REPLACE(st, pattern, by, flags) =>
+            Node("REPLACE", Stream(st, Leaf(pattern), Leaf(by), Leaf(flags)))
           case ExpressionF.COUNT(e)  => Node("COUNT", Stream(e))
           case ExpressionF.SUM(e)    => Node("SUM", Stream(e))
           case ExpressionF.MIN(e)    => Node("MIN", Stream(e))

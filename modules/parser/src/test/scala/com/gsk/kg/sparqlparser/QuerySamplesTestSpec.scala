@@ -291,7 +291,7 @@ class QuerySamplesTestSpec
               Construct(
                 vars,
                 _,
-                Extend(to, REPLACE(_, _, _), r)
+                Extend(to, REPLACE(_, _, _, _), r)
               ),
               _
             ) =>
