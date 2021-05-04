@@ -275,7 +275,10 @@ lazy val `bellman-site` = project
     micrositeHighlightTheme := "github-gist"
   )
   .settings(
-    libraryDependencies += "io.github.stanch" %% "reftree" % Versions("reftree")
+    libraryDependencies ++= Seq(
+      "io.github.stanch" %% "reftree"   % Versions("reftree"),
+      "org.apache.spark" %% "spark-sql" % Versions("spark") % Provided
+    )
   )
   .settings(
     Global / excludeLintKeys += scalastyleFailOnWarning
