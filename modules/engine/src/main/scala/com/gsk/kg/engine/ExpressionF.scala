@@ -1,15 +1,13 @@
 package com.gsk.kg.engine
 
 import cats.implicits._
-
 import higherkindness.droste._
 import higherkindness.droste.macros.deriveTraverse
-
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
-
 import com.gsk.kg.config.Config
+import com.gsk.kg.sparqlparser.BuiltInFunc.STRDT
 import com.gsk.kg.sparqlparser._
 
 /** [[ExpressionF]] is a pattern functor for the recursive
@@ -27,6 +25,7 @@ object ExpressionF {
       extends ExpressionF[A]
   final case class STRENDS[A](s: A, f: String)       extends ExpressionF[A]
   final case class STRSTARTS[A](s: A, f: String)     extends ExpressionF[A]
+  final case class STRDT[A](s: A, uri: String)       extends ExpressionF[A]
   final case class GT[A](l: A, r: A)                 extends ExpressionF[A]
   final case class LT[A](l: A, r: A)                 extends ExpressionF[A]
   final case class GTE[A](l: A, r: A)                extends ExpressionF[A]
@@ -101,6 +100,7 @@ object ExpressionF {
         REGEX(s, pattern, flags)
       case BuiltInFunc.STRENDS(s, StringVal.STRING(f, _))   => STRENDS(s, f)
       case BuiltInFunc.STRSTARTS(s, StringVal.STRING(f, _)) => STRSTARTS(s, f)
+      case BuiltInFunc.STRDT(s, StringVal.URIVAL(uri))      => STRDT(s, uri)
       case Aggregate.COUNT(e)                               => COUNT(e)
       case Aggregate.SUM(e)                                 => SUM(e)
       case Aggregate.MIN(e)                                 => MIN(e)
@@ -208,6 +208,7 @@ object ExpressionF {
         case REGEX(s, pattern, flags) => Func.regex(s, pattern, flags).pure[M]
         case STRENDS(s, f)            => Func.strends(s, f).pure[M]
         case STRSTARTS(s, f)          => Func.strstarts(s, f).pure[M]
+        case STRDT(e, uri)            => Func.strdt(e, uri).pure[M]
         case GT(l, r)                 => Func.gt(l, r).pure[M]
         case LT(l, r)                 => Func.lt(l, r).pure[M]
         case GTE(l, r)                => Func.gte(l, r).pure[M]

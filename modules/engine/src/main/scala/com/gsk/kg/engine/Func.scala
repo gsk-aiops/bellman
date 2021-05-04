@@ -193,6 +193,20 @@ object Func {
   def strstarts(col: Column, str: String): Column =
     col.startsWith(str)
 
+  /** Implementation of SparQL STRDT on Spark dataframes.
+    * The STRDT function constructs a literal with lexical form and type as specified by the arguments.
+    *
+    *  Examples:
+    *  STRDT("123", xsd:integer) ->	"123"^^<http://www.w3.org/2001/XMLSchema#integer>
+    *  STRDT("iiii", <http://example/romanNumeral>)	-> "iiii"^^<http://example/romanNumeral>
+    *
+    * @param col
+    * @param uri
+    * @return
+    */
+  def strdt(col: Column, uri: String): Column =
+    cc(lit("\""), col, lit("\""), lit(s"^^<$uri>"))
+
   /** The IRI function constructs an IRI by resolving the string
     * argument (see RFC 3986 and RFC 3987 or any later RFC that
     * superceeds RFC 3986 or RFC 3987). The IRI is resolved against
