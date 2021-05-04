@@ -82,14 +82,14 @@ object FindUnboundVariables {
       case LeftJoin(l, r, filters) => (l union r).pure[ST]
       case Union(l, r)             => (l union r).pure[ST]
       case Filter(funcs, expr) =>
-        val funcsVars = funcs.toNes.toSortedSet
+        val funcsVars = funcs.toList.toSet
           .foldLeft(Set.empty[VARIABLE]) { case (acc, func) =>
             acc ++ FindVariablesOnExpression.apply[Expression](func)
           }
         for {
           declared <- State.get
         } yield (funcsVars diff declared) ++ expr
-      case Join(l, r)        => r.pure[ST]
+      case Join(l, r)        => (l union r).pure[ST]
       case Offset(offset, r) => r.pure[ST]
       case Limit(limit, r)   => r.pure[ST]
       case Distinct(r)       => r.pure[ST]
@@ -98,7 +98,7 @@ object FindUnboundVariables {
           declared <- State.get
         } yield (vars.toSet diff declared) ++ r
       case DAG.Order(conds, r) =>
-        val condVars = conds.toNes.toSortedSet
+        val condVars = conds.toList.toSet
           .foldLeft(Set.empty[VARIABLE]) { case (acc, cond) =>
             acc ++ FindVariablesOnExpression.apply[Expression](cond)
           }

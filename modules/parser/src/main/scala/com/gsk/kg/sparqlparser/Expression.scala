@@ -1,16 +1,8 @@
 package com.gsk.kg.sparqlparser
 
-import cats.kernel.Order
-
 /** @see Model after [[https://www.w3.org/TR/sparql11-query/#rExpression]]
   */
 sealed trait Expression
-
-object Expression {
-  implicit def order[T <: Expression]: Order[T] = new cats.Order[T] {
-    override def compare(x: T, y: T): Int = -1
-  }
-}
 
 sealed trait Conditional extends Expression
 
