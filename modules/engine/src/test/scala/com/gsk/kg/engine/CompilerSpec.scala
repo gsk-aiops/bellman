@@ -1075,9 +1075,8 @@ class CompilerSpec
               |SELECT  ?name
               |WHERE   {
               |   ?x foaf:name ?name .
-              |   FILTER (isBlank(?x) && isURI(?x))
+              |   FILTER(isBlank(?x) && isURI(?x))
               |}
-              |
               |""".stripMargin
 
           val result = Compiler.compile(df, query, config)

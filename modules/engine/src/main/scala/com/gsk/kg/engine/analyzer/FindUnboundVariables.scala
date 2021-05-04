@@ -81,11 +81,18 @@ object FindUnboundVariables {
           .flatMap(_ => Set.empty[VARIABLE].pure[ST])
       case LeftJoin(l, r, filters) => (l union r).pure[ST]
       case Union(l, r)             => (l union r).pure[ST]
-      case Filter(funcs, expr)     => expr.pure[ST]
-      case Join(l, r)              => r.pure[ST]
-      case Offset(offset, r)       => r.pure[ST]
-      case Limit(limit, r)         => r.pure[ST]
-      case Distinct(r)             => r.pure[ST]
+      case Filter(funcs, expr) =>
+        val funcsVars = funcs.toNes.toSortedSet
+          .foldLeft(Set.empty[VARIABLE]) { case (acc, func) =>
+            acc ++ FindVariablesOnExpression.apply[Expression](func)
+          }
+        for {
+          declared <- State.get
+        } yield (funcsVars diff declared) ++ expr
+      case Join(l, r)        => r.pure[ST]
+      case Offset(offset, r) => r.pure[ST]
+      case Limit(limit, r)   => r.pure[ST]
+      case Distinct(r)       => r.pure[ST]
       case Group(vars, func, r) =>
         for {
           declared <- State.get

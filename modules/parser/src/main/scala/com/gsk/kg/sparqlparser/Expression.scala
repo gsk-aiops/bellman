@@ -6,6 +6,12 @@ import cats.kernel.Order
   */
 sealed trait Expression
 
+object Expression {
+  implicit def order[T <: Expression]: Order[T] = new cats.Order[T] {
+    override def compare(x: T, y: T): Int = -1
+  }
+}
+
 sealed trait Conditional extends Expression
 
 object Conditional {
@@ -94,8 +100,4 @@ sealed trait ConditionOrder extends Expression
 object ConditionOrder {
   final case class ASC(e: Expression)  extends ConditionOrder
   final case class DESC(e: Expression) extends ConditionOrder
-
-  implicit val order: Order[ConditionOrder] = new cats.Order[ConditionOrder] {
-    override def compare(x: ConditionOrder, y: ConditionOrder): Int = -1
-  }
 }
