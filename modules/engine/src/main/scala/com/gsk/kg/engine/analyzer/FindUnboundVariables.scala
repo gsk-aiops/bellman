@@ -128,6 +128,7 @@ object FindVariablesOnExpression {
         case URI(s)                          => s
         case CONCAT(appendTo, append)        => appendTo ++ append
         case STR(s)                          => s
+        case STRLEN(s)                       => s
         case STRAFTER(s, f)                  => s
         case ISBLANK(s)                      => s
         case REPLACE(st, pattern, by, flags) => st
