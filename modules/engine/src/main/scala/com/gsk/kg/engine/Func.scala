@@ -146,7 +146,7 @@ object Func {
     *
     * TODO (pepegar): Implement argument compatibility checks
     *
-    * @see [[https://www.w3.org/TR/sparql11-query/#func-strafter]]
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-strbefore]]
     * @param col
     * @param str
     * @return
@@ -159,7 +159,7 @@ object Func {
     *
     * TODO (pepegar): Implement argument compatibility checks
     *
-    * @see [[https://www.w3.org/TR/sparql11-query/#func-strstarts]]
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-strends]]
     * @param col
     * @param str
     * @return
