@@ -2,10 +2,11 @@ package com.gsk.kg.engine
 package optimizer
 
 import cats.implicits._
+
 import higherkindness.droste.Basis
 
-import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.engine.DAG._
+import com.gsk.kg.engine.data.ToTree._
 
 object JoinBGPs {
 

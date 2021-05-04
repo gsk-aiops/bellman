@@ -1,8 +1,8 @@
 package com.gsk.kg.engine
 
 import cats.data.Kleisli
-import cats.syntax.either._
 import cats.implicits._
+import cats.syntax.either._
 
 import higherkindness.droste.Basis
 
@@ -11,8 +11,8 @@ import org.apache.spark.sql.SQLContext
 
 import com.gsk.kg.Graphs
 import com.gsk.kg.config.Config
-import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.engine.analyzer.Analyzer
+import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.engine.optimizer.Optimizer
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.QueryConstruct

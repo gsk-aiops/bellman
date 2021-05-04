@@ -5,8 +5,8 @@ import cats.implicits._
 
 import higherkindness.droste.Basis
 
-import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.engine.DAG._
+import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.sparqlparser.Expr
 
 /** The idea behind this optimization step is to compact BGPs into

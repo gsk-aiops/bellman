@@ -9,6 +9,7 @@ import org.apache.spark.sql.DataFrame
 
 import com.gsk.kg.config.Config
 import com.gsk.kg.sparqlparser.Result
+
 import org.slf4j.LoggerFactory
 
 package object engine {

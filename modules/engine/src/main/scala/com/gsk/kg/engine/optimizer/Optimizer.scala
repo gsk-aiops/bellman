@@ -6,7 +6,6 @@ import cats.implicits._
 import higherkindness.droste.Basis
 
 import com.gsk.kg.Graphs
-import cats.arrow.Arrow
 
 object Optimizer {
 
@@ -15,6 +14,6 @@ object Optimizer {
       JoinBGPs.phase[T] >>>
       CompactBGPs.phase[T] >>>
       RemoveNestedProject.phase[T] >>>
-      Arrow[Phase].lift(SubqueryPushdown[T])
+      SubqueryPushdown.phase[T]
 
 }

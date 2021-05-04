@@ -5,8 +5,8 @@ import cats.implicits._
 
 import higherkindness.droste.Basis
 
-import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.engine.DAG._
+import com.gsk.kg.engine.data.ToTree._
 
 /** This optimization removes nested [[Project]] from the [[DAG]] when
   * they are consecutive and bind the same variables.

@@ -1,10 +1,14 @@
-package com.gsk.kg.engine.optimizer
+package com.gsk.kg.engine
+package optimizer
+
+import cats.implicits._
 
 import higherkindness.droste.Algebra
 import higherkindness.droste.Basis
 import higherkindness.droste.scheme
 
 import com.gsk.kg.engine.DAG
+import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
@@ -204,5 +208,19 @@ object SubqueryPushdown {
 
     val eval = scheme.cata(alg)
     eval(t)(false)
+  }
+
+  def phase[T](implicit T: Basis[DAG, T]): Phase[T, T] = Phase { t =>
+    val result = apply(T)(t)
+    (result != t)
+      .pure[M]
+      .ifM(
+        Log.debug(
+          "Optimizer(SubqueryPushdown)",
+          s"resulting query: ${result.toTree.drawTree}"
+        ),
+        ().pure[M]
+      ) *>
+      result.pure[M]
   }
 }
