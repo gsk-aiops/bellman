@@ -13,6 +13,7 @@ object BuiltInFuncParser {
   def concat[_: P]: P[Unit]    = P("concat")
   def str[_: P]: P[Unit]       = P("str")
   def strafter[_: P]: P[Unit]  = P("strafter")
+  def strbefore[_: P]: P[Unit] = P("strbefore")
   def isBlank[_: P]: P[Unit]   = P("isBlank")
   def replace[_: P]: P[Unit]   = P("replace")
   def regex[_: P]: P[Unit]     = P("regex")
@@ -32,6 +33,12 @@ object BuiltInFuncParser {
     "(" ~ strafter ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")"
   ).map { s =>
     STRAFTER(s._1, s._2)
+  }
+
+  def strbeforeParen[_: P]: P[STRBEFORE] = P(
+    "(" ~ strbefore ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")"
+  ).map { s =>
+    STRBEFORE(s._1, s._2)
   }
 
   def isBlankParen[_: P]: P[ISBLANK] =
@@ -73,6 +80,7 @@ object BuiltInFuncParser {
         | concatParen
         | strParen
         | strafterParen
+        | strbeforeParen
         | strendsParen
         | strstartsParen
         | isBlankParen
