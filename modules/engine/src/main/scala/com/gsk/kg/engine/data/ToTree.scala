@@ -163,7 +163,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.URIVAL(s)   => Leaf(s"URIVAL($s)")
           case ExpressionF.BLANK(s)    => Leaf(s"BLANK($s)")
           case ExpressionF.BOOL(s)     => Leaf(s"BOOL($s)")
-
+          case ExpressionF.ASC(e)      => Node(s"ASC", Stream(e))
+          case ExpressionF.DESC(e)     => Node(s"DESC", Stream(e))
         }
 
         val t = scheme.cata(alg)

@@ -57,6 +57,8 @@ object ExpressionF {
   final case class URIVAL[A](s: String)   extends ExpressionF[A]
   final case class BLANK[A](s: String)    extends ExpressionF[A]
   final case class BOOL[A](s: String)     extends ExpressionF[A]
+  final case class ASC[A](e: A)           extends ExpressionF[A]
+  final case class DESC[A](e: A)          extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
@@ -102,6 +104,8 @@ object ExpressionF {
       case StringVal.URIVAL(s)                              => URIVAL(s)
       case StringVal.BLANK(s)                               => BLANK(s)
       case StringVal.BOOL(s)                                => BOOL(s)
+      case ConditionOrder.ASC(e)                            => ASC(e)
+      case ConditionOrder.DESC(e)                           => DESC(e)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -168,6 +172,8 @@ object ExpressionF {
       case URIVAL(s)                  => StringVal.URIVAL(s)
       case BLANK(s)                   => StringVal.BLANK(s)
       case BOOL(s)                    => StringVal.BOOL(s)
+      case ASC(e)                     => ConditionOrder.ASC(e)
+      case DESC(e)                    => ConditionOrder.DESC(e)
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -216,6 +222,8 @@ object ExpressionF {
         case URIVAL(s) => lit(s).pure[M]
         case BLANK(s)  => lit(s).pure[M]
         case BOOL(s)   => lit(s).pure[M]
+        case ASC(e)    => unknownFunction("ASC")
+        case DESC(e)   => unknownFunction("DESC")
       }
 
     val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)
