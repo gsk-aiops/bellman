@@ -56,7 +56,6 @@ object ToTree extends LowPriorityToTreeInstances0 {
     }
 
   // scalastyle:off
-  // scalastyle:off method.length
   implicit def dagToTree[T: Basis[DAG, *]]: ToTree[T] =
     new ToTree[T] {
       def toTree(tree: T): TreeRep[String] = {
@@ -114,9 +113,9 @@ object ToTree extends LowPriorityToTreeInstances0 {
         t(tree)
       }
     }
-  // scalastyle:on method.length
   // scalastyle:on
 
+  // scalastyle:off
   implicit def expressionfToTree[T: Basis[ExpressionF, *]]: ToTree[T] =
     new ToTree[T] {
       def toTree(tree: T): TreeRep[String] = {
@@ -180,6 +179,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
       }
 
     }
+  // scalastyle:off
 
   implicit def listToTree[A: ToTree]: ToTree[List[A]] =
     new ToTree[List[A]] {
