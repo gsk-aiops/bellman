@@ -11,6 +11,7 @@ import org.apache.spark.sql.SQLContext
 
 import com.gsk.kg.Graphs
 import com.gsk.kg.config.Config
+import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.engine.analyzer.Analyzer
 import com.gsk.kg.engine.optimizer.Optimizer
 import com.gsk.kg.sparqlparser.Query
@@ -56,15 +57,21 @@ object Compiler {
   ): Phase[String, DataFrame] =
     parser >>>
       transformToGraph.first >>>
+      staticAnalysis.first >>>
       optimizer >>>
-      staticAnalysis >>>
       engine(df) >>>
       rdfFormatter
 
   private def transformToGraph[T: Basis[DAG, *]]: Phase[Query, T] =
     Kleisli[M, Query, T] { query =>
-      Log.info("TransformToGraph", "transforming Query to DAG") *>
-        DAG.fromQuery.apply(query).pure[M]
+      for {
+        _   <- Log.info("TransformToGraph", "transforming Query to DAG")
+        dag <- DAG.fromQuery.apply(query).pure[M]
+        _ <- Log.debug(
+          "TransformToGraph",
+          s"resulting dag: \n${dag.toTree.drawTree}"
+        )
+      } yield dag
     }
 
   /** The engine phase receives a query and applies it to the given
