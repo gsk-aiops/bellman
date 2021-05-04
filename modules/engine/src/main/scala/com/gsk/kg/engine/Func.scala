@@ -155,6 +155,20 @@ object Func {
     when(substring_index(col, str, 1) === col, lit(""))
       .otherwise(substring_index(col, str, 1))
 
+  /** Implementation of SparQL SUBSTR on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-substr]]
+    * @param col
+    * @param pos
+    * @param len
+    * @return
+    */
+  def substr(col: Column, pos: Int, len: Option[Int]): Column =
+    len match {
+      case Some(l) => col.substr(pos, l)
+      case None    => col.substr(lit(pos), length(col) - pos + 1)
+    }
+
   /** Implementation of SparQL STRENDS on Spark dataframes.
     *
     * TODO (pepegar): Implement argument compatibility checks

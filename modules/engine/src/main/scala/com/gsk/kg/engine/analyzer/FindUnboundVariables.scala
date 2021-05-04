@@ -129,6 +129,8 @@ object FindVariablesOnExpression {
         case CONCAT(appendTo, append)        => appendTo ++ append
         case STR(s)                          => s
         case STRAFTER(s, f)                  => s
+        case STRBEFORE(s, f)                 => s
+        case SUBSTR(s, pos, len)             => s
         case ISBLANK(s)                      => s
         case REPLACE(st, pattern, by, flags) => st
         case COUNT(e)                        => e

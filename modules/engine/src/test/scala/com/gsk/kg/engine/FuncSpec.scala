@@ -510,21 +510,21 @@ class FuncSpec
         Row("Ciao Dolly")
       )
     }
-  }
 
-  "concatenate a literal string with a column in quotes" in {
-    import sqlContext.implicits._
+    "concatenate a literal string with a column in quotes" in {
+      import sqlContext.implicits._
 
-    val df = List(
-      ("Hello", "\" Dolly\""),
-      ("Here's a song", " Dolly")
-    ).toDF("a", "b")
+      val df = List(
+        ("Hello", "\" Dolly\""),
+        ("Here's a song", " Dolly")
+      ).toDF("a", "b")
 
-    df.select(Func.concat("Ciao", df("b")).as("verses"))
-      .collect shouldEqual Array(
-      Row("Ciao Dolly"),
-      Row("Ciao Dolly")
-    )
+      df.select(Func.concat("Ciao", df("b")).as("verses"))
+        .collect shouldEqual Array(
+        Row("Ciao Dolly"),
+        Row("Ciao Dolly")
+      )
+    }
   }
 
   "Func.equals" should {
@@ -780,6 +780,39 @@ class FuncSpec
           Func.lte(df("a"), df("b"))
         ).collect() shouldEqual Array(
           Row(true)
+        )
+      }
+    }
+
+    "Func.substr" should {
+
+      "correctly return the substring of a given column without length specified" in {
+        import sqlContext.implicits._
+
+        val df = List(
+          "hello world",
+          "hello universe"
+        ).toDF("text")
+
+        df.select(Func.substr(df("text"), 5, None).as("result"))
+          .collect shouldEqual Array(
+          Row("o world"),
+          Row("o universe")
+        )
+      }
+
+      "correctly return the substring of a given column with length specified" in {
+        import sqlContext.implicits._
+
+        val df = List(
+          "hello world",
+          "hello universe"
+        ).toDF("text")
+
+        df.select(Func.substr(df("text"), 5, Some(3)).as("result"))
+          .collect shouldEqual Array(
+          Row("o w"),
+          Row("o u")
         )
       }
     }
