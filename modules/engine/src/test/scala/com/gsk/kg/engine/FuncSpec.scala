@@ -447,11 +447,45 @@ class FuncSpec
       )
     }
 
-    "concatenate a column with a literal string" in {
+    "concatenate two string columns with quotes" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        ("\"Hello\"", "\" Dolly\""),
+        ("\"Hello\"", " Dolly"),
+        ("Hello", "\" Dolly\""),
+        ("Hello", " Dolly")
+      ).toDF("a", "b")
+
+      df.select(Func.concat(df("a"), df("b")).as("verses"))
+        .collect shouldEqual Array(
+        Row("Hello Dolly"),
+        Row("Hello Dolly"),
+        Row("Hello Dolly"),
+        Row("Hello Dolly")
+      )
+    }
+
+    "concatenate a column in quotes with a literal string" in {
       import sqlContext.implicits._
 
       val df = List(
         ("Hello", " Dolly"),
+        ("Here's a song", " Dolly")
+      ).toDF("a", "b")
+
+      df.select(Func.concat(df("a"), " world!").as("sentences"))
+        .collect shouldEqual Array(
+        Row("Hello world!"),
+        Row("Here's a song world!")
+      )
+    }
+
+    "concatenate a column with a literal string in quotes" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        ("\"Hello\"", " Dolly"),
         ("Here's a song", " Dolly")
       ).toDF("a", "b")
 
@@ -476,6 +510,21 @@ class FuncSpec
         Row("Ciao Dolly")
       )
     }
+  }
+
+  "concatenate a literal string with a column in quotes" in {
+    import sqlContext.implicits._
+
+    val df = List(
+      ("Hello", "\" Dolly\""),
+      ("Here's a song", " Dolly")
+    ).toDF("a", "b")
+
+    df.select(Func.concat("Ciao", df("b")).as("verses"))
+      .collect shouldEqual Array(
+      Row("Ciao Dolly"),
+      Row("Ciao Dolly")
+    )
   }
 
   "Func.equals" should {
