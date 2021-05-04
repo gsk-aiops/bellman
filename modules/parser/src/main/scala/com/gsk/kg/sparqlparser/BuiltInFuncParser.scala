@@ -1,7 +1,6 @@
 package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.BuiltInFunc._
-
 import fastparse.MultiLineWhitespace._
 import fastparse._
 
@@ -19,6 +18,7 @@ object BuiltInFuncParser {
   def regex[_: P]: P[Unit]     = P("regex")
   def strends[_: P]: P[Unit]   = P("strends")
   def strstarts[_: P]: P[Unit] = P("strstarts")
+  def strlen[_: P]: P[Unit]    = P("strlen")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
@@ -74,6 +74,10 @@ object BuiltInFuncParser {
     P("(" ~ strstarts ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
       .map(f => STRSTARTS(f._1, f._2))
 
+  def strlenParen[_: P]: P[STRLEN] =
+    P("(" ~ strlen ~ ExpressionParser.parser ~ ")")
+      .map(f => STRLEN(f))
+
   def funcPatterns[_: P]: P[StringLike] =
     P(
       uriParen
@@ -82,6 +86,7 @@ object BuiltInFuncParser {
         | strafterParen
         | strbeforeParen
         | strendsParen
+        | strlenParen
         | strstartsParen
         | isBlankParen
         | replaceParen

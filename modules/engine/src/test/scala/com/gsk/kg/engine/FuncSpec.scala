@@ -510,21 +510,37 @@ class FuncSpec
         Row("Ciao Dolly")
       )
     }
+
+    "concatenate a literal string with a column in quotes" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        ("Hello", "\" Dolly\""),
+        ("Here's a song", " Dolly")
+      ).toDF("a", "b")
+
+      df.select(Func.concat("Ciao", df("b")).as("verses"))
+        .collect shouldEqual Array(
+        Row("Ciao Dolly"),
+        Row("Ciao Dolly")
+      )
+    }
   }
 
-  "concatenate a literal string with a column in quotes" in {
-    import sqlContext.implicits._
+  "Func.strlen" should {
+    "return the length of a string value" in {
+      import sqlContext.implicits._
 
-    val df = List(
-      ("Hello", "\" Dolly\""),
-      ("Here's a song", " Dolly")
-    ).toDF("a", "b")
+      val df = List(
+        "hello world",
+        "goodbye world"
+      ).toDF("a")
 
-    df.select(Func.concat("Ciao", df("b")).as("verses"))
-      .collect shouldEqual Array(
-      Row("Ciao Dolly"),
-      Row("Ciao Dolly")
-    )
+      df.select(Func.strlen(df("a"))).collect() shouldEqual Array(
+        Row(11),
+        Row(13)
+      )
+    }
   }
 
   "Func.equals" should {

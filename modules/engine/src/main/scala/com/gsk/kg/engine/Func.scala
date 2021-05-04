@@ -179,6 +179,15 @@ object Func {
   def strstarts(col: Column, str: String): Column =
     col.startsWith(str)
 
+  /** Implementation of SparQL STRLEN on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-strlen]]
+    * @param col
+    * @return
+    */
+  def strlen(col: Column): Column =
+    length(col)
+
   /** The IRI function constructs an IRI by resolving the string
     * argument (see RFC 3986 and RFC 3987 or any later RFC that
     * superceeds RFC 3986 or RFC 3987). The IRI is resolved against

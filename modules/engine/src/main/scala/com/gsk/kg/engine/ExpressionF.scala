@@ -37,6 +37,7 @@ object ExpressionF {
   final case class URI[A](s: A)                      extends ExpressionF[A]
   final case class CONCAT[A](appendTo: A, append: A) extends ExpressionF[A]
   final case class STR[A](s: A)                      extends ExpressionF[A]
+  final case class STRLEN[A](s: A)                   extends ExpressionF[A]
   final case class STRAFTER[A](s: A, f: String)      extends ExpressionF[A]
   final case class STRBEFORE[A](s: A, f: String)     extends ExpressionF[A]
   final case class ISBLANK[A](s: A)                  extends ExpressionF[A]
@@ -71,6 +72,7 @@ object ExpressionF {
       case BuiltInFunc.URI(s)                               => URI(s)
       case BuiltInFunc.CONCAT(appendTo, append)             => CONCAT(appendTo, append)
       case BuiltInFunc.STR(s)                               => STR(s)
+      case BuiltInFunc.STRLEN(s)                            => STRLEN(s)
       case BuiltInFunc.STRAFTER(s, StringVal.STRING(f, _))  => STRAFTER(s, f)
       case BuiltInFunc.STRBEFORE(s, StringVal.STRING(f, _)) => STRBEFORE(s, f)
       case BuiltInFunc.ISBLANK(s)                           => ISBLANK(s)
@@ -136,7 +138,8 @@ object ExpressionF {
           appendTo.asInstanceOf[StringLike],
           append.asInstanceOf[StringLike]
         )
-      case STR(s) => BuiltInFunc.STR(s.asInstanceOf[StringLike])
+      case STR(s)    => BuiltInFunc.STR(s.asInstanceOf[StringLike])
+      case STRLEN(s) => BuiltInFunc.STRLEN(s.asInstanceOf[StringLike])
       case STRAFTER(s, f) =>
         BuiltInFunc.STRAFTER(
           s.asInstanceOf[StringLike],
@@ -196,6 +199,7 @@ object ExpressionF {
         case URI(s)                   => Func.iri(s).pure[M]
         case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]
         case STR(s)                   => s.pure[M]
+        case STRLEN(s)                => Func.strlen(s).pure[M]
         case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
         case STRBEFORE(s, f)          => Func.strbefore(s, f).pure[M]
         case ISBLANK(s)               => Func.isBlank(s).pure[M]

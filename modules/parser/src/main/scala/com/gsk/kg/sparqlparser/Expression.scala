@@ -26,6 +26,7 @@ object BuiltInFunc {
   final case class CONCAT(appendTo: Expression, append: Expression)
       extends BuiltInFunc
   final case class STR(s: Expression)                      extends BuiltInFunc
+  final case class STRLEN(s: Expression)                   extends BuiltInFunc
   final case class STRAFTER(s: Expression, f: Expression)  extends BuiltInFunc
   final case class STRBEFORE(s: Expression, f: Expression) extends BuiltInFunc
   final case class STRSTARTS(s: Expression, f: Expression) extends BuiltInFunc
