@@ -209,8 +209,13 @@ object Func {
     * @param b
     * @return
     */
-  def concat(a: Column, b: Column): Column =
-    cc(a, b)
+  def concat(a: Column, b: Column): Column = {
+    val left =
+      when(a.startsWith("\""), regexp_replace(a, "\"", "")).otherwise(a)
+    val right =
+      when(b.startsWith("\""), regexp_replace(b, "\"", "")).otherwise(b)
+    cc(left, right)
+  }
 
   /** Concatenate a [[String]] with a [[Column]], generating a new [[Column]]
     *
@@ -218,8 +223,11 @@ object Func {
     * @param b
     * @return
     */
-  def concat(a: String, b: Column): Column =
-    concat(lit(a), b)
+  def concat(a: String, b: Column): Column = {
+    val right =
+      when(b.startsWith("\""), regexp_replace(b, "\"", "")).otherwise(b)
+    cc(lit(a), right)
+  }
 
   /** Concatenate a [[Column]] with a [[String]], generating a new [[Column]]
     *
@@ -227,8 +235,11 @@ object Func {
     * @param b
     * @return
     */
-  def concat(a: Column, b: String): Column =
-    concat(a, lit(b))
+  def concat(a: Column, b: String): Column = {
+    val left =
+      when(a.startsWith("\""), regexp_replace(a, "\"", "")).otherwise(a)
+    cc(left, lit(b))
+  }
 
   /** Sample is a set function which returns an arbitrary value from
     * the multiset passed to it.
