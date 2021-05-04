@@ -179,7 +179,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
       }
 
     }
-  // scalastyle:off
+  // scalastyle:on
 
   implicit def listToTree[A: ToTree]: ToTree[List[A]] =
     new ToTree[List[A]] {
