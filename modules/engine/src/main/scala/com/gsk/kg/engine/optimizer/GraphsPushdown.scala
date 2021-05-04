@@ -1,4 +1,5 @@
-package com.gsk.kg.engine.optimizer
+package com.gsk.kg.engine
+package optimizer
 
 import cats.implicits._
 
@@ -8,6 +9,7 @@ import higherkindness.droste.scheme
 
 import com.gsk.kg.Graphs
 import com.gsk.kg.engine.DAG
+import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
 
@@ -169,5 +171,19 @@ object GraphsPushdown {
 
       val eval = scheme.cata(alg)
       eval(t)(Right(graphs))
+  }
+
+  def phase[T](implicit T: Basis[DAG, T]): Phase[(T, Graphs), T] = Phase {
+    case (t, graphs) =>
+      val result = apply(T)(t, graphs)
+      (result != t)
+        .pure[M]
+        .ifM(
+          Log.debug(
+            "Optimizer(GraphsPushdown)",
+            s"resulting query: ${result.toTree.drawTree}"
+          ),
+          ().pure[M]
+        ) *> result.pure[M]
   }
 }
