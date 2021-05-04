@@ -6,6 +6,7 @@ import cats.implicits._
 import higherkindness.droste.Basis
 
 import com.gsk.kg.engine.DAG._
+import com.gsk.kg.engine.data.ToTree._
 import com.gsk.kg.sparqlparser.Expr
 
 /** The idea behind this optimization step is to compact BGPs into
@@ -85,6 +86,20 @@ object CompactBGPs {
         })
       )
     }
+  }
+
+  def phase[T](implicit T: Basis[DAG, T]): Phase[T, T] = Phase { t =>
+    val result = apply(T)(t)
+    (result != t)
+      .pure[M]
+      .ifM(
+        Log.debug(
+          "Optimizer(CompactBGPs)",
+          s"resulting query: ${result.toTree.drawTree}"
+        ),
+        ().pure[M]
+      ) *>
+      result.pure[M]
   }
 
 }
