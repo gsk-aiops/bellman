@@ -153,7 +153,7 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       """(strdt ?c <http://geo.org#country>)"""
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
-      case STRDT(VARIABLE("?c"), URIVAL("http://geo.org#country")) =>
+      case STRDT(VARIABLE("?c"), URIVAL("<http://geo.org#country>")) =>
         succeed
       case _ =>
         fail

@@ -205,7 +205,7 @@ object Func {
     * @return
     */
   def strdt(col: Column, uri: String): Column =
-    cc(lit("\""), col, lit("\""), lit(s"^^<$uri>"))
+    cc(lit("\""), col, lit("\""), lit(s"^^$uri"))
 
   /** The IRI function constructs an IRI by resolving the string
     * argument (see RFC 3986 and RFC 3987 or any later RFC that

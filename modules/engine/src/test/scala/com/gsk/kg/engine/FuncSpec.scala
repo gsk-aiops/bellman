@@ -408,7 +408,7 @@ class FuncSpec
 
       val result = df
         .select(
-          Func.strdt(df("s"), "http://www.w3.org/2001/XMLSchema#integer")
+          Func.strdt(df("s"), "<http://www.w3.org/2001/XMLSchema#integer>")
         )
         .collect
 

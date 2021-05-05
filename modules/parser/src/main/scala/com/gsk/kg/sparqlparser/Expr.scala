@@ -61,14 +61,14 @@ object Expr {
       def toStringVal(n: Node): Option[StringVal] =
         if (n.isLiteral) {
           Some(STRING(n.toString))
+        } else if (n == JenaQuad.defaultGraphNodeGenerated) {
+          Some(GRAPH_VARIABLE)
         } else if (n.isURI) {
-          Some(URIVAL(n.toString))
+          Some(URIVAL("<" + n.toString + ">"))
         } else if (n.isVariable) {
           Some(VARIABLE(n.toString))
         } else if (n.isBlank) {
           Some(BLANK(n.toString))
-        } else if (n.isNodeGraph) {
-          Some(GRAPH_VARIABLE)
         } else {
           None
         }

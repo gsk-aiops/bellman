@@ -300,13 +300,13 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
               Seq(
                 Quad(
                   VARIABLE("?d"),
-                  URIVAL("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-                  URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+                  URIVAL("<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"),
+                  URIVAL("<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>"),
                   _
                 ),
                 Quad(
                   VARIABLE("?d"),
-                  URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/docSource"),
+                  URIVAL("<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>"),
                   VARIABLE("?src"),
                   _
                 )
@@ -400,13 +400,13 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
                   Seq(
                     Quad(
                       VARIABLE("?p1"),
-                      URIVAL("http://www.w3.org/2006/vcard/ns#hasAddress"),
+                      URIVAL("<http://www.w3.org/2006/vcard/ns#hasAddress>"),
                       VARIABLE("?ad"),
                       List(GRAPH_VARIABLE)
                     ),
                     Quad(
                       VARIABLE("?p2"),
-                      URIVAL("http://www.w3.org/2006/vcard/ns#hasAddress"),
+                      URIVAL("<http://www.w3.org/2006/vcard/ns#hasAddress>"),
                       VARIABLE("?ad"),
                       List(GRAPH_VARIABLE)
                     )
@@ -437,7 +437,7 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
                 Seq(
                   Quad(
                     VARIABLE("?x"),
-                    URIVAL("http://xmlns.com/foaf/0.1/name"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/name>"),
                     VARIABLE("?name"),
                     List(GRAPH_VARIABLE)
                   )
@@ -467,13 +467,13 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
                 Seq(
                   Quad(
                     VARIABLE("?x"),
-                    URIVAL("http://xmlns.com/foaf/0.1/name"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/name>"),
                     VARIABLE("?name"),
                     List(GRAPH_VARIABLE)
                   ),
                   Quad(
                     VARIABLE("?x"),
-                    URIVAL("http://xmlns.com/foaf/0.1/age"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/age>"),
                     VARIABLE("?age"),
                     List(GRAPH_VARIABLE)
                   )
@@ -514,13 +514,13 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
                 Seq(
                   Quad(
                     VARIABLE("?x"),
-                    URIVAL("http://xmlns.com/foaf/0.1/name"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/name>"),
                     VARIABLE("?name"),
                     List(GRAPH_VARIABLE)
                   ),
                   Quad(
                     VARIABLE("?x"),
-                    URIVAL("http://xmlns.com/foaf/0.1/age"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/age>"),
                     VARIABLE("?age"),
                     List(GRAPH_VARIABLE)
                   )

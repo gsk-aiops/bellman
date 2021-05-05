@@ -55,8 +55,8 @@ class StringValParserSpec extends AnyFlatSpec {
     val s = "<http://id.gsk.com/dm/1.0/>"
     val p = fastparse.parse(s, StringValParser.tripleValParser(_))
     p.get.value match {
-      case URIVAL("http://id.gsk.com/dm/1.0/") => succeed
-      case _                                   => fail
+      case URIVAL("<http://id.gsk.com/dm/1.0/>") => succeed
+      case _                                     => fail
     }
   }
 

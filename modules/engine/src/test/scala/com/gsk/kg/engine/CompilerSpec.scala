@@ -31,11 +31,11 @@ class CompilerSpec
   val dfList = List(
     (
       "test",
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://id.gsk.com/dm/1.0/Document",
+      "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+      "<http://id.gsk.com/dm/1.0/Document>",
       ""
     ),
-    ("test", "http://id.gsk.com/dm/1.0/docSource", "source", "")
+    ("test", "<http://id.gsk.com/dm/1.0/docSource>", "source", "")
   )
 
   "Compiler" when {
@@ -45,15 +45,25 @@ class CompilerSpec
       val df: DataFrame = List(
         (
           "example",
-          "http://xmlns.com/foaf/0.1/lit",
+          "<http://xmlns.com/foaf/0.1/lit>",
           "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>",
           ""
         ),
-        ("example", "http://xmlns.com/foaf/0.1/lit", "\"0.22\"^^xsd:float", ""),
-        ("example", "http://xmlns.com/foaf/0.1/lit", "\"foo\"^^xsd:string", ""),
         (
           "example",
-          "http://xmlns.com/foaf/0.1/lit",
+          "<http://xmlns.com/foaf/0.1/lit>",
+          "\"0.22\"^^xsd:float",
+          ""
+        ),
+        (
+          "example",
+          "<http://xmlns.com/foaf/0.1/lit>",
+          "\"foo\"^^xsd:string",
+          ""
+        ),
+        (
+          "example",
+          "<http://xmlns.com/foaf/0.1/lit>",
           "\"true\"^^xsd:boolean",
           ""
         )
@@ -86,9 +96,9 @@ class CompilerSpec
 
       val df: DataFrame = List(
         ("a", "b", "c", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
       ).toDF("s", "p", "o", "g")
 
       val query =
@@ -149,7 +159,7 @@ class CompilerSpec
       WHERE{
         ?d a dm:Document .
         BIND(STRAFTER(str(?d), "#") as ?docid) .
-        BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
+        BIND(URI(CONCAT("<http://lit-search-api/node/doc#>", ?docid)) as ?Document) .
       }
       """
 
@@ -309,13 +319,13 @@ class CompilerSpec
         val positive = List(
           (
             "doesmatch",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://id.gsk.com/dm/1.0/Document",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://id.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
             "doesmatchaswell",
-            "http://id.gsk.com/dm/1.0/docSource",
+            "<http://id.gsk.com/dm/1.0/docSource>",
             "potato",
             ""
           )
@@ -364,13 +374,13 @@ class CompilerSpec
         val negative = List(
           (
             "doesntmatch",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://id.gsk.com/dm/1.0/Document",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://id.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
             "doesntmatcheither",
-            "http://id.gsk.com/dm/1.0/docSource",
+            "<http://id.gsk.com/dm/1.0/docSource>",
             "potato",
             ""
           )
@@ -418,9 +428,9 @@ class CompilerSpec
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -446,9 +456,9 @@ class CompilerSpec
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -471,9 +481,9 @@ class CompilerSpec
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -500,9 +510,9 @@ class CompilerSpec
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -528,9 +538,9 @@ class CompilerSpec
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -557,9 +567,9 @@ class CompilerSpec
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -586,13 +596,13 @@ class CompilerSpec
         val df: DataFrame = List(
           (
             "nodeA",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass>",
             "thisIsTheBlankNode",
             ""
           ),
           (
             "thisIsTheBlankNode",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/predClass",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/predClass>",
             "otherThingy",
             ""
           )
@@ -624,10 +634,10 @@ class CompilerSpec
       "execute and obtain expected results without flags" in {
 
         val df: DataFrame = List(
-          ("example", "http://xmlns.com/foaf/0.1/lit", "abcd", ""),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "abaB", ""),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "bbBB", ""),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "aaaa", "")
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "abcd", ""),
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "abaB", ""),
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "bbBB", ""),
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "aaaa", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -656,10 +666,10 @@ class CompilerSpec
       "execute and obtain expected results with flags" in {
 
         val df: DataFrame = List(
-          ("example", "http://xmlns.com/foaf/0.1/lit", "abcd", ""),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "abaB", ""),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "bbBB", ""),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "aaaa", "")
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "abcd", ""),
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "abaB", ""),
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "bbBB", ""),
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "aaaa", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -691,7 +701,7 @@ class CompilerSpec
         "because the pattern matches the zero-length string" ignore {
 
           val df: DataFrame = List(
-            ("example", "http://xmlns.com/foaf/0.1/lit", "abracadabra", "")
+            ("example", "<http://xmlns.com/foaf/0.1/lit>", "abracadabra", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -721,25 +731,25 @@ class CompilerSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://www.w3.org/2000/10/annotation-ns#annotates",
-            "http://www.w3.org/TR/rdf-sparql-query/",
+            "<http://www.w3.org/2000/10/annotation-ns#annotates>",
+            "<http://www.w3.org/TR/rdf-sparql-query/>",
             ""
           ),
           (
             "_:a",
-            "http://purl.org/dc/elements/1.1/creator",
+            "<http://purl.org/dc/elements/1.1/creator>",
             "Alice B. Toeclips",
             ""
           ),
           (
             "_:b",
-            "http://www.w3.org/2000/10/annotation-ns#annotates",
-            "http://www.w3.org/TR/rdf-sparql-query/",
+            "<http://www.w3.org/2000/10/annotation-ns#annotates>",
+            "<http://www.w3.org/TR/rdf-sparql-query/>",
             ""
           ),
-          ("_:b", "http://purl.org/dc/elements/1.1/creator", "_:c", ""),
-          ("_:c", "http://xmlns.com/foaf/0.1/given", "Bob", ""),
-          ("_:c", "http://xmlns.com/foaf/0.1/family", "Smith", "")
+          ("_:b", "<http://purl.org/dc/elements/1.1/creator>", "_:c", ""),
+          ("_:c", "<http://xmlns.com/foaf/0.1/given>", "Bob", ""),
+          ("_:c", "<http://xmlns.com/foaf/0.1/family>", "Smith", "")
         ).toDF("s", "p", "o", "g")
 
         val query = {
@@ -772,18 +782,18 @@ class CompilerSpec
       "execute and obtain expected results" in {
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Alice", ""),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example",
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example>",
             ""
           ),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "_:bob", ""),
+          ("_:b", "<http://xmlns.com/foaf/0.1/name>", "_:bob", ""),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@work.example",
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@work.example>",
             ""
           )
         ).toDF("s", "p", "o", "g")
@@ -818,10 +828,10 @@ class CompilerSpec
 
           val df: DataFrame = List(
             ("a", "b", "c", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "Blank", "")
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", ""),
+            ("_:", "<http://xmlns.com/foaf/0.1/name>", "Blank", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -847,10 +857,10 @@ class CompilerSpec
 
           val df: DataFrame = List(
             ("a", "b", "c", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
-            ("a:", "http://xmlns.com/foaf/0.1/name", "Blank", "")
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", ""),
+            ("a:", "<http://xmlns.com/foaf/0.1/name>", "Blank", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -876,10 +886,10 @@ class CompilerSpec
 
           val df: DataFrame = List(
             ("a", "b", "c", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "_:b", ""),
-            ("foaf:c", "http://xmlns.com/foaf/0.1/name", "_:d", ""),
-            ("_:e", "http://xmlns.com/foaf/0.1/name", "foaf:f", "")
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+            ("_:a", "<http://xmlns.com/foaf/0.1/name>", "_:b", ""),
+            ("foaf:c", "<http://xmlns.com/foaf/0.1/name>", "_:d", ""),
+            ("_:e", "<http://xmlns.com/foaf/0.1/name>", "foaf:f", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -908,62 +918,62 @@ class CompilerSpec
 
           val df: DataFrame = List(
             (
-              "http://example.org/Network",
-              "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-              "http://example.org/Main",
+              "<http://example.org/Network>",
+              "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+              "<http://example.org/Main>",
               ""
             ),
             (
-              "http://example.org/ATM",
-              "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-              "http://example.org/Network",
+              "<http://example.org/ATM>",
+              "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+              "<http://example.org/Network>",
               ""
             ),
             (
-              "http://example.org/ARPANET",
-              "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-              "http://example.org/Network",
+              "<http://example.org/ARPANET>",
+              "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+              "<http://example.org/Network>",
               ""
             ),
             (
-              "http://example.org/Software",
-              "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-              "http://example.org/Main",
+              "<http://example.org/Software>",
+              "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+              "<http://example.org/Main>",
               ""
             ),
             (
               "_:Linux",
-              "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-              "http://example.org/Software",
+              "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+              "<http://example.org/Software>",
               ""
             ),
             (
-              "http://example.org/Windows",
-              "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-              "http://example.org/Software",
+              "<http://example.org/Windows>",
+              "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+              "<http://example.org/Software>",
               ""
             ),
             (
-              "http://example.org/XP",
-              "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-              "http://example.org/Windows",
+              "<http://example.org/XP>",
+              "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+              "<http://example.org/Windows>",
               ""
             ),
             (
-              "http://example.org/Win7",
-              "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-              "http://example.org/Windows",
+              "<http://example.org/Win7>",
+              "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+              "<http://example.org/Windows>",
               ""
             ),
             (
-              "http://example.org/Win8",
-              "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-              "http://example.org/Windows",
+              "<http://example.org/Win8>",
+              "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+              "<http://example.org/Windows>",
               ""
             ),
             (
-              "http://example.org/Ubuntu20",
-              "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+              "<http://example.org/Ubuntu20>",
+              "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
               "_:Linux",
               ""
             )
@@ -994,22 +1004,27 @@ class CompilerSpec
         "execute and obtain expected results when complex filter" ignore {
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+            ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Alice", ""),
             (
               "_:a",
-              "http://example.org/stats#hits",
+              "<http://example.org/stats#hits>",
               "\"2349\"^^xsd:integer",
               ""
             ),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
+            ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", ""),
             (
               "_:b",
-              "http://example.org/stats#hits",
+              "<http://example.org/stats#hits>",
               "\"105\"^^xsd:integer",
               ""
             ),
-            ("_:c", "http://xmlns.com/foaf/0.1/name", "Eve"),
-            ("_:c", "http://example.org/stats#hits", "\"181\"^^xsd:integer", "")
+            ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Eve"),
+            (
+              "_:c",
+              "<http://example.org/stats#hits>",
+              "\"181\"^^xsd:integer",
+              ""
+            )
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1056,14 +1071,14 @@ class CompilerSpec
 
           val df: DataFrame = List(
             ("a", "b", "c", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "Blank", ""),
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", ""),
+            ("_:", "<http://xmlns.com/foaf/0.1/name>", "Blank", ""),
             (
               "_:",
-              "http://xmlns.com/foaf/0.1/name",
-              "http://test-uri/blank",
+              "<http://xmlns.com/foaf/0.1/name>",
+              "<http://test-uri/blank>",
               ""
             )
           ).toDF("s", "p", "o", "g")
@@ -1089,10 +1104,10 @@ class CompilerSpec
         "execute and obtain expected results when there is AND condition" in {
 
           val df: DataFrame = List(
-            ("team", "http://xmlns.com/foaf/0.1/name", "_:", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "_:", ""),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "_:", ""),
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+            ("_:", "<http://xmlns.com/foaf/0.1/name>", "_:", ""),
+            ("_:", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1119,10 +1134,10 @@ class CompilerSpec
         "execute and obtain expected results when there is OR condition" in {
 
           val df: DataFrame = List(
-            ("team", "http://xmlns.com/foaf/0.1/name", "_:", ""),
-            ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "_:", ""),
-            ("_:", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "_:", ""),
+            ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+            ("_:", "<http://xmlns.com/foaf/0.1/name>", "_:", ""),
+            ("_:", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1154,8 +1169,8 @@ class CompilerSpec
         "execute on simple literal" in {
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Perico", "")
+            ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Henry", ""),
+            ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Perico", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1185,13 +1200,13 @@ class CompilerSpec
           val df: DataFrame = List(
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Henry\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             ),
             (
               "_:b",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Perico\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             )
@@ -1222,8 +1237,8 @@ class CompilerSpec
         "execute on numbers" in {
 
           val df: DataFrame = List(
-            ("_:Perico", "http://xmlns.com/foaf/0.1/age", 15, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+            ("_:Perico", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1250,8 +1265,8 @@ class CompilerSpec
         "execute on booleans" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1278,24 +1293,24 @@ class CompilerSpec
         "execute on datetimes" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+            ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
             (
               "_:Martha",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Ana",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Henry",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             )
@@ -1330,8 +1345,8 @@ class CompilerSpec
         "execute on simple literal" in {
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Perico", "")
+            ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Henry", ""),
+            ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Perico", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1361,13 +1376,13 @@ class CompilerSpec
           val df: DataFrame = List(
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Henry\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             ),
             (
               "_:b",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Perico\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             )
@@ -1398,8 +1413,8 @@ class CompilerSpec
         "execute on numbers" in {
 
           val df: DataFrame = List(
-            ("_:Perico", "http://xmlns.com/foaf/0.1/age", 15, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+            ("_:Perico", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1426,8 +1441,8 @@ class CompilerSpec
         "execute on booleans" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1454,24 +1469,24 @@ class CompilerSpec
         "execute on dateTimes" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+            ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
             (
               "_:Martha",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Ana",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Henry",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             )
@@ -1505,8 +1520,8 @@ class CompilerSpec
         "execute on simple literal" in {
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+            ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+            ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Charles", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1536,12 +1551,12 @@ class CompilerSpec
           val df: DataFrame = List(
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>"
             ),
             (
               "_:b",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>"
             )
           ).toDF("s", "p", "o")
@@ -1571,9 +1586,9 @@ class CompilerSpec
         "execute on numbers" in {
 
           val df: DataFrame = List(
-            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
-            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+            ("_:Bob", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+            ("_:Alice", "<http://xmlns.com/foaf/0.1/age>", 18, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1600,8 +1615,8 @@ class CompilerSpec
         "execute on booleans" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1627,24 +1642,24 @@ class CompilerSpec
         "execute on dateTimes" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+            ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
             (
               "_:Martha",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Ana",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Henry",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             )
@@ -1679,8 +1694,8 @@ class CompilerSpec
         "execute on simple literal" in {
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+            ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+            ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Charles", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1710,13 +1725,13 @@ class CompilerSpec
           val df: DataFrame = List(
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             ),
             (
               "_:b",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             )
@@ -1747,9 +1762,9 @@ class CompilerSpec
         "execute on numbers" in {
 
           val df: DataFrame = List(
-            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
-            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+            ("_:Bob", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+            ("_:Alice", "<http://xmlns.com/foaf/0.1/age>", 18, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1776,8 +1791,8 @@ class CompilerSpec
         "execute on booleans" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1805,24 +1820,24 @@ class CompilerSpec
         "execute on dateTimes" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+            ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
             (
               "_:Martha",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Ana",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Henry",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             )
@@ -1858,9 +1873,9 @@ class CompilerSpec
         "execute on simple literal" in {
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
-            ("_:c", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+            ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+            ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", ""),
+            ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Charles", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1891,19 +1906,19 @@ class CompilerSpec
           val df: DataFrame = List(
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             ),
             (
               "_:b",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Bob\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             ),
             (
               "_:c",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             )
@@ -1935,9 +1950,9 @@ class CompilerSpec
         "execute on numbers" in {
 
           val df: DataFrame = List(
-            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
-            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+            ("_:Bob", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+            ("_:Alice", "<http://xmlns.com/foaf/0.1/age>", 18, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1965,8 +1980,8 @@ class CompilerSpec
         "execute on booleans" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -1993,24 +2008,24 @@ class CompilerSpec
         "execute on dateTimes" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+            ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
             (
               "_:Martha",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Ana",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Henry",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             )
@@ -2046,9 +2061,9 @@ class CompilerSpec
         "execute on simple literal" in {
 
           val df: DataFrame = List(
-            ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-            ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
-            ("_:c", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+            ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+            ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", ""),
+            ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Charles", "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -2079,19 +2094,19 @@ class CompilerSpec
           val df: DataFrame = List(
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             ),
             (
               "_:b",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Bob\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             ),
             (
               "_:c",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>",
               ""
             )
@@ -2123,9 +2138,9 @@ class CompilerSpec
         "execute on numbers" in {
 
           val df: DataFrame = List(
-            ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
-            ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+            ("_:Bob", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+            ("_:Alice", "<http://xmlns.com/foaf/0.1/age>", 18, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -2153,8 +2168,8 @@ class CompilerSpec
         "execute on booleans" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
           ).toDF("s", "p", "o", "g")
 
           val query =
@@ -2183,24 +2198,24 @@ class CompilerSpec
         "execute on dateTimes" in {
 
           val df: DataFrame = List(
-            ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-            ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-            ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+            ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+            ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+            ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
             (
               "_:Martha",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Ana",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             ),
             (
               "_:Henry",
-              "http://xmlns.com/foaf/0.1/birthDay",
+              "<http://xmlns.com/foaf/0.1/birthDay>",
               """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
               ""
             )
@@ -2238,39 +2253,39 @@ class CompilerSpec
 
         val df: DataFrame = List(
           (
-            "http://potato.com/b",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/b>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           ),
           (
-            "http://potato.com/c",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/c>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
-            "http://potato.com/c",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/c>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           ),
           (
-            "http://potato.com/d",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/d>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           ),
           (
-            "http://potato.com/b",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/b>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
-            "http://potato.com/d",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/d>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           ("negative", "negative", "negative", "")
@@ -2332,39 +2347,39 @@ class CompilerSpec
 
         val df: DataFrame = List(
           (
-            "http://potato.com/b",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/b>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
-            "http://potato.com/c",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/c>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
-            "http://potato.com/b",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/b>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           ),
           (
-            "http://potato.com/d",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/d>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
-            "http://potato.com/c",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/c>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           ),
           (
-            "http://potato.com/d",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/d>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           ),
           ("negative", "negative", "negative", "")
@@ -2407,39 +2422,39 @@ class CompilerSpec
 
         val df: DataFrame = List(
           (
-            "http://potato.com/b",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/b>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
-            "http://potato.com/c",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/c>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
-            "http://potato.com/b",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/b>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           ),
           (
-            "http://potato.com/d",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/d>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
-            "http://potato.com/c",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/c>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           ),
           (
-            "http://potato.com/d",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/d>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           )
         ).toDF("s", "p", "o", "g")
@@ -2496,39 +2511,39 @@ class CompilerSpec
 
         val df: DataFrame = List(
           (
-            "http://potato.com/b",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/b>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
-            "http://potato.com/c",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/c>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
-            "http://potato.com/b",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/b>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           ),
           (
-            "http://potato.com/d",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+            "<http://potato.com/d>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
             ""
           ),
           (
-            "http://potato.com/c",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/c>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           ),
           (
-            "http://potato.com/d",
-            "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-            "http://thesour.ce",
+            "<http://potato.com/d>",
+            "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+            "<http://thesour.ce>",
             ""
           )
         ).toDF("s", "p", "o", "g")
@@ -2565,30 +2580,30 @@ class CompilerSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://xmlns.com/foaf/0.1/Person",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://xmlns.com/foaf/0.1/Person>",
             ""
           ),
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Alice", ""),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@example.com",
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@example.com>",
             ""
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example",
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example>",
             ""
           ),
           (
             "_:b",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "http://xmlns.com/foaf/0.1/Person",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://xmlns.com/foaf/0.1/Person>",
             ""
           ),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", "")
+          ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -2616,18 +2631,18 @@ class CompilerSpec
         val df: DataFrame = List(
           (
             "_:book1",
-            "http://purl.org/dc/elements/1.1/title",
+            "<http://purl.org/dc/elements/1.1/title>",
             "SPARQL Tutorial",
             ""
           ),
-          ("_:book1", "http://example.org/ns#price", "42", ""),
+          ("_:book1", "<http://example.org/ns#price>", "42", ""),
           (
             "_:book2",
-            "http://purl.org/dc/elements/1.1/title",
+            "<http://purl.org/dc/elements/1.1/title>",
             "The Semantic Web",
             ""
           ),
-          ("_:book2", "http://example.org/ns#price", "_:23", "")
+          ("_:book2", "<http://example.org/ns#price>", "_:23", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -2658,18 +2673,18 @@ class CompilerSpec
       "execute and obtain expected results with multiple optionals" in {
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Alice", ""),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/homepage",
-            "http://work.example.org/alice/",
+            "<http://xmlns.com/foaf/0.1/homepage>",
+            "<http://work.example.org/alice/>",
             ""
           ),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
+          ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", ""),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@work.example",
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@work.example>",
             ""
           )
         ).toDF("s", "p", "o", "g")
@@ -2702,9 +2717,9 @@ class CompilerSpec
       "execute and obtain expected results" in {
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
-          ("_:c", "http://xmlns.com/foaf/0.1/name", "Alice", "")
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Alice", ""),
+          ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", ""),
+          ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Alice", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -2737,42 +2752,42 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
               ""
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -2806,42 +2821,42 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
               ""
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -2880,42 +2895,42 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
               ""
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -2957,61 +2972,61 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
               ""
             ),
             (
-              "http://example.org/charles",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/charles>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Charles Hacker",
               ""
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             ),
             // Charles graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@work.example.org>",
+              "<http://example.org/charles>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3049,42 +3064,42 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
               ""
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@work.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@work.example.org>",
+              "<http://example.org/bob>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3119,42 +3134,42 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
               ""
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:b",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:b",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@work.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@work.example.org>",
+              "<http://example.org/bob>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3187,61 +3202,61 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
               ""
             ),
             (
-              "http://example.org/charles",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/charles>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Charles Hacker",
               ""
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             ),
             // Charles graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@work.example.org>",
+              "<http://example.org/charles>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3277,61 +3292,61 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
               ""
             ),
             (
-              "http://example.org/charles",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/charles>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Charles Hacker",
               ""
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             ),
             // Charles graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@work.example.org>",
+              "<http://example.org/charles>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3371,28 +3386,28 @@ class CompilerSpec
             // Default graph - Alice
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Named graph - Bob
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3428,41 +3443,41 @@ class CompilerSpec
             // Default graph - Alice
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Default graph - Charles
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@oldcorp.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@oldcorp.example.org>",
+              "<http://example.org/charles>"
             ),
             // Named graph - Bob
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3498,41 +3513,41 @@ class CompilerSpec
             // Default graph - Alice
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Default graph - Charles
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@oldcorp.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@oldcorp.example.org>",
+              "<http://example.org/charles>"
             ),
             // Named graph - Bob
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3568,41 +3583,41 @@ class CompilerSpec
             // Default graph - Alice
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Default graph - Charles
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@oldcorp.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@oldcorp.example.org>",
+              "<http://example.org/charles>"
             ),
             // Named graph - Bob
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3640,41 +3655,41 @@ class CompilerSpec
             // Default graph - Alice
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Default graph - Charles
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@oldcorp.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@oldcorp.example.org>",
+              "<http://example.org/charles>"
             ),
             // Named graph - Bob
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3715,61 +3730,61 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/charles",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/charles>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Charles Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             ),
             // Charles graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@work.example.org>",
+              "<http://example.org/charles>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3819,61 +3834,61 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/charles",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/charles>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Charles Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             ),
             // Charles graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@work.example.org>",
+              "<http://example.org/charles>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -3918,61 +3933,61 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/charles",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/charles>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Charles Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             ),
             // Charles graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@work.example.org>",
+              "<http://example.org/charles>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -4017,61 +4032,61 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/charles",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/charles>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Charles Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             ),
             // Charles graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@work.example.org>",
+              "<http://example.org/charles>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -4120,61 +4135,61 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/charles",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/charles>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Charles Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             ),
             // Charles graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@work.example.org>",
+              "<http://example.org/charles>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -4221,61 +4236,61 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/charles",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/charles>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Charles Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             ),
             // Charles graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@work.example.org>",
+              "<http://example.org/charles>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -4332,61 +4347,61 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/charles",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/charles>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Charles Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             ),
             // Charles graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@work.example.org>",
+              "<http://example.org/charles>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -4455,61 +4470,61 @@ class CompilerSpec
           val df: DataFrame = List(
             // Default graph
             (
-              "http://example.org/bob",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/bob>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Bob Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/alice",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/alice>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Alice Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             (
-              "http://example.org/charles",
-              "http://purl.org/dc/elements/1.1/publisher",
+              "<http://example.org/charles>",
+              "<http://purl.org/dc/elements/1.1/publisher>",
               "Charles Hacker",
-              "http://example.org/dft.ttl"
+              "<http://example.org/dft.ttl>"
             ),
             // Alice graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice",
-              "http://example.org/alice"
+              "<http://example.org/alice>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:alice@work.example.org",
-              "http://example.org/alice"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:alice@work.example.org>",
+              "<http://example.org/alice>"
             ),
             // Bob graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://example.org/bob"
+              "<http://example.org/bob>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:bob@oldcorp.example.org",
-              "http://example.org/bob"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:bob@oldcorp.example.org>",
+              "<http://example.org/bob>"
             ),
             // Charles graph
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles",
-              "http://example.org/charles"
+              "<http://example.org/charles>"
             ),
             (
               "_:a",
-              "http://xmlns.com/foaf/0.1/mbox",
-              "mailto:charles@work.example.org",
-              "http://example.org/charles"
+              "<http://xmlns.com/foaf/0.1/mbox>",
+              "<mailto:charles@work.example.org>",
+              "<http://example.org/charles>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -4552,14 +4567,14 @@ class CompilerSpec
         val df: DataFrame = List(
           (
             "example",
-            "http://xmlns.com/foaf/0.1/lit",
+            "<http://xmlns.com/foaf/0.1/lit>",
             "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"
           ),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "\"0.22\"^^xsd:float"),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "\"foo\"^^xsd:string"),
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"0.22\"^^xsd:float"),
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"foo\"^^xsd:string"),
           (
             "example",
-            "http://xmlns.com/foaf/0.1/lit",
+            "<http://xmlns.com/foaf/0.1/lit>",
             "\"true\"^^xsd:boolean"
           )
         ).toDF("s", "p", "o")
@@ -4648,29 +4663,29 @@ class CompilerSpec
 
         val df = List(
           (
-            "http://uri.com/subject/a1",
-            "http://uri.com/predicate",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a1>",
+            "<http://uri.com/predicate>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a1",
-            "http://uri.com/predicate",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a1>",
+            "<http://uri.com/predicate>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a2",
-            "http://uri.com/predicate",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a2>",
+            "<http://uri.com/predicate>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a2",
-            "http://uri.com/predicate",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a2>",
+            "<http://uri.com/predicate>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a3",
-            "http://uri.com/predicate",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a3>",
+            "<http://uri.com/predicate>",
+            "<http://uri.com/object>"
           )
         ).toDF("s", "p", "o")
 
@@ -4695,29 +4710,29 @@ class CompilerSpec
 
         val df = List(
           (
-            "http://uri.com/subject/a1",
-            "http://uri.com/predicate",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a1>",
+            "<http://uri.com/predicate>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a1",
-            "http://uri.com/predicate",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a1>",
+            "<http://uri.com/predicate>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a2",
-            "http://uri.com/predicate",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a2>",
+            "<http://uri.com/predicate>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a2",
-            "http://uri.com/predicate",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a2>",
+            "<http://uri.com/predicate>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a3",
-            "http://uri.com/predicate",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a3>",
+            "<http://uri.com/predicate>",
+            "<http://uri.com/object>"
           )
         ).toDF("s", "p", "o")
 
@@ -4741,11 +4756,11 @@ class CompilerSpec
       "operate correctly there's GROUP BY and a AVG function" in {
 
         val df = List(
-          ("http://uri.com/subject/a1", "1", "http://uri.com/object"),
-          ("http://uri.com/subject/a1", "2", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "3", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "4", "http://uri.com/object"),
-          ("http://uri.com/subject/a3", "5", "http://uri.com/object")
+          ("<http://uri.com/subject/a1>", "1", "<http://uri.com/object>"),
+          ("<http://uri.com/subject/a1>", "2", "<http://uri.com/object>"),
+          ("<http://uri.com/subject/a2>", "3", "<http://uri.com/object>"),
+          ("<http://uri.com/subject/a2>", "4", "<http://uri.com/object>"),
+          ("<http://uri.com/subject/a3>", "5", "<http://uri.com/object>")
         ).toDF("s", "p", "o")
 
         val query =
@@ -4770,33 +4785,33 @@ class CompilerSpec
         "applied on strings" in {
           val df = List(
             (
-              "http://uri.com/subject/a1",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a1>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice"
             ),
             (
-              "http://uri.com/subject/a1",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a1>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob"
             ),
             (
-              "http://uri.com/subject/a2",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a2>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles"
             ),
             (
-              "http://uri.com/subject/a2",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a2>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charlie"
             ),
             (
-              "http://uri.com/subject/a3",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a3>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "megan"
             ),
             (
-              "http://uri.com/subject/a3",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a3>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Megan"
             )
           ).toDF("s", "p", "o")
@@ -4824,33 +4839,33 @@ class CompilerSpec
 
           val df = List(
             (
-              "http://uri.com/subject/a1",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a1>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "18.1"
             ),
             (
-              "http://uri.com/subject/a1",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a1>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "19"
             ),
             (
-              "http://uri.com/subject/a2",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a2>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "30"
             ),
             (
-              "http://uri.com/subject/a2",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a2>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "31.5"
             ),
             (
-              "http://uri.com/subject/a3",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a3>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "45"
             ),
             (
-              "http://uri.com/subject/a3",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a3>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "50"
             )
           ).toDF("s", "p", "o")
@@ -4858,7 +4873,7 @@ class CompilerSpec
           val query =
             """
           PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-          
+
           SELECT ?s (MIN(?age) AS ?o)
           WHERE {
             ?s foaf:age ?age .
@@ -4880,33 +4895,33 @@ class CompilerSpec
         "applied on strings" in {
           val df = List(
             (
-              "http://uri.com/subject/a1",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a1>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice"
             ),
             (
-              "http://uri.com/subject/a1",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a1>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob"
             ),
             (
-              "http://uri.com/subject/a2",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a2>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charles"
             ),
             (
-              "http://uri.com/subject/a2",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a2>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Charlie"
             ),
             (
-              "http://uri.com/subject/a3",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a3>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "megan"
             ),
             (
-              "http://uri.com/subject/a3",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://uri.com/subject/a3>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Megan"
             )
           ).toDF("s", "p", "o")
@@ -4934,33 +4949,33 @@ class CompilerSpec
 
           val df = List(
             (
-              "http://uri.com/subject/a1",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a1>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "18.1"
             ),
             (
-              "http://uri.com/subject/a1",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a1>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "19"
             ),
             (
-              "http://uri.com/subject/a2",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a2>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "30"
             ),
             (
-              "http://uri.com/subject/a2",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a2>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "31.5"
             ),
             (
-              "http://uri.com/subject/a3",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a3>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "45"
             ),
             (
-              "http://uri.com/subject/a3",
-              "http://xmlns.com/foaf/0.1/age",
+              "<http://uri.com/subject/a3>",
+              "<http://xmlns.com/foaf/0.1/age>",
               "50"
             )
           ).toDF("s", "p", "o")
@@ -4968,7 +4983,7 @@ class CompilerSpec
           val query =
             """
           PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-          
+
           SELECT ?s (MAX(?age) AS ?o)
           WHERE {
             ?s foaf:age ?age .
@@ -4988,11 +5003,11 @@ class CompilerSpec
       "operate correctly there's GROUP BY and a SUM function" in {
 
         val df = List(
-          ("http://uri.com/subject/a1", "2", "http://uri.com/object"),
-          ("http://uri.com/subject/a1", "1", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "2", "http://uri.com/object"),
-          ("http://uri.com/subject/a2", "1", "http://uri.com/object"),
-          ("http://uri.com/subject/a3", "1", "http://uri.com/object")
+          ("<http://uri.com/subject/a1>", "2", "<http://uri.com/object>"),
+          ("<http://uri.com/subject/a1>", "1", "<http://uri.com/object>"),
+          ("<http://uri.com/subject/a2>", "2", "<http://uri.com/object>"),
+          ("<http://uri.com/subject/a2>", "1", "<http://uri.com/object>"),
+          ("<http://uri.com/subject/a3>", "1", "<http://uri.com/object>")
         ).toDF("s", "p", "o")
 
         val query =
@@ -5016,29 +5031,29 @@ class CompilerSpec
 
         val df = List(
           (
-            "http://uri.com/subject/a1",
-            "http://uri.com/predicate/1",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a1>",
+            "<http://uri.com/predicate/1>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a1",
-            "http://uri.com/predicate/2",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a1>",
+            "<http://uri.com/predicate/2>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a2",
-            "http://uri.com/predicate/3",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a2>",
+            "<http://uri.com/predicate/3>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a2",
-            "http://uri.com/predicate/4",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a2>",
+            "<http://uri.com/predicate/4>",
+            "<http://uri.com/object>"
           ),
           (
-            "http://uri.com/subject/a3",
-            "http://uri.com/predicate/5",
-            "http://uri.com/object"
+            "<http://uri.com/subject/a3>",
+            "<http://uri.com/predicate/5>",
+            "<http://uri.com/object>"
           )
         ).toDF("s", "p", "o")
 
@@ -5063,19 +5078,19 @@ class CompilerSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
             ""
           ),
           (
             "_:c",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charlie",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
             ""
           )
@@ -5105,19 +5120,19 @@ class CompilerSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
             ""
           ),
           (
             "_:c",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charlie",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
             ""
           )
@@ -5147,19 +5162,19 @@ class CompilerSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
             ""
           ),
           (
             "_:c",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charlie",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
             ""
           )
@@ -5189,37 +5204,37 @@ class CompilerSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "A. Alice",
             ""
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/age",
+            "<http://xmlns.com/foaf/0.1/age>",
             "10",
             ""
           ),
           (
             "_:c",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "A. Charlie",
             ""
           ),
           (
             "_:c",
-            "http://xmlns.com/foaf/0.1/age",
+            "<http://xmlns.com/foaf/0.1/age>",
             "30",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "A. Bob",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/age",
+            "<http://xmlns.com/foaf/0.1/age>",
             "20",
             ""
           )
@@ -5249,37 +5264,37 @@ class CompilerSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "A. Alice",
             ""
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/age",
+            "<http://xmlns.com/foaf/0.1/age>",
             "10",
             ""
           ),
           (
             "_:c",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "A. Charlie",
             ""
           ),
           (
             "_:c",
-            "http://xmlns.com/foaf/0.1/age",
+            "<http://xmlns.com/foaf/0.1/age>",
             "30",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "A. Bob",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/age",
+            "<http://xmlns.com/foaf/0.1/age>",
             "20",
             ""
           )
@@ -5310,8 +5325,8 @@ class CompilerSpec
       "exclude graphs when no explicit FROM" in {
 
         val df: DataFrame = List(
-          ("_:s1", "p1", "o1", "http://example.org/graph1"),
-          ("_:s2", "p2", "o2", "http://example.org/graph2")
+          ("_:s1", "p1", "o1", "<http://example.org/graph1>"),
+          ("_:s2", "p2", "o2", "<http://example.org/graph2>")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -5330,8 +5345,8 @@ class CompilerSpec
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("_:s1", "p1", "o1", "http://example.org/graph1"),
-          ("_:s2", "p2", "o2", "http://example.org/graph2")
+          ("_:s1", "p1", "o1", "<http://example.org/graph1>"),
+          ("_:s2", "p2", "o2", "<http://example.org/graph2>")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -5354,8 +5369,8 @@ class CompilerSpec
       "include graphs when no explicit FROM" in {
 
         val df: DataFrame = List(
-          ("_:s1", "p1", "o1", "http://example.org/graph1"),
-          ("_:s2", "p2", "o2", "http://example.org/graph2")
+          ("_:s1", "p1", "o1", "<http://example.org/graph1>"),
+          ("_:s2", "p2", "o2", "<http://example.org/graph2>")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -5380,8 +5395,8 @@ class CompilerSpec
       "include graphs when explicit FROM" in {
 
         val df: DataFrame = List(
-          ("_:s1", "p1", "o1", "http://example.org/graph1"),
-          ("_:s2", "p2", "o2", "http://example.org/graph2")
+          ("_:s1", "p1", "o1", "<http://example.org/graph1>"),
+          ("_:s2", "p2", "o2", "<http://example.org/graph2>")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -5413,62 +5428,62 @@ class CompilerSpec
 
           val df: DataFrame = List(
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice Foo",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "A. Foo",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
-              "http://example.org/bob",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
+              "<http://example.org/bob>",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
-              "http://example.org/carol",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
+              "<http://example.org/carol>",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob Bar",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "B. Bar",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Carol",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Carol Baz",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "C. Baz",
               ""
             )
@@ -5485,7 +5500,7 @@ class CompilerSpec
               |    CONSTRUCT {
               |      ?x foaf:friends ?name .
               |    } WHERE {
-              |      ?x foaf:name ?name . 
+              |      ?x foaf:name ?name .
               |    }
               |  }
               |}
@@ -5503,62 +5518,62 @@ class CompilerSpec
 
           val df: DataFrame = List(
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice Foo",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "A. Foo",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
-              "http://example.org/bob",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
+              "<http://example.org/bob>",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
-              "http://example.org/carol",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
+              "<http://example.org/carol>",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob Bar",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "B. Bar",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Carol",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Carol Baz",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "C. Baz",
               ""
             )
@@ -5600,62 +5615,62 @@ class CompilerSpec
         "outer CONSTRUCT and inner SELECT as graph pattern" in {
           val df: DataFrame = List(
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice Foo",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "A. Foo",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
-              "http://example.org/bob",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
+              "<http://example.org/bob>",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
-              "http://example.org/carol",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
+              "<http://example.org/carol>",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob Bar",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "B. Bar",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Carol",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Carol Baz",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "C. Baz",
               ""
             )
@@ -5672,7 +5687,7 @@ class CompilerSpec
               |  {
               |    SELECT ?x ?name
               |    WHERE {
-              |      ?x foaf:name ?name . 
+              |      ?x foaf:name ?name .
               |    }
               |  }
               |}
@@ -5726,68 +5741,68 @@ class CompilerSpec
 
           val df: DataFrame = List(
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/member",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/member>",
               "Family",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice Foo",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "A. Foo",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
-              "http://example.org/bob",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
+              "<http://example.org/bob>",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
-              "http://example.org/carol",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
+              "<http://example.org/carol>",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob Bar",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "B. Bar",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Carol",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Carol Baz",
               ""
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "C. Baz",
               ""
             )
@@ -5863,70 +5878,70 @@ class CompilerSpec
 
           val df: DataFrame = List(
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/member",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/member>",
               "Family",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Alice Foo",
-              "http://some-other.ttl"
+              "<http://some-other.ttl>"
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "A. Foo",
-              "http://some-other.ttl"
+              "<http://some-other.ttl>"
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
-              "http://example.org/bob",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
+              "<http://example.org/bob>",
               ""
             ),
             (
-              "http://example.org/alice",
-              "http://xmlns.com/foaf/0.1/knows",
-              "http://example.org/carol",
+              "<http://example.org/alice>",
+              "<http://xmlns.com/foaf/0.1/knows>",
+              "<http://example.org/carol>",
               ""
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob",
-              "http://some-other.ttl"
+              "<http://some-other.ttl>"
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Bob Bar",
-              "http://some-other.ttl"
+              "<http://some-other.ttl>"
             ),
             (
-              "http://example.org/bob",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/bob>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "B. Bar",
-              "http://some-other.ttl"
+              "<http://some-other.ttl>"
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Carol",
-              "http://some-other.ttl"
+              "<http://some-other.ttl>"
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "Carol Baz",
-              "http://some-other.ttl"
+              "<http://some-other.ttl>"
             ),
             (
-              "http://example.org/carol",
-              "http://xmlns.com/foaf/0.1/name",
+              "<http://example.org/carol>",
+              "<http://xmlns.com/foaf/0.1/name>",
               "C. Baz",
-              "http://some-other.ttl"
+              "<http://some-other.ttl>"
             )
           ).toDF("s", "p", "o", "g")
 
@@ -5934,7 +5949,7 @@ class CompilerSpec
             """
               |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
               |
-              |SELECT ?x ?name 
+              |SELECT ?x ?name
               |FROM NAMED <http://some-other.ttl>
               |WHERE {
               |  GRAPH <http://some-other.ttl> {
@@ -5994,62 +6009,62 @@ class CompilerSpec
 
             val df: DataFrame = List(
               (
-                "http://people.example/alice",
-                "http://people.example/name",
+                "<http://people.example/alice>",
+                "<http://people.example/name>",
                 "Alice Foo",
                 ""
               ),
               (
-                "http://people.example/alice",
-                "http://people.example/name",
+                "<http://people.example/alice>",
+                "<http://people.example/name>",
                 "A. Foo",
                 ""
               ),
               (
-                "http://people.example/alice",
-                "http://people.example/knows",
-                "http://people.example/bob",
+                "<http://people.example/alice>",
+                "<http://people.example/knows>",
+                "<http://people.example/bob>",
                 ""
               ),
               (
-                "http://people.example/alice",
-                "http://people.example/knows",
-                "http://people.example/carol",
+                "<http://people.example/alice>",
+                "<http://people.example/knows>",
+                "<http://people.example/carol>",
                 ""
               ),
               (
-                "http://people.example/bob",
-                "http://people.example/name",
+                "<http://people.example/bob>",
+                "<http://people.example/name>",
                 "Bob",
                 ""
               ),
               (
-                "http://people.example/bob",
-                "http://people.example/name",
+                "<http://people.example/bob>",
+                "<http://people.example/name>",
                 "Bob Bar",
                 ""
               ),
               (
-                "http://people.example/bob",
-                "http://people.example/name",
+                "<http://people.example/bob>",
+                "<http://people.example/name>",
                 "B. Bar",
                 ""
               ),
               (
-                "http://people.example/carol",
-                "http://people.example/name",
+                "<http://people.example/carol>",
+                "<http://people.example/name>",
                 "Carol",
                 ""
               ),
               (
-                "http://people.example/carol",
-                "http://people.example/name",
+                "<http://people.example/carol>",
+                "<http://people.example/name>",
                 "Carol Baz",
                 ""
               ),
               (
-                "http://people.example/carol",
-                "http://people.example/name",
+                "<http://people.example/carol>",
+                "<http://people.example/name>",
                 "C. Baz",
                 ""
               )
@@ -6088,23 +6103,23 @@ class CompilerSpec
       "used without flags" in {
         val df = List(
           (
-            "http://uri.com/subject/a1",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a1>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice"
           ),
           (
-            "http://uri.com/subject/a2",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a2>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "alice"
           ),
           (
-            "http://uri.com/subject/a5",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a5>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alex"
           ),
           (
-            "http://uri.com/subject/a6",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a6>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "alex"
           )
         ).toDF("s", "p", "o")
@@ -6127,23 +6142,23 @@ class CompilerSpec
       "used with flags" in {
         val df = List(
           (
-            "http://uri.com/subject/a1",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a1>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice"
           ),
           (
-            "http://uri.com/subject/a2",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a2>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "alice"
           ),
           (
-            "http://uri.com/subject/a5",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a5>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alex"
           ),
           (
-            "http://uri.com/subject/a6",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a6>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "alex"
           )
         ).toDF("s", "p", "o")
@@ -6170,33 +6185,33 @@ class CompilerSpec
       "used on string literals" in {
         val df = List(
           (
-            "http://uri.com/subject/a1",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a1>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice"
           ),
           (
-            "http://uri.com/subject/a2",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a2>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "alice"
           ),
           (
-            "http://uri.com/subject/a5",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a5>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alex"
           ),
           (
-            "http://uri.com/subject/a6",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a6>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "alex"
           ),
           (
-            "http://uri.com/subject/a7",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a7>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Adam"
           ),
           (
-            "http://uri.com/subject/a8",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a8>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "adam"
           )
         ).toDF("s", "p", "o")
@@ -6223,23 +6238,23 @@ class CompilerSpec
       "used on string literals" in {
         val df = List(
           (
-            "http://uri.com/subject/a1",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a1>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice"
           ),
           (
-            "http://uri.com/subject/a2",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a2>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "alice"
           ),
           (
-            "http://uri.com/subject/a5",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a5>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alex"
           ),
           (
-            "http://uri.com/subject/a6",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/a6>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "alex"
           )
         ).toDF("s", "p", "o")
@@ -6266,18 +6281,18 @@ class CompilerSpec
       "used on string literals" in {
         val df = List(
           (
-            "http://uri.com/subject/#a1",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/#a1>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice#Person"
           ),
           (
-            "http://uri.com/subject/#a2",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/#a2>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alex#Person"
           ),
           (
-            "http://uri.com/subject/#a3",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/#a3>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alison"
           )
         ).toDF("s", "p", "o")
@@ -6310,22 +6325,22 @@ class CompilerSpec
         val df = List(
           (
             "usa",
-            "http://xmlns.com/foaf/0.1/latitude",
+            "<http://xmlns.com/foaf/0.1/latitude>",
             "123"
           ),
           (
             "usa",
-            "http://xmlns.com/foaf/0.1/longitude",
+            "<http://xmlns.com/foaf/0.1/longitude>",
             "456"
           ),
           (
             "spain",
-            "http://xmlns.com/foaf/0.1/latitude",
+            "<http://xmlns.com/foaf/0.1/latitude>",
             "789"
           ),
           (
             "spain",
-            "http://xmlns.com/foaf/0.1/longitude",
+            "<http://xmlns.com/foaf/0.1/longitude>",
             "901"
           )
         ).toDF("s", "p", "o")
@@ -6355,22 +6370,22 @@ class CompilerSpec
         val df = List(
           (
             "usa",
-            "http://xmlns.com/foaf/0.1/latitude",
+            "<http://xmlns.com/foaf/0.1/latitude>",
             "123"
           ),
           (
             "usa",
-            "http://xmlns.com/foaf/0.1/longitude",
+            "<http://xmlns.com/foaf/0.1/longitude>",
             "456"
           ),
           (
             "spain",
-            "http://xmlns.com/foaf/0.1/latitude",
+            "<http://xmlns.com/foaf/0.1/latitude>",
             "789"
           ),
           (
             "spain",
-            "http://xmlns.com/foaf/0.1/longitude",
+            "<http://xmlns.com/foaf/0.1/longitude>",
             "901"
           )
         ).toDF("s", "p", "o")
@@ -6450,13 +6465,13 @@ class CompilerSpec
       "used on string literals with a specified length" in {
         val df = List(
           (
-            "http://uri.com/subject/#a1",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/#a1>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice"
           ),
           (
-            "http://uri.com/subject/#a3",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/#a3>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alison"
           )
         ).toDF("s", "p", "o")
@@ -6484,13 +6499,13 @@ class CompilerSpec
       "used on string literals without a specified length" in {
         val df = List(
           (
-            "http://uri.com/subject/#a1",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/#a1>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice"
           ),
           (
-            "http://uri.com/subject/#a3",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/#a3>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alison"
           )
         ).toDF("s", "p", "o")

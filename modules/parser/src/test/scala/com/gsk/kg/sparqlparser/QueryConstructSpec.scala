@@ -158,14 +158,14 @@ class QueryConstructSpec extends AnyFlatSpec with TestUtils with TestConfig {
                       Quad(
                         VARIABLE("?de"),
                         URIVAL(
-                          "http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass"
+                          "<http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass>"
                         ),
                         VARIABLE("??0"),
                         _
                       ),
                       Quad(
                         VARIABLE("??0"),
-                        URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/predClass"),
+                        URIVAL("<http://gsk-kg.rdip.gsk.com/dm/1.0/predClass>"),
                         VARIABLE("?et"),
                         _
                       )
