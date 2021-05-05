@@ -6324,13 +6324,13 @@ class CompilerSpec
       "used on string literals with a specified length" in {
         val df = List(
           (
-            "http://uri.com/subject/#a1",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/#a1>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice"
           ),
           (
-            "http://uri.com/subject/#a3",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/#a3>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alison"
           )
         ).toDF("s", "p", "o")
@@ -6358,13 +6358,13 @@ class CompilerSpec
       "used on string literals without a specified length" in {
         val df = List(
           (
-            "http://uri.com/subject/#a1",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/#a1>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice"
           ),
           (
-            "http://uri.com/subject/#a3",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://uri.com/subject/#a3>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alison"
           )
         ).toDF("s", "p", "o")
