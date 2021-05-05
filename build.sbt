@@ -125,6 +125,7 @@ lazy val `bellman-spark-engine` = project
   .settings(buildSettings)
   .settings(commonDependencies)
   .settings(compilerPlugins)
+  .settings(Test / fork := true)
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.spark"           %% "spark-sql"    % Versions("spark") % Provided,
