@@ -6397,16 +6397,17 @@ class CompilerSpec
         )
       }
 
-      // TODO: fail with concat
-      "execute and obtain expected results when complex expression" in {
+      // TODO: Un-ignore when CONCAT with multiple arguments
+      // See: https://github.com/gsk-aiops/bellman/issues/324
+      "execute and obtain expected results when complex expression" ignore {
         val df = List(
           (
-            "http://example.org/us",
+            "http://example.org/usa",
             "http://xmlns.com/foaf/0.1/latitude",
             "123"
           ),
           (
-            "http://example.org/us",
+            "http://example.org/usa",
             "http://xmlns.com/foaf/0.1/longitude",
             "456"
           ),
@@ -6430,18 +6431,16 @@ class CompilerSpec
             |WHERE {
             |  ?country foaf:latitude ?lat .
             |  ?country foaf:longitude ?long .
-            |  BIND(STRDT(CONCAT("?country=", strafter(?country, "foaf/0.1/"), "&", str(?long), "&", str(?lat)), <http://geo.org/coords>) as ?coords)
+            |  BIND(STRDT(CONCAT("country=", strafter(?country, "http://xmlns.com/foaf/0.1/"), "&long=", str(?long), "&lat=", str(?lat)), <http://geo.org/coords>) as ?coords)
             |}
             |""".stripMargin
 
         val result = Compiler.compile(df, query, config)
 
-        result.right.get.collect.length shouldEqual 4
+        result.right.get.collect.length shouldEqual 2
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"123\""),
-          Row("\"123\""),
-          Row("\"123\""),
-          Row("\"123\"")
+          Row("\"country=usa&long=123&lat=456\"^^<http://geo.org/coords>"),
+          Row("\"country=spain&long=789&lat=012\"^^<http://geo.org/coords>")
         )
       }
     }
@@ -6515,6 +6514,7 @@ class CompilerSpec
           Row("\"ison\"")
         )
       }
+    }
   }
 
   private def readNTtoDF(path: String) = {

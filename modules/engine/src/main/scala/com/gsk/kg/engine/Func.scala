@@ -196,9 +196,9 @@ object Func {
   /** Implementation of SparQL STRDT on Spark dataframes.
     * The STRDT function constructs a literal with lexical form and type as specified by the arguments.
     *
-    *  Examples:
-    *  STRDT("123", xsd:integer) ->	"123"^^<http://www.w3.org/2001/XMLSchema#integer>
-    *  STRDT("iiii", <http://example/romanNumeral>)	-> "iiii"^^<http://example/romanNumeral>
+    * Examples:
+    * STRDT("123", xsd:integer) -> "123"^^<http://www.w3.org/2001/XMLSchema#integer>
+    * STRDT("iiii", <http://example/romanNumeral>) -> "iiii"^^<http://example/romanNumeral>
     *
     * @param col
     * @param uri

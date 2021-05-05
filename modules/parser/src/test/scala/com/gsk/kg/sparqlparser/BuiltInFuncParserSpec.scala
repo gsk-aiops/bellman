@@ -150,10 +150,10 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
 
   "strdt function" should "return STRDT type" in {
     val s =
-      """(strdt (concat "?country=" (strafter ?country "foaf/0.1/") "&" (str ?long) "&" (str ?lat)) <http://geo.org/coords>)"""
+      """(strdt ?c <http://geo.org#country>)"""
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
-      case STRDT(e1, e2) =>
+      case STRDT(VARIABLE("?c"), URIVAL("http://geo.org#country")) =>
         succeed
       case _ =>
         fail

@@ -146,6 +146,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
             Node("STRAFTER", Stream(s, Leaf(f.toString)))
           case ExpressionF.STRBEFORE(s, f) =>
             Node("STRBEFORE", Stream(s, Leaf(f.toString)))
+          case ExpressionF.STRDT(s, uri) =>
+            Node("STRDT", Stream(s, Leaf(uri)))
           case ExpressionF.SUBSTR(s, pos, len) =>
             Node(
               "REGEX",
