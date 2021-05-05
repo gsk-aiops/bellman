@@ -27,6 +27,7 @@ object ExpressionF {
       extends ExpressionF[A]
   final case class STRENDS[A](s: A, f: String)       extends ExpressionF[A]
   final case class STRSTARTS[A](s: A, f: String)     extends ExpressionF[A]
+  final case class STRDT[A](s: A, uri: String)       extends ExpressionF[A]
   final case class GT[A](l: A, r: A)                 extends ExpressionF[A]
   final case class LT[A](l: A, r: A)                 extends ExpressionF[A]
   final case class GTE[A](l: A, r: A)                extends ExpressionF[A]
@@ -101,6 +102,7 @@ object ExpressionF {
         REGEX(s, pattern, flags)
       case BuiltInFunc.STRENDS(s, StringVal.STRING(f, _))   => STRENDS(s, f)
       case BuiltInFunc.STRSTARTS(s, StringVal.STRING(f, _)) => STRSTARTS(s, f)
+      case BuiltInFunc.STRDT(s, StringVal.URIVAL(uri))      => STRDT(s, uri)
       case Aggregate.COUNT(e)                               => COUNT(e)
       case Aggregate.SUM(e)                                 => SUM(e)
       case Aggregate.MIN(e)                                 => MIN(e)
@@ -143,6 +145,11 @@ object ExpressionF {
         BuiltInFunc.STRSTARTS(
           s.asInstanceOf[StringLike],
           f.asInstanceOf[StringLike]
+        )
+      case STRDT(s, uri) =>
+        BuiltInFunc.STRDT(
+          s,
+          StringVal.URIVAL(uri)
         )
       case URI(s) => BuiltInFunc.URI(s.asInstanceOf[StringLike])
       case CONCAT(appendTo, append) =>
@@ -220,6 +227,7 @@ object ExpressionF {
         case STR(s)                   => s.pure[M]
         case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
         case STRBEFORE(s, f)          => Func.strbefore(s, f).pure[M]
+        case STRDT(e, uri)            => Func.strdt(e, uri).pure[M]
         case SUBSTR(s, pos, len)      => Func.substr(s, pos, len).pure[M]
         case ISBLANK(s)               => Func.isBlank(s).pure[M]
         case REPLACE(st, pattern, by, flags) =>
