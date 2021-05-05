@@ -148,6 +148,18 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     }
   }
 
+  "strdt function" should "return STRDT type" in {
+    val s =
+      """(strdt ?c <http://geo.org#country>)"""
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case STRDT(VARIABLE("?c"), URIVAL("http://geo.org#country")) =>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
   "Regex parser" should "return REGEX type" in {
     val p =
       fastparse.parse("""(regex ?d "Hello")""", BuiltInFuncParser.regexParen(_))
