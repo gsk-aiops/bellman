@@ -6325,22 +6325,22 @@ class CompilerSpec
         val df = List(
           (
             "usa",
-            "http://xmlns.com/foaf/0.1/latitude",
+            "<http://xmlns.com/foaf/0.1/latitude>",
             "123"
           ),
           (
             "usa",
-            "http://xmlns.com/foaf/0.1/longitude",
+            "<http://xmlns.com/foaf/0.1/longitude>",
             "456"
           ),
           (
             "spain",
-            "http://xmlns.com/foaf/0.1/latitude",
+            "<http://xmlns.com/foaf/0.1/latitude>",
             "789"
           ),
           (
             "spain",
-            "http://xmlns.com/foaf/0.1/longitude",
+            "<http://xmlns.com/foaf/0.1/longitude>",
             "901"
           )
         ).toDF("s", "p", "o")
@@ -6370,22 +6370,22 @@ class CompilerSpec
         val df = List(
           (
             "usa",
-            "http://xmlns.com/foaf/0.1/latitude",
+            "<http://xmlns.com/foaf/0.1/latitude>",
             "123"
           ),
           (
             "usa",
-            "http://xmlns.com/foaf/0.1/longitude",
+            "<http://xmlns.com/foaf/0.1/longitude>",
             "456"
           ),
           (
             "spain",
-            "http://xmlns.com/foaf/0.1/latitude",
+            "<http://xmlns.com/foaf/0.1/latitude>",
             "789"
           ),
           (
             "spain",
-            "http://xmlns.com/foaf/0.1/longitude",
+            "<http://xmlns.com/foaf/0.1/longitude>",
             "901"
           )
         ).toDF("s", "p", "o")
