@@ -19,6 +19,7 @@ object BuiltInFuncParser {
   def regex[_: P]: P[Unit]     = P("regex")
   def strends[_: P]: P[Unit]   = P("strends")
   def strstarts[_: P]: P[Unit] = P("strstarts")
+  def substr[_: P]: P[Unit]    = P("substr")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
@@ -74,6 +75,16 @@ object BuiltInFuncParser {
     P("(" ~ strstarts ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
       .map(f => STRSTARTS(f._1, f._2))
 
+  def substrParen[_: P]: P[SUBSTR] =
+    P("(" ~ substr ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
+      .map(f => SUBSTR(f._1, f._2))
+
+  def substrWithLengthParen[_: P]: P[SUBSTR] =
+    P(
+      "(" ~ substr ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")"
+    )
+      .map(f => SUBSTR(f._1, f._2, Option(f._3)))
+
   def funcPatterns[_: P]: P[StringLike] =
     P(
       uriParen
@@ -83,6 +94,8 @@ object BuiltInFuncParser {
         | strbeforeParen
         | strendsParen
         | strstartsParen
+        | substrParen
+        | substrWithLengthParen
         | isBlankParen
         | replaceParen
         | replaceWithFlagsParen

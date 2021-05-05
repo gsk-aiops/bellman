@@ -89,6 +89,30 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     }
   }
 
+  "substr function without length" should "return SUBSTR type" in {
+    val s = "(substr ?d 1)"
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case SUBSTR(VARIABLE(s1: String), NUM(s2: String), None) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "substr function with length" should "return SUBSTR type" in {
+    val s = "(substr ?d 1 1)"
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case SUBSTR(
+            VARIABLE(s1: String),
+            NUM(s2: String),
+            Some(NUM(s3: String))
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
   "Deeply nested strbefore function" should "return nested STRBEFORE type" in {
     val s = "(uri (strbefore (concat (str ?d) (str ?src)) \"#\"))"
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))

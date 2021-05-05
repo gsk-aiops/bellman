@@ -39,7 +39,9 @@ object ExpressionF {
   final case class STR[A](s: A)                      extends ExpressionF[A]
   final case class STRAFTER[A](s: A, f: String)      extends ExpressionF[A]
   final case class STRBEFORE[A](s: A, f: String)     extends ExpressionF[A]
-  final case class ISBLANK[A](s: A)                  extends ExpressionF[A]
+  final case class SUBSTR[A](s: A, pos: Int, len: Option[Int])
+      extends ExpressionF[A]
+  final case class ISBLANK[A](s: A) extends ExpressionF[A]
   final case class REPLACE[A](st: A, pattern: String, by: String, flags: String)
       extends ExpressionF[A]
   final case class COUNT[A](e: A)  extends ExpressionF[A]
@@ -75,7 +77,15 @@ object ExpressionF {
       case BuiltInFunc.STR(s)                               => STR(s)
       case BuiltInFunc.STRAFTER(s, StringVal.STRING(f, _))  => STRAFTER(s, f)
       case BuiltInFunc.STRBEFORE(s, StringVal.STRING(f, _)) => STRBEFORE(s, f)
-      case BuiltInFunc.ISBLANK(s)                           => ISBLANK(s)
+      case BuiltInFunc.SUBSTR(
+            s,
+            StringVal.NUM(pos),
+            Some(StringVal.NUM(len))
+          ) =>
+        SUBSTR(s, pos.toInt, Some(len.toInt))
+      case BuiltInFunc.SUBSTR(s, StringVal.NUM(pos), None) =>
+        SUBSTR(s, pos.toInt, None)
+      case BuiltInFunc.ISBLANK(s) => ISBLANK(s)
       case BuiltInFunc.REPLACE(
             st,
             StringVal.STRING(pattern, _),
@@ -151,6 +161,12 @@ object ExpressionF {
           s.asInstanceOf[StringLike],
           f.asInstanceOf[StringLike]
         )
+      case SUBSTR(s, pos, len) =>
+        BuiltInFunc.SUBSTR(
+          s.asInstanceOf[StringLike],
+          pos.asInstanceOf[StringLike],
+          len.asInstanceOf[Option[StringLike]]
+        )
       case ISBLANK(s) => BuiltInFunc.ISBLANK(s.asInstanceOf[StringLike])
       case REPLACE(st, pattern, by, flags) =>
         BuiltInFunc.REPLACE(
@@ -204,6 +220,7 @@ object ExpressionF {
         case STR(s)                   => s.pure[M]
         case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
         case STRBEFORE(s, f)          => Func.strbefore(s, f).pure[M]
+        case SUBSTR(s, pos, len)      => Func.substr(s, pos, len).pure[M]
         case ISBLANK(s)               => Func.isBlank(s).pure[M]
         case REPLACE(st, pattern, by, flags) =>
           Func.replace(st, pattern, by, flags).pure[M]

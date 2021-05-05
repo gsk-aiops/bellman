@@ -4674,7 +4674,8 @@ class CompilerSpec
           )
         ).toDF("s", "p", "o")
 
-        val query = """
+        val query =
+          """
           SELECT ?a
           WHERE {
             ?a <http://uri.com/predicate> <http://uri.com/object>
@@ -4720,7 +4721,8 @@ class CompilerSpec
           )
         ).toDF("s", "p", "o")
 
-        val query = """
+        val query =
+          """
           SELECT ?a COUNT(?a)
           WHERE {
             ?a <http://uri.com/predicate> <http://uri.com/object>
@@ -4746,7 +4748,8 @@ class CompilerSpec
           ("http://uri.com/subject/a3", "5", "http://uri.com/object")
         ).toDF("s", "p", "o")
 
-        val query = """
+        val query =
+          """
           SELECT ?a AVG(?b)
           WHERE {
             ?a ?b <http://uri.com/object>
@@ -4992,7 +4995,8 @@ class CompilerSpec
           ("http://uri.com/subject/a3", "1", "http://uri.com/object")
         ).toDF("s", "p", "o")
 
-        val query = """
+        val query =
+          """
           SELECT ?a SUM(?b)
           WHERE {
             ?a ?b <http://uri.com/object>
@@ -5038,7 +5042,8 @@ class CompilerSpec
           )
         ).toDF("s", "p", "o")
 
-        val query = """
+        val query =
+          """
           SELECT ?a SAMPLE(?b)
           WHERE {
             ?a ?b <http://uri.com/object>
@@ -6295,6 +6300,77 @@ class CompilerSpec
           Row("\"Alice\""),
           Row("\"Alex\""),
           Row("\"\"")
+        )
+      }
+    }
+
+    "perform SUBSTR function correctly" when {
+
+      "used on string literals with a specified length" in {
+        val df = List(
+          (
+            "http://uri.com/subject/#a1",
+            "http://xmlns.com/foaf/0.1/name",
+            "Alice"
+          ),
+          (
+            "http://uri.com/subject/#a3",
+            "http://xmlns.com/foaf/0.1/name",
+            "Alison"
+          )
+        ).toDF("s", "p", "o")
+
+        val query =
+          """
+          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+          CONSTRUCT {
+            ?x foaf:subName ?subName .
+          }
+          WHERE{
+            ?x foaf:name ?name .
+            BIND(SUBSTR(?name, 1, 1) as ?subName) .
+          }
+          """
+
+        val result = Compiler.compile(df, query, config)
+
+        result.right.get.drop("s", "p").collect.toSet shouldEqual Set(
+          Row("\"A\""),
+          Row("\"A\"")
+        )
+      }
+
+      "used on string literals without a specified length" in {
+        val df = List(
+          (
+            "http://uri.com/subject/#a1",
+            "http://xmlns.com/foaf/0.1/name",
+            "Alice"
+          ),
+          (
+            "http://uri.com/subject/#a3",
+            "http://xmlns.com/foaf/0.1/name",
+            "Alison"
+          )
+        ).toDF("s", "p", "o")
+
+        val query =
+          """
+          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+          CONSTRUCT {
+            ?x foaf:subName ?subName .
+          }
+          WHERE{
+            ?x foaf:name ?name .
+            BIND(SUBSTR(?name, 3) as ?subName) .
+          }
+          """
+
+        val result = Compiler.compile(df, query, config)
+
+        result.right.get.drop("s", "p").collect.toSet shouldEqual Set(
+          Row("\"ice\""),
+          Row("\"ison\"")
         )
       }
     }
