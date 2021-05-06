@@ -183,8 +183,6 @@ object Func {
 
   /** Implementation of SparQL STRLEN on Spark dataframes.
     *
-    * TODO (pepegar): Implement argument compatibility checks
-    *
     * @see [[https://www.w3.org/TR/sparql11-query/#func-strlen]]
     * @param col
     * @param str
