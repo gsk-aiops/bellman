@@ -160,6 +160,19 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     }
   }
 
+  "strlen function" should "return STRLEN type" in {
+    val s =
+      """(strlen ?c)"""
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case STRLEN(VARIABLE("?c")) =>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+
   "Regex parser" should "return REGEX type" in {
     val p =
       fastparse.parse("""(regex ?d "Hello")""", BuiltInFuncParser.regexParen(_))

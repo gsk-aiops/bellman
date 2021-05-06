@@ -181,6 +181,18 @@ object Func {
   def strends(col: Column, str: String): Column =
     col.endsWith(str)
 
+  /** Implementation of SparQL STRLEN on Spark dataframes.
+    *
+    * TODO (pepegar): Implement argument compatibility checks
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-strlen]]
+    * @param col
+    * @param str
+    * @return
+    */
+  def strlen(col: Column): Column =
+    length(col)
+
   /** Implementation of SparQL STRSTARTS on Spark dataframes.
     *
     * TODO (pepegar): Implement argument compatibility checks

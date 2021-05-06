@@ -21,6 +21,7 @@ object BuiltInFuncParser {
   def strstarts[_: P]: P[Unit] = P("strstarts")
   def strdt[_: P]: P[Unit]     = P("strdt")
   def substr[_: P]: P[Unit]    = P("substr")
+  def strlen[_: P]: P[Unit]    = P("strlen")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
@@ -90,6 +91,10 @@ object BuiltInFuncParser {
     )
       .map(f => SUBSTR(f._1, f._2, Option(f._3)))
 
+  def strlenParen[_: P]: P[STRLEN] =
+    P("(" ~ strlen ~ ExpressionParser.parser ~ ")")
+      .map(f => STRLEN(f))
+
   def funcPatterns[_: P]: P[StringLike] =
     P(
       uriParen
@@ -107,6 +112,7 @@ object BuiltInFuncParser {
         | regexParen
         | regexWithFlagsParen
         | strdtParen
+        | strlenParen
     )
 //      | StringValParser.string
 //      | StringValParser.variable)

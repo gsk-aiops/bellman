@@ -41,6 +41,7 @@ trait ExpressionArbitraries extends CommonGenerators {
       .mapN(BuiltInFunc.STRAFTER(_, _)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
       .mapN(BuiltInFunc.STRBEFORE(_, _)),
+    Gen.lzy(expressionGenerator).map(BuiltInFunc.STRLEN(_)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
       .mapN(BuiltInFunc.SUBSTR(_, _)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))

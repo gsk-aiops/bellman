@@ -839,6 +839,22 @@ class FuncSpec
     }
   }
 
+  "Func.strlen" should {
+    "return the length of a string value" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "hello world",
+        "goodbye world"
+      ).toDF("a")
+
+      df.select(Func.strlen(df("a"))).collect() shouldEqual Array(
+        Row(11),
+        Row(13)
+      )
+    }
+  }
+
   "Func.sample" should {
 
     "return an arbitrary value from the column" in {
