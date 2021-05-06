@@ -224,7 +224,7 @@ object ExpressionF {
         case NEGATE(s)                => Func.negate(s).pure[M]
         case URI(s)                   => Func.iri(s).pure[M]
         case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]
-        case STR(s)                   => s.pure[M]
+        case STR(s)                   => Func.str(s).pure[M]
         case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
         case STRBEFORE(s, f)          => Func.strbefore(s, f).pure[M]
         case STRDT(e, uri)            => Func.strdt(e, uri).pure[M]

@@ -69,6 +69,23 @@ object Func {
   def negate(s: Column): Column =
     not(s)
 
+  /** Returns the string representation of a column.  It only modifies the data in the column if
+    * it contains an URI wrapped in angle brackets, in which case it removes it.
+    * @param col
+    * @return
+    */
+  def str(col: Column): Column =
+    when(col.startsWith("<") && col.endsWith(">"), rtrim(ltrim(col, "<"), ">"))
+      .otherwise(col)
+
+  /** Returns the string representation of a column.  It only modifies the data in the column if
+    * it contains an URI wrapped in angle brackets, in which case it removes it.
+    * @param col
+    * @return
+    */
+  def str(value: String): Column =
+    str(lit(value))
+
   /** Returns a column with 'true' or 'false' rows indicating whether a column has blank nodes
     * @param col
     * @return
