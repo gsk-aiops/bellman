@@ -185,7 +185,6 @@ object Func {
     *
     * @see [[https://www.w3.org/TR/sparql11-query/#func-strlen]]
     * @param col
-    * @param str
     * @return
     */
   def strlen(col: Column): Column =
