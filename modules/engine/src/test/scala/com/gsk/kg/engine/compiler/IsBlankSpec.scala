@@ -25,25 +25,25 @@ class IsBlankSpec
       val df: DataFrame = List(
         (
           "_:a",
-          "http://www.w3.org/2000/10/annotation-ns#annotates",
-          "http://www.w3.org/TR/rdf-sparql-query/",
+          "<http://www.w3.org/2000/10/annotation-ns#annotates>",
+          "<http://www.w3.org/TR/rdf-sparql-query/>",
           ""
         ),
         (
           "_:a",
-          "http://purl.org/dc/elements/1.1/creator",
+          "<http://purl.org/dc/elements/1.1/creator>",
           "Alice B. Toeclips",
           ""
         ),
         (
           "_:b",
-          "http://www.w3.org/2000/10/annotation-ns#annotates",
-          "http://www.w3.org/TR/rdf-sparql-query/",
+          "<http://www.w3.org/2000/10/annotation-ns#annotates>",
+          "<http://www.w3.org/TR/rdf-sparql-query/>",
           ""
         ),
-        ("_:b", "http://purl.org/dc/elements/1.1/creator", "_:c", ""),
-        ("_:c", "http://xmlns.com/foaf/0.1/given", "Bob", ""),
-        ("_:c", "http://xmlns.com/foaf/0.1/family", "Smith", "")
+        ("_:b", "<http://purl.org/dc/elements/1.1/creator>", "_:c", ""),
+        ("_:c", "<http://xmlns.com/foaf/0.1/given>", "Bob", ""),
+        ("_:c", "<http://xmlns.com/foaf/0.1/family>", "Smith", "")
       ).toDF("s", "p", "o", "g")
 
       val query = {

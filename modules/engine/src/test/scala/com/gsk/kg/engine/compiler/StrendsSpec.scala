@@ -22,23 +22,23 @@ class StrendsSpec
     "used on string literals" in {
       val df = List(
         (
-          "http://uri.com/subject/a1",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://uri.com/subject/a1>",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Alice"
         ),
         (
-          "http://uri.com/subject/a2",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://uri.com/subject/a2>",
+          "<http://xmlns.com/foaf/0.1/name>",
           "alice"
         ),
         (
-          "http://uri.com/subject/a5",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://uri.com/subject/a5>",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Alex"
         ),
         (
-          "http://uri.com/subject/a6",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://uri.com/subject/a6>",
+          "<http://xmlns.com/foaf/0.1/name>",
           "alex"
         )
       ).toDF("s", "p", "o")

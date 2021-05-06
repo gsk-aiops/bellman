@@ -23,9 +23,9 @@ class DistinctSpec
     "execute and obtain expected results" in {
 
       val df: DataFrame = List(
-        ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
-        ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
-        ("_:c", "http://xmlns.com/foaf/0.1/name", "Alice", "")
+        ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Alice", ""),
+        ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", ""),
+        ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Alice", "")
       ).toDF("s", "p", "o", "g")
 
       val query =

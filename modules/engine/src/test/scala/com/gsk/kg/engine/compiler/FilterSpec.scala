@@ -26,10 +26,10 @@ class FilterSpec
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
-          ("_:", "http://xmlns.com/foaf/0.1/name", "Blank", "")
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", ""),
+          ("_:", "<http://xmlns.com/foaf/0.1/name>", "Blank", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -55,10 +55,10 @@ class FilterSpec
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
-          ("a:", "http://xmlns.com/foaf/0.1/name", "Blank", "")
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", ""),
+          ("a:", "<http://xmlns.com/foaf/0.1/name>", "Blank", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -84,10 +84,10 @@ class FilterSpec
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "_:b", ""),
-          ("foaf:c", "http://xmlns.com/foaf/0.1/name", "_:d", ""),
-          ("_:e", "http://xmlns.com/foaf/0.1/name", "foaf:f", "")
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "_:b", ""),
+          ("foaf:c", "<http://xmlns.com/foaf/0.1/name>", "_:d", ""),
+          ("_:e", "<http://xmlns.com/foaf/0.1/name>", "foaf:f", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -116,62 +116,62 @@ class FilterSpec
 
         val df: DataFrame = List(
           (
-            "http://example.org/Network",
-            "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-            "http://example.org/Main",
+            "<http://example.org/Network>",
+            "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+            "<http://example.org/Main>",
             ""
           ),
           (
-            "http://example.org/ATM",
-            "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-            "http://example.org/Network",
+            "<http://example.org/ATM>",
+            "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+            "<http://example.org/Network>",
             ""
           ),
           (
-            "http://example.org/ARPANET",
-            "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-            "http://example.org/Network",
+            "<http://example.org/ARPANET>",
+            "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+            "<http://example.org/Network>",
             ""
           ),
           (
-            "http://example.org/Software",
-            "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-            "http://example.org/Main",
+            "<http://example.org/Software>",
+            "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+            "<http://example.org/Main>",
             ""
           ),
           (
             "_:Linux",
-            "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-            "http://example.org/Software",
+            "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+            "<http://example.org/Software>",
             ""
           ),
           (
-            "http://example.org/Windows",
-            "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-            "http://example.org/Software",
+            "<http://example.org/Windows>",
+            "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+            "<http://example.org/Software>",
             ""
           ),
           (
-            "http://example.org/XP",
-            "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-            "http://example.org/Windows",
+            "<http://example.org/XP>",
+            "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+            "<http://example.org/Windows>",
             ""
           ),
           (
-            "http://example.org/Win7",
-            "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-            "http://example.org/Windows",
+            "<http://example.org/Win7>",
+            "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+            "<http://example.org/Windows>",
             ""
           ),
           (
-            "http://example.org/Win8",
-            "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-            "http://example.org/Windows",
+            "<http://example.org/Win8>",
+            "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
+            "<http://example.org/Windows>",
             ""
           ),
           (
-            "http://example.org/Ubuntu20",
-            "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+            "<http://example.org/Ubuntu20>",
+            "<http://www.w3.org/2000/01/rdf-schema#subClassOf>",
             "_:Linux",
             ""
           )
@@ -202,22 +202,22 @@ class FilterSpec
       "execute and obtain expected results when complex filter" ignore {
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Alice", ""),
           (
             "_:a",
-            "http://example.org/stats#hits",
+            "<http://example.org/stats#hits>",
             "\"2349\"^^xsd:integer",
             ""
           ),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
+          ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", ""),
           (
             "_:b",
-            "http://example.org/stats#hits",
+            "<http://example.org/stats#hits>",
             "\"105\"^^xsd:integer",
             ""
           ),
-          ("_:c", "http://xmlns.com/foaf/0.1/name", "Eve"),
-          ("_:c", "http://example.org/stats#hits", "\"181\"^^xsd:integer", "")
+          ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Eve"),
+          ("_:c", "<http://example.org/stats#hits>", "\"181\"^^xsd:integer", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -264,14 +264,14 @@ class FilterSpec
 
         val df: DataFrame = List(
           ("a", "b", "c", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
-          ("_:", "http://xmlns.com/foaf/0.1/name", "Blank", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", ""),
+          ("_:", "<http://xmlns.com/foaf/0.1/name>", "Blank", ""),
           (
             "_:",
-            "http://xmlns.com/foaf/0.1/name",
-            "http://test-uri/blank",
+            "<http://xmlns.com/foaf/0.1/name>",
+            "<http://test-uri/blank>",
             ""
           )
         ).toDF("s", "p", "o", "g")
@@ -297,10 +297,10 @@ class FilterSpec
       "execute and obtain expected results when there is AND condition" in {
 
         val df: DataFrame = List(
-          ("team", "http://xmlns.com/foaf/0.1/name", "_:", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-          ("_:", "http://xmlns.com/foaf/0.1/name", "_:", ""),
-          ("_:", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "_:", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+          ("_:", "<http://xmlns.com/foaf/0.1/name>", "_:", ""),
+          ("_:", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -327,10 +327,10 @@ class FilterSpec
       "execute and obtain expected results when there is OR condition" in {
 
         val df: DataFrame = List(
-          ("team", "http://xmlns.com/foaf/0.1/name", "_:", ""),
-          ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-          ("_:", "http://xmlns.com/foaf/0.1/name", "_:", ""),
-          ("_:", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "_:", ""),
+          ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+          ("_:", "<http://xmlns.com/foaf/0.1/name>", "_:", ""),
+          ("_:", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -362,8 +362,8 @@ class FilterSpec
       "execute on simple literal" in {
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Perico", "")
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Henry", ""),
+          ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Perico", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -393,13 +393,13 @@ class FilterSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Henry\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Perico\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           )
@@ -430,8 +430,8 @@ class FilterSpec
       "execute on numbers" in {
 
         val df: DataFrame = List(
-          ("_:Perico", "http://xmlns.com/foaf/0.1/age", 15, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ("_:Perico", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -458,8 +458,8 @@ class FilterSpec
       "execute on booleans" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -486,24 +486,24 @@ class FilterSpec
       "execute on datetimes" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-          ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+          ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
           (
             "_:Martha",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Ana",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Henry",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           )
@@ -538,8 +538,8 @@ class FilterSpec
       "execute on simple literal" in {
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Henry", ""),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Perico", "")
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Henry", ""),
+          ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Perico", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -569,13 +569,13 @@ class FilterSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Henry\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Perico\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           )
@@ -606,8 +606,8 @@ class FilterSpec
       "execute on numbers" in {
 
         val df: DataFrame = List(
-          ("_:Perico", "http://xmlns.com/foaf/0.1/age", 15, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ("_:Perico", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -634,8 +634,8 @@ class FilterSpec
       "execute on booleans" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -662,24 +662,24 @@ class FilterSpec
       "execute on dateTimes" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-          ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+          ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
           (
             "_:Martha",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Ana",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Henry",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           )
@@ -713,8 +713,8 @@ class FilterSpec
       "execute on simple literal" in {
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Charles", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -744,12 +744,12 @@ class FilterSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>"
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>"
           )
         ).toDF("s", "p", "o")
@@ -779,9 +779,9 @@ class FilterSpec
       "execute on numbers" in {
 
         val df: DataFrame = List(
-          ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
-          ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ("_:Bob", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+          ("_:Alice", "<http://xmlns.com/foaf/0.1/age>", 18, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -808,8 +808,8 @@ class FilterSpec
       "execute on booleans" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -835,24 +835,24 @@ class FilterSpec
       "execute on dateTimes" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-          ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+          ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
           (
             "_:Martha",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Ana",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Henry",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           )
@@ -887,8 +887,8 @@ class FilterSpec
       "execute on simple literal" in {
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Charles", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -918,13 +918,13 @@ class FilterSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           )
@@ -955,9 +955,9 @@ class FilterSpec
       "execute on numbers" in {
 
         val df: DataFrame = List(
-          ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
-          ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ("_:Bob", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+          ("_:Alice", "<http://xmlns.com/foaf/0.1/age>", 18, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -984,8 +984,8 @@ class FilterSpec
       "execute on booleans" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -1013,24 +1013,24 @@ class FilterSpec
       "execute on dateTimes" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-          ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+          ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
           (
             "_:Martha",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Ana",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Henry",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           )
@@ -1066,9 +1066,9 @@ class FilterSpec
       "execute on simple literal" in {
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
-          ("_:c", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", ""),
+          ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Charles", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -1099,19 +1099,19 @@ class FilterSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Bob\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           ),
           (
             "_:c",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           )
@@ -1143,9 +1143,9 @@ class FilterSpec
       "execute on numbers" in {
 
         val df: DataFrame = List(
-          ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
-          ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ("_:Bob", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+          ("_:Alice", "<http://xmlns.com/foaf/0.1/age>", 18, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -1173,8 +1173,8 @@ class FilterSpec
       "execute on booleans" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -1201,24 +1201,24 @@ class FilterSpec
       "execute on dateTimes" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-          ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+          ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
           (
             "_:Martha",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Ana",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Henry",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           )
@@ -1254,9 +1254,9 @@ class FilterSpec
       "execute on simple literal" in {
 
         val df: DataFrame = List(
-          ("_:a", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-          ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
-          ("_:c", "http://xmlns.com/foaf/0.1/name", "Charles", "")
+          ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+          ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", ""),
+          ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Charles", "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -1287,19 +1287,19 @@ class FilterSpec
         val df: DataFrame = List(
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Anthony\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Bob\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           ),
           (
             "_:c",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "\"Charles\"^^<http://www.w3.org/2001/XMLSchema#string>",
             ""
           )
@@ -1331,9 +1331,9 @@ class FilterSpec
       "execute on numbers" in {
 
         val df: DataFrame = List(
-          ("_:Bob", "http://xmlns.com/foaf/0.1/age", 15, ""),
-          ("_:Alice", "http://xmlns.com/foaf/0.1/age", 18, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/age", 21, "")
+          ("_:Bob", "<http://xmlns.com/foaf/0.1/age>", 15, ""),
+          ("_:Alice", "<http://xmlns.com/foaf/0.1/age>", 18, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/age>", 21, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -1361,8 +1361,8 @@ class FilterSpec
       "execute on booleans" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", true, ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", false, "")
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", true, ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", false, "")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -1391,24 +1391,24 @@ class FilterSpec
       "execute on dateTimes" in {
 
         val df: DataFrame = List(
-          ("_:Martha", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
-          ("_:Henry", "http://xmlns.com/foaf/0.1/isFemale", "false", ""),
-          ("_:Ana", "http://xmlns.com/foaf/0.1/isFemale", "true", ""),
+          ("_:Martha", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
+          ("_:Henry", "<http://xmlns.com/foaf/0.1/isFemale>", "false", ""),
+          ("_:Ana", "<http://xmlns.com/foaf/0.1/isFemale>", "true", ""),
           (
             "_:Martha",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Ana",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"2000-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           ),
           (
             "_:Henry",
-            "http://xmlns.com/foaf/0.1/birthDay",
+            "<http://xmlns.com/foaf/0.1/birthDay>",
             """"1990-10-10T10:10:10.000"^^xsd:dateTime""",
             ""
           )

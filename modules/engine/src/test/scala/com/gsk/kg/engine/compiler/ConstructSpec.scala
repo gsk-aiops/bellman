@@ -21,11 +21,11 @@ class ConstructSpec
   val dfList = List(
     (
       "test",
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://id.gsk.com/dm/1.0/Document",
+      "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+      "<http://id.gsk.com/dm/1.0/Document>",
       ""
     ),
-    ("test", "http://id.gsk.com/dm/1.0/docSource", "source", "")
+    ("test", "<http://id.gsk.com/dm/1.0/docSource>", "source", "")
   )
 
   "perform with CONSTRUCT statement" should {
@@ -61,13 +61,13 @@ class ConstructSpec
       val positive = List(
         (
           "doesmatch",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://id.gsk.com/dm/1.0/Document",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://id.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
           "doesmatchaswell",
-          "http://id.gsk.com/dm/1.0/docSource",
+          "<http://id.gsk.com/dm/1.0/docSource>",
           "potato",
           ""
         )
@@ -116,13 +116,13 @@ class ConstructSpec
       val negative = List(
         (
           "doesntmatch",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://id.gsk.com/dm/1.0/Document",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://id.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
           "doesntmatcheither",
-          "http://id.gsk.com/dm/1.0/docSource",
+          "<http://id.gsk.com/dm/1.0/docSource>",
           "potato",
           ""
         )
@@ -170,39 +170,39 @@ class ConstructSpec
 
       val df: DataFrame = List(
         (
-          "http://potato.com/b",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/b>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         ),
         (
-          "http://potato.com/c",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/c>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
-          "http://potato.com/c",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/c>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         ),
         (
-          "http://potato.com/d",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/d>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         ),
         (
-          "http://potato.com/b",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/b>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
-          "http://potato.com/d",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/d>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         ("negative", "negative", "negative", "")
@@ -264,39 +264,39 @@ class ConstructSpec
 
       val df: DataFrame = List(
         (
-          "http://potato.com/b",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/b>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
-          "http://potato.com/c",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/c>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
-          "http://potato.com/b",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/b>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         ),
         (
-          "http://potato.com/d",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/d>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
-          "http://potato.com/c",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/c>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         ),
         (
-          "http://potato.com/d",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/d>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         ),
         ("negative", "negative", "negative", "")
@@ -339,39 +339,39 @@ class ConstructSpec
 
       val df: DataFrame = List(
         (
-          "http://potato.com/b",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/b>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
-          "http://potato.com/c",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/c>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
-          "http://potato.com/b",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/b>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         ),
         (
-          "http://potato.com/d",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/d>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
-          "http://potato.com/c",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/c>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         ),
         (
-          "http://potato.com/d",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/d>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         )
       ).toDF("s", "p", "o", "g")
@@ -428,39 +428,39 @@ class ConstructSpec
 
       val df: DataFrame = List(
         (
-          "http://potato.com/b",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/b>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
-          "http://potato.com/c",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/c>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
-          "http://potato.com/b",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/b>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         ),
         (
-          "http://potato.com/d",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/Document",
+          "<http://potato.com/d>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>",
           ""
         ),
         (
-          "http://potato.com/c",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/c>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         ),
         (
-          "http://potato.com/d",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/docSource",
-          "http://thesour.ce",
+          "<http://potato.com/d>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
+          "<http://thesour.ce>",
           ""
         )
       ).toDF("s", "p", "o", "g")

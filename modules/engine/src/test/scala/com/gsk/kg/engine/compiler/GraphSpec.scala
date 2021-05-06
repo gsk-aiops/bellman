@@ -27,42 +27,42 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
             ""
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -96,42 +96,42 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
             ""
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -170,42 +170,42 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
             ""
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -247,61 +247,61 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
             ""
           ),
           (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/charles>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Charles Hacker",
             ""
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           ),
           // Charles graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@work.example.org>",
+            "<http://example.org/charles>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -339,42 +339,42 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
             ""
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@work.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@work.example.org>",
+            "<http://example.org/bob>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -409,42 +409,42 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
             ""
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:b",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@work.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@work.example.org>",
+            "<http://example.org/bob>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -477,61 +477,61 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
             ""
           ),
           (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/charles>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Charles Hacker",
             ""
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           ),
           // Charles graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@work.example.org>",
+            "<http://example.org/charles>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -567,61 +567,61 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
             ""
           ),
           (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/charles>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Charles Hacker",
             ""
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           ),
           // Charles graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@work.example.org>",
+            "<http://example.org/charles>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -661,28 +661,28 @@ class GraphSpec
           // Default graph - Alice
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Named graph - Bob
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -718,41 +718,41 @@ class GraphSpec
           // Default graph - Alice
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Default graph - Charles
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@oldcorp.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@oldcorp.example.org>",
+            "<http://example.org/charles>"
           ),
           // Named graph - Bob
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -788,41 +788,41 @@ class GraphSpec
           // Default graph - Alice
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Default graph - Charles
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@oldcorp.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@oldcorp.example.org>",
+            "<http://example.org/charles>"
           ),
           // Named graph - Bob
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -858,41 +858,41 @@ class GraphSpec
           // Default graph - Alice
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Default graph - Charles
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@oldcorp.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@oldcorp.example.org>",
+            "<http://example.org/charles>"
           ),
           // Named graph - Bob
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -930,41 +930,41 @@ class GraphSpec
           // Default graph - Alice
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Default graph - Charles
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@oldcorp.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@oldcorp.example.org>",
+            "<http://example.org/charles>"
           ),
           // Named graph - Bob
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -1005,61 +1005,61 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/charles>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Charles Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           ),
           // Charles graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@work.example.org>",
+            "<http://example.org/charles>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -1109,61 +1109,61 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/charles>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Charles Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           ),
           // Charles graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@work.example.org>",
+            "<http://example.org/charles>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -1208,61 +1208,61 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/charles>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Charles Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           ),
           // Charles graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@work.example.org>",
+            "<http://example.org/charles>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -1307,61 +1307,61 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/charles>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Charles Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           ),
           // Charles graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@work.example.org>",
+            "<http://example.org/charles>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -1410,61 +1410,61 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/charles>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Charles Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           ),
           // Charles graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@work.example.org>",
+            "<http://example.org/charles>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -1511,61 +1511,61 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/charles>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Charles Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           ),
           // Charles graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@work.example.org>",
+            "<http://example.org/charles>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -1622,61 +1622,61 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/charles>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Charles Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           ),
           // Charles graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@work.example.org>",
+            "<http://example.org/charles>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -1745,61 +1745,61 @@ class GraphSpec
         val df: DataFrame = List(
           // Default graph
           (
-            "http://example.org/bob",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/bob>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Bob Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/alice",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/alice>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Alice Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           (
-            "http://example.org/charles",
-            "http://purl.org/dc/elements/1.1/publisher",
+            "<http://example.org/charles>",
+            "<http://purl.org/dc/elements/1.1/publisher>",
             "Charles Hacker",
-            "http://example.org/dft.ttl"
+            "<http://example.org/dft.ttl>"
           ),
           // Alice graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice",
-            "http://example.org/alice"
+            "<http://example.org/alice>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:alice@work.example.org",
-            "http://example.org/alice"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:alice@work.example.org>",
+            "<http://example.org/alice>"
           ),
           // Bob graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://example.org/bob"
+            "<http://example.org/bob>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:bob@oldcorp.example.org",
-            "http://example.org/bob"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:bob@oldcorp.example.org>",
+            "<http://example.org/bob>"
           ),
           // Charles graph
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Charles",
-            "http://example.org/charles"
+            "<http://example.org/charles>"
           ),
           (
             "_:a",
-            "http://xmlns.com/foaf/0.1/mbox",
-            "mailto:charles@work.example.org",
-            "http://example.org/charles"
+            "<http://xmlns.com/foaf/0.1/mbox>",
+            "<mailto:charles@work.example.org>",
+            "<http://example.org/charles>"
           )
         ).toDF("s", "p", "o", "g")
 

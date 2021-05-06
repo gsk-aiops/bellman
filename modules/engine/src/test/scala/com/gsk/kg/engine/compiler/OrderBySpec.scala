@@ -25,19 +25,19 @@ class OrderBySpec
       val df: DataFrame = List(
         (
           "_:a",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Alice",
           ""
         ),
         (
           "_:c",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Charlie",
           ""
         ),
         (
           "_:b",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Bob",
           ""
         )
@@ -67,19 +67,19 @@ class OrderBySpec
       val df: DataFrame = List(
         (
           "_:a",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Alice",
           ""
         ),
         (
           "_:c",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Charlie",
           ""
         ),
         (
           "_:b",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Bob",
           ""
         )
@@ -109,19 +109,19 @@ class OrderBySpec
       val df: DataFrame = List(
         (
           "_:a",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Alice",
           ""
         ),
         (
           "_:c",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Charlie",
           ""
         ),
         (
           "_:b",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Bob",
           ""
         )
@@ -151,37 +151,37 @@ class OrderBySpec
       val df: DataFrame = List(
         (
           "_:a",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "A. Alice",
           ""
         ),
         (
           "_:a",
-          "http://xmlns.com/foaf/0.1/age",
+          "<http://xmlns.com/foaf/0.1/age>",
           "10",
           ""
         ),
         (
           "_:c",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "A. Charlie",
           ""
         ),
         (
           "_:c",
-          "http://xmlns.com/foaf/0.1/age",
+          "<http://xmlns.com/foaf/0.1/age>",
           "30",
           ""
         ),
         (
           "_:b",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "A. Bob",
           ""
         ),
         (
           "_:b",
-          "http://xmlns.com/foaf/0.1/age",
+          "<http://xmlns.com/foaf/0.1/age>",
           "20",
           ""
         )
@@ -211,37 +211,37 @@ class OrderBySpec
       val df: DataFrame = List(
         (
           "_:a",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "A. Alice",
           ""
         ),
         (
           "_:a",
-          "http://xmlns.com/foaf/0.1/age",
+          "<http://xmlns.com/foaf/0.1/age>",
           "10",
           ""
         ),
         (
           "_:c",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "A. Charlie",
           ""
         ),
         (
           "_:c",
-          "http://xmlns.com/foaf/0.1/age",
+          "<http://xmlns.com/foaf/0.1/age>",
           "30",
           ""
         ),
         (
           "_:b",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://xmlns.com/foaf/0.1/name>",
           "A. Bob",
           ""
         ),
         (
           "_:b",
-          "http://xmlns.com/foaf/0.1/age",
+          "<http://xmlns.com/foaf/0.1/age>",
           "20",
           ""
         )

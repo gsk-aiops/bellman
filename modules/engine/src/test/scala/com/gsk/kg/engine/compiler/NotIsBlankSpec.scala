@@ -23,18 +23,18 @@ class NotIsBlankSpec
     "execute and obtain expected results" in {
 
       val df: DataFrame = List(
-        ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+        ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Alice", ""),
         (
           "_:a",
-          "http://xmlns.com/foaf/0.1/mbox",
-          "mailto:alice@work.example",
+          "<http://xmlns.com/foaf/0.1/mbox>",
+          "<mailto:alice@work.example>",
           ""
         ),
-        ("_:b", "http://xmlns.com/foaf/0.1/name", "_:bob", ""),
+        ("_:b", "<http://xmlns.com/foaf/0.1/name>", "_:bob", ""),
         (
           "_:b",
-          "http://xmlns.com/foaf/0.1/mbox",
-          "mailto:bob@work.example",
+          "<http://xmlns.com/foaf/0.1/mbox>",
+          "<mailto:bob@work.example>",
           ""
         )
       ).toDF("s", "p", "o", "g")

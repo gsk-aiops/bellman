@@ -25,13 +25,13 @@ class BlankNodeSpec
       val df: DataFrame = List(
         (
           "nodeA",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/predEntityClass>",
           "thisIsTheBlankNode",
           ""
         ),
         (
           "thisIsTheBlankNode",
-          "http://gsk-kg.rdip.gsk.com/dm/1.0/predClass",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/predClass>",
           "otherThingy",
           ""
         )

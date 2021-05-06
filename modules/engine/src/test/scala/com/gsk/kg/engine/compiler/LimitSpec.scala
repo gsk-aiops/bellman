@@ -25,9 +25,9 @@ class LimitSpec
 
       val df: DataFrame = List(
         ("a", "b", "c", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
       ).toDF("s", "p", "o", "g")
 
       val query =
@@ -53,9 +53,9 @@ class LimitSpec
 
       val df: DataFrame = List(
         ("a", "b", "c", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
       ).toDF("s", "p", "o", "g")
 
       val query =
@@ -78,9 +78,9 @@ class LimitSpec
 
       val df: DataFrame = List(
         ("a", "b", "c", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
       ).toDF("s", "p", "o", "g")
 
       val query =

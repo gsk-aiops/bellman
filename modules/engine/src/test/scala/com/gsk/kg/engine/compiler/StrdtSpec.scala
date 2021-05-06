@@ -23,22 +23,22 @@ class StrdtSpec
       val df = List(
         (
           "usa",
-          "http://xmlns.com/foaf/0.1/latitude",
+          "<http://xmlns.com/foaf/0.1/latitude>",
           "123"
         ),
         (
           "usa",
-          "http://xmlns.com/foaf/0.1/longitude",
+          "<http://xmlns.com/foaf/0.1/longitude>",
           "456"
         ),
         (
           "spain",
-          "http://xmlns.com/foaf/0.1/latitude",
+          "<http://xmlns.com/foaf/0.1/latitude>",
           "789"
         ),
         (
           "spain",
-          "http://xmlns.com/foaf/0.1/longitude",
+          "<http://xmlns.com/foaf/0.1/longitude>",
           "901"
         )
       ).toDF("s", "p", "o")
@@ -68,22 +68,22 @@ class StrdtSpec
       val df = List(
         (
           "usa",
-          "http://xmlns.com/foaf/0.1/latitude",
+          "<http://xmlns.com/foaf/0.1/latitude>",
           "123"
         ),
         (
           "usa",
-          "http://xmlns.com/foaf/0.1/longitude",
+          "<http://xmlns.com/foaf/0.1/longitude>",
           "456"
         ),
         (
           "spain",
-          "http://xmlns.com/foaf/0.1/latitude",
+          "<http://xmlns.com/foaf/0.1/latitude>",
           "789"
         ),
         (
           "spain",
-          "http://xmlns.com/foaf/0.1/longitude",
+          "<http://xmlns.com/foaf/0.1/longitude>",
           "901"
         )
       ).toDF("s", "p", "o")
@@ -115,23 +115,23 @@ class StrdtSpec
     "execute and obtain expected results when complex expression" ignore {
       val df = List(
         (
-          "http://example.org/usa",
-          "http://xmlns.com/foaf/0.1/latitude",
+          "<http://example.org/usa>",
+          "<http://xmlns.com/foaf/0.1/latitude>",
           "123"
         ),
         (
-          "http://example.org/usa",
-          "http://xmlns.com/foaf/0.1/longitude",
+          "<http://example.org/usa>",
+          "<http://xmlns.com/foaf/0.1/longitude>",
           "456"
         ),
         (
-          "http://example.org/spain",
-          "http://xmlns.com/foaf/0.1/latitude",
+          "<http://example.org/spain>",
+          "<http://xmlns.com/foaf/0.1/latitude>",
           "789"
         ),
         (
-          "http://example.org/spain",
-          "http://xmlns.com/foaf/0.1/latitude",
+          "<http://example.org/spain>",
+          "<http://xmlns.com/foaf/0.1/latitude>",
           "901"
         )
       ).toDF("s", "p", "o")

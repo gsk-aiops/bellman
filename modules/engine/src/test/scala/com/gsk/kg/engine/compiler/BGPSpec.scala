@@ -21,11 +21,11 @@ class BGPSpec
   val dfList = List(
     (
       "test",
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://id.gsk.com/dm/1.0/Document",
+      "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+      "<http://id.gsk.com/dm/1.0/Document>",
       ""
     ),
-    ("test", "http://id.gsk.com/dm/1.0/docSource", "source", "")
+    ("test", "<http://id.gsk.com/dm/1.0/docSource>", "source", "")
   )
 
   "perform query with BGPs" should {

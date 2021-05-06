@@ -32,11 +32,11 @@ class CompilerSpec
   val dfList = List(
     (
       "test",
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://id.gsk.com/dm/1.0/Document",
+      "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+      "<http://id.gsk.com/dm/1.0/Document>",
       ""
     ),
-    ("test", "http://id.gsk.com/dm/1.0/docSource", "source", "")
+    ("test", "<http://id.gsk.com/dm/1.0/docSource>", "source", "")
   )
 
   "Compiler" when {
@@ -46,15 +46,25 @@ class CompilerSpec
       val df: DataFrame = List(
         (
           "example",
-          "http://xmlns.com/foaf/0.1/lit",
+          "<http://xmlns.com/foaf/0.1/lit>",
           "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>",
           ""
         ),
-        ("example", "http://xmlns.com/foaf/0.1/lit", "\"0.22\"^^xsd:float", ""),
-        ("example", "http://xmlns.com/foaf/0.1/lit", "\"foo\"^^xsd:string", ""),
         (
           "example",
-          "http://xmlns.com/foaf/0.1/lit",
+          "<http://xmlns.com/foaf/0.1/lit>",
+          "\"0.22\"^^xsd:float",
+          ""
+        ),
+        (
+          "example",
+          "<http://xmlns.com/foaf/0.1/lit>",
+          "\"foo\"^^xsd:string",
+          ""
+        ),
+        (
+          "example",
+          "<http://xmlns.com/foaf/0.1/lit>",
           "\"true\"^^xsd:boolean",
           ""
         )
@@ -87,9 +97,9 @@ class CompilerSpec
 
       val df: DataFrame = List(
         ("a", "b", "c", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Anthony", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Perico", ""),
-        ("team", "http://xmlns.com/foaf/0.1/name", "Henry", "")
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Anthony", ""),
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Perico", ""),
+        ("team", "<http://xmlns.com/foaf/0.1/name>", "Henry", "")
       ).toDF("s", "p", "o", "g")
 
       val query =
@@ -177,14 +187,14 @@ class CompilerSpec
         val df: DataFrame = List(
           (
             "example",
-            "http://xmlns.com/foaf/0.1/lit",
+            "<http://xmlns.com/foaf/0.1/lit>",
             "\"5.88\"^^<http://www.w3.org/2001/XMLSchema#float>"
           ),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "\"0.22\"^^xsd:float"),
-          ("example", "http://xmlns.com/foaf/0.1/lit", "\"foo\"^^xsd:string"),
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"0.22\"^^xsd:float"),
+          ("example", "<http://xmlns.com/foaf/0.1/lit>", "\"foo\"^^xsd:string"),
           (
             "example",
-            "http://xmlns.com/foaf/0.1/lit",
+            "<http://xmlns.com/foaf/0.1/lit>",
             "\"true\"^^xsd:boolean"
           )
         ).toDF("s", "p", "o")
@@ -272,8 +282,8 @@ class CompilerSpec
       "exclude graphs when no explicit FROM" in {
 
         val df: DataFrame = List(
-          ("_:s1", "p1", "o1", "http://example.org/graph1"),
-          ("_:s2", "p2", "o2", "http://example.org/graph2")
+          ("_:s1", "p1", "o1", "<http://example.org/graph1>"),
+          ("_:s2", "p2", "o2", "<http://example.org/graph2>")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -292,8 +302,8 @@ class CompilerSpec
         import sqlContext.implicits._
 
         val df: DataFrame = List(
-          ("_:s1", "p1", "o1", "http://example.org/graph1"),
-          ("_:s2", "p2", "o2", "http://example.org/graph2")
+          ("_:s1", "p1", "o1", "<http://example.org/graph1>"),
+          ("_:s2", "p2", "o2", "<http://example.org/graph2>")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -316,8 +326,8 @@ class CompilerSpec
       "include graphs when no explicit FROM" in {
 
         val df: DataFrame = List(
-          ("_:s1", "p1", "o1", "http://example.org/graph1"),
-          ("_:s2", "p2", "o2", "http://example.org/graph2")
+          ("_:s1", "p1", "o1", "<http://example.org/graph1>"),
+          ("_:s2", "p2", "o2", "<http://example.org/graph2>")
         ).toDF("s", "p", "o", "g")
 
         val query =
@@ -342,8 +352,8 @@ class CompilerSpec
       "include graphs when explicit FROM" in {
 
         val df: DataFrame = List(
-          ("_:s1", "p1", "o1", "http://example.org/graph1"),
-          ("_:s2", "p2", "o2", "http://example.org/graph2")
+          ("_:s1", "p1", "o1", "<http://example.org/graph1>"),
+          ("_:s2", "p2", "o2", "<http://example.org/graph2>")
         ).toDF("s", "p", "o", "g")
 
         val query =

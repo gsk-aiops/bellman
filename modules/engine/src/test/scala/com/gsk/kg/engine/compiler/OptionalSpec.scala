@@ -25,30 +25,30 @@ class OptionalSpec
       val df: DataFrame = List(
         (
           "_:a",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://xmlns.com/foaf/0.1/Person",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://xmlns.com/foaf/0.1/Person>",
           ""
         ),
-        ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+        ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Alice", ""),
         (
           "_:a",
-          "http://xmlns.com/foaf/0.1/mbox",
-          "mailto:alice@example.com",
+          "<http://xmlns.com/foaf/0.1/mbox>",
+          "<mailto:alice@example.com>",
           ""
         ),
         (
           "_:a",
-          "http://xmlns.com/foaf/0.1/mbox",
-          "mailto:alice@work.example",
+          "<http://xmlns.com/foaf/0.1/mbox>",
+          "<mailto:alice@work.example>",
           ""
         ),
         (
           "_:b",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-          "http://xmlns.com/foaf/0.1/Person",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://xmlns.com/foaf/0.1/Person>",
           ""
         ),
-        ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", "")
+        ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", "")
       ).toDF("s", "p", "o", "g")
 
       val query =
@@ -76,18 +76,18 @@ class OptionalSpec
       val df: DataFrame = List(
         (
           "_:book1",
-          "http://purl.org/dc/elements/1.1/title",
+          "<http://purl.org/dc/elements/1.1/title>",
           "SPARQL Tutorial",
           ""
         ),
-        ("_:book1", "http://example.org/ns#price", "42", ""),
+        ("_:book1", "<http://example.org/ns#price>", "42", ""),
         (
           "_:book2",
-          "http://purl.org/dc/elements/1.1/title",
+          "<http://purl.org/dc/elements/1.1/title>",
           "The Semantic Web",
           ""
         ),
-        ("_:book2", "http://example.org/ns#price", "_:23", "")
+        ("_:book2", "<http://example.org/ns#price>", "_:23", "")
       ).toDF("s", "p", "o", "g")
 
       val query =
@@ -118,18 +118,18 @@ class OptionalSpec
     "execute and obtain expected results with multiple optionals" in {
 
       val df: DataFrame = List(
-        ("_:a", "http://xmlns.com/foaf/0.1/name", "Alice", ""),
+        ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Alice", ""),
         (
           "_:a",
-          "http://xmlns.com/foaf/0.1/homepage",
-          "http://work.example.org/alice/",
+          "<http://xmlns.com/foaf/0.1/homepage>",
+          "<http://work.example.org/alice/>",
           ""
         ),
-        ("_:b", "http://xmlns.com/foaf/0.1/name", "Bob", ""),
+        ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", ""),
         (
           "_:b",
-          "http://xmlns.com/foaf/0.1/mbox",
-          "mailto:bob@work.example",
+          "<http://xmlns.com/foaf/0.1/mbox>",
+          "<mailto:bob@work.example>",
           ""
         )
       ).toDF("s", "p", "o", "g")

@@ -22,18 +22,18 @@ class StrbeforeSpec
     "used on string literals" in {
       val df = List(
         (
-          "http://uri.com/subject/#a1",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://uri.com/subject/#a1>",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Alice#Person"
         ),
         (
-          "http://uri.com/subject/#a2",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://uri.com/subject/#a2>",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Alex#Person"
         ),
         (
-          "http://uri.com/subject/#a3",
-          "http://xmlns.com/foaf/0.1/name",
+          "<http://uri.com/subject/#a3>",
+          "<http://xmlns.com/foaf/0.1/name>",
           "Alison"
         )
       ).toDF("s", "p", "o")

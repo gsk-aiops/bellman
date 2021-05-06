@@ -27,62 +27,62 @@ class SubquerySpec
 
         val df: DataFrame = List(
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice Foo",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "A. Foo",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/knows",
-            "http://example.org/bob",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "<http://example.org/bob>",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/knows",
-            "http://example.org/carol",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "<http://example.org/carol>",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob Bar",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "B. Bar",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Carol",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Carol Baz",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "C. Baz",
             ""
           )
@@ -117,62 +117,62 @@ class SubquerySpec
 
         val df: DataFrame = List(
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice Foo",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "A. Foo",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/knows",
-            "http://example.org/bob",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "<http://example.org/bob>",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/knows",
-            "http://example.org/carol",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "<http://example.org/carol>",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob Bar",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "B. Bar",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Carol",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Carol Baz",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "C. Baz",
             ""
           )
@@ -214,62 +214,62 @@ class SubquerySpec
       "outer CONSTRUCT and inner SELECT as graph pattern" in {
         val df: DataFrame = List(
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice Foo",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "A. Foo",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/knows",
-            "http://example.org/bob",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "<http://example.org/bob>",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/knows",
-            "http://example.org/carol",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "<http://example.org/carol>",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob Bar",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "B. Bar",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Carol",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Carol Baz",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "C. Baz",
             ""
           )
@@ -340,68 +340,68 @@ class SubquerySpec
 
         val df: DataFrame = List(
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/member",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/member>",
             "Family",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice Foo",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "A. Foo",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/knows",
-            "http://example.org/bob",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "<http://example.org/bob>",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/knows",
-            "http://example.org/carol",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "<http://example.org/carol>",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob Bar",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "B. Bar",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Carol",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Carol Baz",
             ""
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "C. Baz",
             ""
           )
@@ -477,70 +477,70 @@ class SubquerySpec
 
         val df: DataFrame = List(
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/member",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/member>",
             "Family",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Alice Foo",
-            "http://some-other.ttl"
+            "<http://some-other.ttl>"
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "A. Foo",
-            "http://some-other.ttl"
+            "<http://some-other.ttl>"
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/knows",
-            "http://example.org/bob",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "<http://example.org/bob>",
             ""
           ),
           (
-            "http://example.org/alice",
-            "http://xmlns.com/foaf/0.1/knows",
-            "http://example.org/carol",
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "<http://example.org/carol>",
             ""
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob",
-            "http://some-other.ttl"
+            "<http://some-other.ttl>"
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Bob Bar",
-            "http://some-other.ttl"
+            "<http://some-other.ttl>"
           ),
           (
-            "http://example.org/bob",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "B. Bar",
-            "http://some-other.ttl"
+            "<http://some-other.ttl>"
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Carol",
-            "http://some-other.ttl"
+            "<http://some-other.ttl>"
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "Carol Baz",
-            "http://some-other.ttl"
+            "<http://some-other.ttl>"
           ),
           (
-            "http://example.org/carol",
-            "http://xmlns.com/foaf/0.1/name",
+            "<http://example.org/carol>",
+            "<http://xmlns.com/foaf/0.1/name>",
             "C. Baz",
-            "http://some-other.ttl"
+            "<http://some-other.ttl>"
           )
         ).toDF("s", "p", "o", "g")
 
@@ -608,62 +608,62 @@ class SubquerySpec
 
           val df: DataFrame = List(
             (
-              "http://people.example/alice",
-              "http://people.example/name",
+              "<http://people.example/alice>",
+              "<http://people.example/name>",
               "Alice Foo",
               ""
             ),
             (
-              "http://people.example/alice",
-              "http://people.example/name",
+              "<http://people.example/alice>",
+              "<http://people.example/name>",
               "A. Foo",
               ""
             ),
             (
-              "http://people.example/alice",
-              "http://people.example/knows",
-              "http://people.example/bob",
+              "<http://people.example/alice>",
+              "<http://people.example/knows>",
+              "<http://people.example/bob>",
               ""
             ),
             (
-              "http://people.example/alice",
-              "http://people.example/knows",
-              "http://people.example/carol",
+              "<http://people.example/alice>",
+              "<http://people.example/knows>",
+              "<http://people.example/carol>",
               ""
             ),
             (
-              "http://people.example/bob",
-              "http://people.example/name",
+              "<http://people.example/bob>",
+              "<http://people.example/name>",
               "Bob",
               ""
             ),
             (
-              "http://people.example/bob",
-              "http://people.example/name",
+              "<http://people.example/bob>",
+              "<http://people.example/name>",
               "Bob Bar",
               ""
             ),
             (
-              "http://people.example/bob",
-              "http://people.example/name",
+              "<http://people.example/bob>",
+              "<http://people.example/name>",
               "B. Bar",
               ""
             ),
             (
-              "http://people.example/carol",
-              "http://people.example/name",
+              "<http://people.example/carol>",
+              "<http://people.example/name>",
               "Carol",
               ""
             ),
             (
-              "http://people.example/carol",
-              "http://people.example/name",
+              "<http://people.example/carol>",
+              "<http://people.example/name>",
               "Carol Baz",
               ""
             ),
             (
-              "http://people.example/carol",
-              "http://people.example/name",
+              "<http://people.example/carol>",
+              "<http://people.example/name>",
               "C. Baz",
               ""
             )
