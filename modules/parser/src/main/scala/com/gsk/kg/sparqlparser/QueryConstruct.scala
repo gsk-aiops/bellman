@@ -36,12 +36,16 @@ object QueryConstruct {
       .toParserResult
     defaultGraphs =
       if (config.isDefaultGraphExclusive) {
-        query.getGraphURIs.asScala.toList.map(URIVAL) :+ URIVAL("")
+        query.getGraphURIs.asScala.toList
+          .map(wrapInAngleBrackets)
+          .map(URIVAL) :+ URIVAL("")
       } else {
         Nil
       }
-    namedGraphs = query.getNamedGraphURIs.asScala.toList.map(URIVAL)
-    graphs      = Graphs(defaultGraphs, namedGraphs)
+    namedGraphs = query.getNamedGraphURIs.asScala.toList
+      .map(wrapInAngleBrackets)
+      .map(URIVAL)
+    graphs = Graphs(defaultGraphs, namedGraphs)
     result <- query match {
       case q if q.isConstructType =>
         val template = query.getConstructTemplate
@@ -61,6 +65,9 @@ object QueryConstruct {
         ).asLeft
     }
   } yield result
+
+  private def wrapInAngleBrackets(string: String): String =
+    s"<$string>"
 
   private def getVars(query: org.apache.jena.query.Query): Seq[VARIABLE] =
     query.getProjectVars.asScala.map(v =>

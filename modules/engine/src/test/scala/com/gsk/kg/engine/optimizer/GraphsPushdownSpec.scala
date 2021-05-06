@@ -43,7 +43,7 @@ class GraphsPushdownSpec
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             |PREFIX dc: <http://purl.org/dc/elements/1.1/>
             |PREFIX ex: <http://example.org/>
-            |    
+            |
             |SELECT ?mbox ?name
             |FROM <http://example.org/dft.ttl>
             |FROM NAMED <http://example.org/alice>
@@ -70,7 +70,7 @@ class GraphsPushdownSpec
             Fix.un(renamed) match {
               case Project(_, Project(_, BGP(quads))) =>
                 assertForAllQuads(quads)(
-                  _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
+                  _.g shouldEqual URIVAL("<http://example.org/alice>") :: Nil
                 )
               case _ => fail
             }
@@ -85,7 +85,7 @@ class GraphsPushdownSpec
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             |PREFIX dc: <http://purl.org/dc/elements/1.1/>
             |PREFIX ex: <http://example.org/>
-            |    
+            |
             |SELECT ?mbox ?name
             |FROM <http://example.org/dft.ttl>
             |FROM NAMED <http://example.org/alice>
@@ -128,7 +128,7 @@ class GraphsPushdownSpec
                   )
                 ) =>
               assertForAllQuads(internalQuads)(
-                _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
+                _.g shouldEqual URIVAL("<http://example.org/alice>") :: Nil
               )
               assertForAllQuads(externalQuads)(
                 _.g shouldEqual graphs.default
@@ -145,7 +145,7 @@ class GraphsPushdownSpec
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             |PREFIX dc: <http://purl.org/dc/elements/1.1/>
             |PREFIX ex: <http://example.org/>
-            |    
+            |
             |SELECT ?mbox ?name
             |FROM <http://example.org/dft.ttl>
             |FROM NAMED <http://example.org/alice>
@@ -199,7 +199,7 @@ class GraphsPushdownSpec
                   _.g shouldEqual graphs.default
                 )
                 assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
-                  _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
+                  _.g shouldEqual URIVAL("<http://example.org/alice>") :: Nil
                 )
               case _ => fail
             }
@@ -214,7 +214,7 @@ class GraphsPushdownSpec
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             |PREFIX dc: <http://purl.org/dc/elements/1.1/>
             |PREFIX ex: <http://example.org/>
-            |    
+            |
             |SELECT ?mbox ?name
             |FROM <http://example.org/dft.ttl>
             |FROM NAMED <http://example.org/alice>
@@ -272,7 +272,7 @@ class GraphsPushdownSpec
                   _.g shouldEqual graphs.default
                 )
                 assertForAllQuads(leftInsideQuads.concat(rightInsideQuads))(
-                  _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
+                  _.g shouldEqual URIVAL("<http://example.org/alice>") :: Nil
                 )
               case _ => fail
             }
@@ -287,7 +287,7 @@ class GraphsPushdownSpec
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             |PREFIX dc: <http://purl.org/dc/elements/1.1/>
             |PREFIX ex: <http://example.org/>
-            |    
+            |
             |SELECT ?mbox ?name
             |FROM <http://example.org/dft.ttl>
             |FROM NAMED <http://example.org/alice>
@@ -342,10 +342,10 @@ class GraphsPushdownSpec
                   _.g shouldEqual graphs.default
                 )
                 assertForAllQuads(graph1Quads)(
-                  _.g shouldEqual URIVAL("http://example.org/alice") :: Nil
+                  _.g shouldEqual URIVAL("<http://example.org/alice>") :: Nil
                 )
                 assertForAllQuads(graph2Quads)(
-                  _.g shouldEqual URIVAL("http://example.org/bob") :: Nil
+                  _.g shouldEqual URIVAL("<http://example.org/bob>") :: Nil
                 )
               case _ => fail
             }
@@ -363,7 +363,7 @@ class GraphsPushdownSpec
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             |PREFIX dc: <http://purl.org/dc/elements/1.1/>
             |PREFIX ex: <http://example.org/>
-            |    
+            |
             |SELECT ?mbox ?name
             |FROM <http://example.org/alice>
             |FROM <http://example.org/bob>

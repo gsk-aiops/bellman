@@ -102,11 +102,11 @@ Construct
 |     |     |
 |     |     +- ?Document
 |     |     |
-|     |     +- http://lit-search-api/property/docID
+|     |     +- <http://lit-search-api/property/docID>
 |     |     |
 |     |     +- ?docid
 |     |     |
-|     |     `- List(URIVAL(urn:x-arq:DefaultGraphNode))
+|     |     `- List(GRAPH_VARIABLE)
 |     |
 |     `- NonEmptyChain
 |        |
@@ -114,11 +114,11 @@ Construct
 |           |
 |           +- ?Document
 |           |
-|           +- http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+|           +- <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
 |           |
-|           +- http://lit-search-api/node/Document
+|           +- <http://lit-search-api/node/Document>
 |           |
-|           `- List(URIVAL(urn:x-arq:DefaultGraphNode))
+|           `- List(GRAPH_VARIABLE)
 |
 `- Bind
    |
@@ -154,11 +154,12 @@ Construct
                   |
                   +- ?d
                   |
-                  +- http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+                  +- <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
                   |
-                  +- http://gsk-kg.rdip.gsk.com/dm/1.0/Document
+                  +- <http://gsk-kg.rdip.gsk.com/dm/1.0/Document>
                   |
-                  `- List(GRAPH_VARIABLE)""".trim
+                  `- List(GRAPH_VARIABLE)
+""".trim
       }
       .getOrElse(fail)
   }

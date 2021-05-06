@@ -155,6 +155,20 @@ object Func {
     when(substring_index(col, str, 1) === col, lit(""))
       .otherwise(substring_index(col, str, 1))
 
+  /** Implementation of SparQL SUBSTR on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-substr]]
+    * @param col
+    * @param pos
+    * @param len
+    * @return
+    */
+  def substr(col: Column, pos: Int, len: Option[Int]): Column =
+    len match {
+      case Some(l) => col.substr(pos, l)
+      case None    => col.substr(lit(pos), length(col) - pos + 1)
+    }
+
   /** Implementation of SparQL STRENDS on Spark dataframes.
     *
     * TODO (pepegar): Implement argument compatibility checks
@@ -179,14 +193,19 @@ object Func {
   def strstarts(col: Column, str: String): Column =
     col.startsWith(str)
 
-  /** Implementation of SparQL STRLEN on Spark dataframes.
+  /** Implementation of SparQL STRDT on Spark dataframes.
+    * The STRDT function constructs a literal with lexical form and type as specified by the arguments.
     *
-    * @see [[https://www.w3.org/TR/sparql11-query/#func-strlen]]
+    * Examples:
+    * STRDT("123", xsd:integer) -> "123"^^<http://www.w3.org/2001/XMLSchema#integer>
+    * STRDT("iiii", <http://example/romanNumeral>) -> "iiii"^^<http://example/romanNumeral>
+    *
     * @param col
+    * @param uri
     * @return
     */
-  def strlen(col: Column): Column =
-    length(col)
+  def strdt(col: Column, uri: String): Column =
+    cc(lit("\""), col, lit("\""), lit(s"^^$uri"))
 
   /** The IRI function constructs an IRI by resolving the string
     * argument (see RFC 3986 and RFC 3987 or any later RFC that

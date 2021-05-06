@@ -1,4 +1,4 @@
-package com.gsk.kg.engine.optimize
+package com.gsk.kg.engine.optimizer
 
 import cats.syntax.either._
 
@@ -9,7 +9,6 @@ import com.gsk.kg.engine.DAG.Construct
 import com.gsk.kg.engine.DAG.Join
 import com.gsk.kg.engine.DAG.Project
 import com.gsk.kg.engine.DAG.Scan
-import com.gsk.kg.engine.optimizer.SubqueryPushdown
 import com.gsk.kg.engine.utils.CustomMatchers
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
@@ -95,7 +94,7 @@ class SubqueryPushdownSpec
             |  {
             |    SELECT ?x ?name
             |    WHERE {
-            |      ?x foaf:name ?name . 
+            |      ?x foaf:name ?name .
             |    }
             |  }
             |}
@@ -198,7 +197,7 @@ class SubqueryPushdownSpec
           """
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             |
-            |SELECT ?x ?name 
+            |SELECT ?x ?name
             |FROM NAMED <http://some-other.ttl>
             |WHERE {
             |  GRAPH <http://some-other.ttl> {

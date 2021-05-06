@@ -130,6 +130,9 @@ object FindVariablesOnExpression {
         case STR(s)                          => s
         case STRLEN(s)                       => s
         case STRAFTER(s, f)                  => s
+        case STRBEFORE(s, f)                 => s
+        case STRDT(s, uri)                   => s
+        case SUBSTR(s, pos, len)             => s
         case ISBLANK(s)                      => s
         case REPLACE(st, pattern, by, flags) => st
         case COUNT(e)                        => e

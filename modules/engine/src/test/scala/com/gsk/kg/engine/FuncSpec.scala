@@ -397,6 +397,27 @@ class FuncSpec
     }
   }
 
+  "Func.strdt" should {
+
+    "return a literal with lexical for and type specified" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        "123"
+      ).toDF("s")
+
+      val result = df
+        .select(
+          Func.strdt(df("s"), "<http://www.w3.org/2001/XMLSchema#integer>")
+        )
+        .collect
+
+      result shouldEqual Array(
+        Row("\"123\"^^<http://www.w3.org/2001/XMLSchema#integer>")
+      )
+    }
+  }
+
   "Func.regex" should {
 
     "return true if a field matches the given regex pattern" in {
@@ -523,22 +544,6 @@ class FuncSpec
         .collect shouldEqual Array(
         Row("Ciao Dolly"),
         Row("Ciao Dolly")
-      )
-    }
-  }
-
-  "Func.strlen" should {
-    "return the length of a string value" in {
-      import sqlContext.implicits._
-
-      val df = List(
-        "hello world",
-        "goodbye world"
-      ).toDF("a")
-
-      df.select(Func.strlen(df("a"))).collect() shouldEqual Array(
-        Row(11),
-        Row(13)
       )
     }
   }
@@ -796,6 +801,39 @@ class FuncSpec
           Func.lte(df("a"), df("b"))
         ).collect() shouldEqual Array(
           Row(true)
+        )
+      }
+    }
+
+    "Func.substr" should {
+
+      "correctly return the substring of a given column without length specified" in {
+        import sqlContext.implicits._
+
+        val df = List(
+          "hello world",
+          "hello universe"
+        ).toDF("text")
+
+        df.select(Func.substr(df("text"), 5, None).as("result"))
+          .collect shouldEqual Array(
+          Row("o world"),
+          Row("o universe")
+        )
+      }
+
+      "correctly return the substring of a given column with length specified" in {
+        import sqlContext.implicits._
+
+        val df = List(
+          "hello world",
+          "hello universe"
+        ).toDF("text")
+
+        df.select(Func.substr(df("text"), 5, Some(3)).as("result"))
+          .collect shouldEqual Array(
+          Row("o w"),
+          Row("o u")
         )
       }
     }
