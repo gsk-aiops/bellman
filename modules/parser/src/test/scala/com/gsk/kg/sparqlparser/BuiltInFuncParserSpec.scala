@@ -172,7 +172,6 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     }
   }
 
-
   "Regex parser" should "return REGEX type" in {
     val p =
       fastparse.parse("""(regex ?d "Hello")""", BuiltInFuncParser.regexParen(_))
