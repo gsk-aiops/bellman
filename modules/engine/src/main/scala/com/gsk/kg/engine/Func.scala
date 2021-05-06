@@ -263,7 +263,7 @@ object Func {
     val left =
       when(a.startsWith("\"") && a.endsWith("\""), trim(a, "\"")).otherwise(a)
     val right =
-      when(b.startsWith("\""), trim(b, "\"")).otherwise(b)
+      when(b.startsWith("\"") && b.endsWith("\""), trim(b, "\"")).otherwise(b)
     cc(left, right)
   }
 
