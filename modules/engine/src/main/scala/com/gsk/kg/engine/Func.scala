@@ -261,9 +261,9 @@ object Func {
     */
   def concat(a: Column, b: Column): Column = {
     val left =
-      when(a.startsWith("\""), regexp_replace(a, "\"", "")).otherwise(a)
+      when(a.startsWith("\"") && a.endsWith("\""), trim(a, "\"")).otherwise(a)
     val right =
-      when(b.startsWith("\""), regexp_replace(b, "\"", "")).otherwise(b)
+      when(b.startsWith("\""), trim(b, "\"")).otherwise(b)
     cc(left, right)
   }
 
@@ -275,7 +275,7 @@ object Func {
     */
   def concat(a: String, b: Column): Column = {
     val right =
-      when(b.startsWith("\""), regexp_replace(b, "\"", "")).otherwise(b)
+      when(b.startsWith("\"") and b.endsWith("\""), trim(b, "\"")).otherwise(b)
     cc(lit(a), right)
   }
 
@@ -287,7 +287,7 @@ object Func {
     */
   def concat(a: Column, b: String): Column = {
     val left =
-      when(a.startsWith("\""), regexp_replace(a, "\"", "")).otherwise(a)
+      when(a.startsWith("\"") && a.endsWith("\""), trim(a, "\"")).otherwise(a)
     cc(left, lit(b))
   }
 
