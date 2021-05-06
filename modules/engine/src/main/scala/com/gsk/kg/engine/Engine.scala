@@ -360,6 +360,7 @@ object Engine {
           Row.fromSeq(fields)
         }
       }
+      .distinct()
 
     Multiset(
       Set.empty,
