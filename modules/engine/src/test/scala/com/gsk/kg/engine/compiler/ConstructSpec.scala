@@ -47,7 +47,8 @@ class ConstructSpec
         .compile(df, query, config)
         .right
         .get
-        .collect() shouldEqual Array(
+        .collect
+        .toSet shouldEqual Set(
         Row(
           "\"test\"",
           "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
@@ -226,7 +227,7 @@ class ConstructSpec
 
       result shouldBe a[Right[_, _]]
       result.right.get.collect.length shouldEqual 6
-      result.right.get.collect shouldEqual Array(
+      result.right.get.collect.toSet shouldEqual Set(
         Row(
           "<http://potato.com/b>",
           "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
@@ -321,7 +322,7 @@ class ConstructSpec
 
       result shouldBe a[Right[_, _]]
       result.right.get.collect.length shouldEqual 2
-      result.right.get.collect shouldEqual Array(
+      result.right.get.collect.toSet shouldEqual Set(
         Row(
           "<http://potato.com/b>",
           "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
@@ -396,7 +397,7 @@ class ConstructSpec
       result shouldBe a[Right[_, _]]
       arrayResult should have size 6
       arrayResult.map(_.get(0)).distinct should have size 3
-      arrayResult.map(row => (row.get(1), row.get(2))) shouldEqual Array(
+      arrayResult.map(row => (row.get(1), row.get(2))).toSet shouldEqual Set(
         (
           "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
           "<http://thesour.ce>"
