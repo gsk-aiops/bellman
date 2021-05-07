@@ -245,14 +245,14 @@ object Func {
     * | IRI("http://example/") | <http://example/> |
     * | IRI(<http://example/>) | <http://example/> |
     *
-    * TODO(pepegar): We need to check if it's feasible to validate
-    * that values in the columns are URI formatted.
-    *
     * @param col
     * @return
     */
   def iri(col: Column): Column =
-    col
+    when(
+      col.startsWith("<") && col.endsWith(">"),
+      col
+    ).otherwise(format_string("<%s>", col))
 
   /** synonym for [[Func.iri]]
     *
