@@ -47,7 +47,8 @@ class ConstructSpec
         .compile(df, query, config)
         .right
         .get
-        .collect() shouldEqual Array(
+        .collect
+        .toSet shouldEqual Set(
         Row(
           "\"test\"",
           "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
@@ -226,7 +227,7 @@ class ConstructSpec
 
       result shouldBe a[Right[_, _]]
       result.right.get.collect.length shouldEqual 6
-      result.right.get.collect shouldEqual Array(
+      result.right.get.collect.toSet shouldEqual Set(
         Row(
           "<http://potato.com/b>",
           "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
@@ -321,7 +322,7 @@ class ConstructSpec
 
       result shouldBe a[Right[_, _]]
       result.right.get.collect.length shouldEqual 2
-      result.right.get.collect shouldEqual Array(
+      result.right.get.collect.toSet shouldEqual Set(
         Row(
           "<http://potato.com/b>",
           "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
@@ -396,7 +397,7 @@ class ConstructSpec
       result shouldBe a[Right[_, _]]
       arrayResult should have size 6
       arrayResult.map(_.get(0)).distinct should have size 3
-      arrayResult.map(row => (row.get(1), row.get(2))) shouldEqual Array(
+      arrayResult.map(row => (row.get(1), row.get(2))).toSet shouldEqual Set(
         (
           "<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>",
           "<http://thesour.ce>"
@@ -487,6 +488,57 @@ class ConstructSpec
       result shouldBe a[Right[_, _]]
       arrayResult should have size 9
       arrayResult.map(_.get(0)).distinct should have size 6
+    }
+
+    // TODO: Un-ignore when fixed string functions on URIs (angle brackets congruency)
+    // See: https://github.com/gsk-aiops/bellman/issues/328
+    "execute and return no duplicates" ignore {
+
+      val df: DataFrame = List(
+        (
+          "<http://example.org#doc1>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>"
+        ),
+        (
+          "<http://example.org#doc1>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>"
+        )
+      ).toDF("s", "p", "o")
+
+      val query =
+        """
+          |PREFIX dm: <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+          |PREFIX litn: <http://lit-search-api/node/>
+          |PREFIX litp: <http://lit-search-api/property/>
+          |
+          |CONSTRUCT { 
+          | ?Document a litn:Document .
+          | ?Document litp:docID ?docid .
+          |}
+          |WHERE {
+          | ?d a dm:Document .
+          | BIND(STRAFTER(str(?d), "#") as ?docid) .
+          | BIND(URI(CONCAT("http://lit-search-api/node/doc#", ?docid)) as ?Document) .
+          |}
+          |""".stripMargin
+
+      val result = Compiler.compile(df, query, config)
+
+      result.right.get.collect().length shouldEqual 2
+      result.right.get.collect().toSet shouldEqual Set(
+        Row(
+          "<http://lit-search-api/node/doc#doc1>",
+          "<http://lit-search-api/property/docID>",
+          "\"doc1\""
+        ),
+        Row(
+          "<http://lit-search-api/node/doc#doc1>",
+          "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+          "<http://lit-search-api/node/Document>"
+        )
+      )
     }
   }
 }

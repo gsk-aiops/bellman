@@ -870,6 +870,41 @@ class FuncSpec
 
   }
 
+  "Func.str" should {
+    "remove angle brackets from uris" in {
+      import sqlContext.implicits._
+
+      val initial = List(
+        ("<mailto:pepe@examplle.com>", "mailto:pepe@examplle.com"),
+        ("<http://example.com>", "http://example.com")
+      ).toDF("input", "expected")
+
+      val df = initial.withColumn("result", Func.str(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+
+    "don't modify non-uri strings" in {
+      import sqlContext.implicits._
+
+      val initial = List(
+        ("mailto:pepe@examplle.com>", "mailto:pepe@examplle.com>"),
+        ("http://example.com>", "http://example.com>"),
+        ("hello", "hello"),
+        ("\"test\"", "\"test\""),
+        ("1", "1")
+      ).toDF("input", "expected")
+
+      val df = initial.withColumn("result", Func.str(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
   def toRDFDateTime(datetime: TemporalAccessor): String =
     "\"" + DateTimeFormatter
       .ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]")

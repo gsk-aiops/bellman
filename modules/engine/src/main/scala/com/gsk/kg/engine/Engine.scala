@@ -360,7 +360,7 @@ object Engine {
           Row.fromSeq(fields)
         }
       }
-      .orderBy("s", "p")
+      .distinct()
 
     Multiset(
       Set.empty,
