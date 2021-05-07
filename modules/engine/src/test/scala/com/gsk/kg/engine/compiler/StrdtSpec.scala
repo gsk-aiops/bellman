@@ -19,6 +19,31 @@ class StrdtSpec
 
   "perform STRDT function correctly" should {
 
+    "execute on SELECT statement" in {
+      val df = List(
+        (
+          "Peter",
+          "<http://xmlns.com/foaf/0.1/age>",
+          "21"
+        )
+      ).toDF("s", "p", "o")
+
+      val query =
+        """
+          |PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>
+          |
+          |SELECT ?o strdt("123", xsd:integer)
+          |WHERE { ?x ?t ?o . }
+          |""".stripMargin
+
+      val result = Compiler.compile(df, query, config)
+
+      result.right.get.collect.length shouldEqual 1
+      result.right.get.collect.toSet shouldEqual Set(
+        Row("21", "\"123\"^^<http://www.w3.org/2001/XMLSchema#integer>")
+      )
+    }
+
     "execute and obtain expected result with URI" in {
       val df = List(
         (
