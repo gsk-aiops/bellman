@@ -2,7 +2,6 @@ package com.gsk.kg.engine
 
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.Row
-
 import com.gsk.kg.engine.scalacheck.CommonGenerators
 
 import java.time.LocalDateTime
@@ -10,11 +9,12 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAccessor
-
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import cats.syntax.list._
+import org.apache.spark.sql.functions.lit
 
 class FuncSpec
     extends AnyWordSpec
@@ -492,7 +492,7 @@ class FuncSpec
         ("Here's a song", " Dolly")
       ).toDF("a", "b")
 
-      df.select(Func.concat(df("a"), df("b")).as("verses"))
+      df.select(Func.concat(df("a"), List(df("b")).toNel.get).as("verses"))
         .collect shouldEqual Array(
         Row("Hello Dolly"),
         Row("Here's a song Dolly")
@@ -509,7 +509,7 @@ class FuncSpec
         ("Hello", " Dolly")
       ).toDF("a", "b")
 
-      df.select(Func.concat(df("a"), df("b")).as("verses"))
+      df.select(Func.concat(df("a"), List(df("b")).toNel.get).as("verses"))
         .collect shouldEqual Array(
         Row("Hello Dolly"),
         Row("Hello Dolly"),
@@ -526,8 +526,9 @@ class FuncSpec
         ("Here's a song", " Dolly")
       ).toDF("a", "b")
 
-      df.select(Func.concat(df("a"), " world!").as("sentences"))
-        .collect shouldEqual Array(
+      df.select(
+        Func.concat(df("a"), List(lit(" world!")).toNel.get).as("sentences")
+      ).collect shouldEqual Array(
         Row("Hello world!"),
         Row("Here's a song world!")
       )
@@ -541,8 +542,9 @@ class FuncSpec
         ("Here's a song", " Dolly")
       ).toDF("a", "b")
 
-      df.select(Func.concat(df("a"), " world!").as("sentences"))
-        .collect shouldEqual Array(
+      df.select(
+        Func.concat(df("a"), List(lit(" world!")).toNel.get).as("sentences")
+      ).collect shouldEqual Array(
         Row("Hello world!"),
         Row("Here's a song world!")
       )
@@ -556,7 +558,7 @@ class FuncSpec
         ("Here's a song", " Dolly")
       ).toDF("a", "b")
 
-      df.select(Func.concat("Ciao", df("b")).as("verses"))
+      df.select(Func.concat(lit("Ciao"), List(df("b")).toNel.get).as("verses"))
         .collect shouldEqual Array(
         Row("Ciao Dolly"),
         Row("Ciao Dolly")
@@ -571,7 +573,22 @@ class FuncSpec
         ("Here's a song", " Dolly")
       ).toDF("a", "b")
 
-      df.select(Func.concat("Ciao", df("b")).as("verses"))
+      df.select(Func.concat(lit("Ciao"), List(df("b")).toNel.get).as("verses"))
+        .collect shouldEqual Array(
+        Row("Ciao Dolly"),
+        Row("Ciao Dolly")
+      )
+    }
+
+    "concatenate mixing literals and string columns multiple times" in {
+      import sqlContext.implicits._
+
+      val df = List(
+        ("Hello", "\" Dolly\""),
+        ("Here's a song", " Dolly")
+      ).toDF("a", "b")
+
+      df.select(Func.concat(lit("Ciao"), List(df("b")).toNel.get).as("verses"))
         .collect shouldEqual Array(
         Row("Ciao Dolly"),
         Row("Ciao Dolly")

@@ -1,5 +1,6 @@
 package com.gsk.kg.sparqlparser
 
+import cats.data.NonEmptyList
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
 
 /** @see Model after [[https://www.w3.org/TR/sparql11-query/#rExpression]]
@@ -25,8 +26,10 @@ sealed trait StringLike extends Expression
 sealed trait BuiltInFunc extends StringLike
 object BuiltInFunc {
   final case class URI(s: Expression) extends BuiltInFunc
-  final case class CONCAT(appendTo: Expression, append: Expression)
-      extends BuiltInFunc
+  final case class CONCAT(
+      appendTo: Expression,
+      append: NonEmptyList[Expression]
+  )                                                        extends BuiltInFunc
   final case class STR(s: Expression)                      extends BuiltInFunc
   final case class STRAFTER(s: Expression, f: Expression)  extends BuiltInFunc
   final case class STRBEFORE(s: Expression, f: Expression) extends BuiltInFunc

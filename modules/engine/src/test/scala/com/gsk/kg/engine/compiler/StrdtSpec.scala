@@ -137,7 +137,7 @@ class StrdtSpec
 
     // TODO: Un-ignore when CONCAT with multiple arguments
     // See: https://github.com/gsk-aiops/bellman/issues/324
-    "execute and obtain expected results when complex expression" ignore {
+    "execute and obtain expected results when complex expression" in {
       val df = List(
         (
           "<http://example.org/usa>",
@@ -169,7 +169,7 @@ class StrdtSpec
           |WHERE {
           |  ?country foaf:latitude ?lat .
           |  ?country foaf:longitude ?long .
-          |  BIND(STRDT(CONCAT("country=", strafter(?country, "http://xmlns.com/foaf/0.1/"), "&long=", str(?long), "&lat=", str(?lat)), <http://geo.org/coords>) as ?coords)
+          |  BIND(STRDT(CONCAT("country=", strafter(?country, "<http://xmlns.com/foaf/0.1/"), "&long=", str(?long), "&lat=", str(?lat)), <http://geo.org/coords>) as ?coords)
           |}
           |""".stripMargin
 

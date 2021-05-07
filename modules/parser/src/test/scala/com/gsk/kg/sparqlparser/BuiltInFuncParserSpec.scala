@@ -1,8 +1,10 @@
 package com.gsk.kg.sparqlparser
 
+import cats.data.NonEmptyList
+import cats.syntax.list._
+
 import com.gsk.kg.sparqlparser.BuiltInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
-
 import org.scalatest.flatspec.AnyFlatSpec
 
 class BuiltInFuncParserSpec extends AnyFlatSpec {
@@ -28,7 +30,10 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val s = "(concat \"http://id.gsk.com/dm/1.0/\" ?src)"
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
-      case CONCAT(STRING("http://id.gsk.com/dm/1.0/"), VARIABLE("?src")) =>
+      case CONCAT(
+            STRING("http://id.gsk.com/dm/1.0/"),
+            _
+          ) =>
         succeed
       case _ => fail
     }
@@ -39,7 +44,10 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case URI(
-            CONCAT(STRING("http://id.gsk.com/dm/1.0/"), VARIABLE("?src"))
+            CONCAT(
+              STRING("http://id.gsk.com/dm/1.0/"),
+              _
+            )
           ) =>
         succeed
       case _ => fail
@@ -70,7 +78,7 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     p.get.value match {
       case URI(
             STRAFTER(
-              CONCAT(STR(VARIABLE(a1: String)), STR(VARIABLE(a2: String))),
+              CONCAT(STR(VARIABLE(a1: String)), _),
               STRING("#")
             )
           ) =>
@@ -121,6 +129,8 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
             STRBEFORE(
               CONCAT(STR(VARIABLE(a1: String)), STR(VARIABLE(a2: String))),
               STRING("#")
+              CONCAT (STR(VARIABLE(a1: String)), _),
+              STRING("#", _)
             )
           ) =>
         succeed

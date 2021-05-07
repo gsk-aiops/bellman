@@ -1,5 +1,6 @@
 package com.gsk.kg.engine
 
+import cats.data.NonEmptyList
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
@@ -310,26 +311,36 @@ object Func {
     * @param b
     * @return
     */
-  def concat(a: Column, b: Column): Column =
-    cc(trim(a, "\""), trim(b, "\""))
-
-  /** Concatenate a [[String]] with a [[Column]], generating a new [[Column]]
-    *
-    * @param a
-    * @param b
-    * @return
-    */
-  def concat(a: String, b: Column): Column =
-    cc(lit(a), trim(b, "\""))
-
-  /** Concatenate a [[Column]] with a [[String]], generating a new [[Column]]
-    *
-    * @param a
-    * @param b
-    * @return
-    */
-  def concat(a: Column, b: String): Column =
-    cc(trim(a, "\""), lit(b))
+  def concat(appendTo: Column, append: NonEmptyList[Column]): Column = {
+    val xs = (appendTo +: append.toList).map { x =>
+      when(x.startsWith("\""), regexp_replace(x, "\"", "")).otherwise(x)
+    }
+    cc(xs: _*)
+  }
+//
+//  /** Concatenate a [[String]] with a [[Column]], generating a new [[Column]]
+//    *
+//    * @param a
+//    * @param b
+//    * @return
+//    */
+//  def concat(a: String, b: NonEmptyList[Column]): Column = {
+//    val right =
+//      when(b.startsWith("\""), regexp_replace(b, "\"", "")).otherwise(b)
+//    cc(lit(a), right)
+//  }
+//
+//  /** Concatenate a [[Column]] with a [[String]], generating a new [[Column]]
+//    *
+//    * @param a
+//    * @param b
+//    * @return
+//    */
+//  def concat(a: Column, b: String): Column = {
+//    val left =
+//      when(a.startsWith("\""), regexp_replace(a, "\"", "")).otherwise(a)
+//    cc(left, lit(b))
+//  }
 
   /** Sample is a set function which returns an arbitrary value from
     * the multiset passed to it.
