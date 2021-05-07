@@ -325,8 +325,8 @@ class FuncSpec
       ).toDF("text")
 
       df.select(Func.iri(df("text")).as("result")).collect shouldEqual Array(
-        Row("http://google.com"),
-        Row("http://other.com")
+        Row("<http://google.com>"),
+        Row("<http://other.com>")
       )
     }
   }
