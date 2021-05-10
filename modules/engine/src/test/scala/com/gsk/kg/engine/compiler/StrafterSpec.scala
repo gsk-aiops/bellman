@@ -43,7 +43,7 @@ class StrafterSpec
             |""".stripMargin
 
         val result =
-          Compiler.compile(df, query, config.copy(formatRdfOutput = false))
+          Compiler.compile(df, query, config)
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
@@ -51,7 +51,6 @@ class StrafterSpec
         )
       }
 
-      // FIXME: Trailing double quote
       "language literal and plain string" in {
         val df = List(
           (
@@ -104,7 +103,6 @@ class StrafterSpec
         result.left.get shouldBe a[EngineError]
       }
 
-      // FIXME: Returns a parser error because of empty string
       "string literal and empty plain string" in {
         val df = List(
           (
@@ -129,11 +127,10 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("") // Jena outputs empty string
+          Row("\"\"") // Jena outputs empty string
         )
       }
 
-      // FIXME: It should return empty string
       "language literal and no matching language literal" in {
         val df = List(
           (
@@ -158,11 +155,10 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("") // Jena outputs empty string
+          Row("\"\"") // Jena outputs empty string
         )
       }
 
-      // FIXME: It should return empty string
       "language literal and no matching plain string" in {
         val df = List(
           (
@@ -187,7 +183,7 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("") // Jena outputs empty string
+          Row("\"\"")
         )
       }
 
@@ -249,7 +245,6 @@ class StrafterSpec
         )
       }
 
-      // FIXME: It should return an error as URIs should not be allowed in STRAFTER
       "URI and string" in {
         val df = List(
           (
