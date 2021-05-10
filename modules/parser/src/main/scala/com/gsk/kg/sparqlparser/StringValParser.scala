@@ -16,15 +16,27 @@ object StringValParser {
     LANG_STRING(s, tag)
   }
 
+  def emptyLangString[_: P]: P[LANG_STRING] = P(
+    "\"\"" ~ lang
+  ).map(tag => LANG_STRING("", tag))
+
   def dataTypeString[_: P]: P[DT_STRING] = P(
     "\"" ~ CharsWhile(_ != '\"').! ~ "\"" ~ "^^" ~ iri
   ).map { case (s, tag) =>
     DT_STRING(s, tag)
   }
 
+  def emptyDataTypeString[_: P]: P[DT_STRING] = P(
+    "\"\"" ~ "^^" ~ iri
+  ).map(tag => DT_STRING("", tag))
+
   def plainString[_: P]: P[STRING] = P(
     "\"" ~ CharsWhile(_ != '\"').! ~ "\""
   ).map(s => STRING(s))
+
+  def emptyString[_: P]: P[STRING] = P(
+    "\"\""
+  ).map(_ => STRING(""))
 
   //TODO improve regex. Include all valid sparql varnames in spec: https://www.w3.org/TR/sparql11-query/#rPN_CHARS_BASE
   def variable[_: P]: P[VARIABLE] =
@@ -44,7 +56,18 @@ object StringValParser {
     if (s.contains('_')) None else Some(s.toLong)
   }
 
-  def tripleValParser[_: P]: P[StringVal] = P(
-    variable | urival | langString | dataTypeString | plainString | num | blankNode | bool
+  def tripleValParser[_: P]: P[StringVal] = litParser | urival
+
+  def litParser[_: P]: P[StringVal] = P(
+    variable |
+      langString |
+      dataTypeString |
+      plainString |
+      num |
+      blankNode |
+      bool |
+      emptyLangString |
+      emptyDataTypeString |
+      emptyString
   )
 }
