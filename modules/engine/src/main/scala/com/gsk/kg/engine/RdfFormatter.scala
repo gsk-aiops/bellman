@@ -48,7 +48,7 @@ object RdfFormatter {
       col.cast(DataTypes.StringType)
     ).when(
       isLocalizedString(col),
-      col.cast(DataTypes.StringType)
+      format_string("\"%s", col)
     ).when(
       isUri(col),
       when(
@@ -98,8 +98,6 @@ object RdfFormatter {
     column === lit("null") || column.isNull
 
   private def isLocalizedString(column: Column): Column =
-    column.startsWith("\"") && column.contains("\"@") && not(
-      column.endsWith("\"")
-    )
+    column.contains("\"@")
 
 }
