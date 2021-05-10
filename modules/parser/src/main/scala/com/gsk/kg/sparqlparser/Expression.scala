@@ -43,45 +43,50 @@ object BuiltInFunc {
       st: Expression,
       pattern: Expression,
       by: Expression,
-      flags: Expression = StringVal.STRING("", None)
+      flags: Expression = StringVal.STRING("")
   ) extends BuiltInFunc
   final case class REGEX(
       s: Expression,
       pattern: Expression,
-      flags: Expression = StringVal.STRING("", None)
+      flags: Expression = StringVal.STRING("")
   ) extends BuiltInFunc
 }
 
 sealed trait StringVal extends StringLike {
   val s: String
   def isVariable: Boolean = this match {
-    case StringVal.STRING(s, _)   => false
-    case StringVal.NUM(s)         => false
-    case StringVal.VARIABLE(s)    => true
-    case StringVal.GRAPH_VARIABLE => true
-    case StringVal.URIVAL(s)      => false
-    case StringVal.BLANK(s)       => false
-    case StringVal.BOOL(_)        => false
+    case StringVal.STRING(s)           => false
+    case StringVal.DT_STRING(s, tag)   => false
+    case StringVal.LANG_STRING(s, tag) => false
+    case StringVal.NUM(s)              => false
+    case StringVal.VARIABLE(s)         => true
+    case StringVal.GRAPH_VARIABLE      => true
+    case StringVal.URIVAL(s)           => false
+    case StringVal.BLANK(s)            => false
+    case StringVal.BOOL(_)             => false
   }
   def isBlank: Boolean = this match {
-    case StringVal.STRING(s, _)   => false
-    case StringVal.NUM(s)         => false
-    case StringVal.VARIABLE(s)    => false
-    case StringVal.GRAPH_VARIABLE => false
-    case StringVal.URIVAL(s)      => false
-    case StringVal.BLANK(s)       => true
-    case StringVal.BOOL(_)        => false
+    case StringVal.STRING(s)           => false
+    case StringVal.DT_STRING(s, tag)   => false
+    case StringVal.LANG_STRING(s, tag) => false
+    case StringVal.NUM(s)              => false
+    case StringVal.VARIABLE(s)         => false
+    case StringVal.GRAPH_VARIABLE      => false
+    case StringVal.URIVAL(s)           => false
+    case StringVal.BLANK(s)            => true
+    case StringVal.BOOL(_)             => false
   }
 }
 object StringVal {
-  final case class STRING(s: String, tag: Option[String] = None)
-      extends StringVal
-  final case class NUM(s: String)      extends StringVal
-  final case class VARIABLE(s: String) extends StringVal
-  final case object GRAPH_VARIABLE     extends StringVal { val s = "*g" }
-  final case class URIVAL(s: String)   extends StringVal
-  final case class BLANK(s: String)    extends StringVal
-  final case class BOOL(s: String)     extends StringVal
+  final case class STRING(s: String)                   extends StringVal
+  final case class DT_STRING(s: String, tag: String)   extends StringVal
+  final case class LANG_STRING(s: String, tag: String) extends StringVal
+  final case class NUM(s: String)                      extends StringVal
+  final case class VARIABLE(s: String)                 extends StringVal
+  final case object GRAPH_VARIABLE                     extends StringVal { val s = "*g" }
+  final case class URIVAL(s: String)                   extends StringVal
+  final case class BLANK(s: String)                    extends StringVal
+  final case class BOOL(s: String)                     extends StringVal
 }
 
 sealed trait Aggregate extends Expression
