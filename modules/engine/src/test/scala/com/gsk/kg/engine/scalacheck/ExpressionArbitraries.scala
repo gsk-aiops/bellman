@@ -21,8 +21,11 @@ trait ExpressionArbitraries extends CommonGenerators {
     )
 
   val stringValGenerator: Gen[StringVal] = Gen.oneOf(
-    (nonEmptyStringGenerator, Gen.option(sparqlDataTypesGen))
-      .mapN(StringVal.STRING(_, _)),
+    nonEmptyStringGenerator.map(StringVal.STRING(_)),
+    (nonEmptyStringGenerator, sparqlDataTypesGen)
+      .mapN(StringVal.DT_STRING(_, _)),
+    (nonEmptyStringGenerator, nonEmptyStringGenerator.map(x => s"@$x"))
+      .mapN(StringVal.LANG_STRING(_, _)),
     Gen.numStr.map(StringVal.NUM(_)),
     nonEmptyStringGenerator.map(str => StringVal.VARIABLE(s"?$str")),
     nonEmptyStringGenerator.map(uri => StringVal.URIVAL(uri)),
