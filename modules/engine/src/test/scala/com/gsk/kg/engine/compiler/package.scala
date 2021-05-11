@@ -1,8 +1,9 @@
 package com.gsk.kg.engine
 
-import org.apache.spark.sql.SQLContext
-import org.apache.jena.riot.lang.CollectorStreamTriples
 import org.apache.jena.riot.RDFParser
+import org.apache.jena.riot.lang.CollectorStreamTriples
+
+import org.apache.spark.sql.SQLContext
 
 package object compiler {
 

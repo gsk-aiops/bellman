@@ -903,7 +903,8 @@ class FuncSpec
         ("false", false)
       ).toDF("input", "expected")
 
-      val df = initial.withColumn("result", Func.isTypedLiteral(initial("input")))
+      val df =
+        initial.withColumn("result", Func.isTypedLiteral(initial("input")))
 
       df.collect.foreach { case Row(_, expected, result) =>
         expected shouldEqual result
@@ -928,7 +929,8 @@ class FuncSpec
         ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#double>", "1.1")
       ).toDF("input", "expected")
 
-      val df = initial.withColumn("result", Func.extractNumber(initial("input")))
+      val df =
+        initial.withColumn("result", Func.extractNumber(initial("input")))
 
       df.collect.foreach { case Row(_, expected, result) =>
         expected shouldEqual result
@@ -944,7 +946,8 @@ class FuncSpec
         ("1.1", null)
       ).toDF("input", "expected")
 
-      val df = initial.withColumn("result", Func.extractNumber(initial("input")))
+      val df =
+        initial.withColumn("result", Func.extractNumber(initial("input")))
 
       df.collect.foreach { case Row(_, expected, result) =>
         expected shouldEqual result
@@ -969,7 +972,8 @@ class FuncSpec
         ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#double>", "1.1")
       ).toDF("input", "expected")
 
-      val df = initial.withColumn("result", Func.tryExtractNumber(initial("input")))
+      val df =
+        initial.withColumn("result", Func.tryExtractNumber(initial("input")))
 
       df.collect.foreach { case Row(_, expected, result) =>
         expected shouldEqual result
@@ -985,7 +989,8 @@ class FuncSpec
         ("1.1", "1.1")
       ).toDF("input", "expected")
 
-      val df = initial.withColumn("result", Func.tryExtractNumber(initial("input")))
+      val df =
+        initial.withColumn("result", Func.tryExtractNumber(initial("input")))
 
       df.collect.foreach { case Row(_, expected, result) =>
         expected shouldEqual result

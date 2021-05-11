@@ -332,6 +332,7 @@ object Func {
       )
     )
 
+  // scalastyle:off
   def extractType(col: Column): Column =
     when(
       isTypedLiteral(col),
@@ -340,6 +341,7 @@ object Func {
 
   def extractNumber(col: Column): Column =
     extractNumberImpl(col, lit(null))
+  // scalastyle:on
 
   def tryExtractNumber(col: Column): Column =
     extractNumberImpl(col, col)

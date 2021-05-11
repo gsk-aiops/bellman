@@ -116,11 +116,31 @@ class GroupBySpec
     "operate correctly there's GROUP BY and a AVG function" in {
 
       val df = List(
-        ("<http://uri.com/subject/a1>", "\"1\"^^xsd:int", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a1>", "\"2\"^^xsd:int", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a2>", "\"3\"^^xsd:int", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a2>", "\"4\"^^xsd:int", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a3>", "\"5\"^^xsd:int", "<http://uri.com/object>")
+        (
+          "<http://uri.com/subject/a1>",
+          "\"1\"^^xsd:int",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a1>",
+          "\"2\"^^xsd:int",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a2>",
+          "\"3\"^^xsd:int",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a2>",
+          "\"4\"^^xsd:int",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a3>",
+          "\"5\"^^xsd:int",
+          "<http://uri.com/object>"
+        )
       ).toDF("s", "p", "o")
 
       val query =
@@ -389,11 +409,31 @@ class GroupBySpec
     "operate correctly there's GROUP BY and a SUM function using typed literals" in {
 
       val df = List(
-        ("<http://uri.com/subject/a1>", "\"2\"^^xsd:float", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a1>", "\"1\"^^xsd:float", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a2>", "\"2\"^^xsd:float", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a2>", "\"1\"^^xsd:float", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a3>", "\"1\"^^xsd:float", "<http://uri.com/object>")
+        (
+          "<http://uri.com/subject/a1>",
+          "\"2\"^^xsd:float",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a1>",
+          "\"1\"^^xsd:float",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a2>",
+          "\"2\"^^xsd:float",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a2>",
+          "\"1\"^^xsd:float",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a3>",
+          "\"1\"^^xsd:float",
+          "<http://uri.com/object>"
+        )
       ).toDF("s", "p", "o")
 
       val query =
@@ -416,11 +456,31 @@ class GroupBySpec
     "operate correctly there's GROUP BY and a AVG function using typed literals" in {
 
       val df = List(
-        ("<http://uri.com/subject/a1>", "\"2\"^^xsd:float", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a1>", "\"1\"^^xsd:float", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a2>", "\"2\"^^xsd:float", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a2>", "\"1\"^^xsd:float", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a3>", "\"1.5\"^^xsd:float", "<http://uri.com/object>")
+        (
+          "<http://uri.com/subject/a1>",
+          "\"2\"^^xsd:float",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a1>",
+          "\"1\"^^xsd:float",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a2>",
+          "\"2\"^^xsd:float",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a2>",
+          "\"1\"^^xsd:float",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a3>",
+          "\"1.5\"^^xsd:float",
+          "<http://uri.com/object>"
+        )
       ).toDF("s", "p", "o")
 
       val query =
