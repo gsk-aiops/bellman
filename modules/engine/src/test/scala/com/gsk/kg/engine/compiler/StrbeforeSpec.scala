@@ -4,6 +4,7 @@ import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.EngineError
 import com.gsk.kg.sparqlparser.TestConfig
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import org.apache.spark.sql.Row
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -61,9 +62,8 @@ class StrbeforeSpec
         .right
         .get
         .drop("s", "p")
-        .first()
-        .getString(0)
-      result shouldEqual expected
+        .head()
+      result shouldEqual Row(expected)
     }
 
     "arg1 is plain literal with language tag and arg2 is simple literal" in {
@@ -97,9 +97,8 @@ class StrbeforeSpec
         .right
         .get
         .drop("s", "p")
-        .first()
-        .getString(0)
-      result shouldEqual expected
+        .head()
+      result shouldEqual Row(expected)
     }
 
     "arg1 is plain literal with language tag and arg2 is plain literal with incompatible language tag" in {
@@ -163,9 +162,8 @@ class StrbeforeSpec
         .right
         .get
         .drop("s", "p")
-        .first()
-        .getString(0)
-      result shouldEqual expected
+        .head()
+      result shouldEqual Row(expected)
     }
 
     "arg1 is simple literal and arg two is simple literal" in {
@@ -199,9 +197,8 @@ class StrbeforeSpec
         .right
         .get
         .drop("s", "p")
-        .first()
-        .getString(0)
-      result shouldEqual expected
+        .head()
+      result shouldEqual Row(expected)
     }
   }
 
@@ -236,9 +233,8 @@ class StrbeforeSpec
       .right
       .get
       .drop("s", "p")
-      .first()
-      .getString(0)
-    result shouldEqual expected
+      .head()
+    result shouldEqual Row(expected)
   }
 
   "arg1 is plain literal with language tag and arg2 is simple literal" in {
@@ -272,9 +268,8 @@ class StrbeforeSpec
       .right
       .get
       .drop("s", "p")
-      .first()
-      .getString(0)
-    result shouldEqual expected
+      .head()
+    result shouldEqual Row(expected)
   }
 
   "arg1 is plain literal with language tag and arg2 is empty string plain literal with compatible language tag" in {
@@ -308,9 +303,8 @@ class StrbeforeSpec
       .right
       .get
       .drop("s", "p")
-      .first()
-      .getString(0)
-    result shouldEqual expected
+      .head()
+    result shouldEqual Row(expected)
   }
 
   "arg1 is plain literal with language tag and arg2 is empty simple string" in {
@@ -344,8 +338,7 @@ class StrbeforeSpec
       .right
       .get
       .drop("s", "p")
-      .first()
-      .getString(0)
-    result shouldEqual expected
+      .head()
+    result shouldEqual Row(expected)
   }
 }
