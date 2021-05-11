@@ -141,7 +141,9 @@ object FindVariablesOnExpression {
         case AVG(e)                          => e
         case SAMPLE(e)                       => e
         case GROUP_CONCAT(e, separator)      => e
-        case STRING(s, _)                    => Set.empty[VARIABLE]
+        case STRING(s)                       => Set.empty[VARIABLE]
+        case DT_STRING(s, tag)               => Set.empty[VARIABLE]
+        case LANG_STRING(s, tag)             => Set.empty[VARIABLE]
         case NUM(s)                          => Set.empty[VARIABLE]
         case ExpressionF.VARIABLE(s)         => Set(VARIABLE(s))
         case URIVAL(s)                       => Set.empty[VARIABLE]

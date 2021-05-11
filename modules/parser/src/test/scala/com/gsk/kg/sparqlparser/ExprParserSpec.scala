@@ -275,7 +275,7 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
             URI(
               STRAFTER(
                 CONCAT(STR(VARIABLE(s2: String)), STR(VARIABLE(s3: String))),
-                STRING("#", _)
+                STRING("#")
               )
             ),
             BGP(l1: Seq[Quad])
@@ -293,8 +293,8 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     p.get.value match {
       case Filter(
             Seq(
-              STRSTARTS(STR(VARIABLE("?src")), STRING("ner:", None)),
-              GT(VARIABLE("?year"), STRING("2015", None))
+              STRSTARTS(STR(VARIABLE("?src")), STRING("ner:")),
+              GT(VARIABLE("?year"), STRING("2015"))
             ),
             BGP(
               Seq(
@@ -325,7 +325,7 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     )
     p.get.value match {
       case Filter(
-            List(GT(VARIABLE("?year"), STRING("2015", None))),
+            List(GT(VARIABLE("?year"), STRING("2015"))),
             BGP(l1: Seq[Quad])
           ) =>
         succeed
@@ -340,7 +340,7 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     )
     p.get.value match {
       case Filter(
-            List(LT(VARIABLE("?year"), STRING("2015", None))),
+            List(LT(VARIABLE("?year"), STRING("2015"))),
             BGP(l1: Seq[Quad])
           ) =>
         succeed

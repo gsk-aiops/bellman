@@ -11,8 +11,8 @@ class ConditionalParserSpec extends AnyFlatSpec {
     val p =
       fastparse.parse("""(= ?d "Hello")""", ConditionalParser.equalsParen(_))
     p.get.value match {
-      case EQUALS(VARIABLE("?d"), STRING("Hello", None)) => succeed
-      case _                                             => fail
+      case EQUALS(VARIABLE("?d"), STRING("Hello")) => succeed
+      case _                                       => fail
     }
   }
 
@@ -22,8 +22,8 @@ class ConditionalParserSpec extends AnyFlatSpec {
       ConditionalParser.notEqualsParen(_)
     )
     p.get.value match {
-      case NEGATE(EQUALS(VARIABLE("?d"), STRING("Hello", None))) => succeed
-      case _                                                     => fail
+      case NEGATE(EQUALS(VARIABLE("?d"), STRING("Hello"))) => succeed
+      case _                                               => fail
     }
   }
 
@@ -31,8 +31,8 @@ class ConditionalParserSpec extends AnyFlatSpec {
     val p =
       fastparse.parse("""(> ?year "2015")""", ConditionalParser.gtParen(_))
     p.get.value match {
-      case GT(VARIABLE("?year"), STRING("2015", None)) => succeed
-      case _                                           => fail
+      case GT(VARIABLE("?year"), STRING("2015")) => succeed
+      case _                                     => fail
     }
   }
 
@@ -40,8 +40,8 @@ class ConditionalParserSpec extends AnyFlatSpec {
     val p =
       fastparse.parse("""(< ?year "2015")""", ConditionalParser.ltParen(_))
     p.get.value match {
-      case LT(VARIABLE("?year"), STRING("2015", None)) => succeed
-      case _                                           => fail
+      case LT(VARIABLE("?year"), STRING("2015")) => succeed
+      case _                                     => fail
     }
   }
 
@@ -49,8 +49,8 @@ class ConditionalParserSpec extends AnyFlatSpec {
     val p =
       fastparse.parse("""(>= ?year "2015")""", ConditionalParser.gteParen(_))
     p.get.value match {
-      case GTE(VARIABLE("?year"), STRING("2015", None)) => succeed
-      case _                                            => fail
+      case GTE(VARIABLE("?year"), STRING("2015")) => succeed
+      case _                                      => fail
     }
   }
 
@@ -58,8 +58,8 @@ class ConditionalParserSpec extends AnyFlatSpec {
     val p =
       fastparse.parse("""(<= ?year "2015")""", ConditionalParser.lteParen(_))
     p.get.value match {
-      case LTE(VARIABLE("?year"), STRING("2015", None)) => succeed
-      case _                                            => fail
+      case LTE(VARIABLE("?year"), STRING("2015")) => succeed
+      case _                                      => fail
     }
   }
 }

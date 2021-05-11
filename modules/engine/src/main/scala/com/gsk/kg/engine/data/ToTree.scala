@@ -164,8 +164,12 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.SAMPLE(e) => Node("SAMPLE", Stream(e))
           case ExpressionF.GROUP_CONCAT(e, separator) =>
             Node("GROUP_CONCAT", Stream(e, separator.toTree))
-          case ExpressionF.STRING(s, tag) =>
-            tag.fold(Leaf(s"STRING($s)"))(t => Leaf(s"STRING($s, $t)"))
+          case ExpressionF.STRING(s) =>
+            Leaf(s"STRING($s)")
+          case ExpressionF.DT_STRING(s, tag) =>
+            Leaf(s"DT_STRING($s, $tag)")
+          case ExpressionF.LANG_STRING(s, tag) =>
+            Leaf(s"LANG_STRING($s, $tag")
           case ExpressionF.NUM(s)      => Leaf(s"NUM($s)")
           case ExpressionF.VARIABLE(s) => Leaf(s"VARIABLE($s)")
           case ExpressionF.URIVAL(s)   => Leaf(s"URIVAL($s)")

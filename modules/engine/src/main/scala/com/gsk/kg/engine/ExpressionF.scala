@@ -53,31 +53,32 @@ object ExpressionF {
   final case class SAMPLE[A](e: A) extends ExpressionF[A]
   final case class GROUP_CONCAT[A](e: A, separator: String)
       extends ExpressionF[A]
-  final case class STRING[A](s: String, tag: Option[String])
-      extends ExpressionF[A]
-  final case class NUM[A](s: String)      extends ExpressionF[A]
-  final case class VARIABLE[A](s: String) extends ExpressionF[A]
-  final case class URIVAL[A](s: String)   extends ExpressionF[A]
-  final case class BLANK[A](s: String)    extends ExpressionF[A]
-  final case class BOOL[A](s: String)     extends ExpressionF[A]
-  final case class ASC[A](e: A)           extends ExpressionF[A]
-  final case class DESC[A](e: A)          extends ExpressionF[A]
+  final case class STRING[A](s: String)                   extends ExpressionF[A]
+  final case class DT_STRING[A](s: String, tag: String)   extends ExpressionF[A]
+  final case class LANG_STRING[A](s: String, tag: String) extends ExpressionF[A]
+  final case class NUM[A](s: String)                      extends ExpressionF[A]
+  final case class VARIABLE[A](s: String)                 extends ExpressionF[A]
+  final case class URIVAL[A](s: String)                   extends ExpressionF[A]
+  final case class BLANK[A](s: String)                    extends ExpressionF[A]
+  final case class BOOL[A](s: String)                     extends ExpressionF[A]
+  final case class ASC[A](e: A)                           extends ExpressionF[A]
+  final case class DESC[A](e: A)                          extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
-      case Conditional.EQUALS(l, r)                         => EQUALS(l, r)
-      case Conditional.GT(l, r)                             => GT(l, r)
-      case Conditional.LT(l, r)                             => LT(l, r)
-      case Conditional.GTE(l, r)                            => GTE(l, r)
-      case Conditional.LTE(l, r)                            => LTE(l, r)
-      case Conditional.OR(l, r)                             => OR(l, r)
-      case Conditional.AND(l, r)                            => AND(l, r)
-      case Conditional.NEGATE(s)                            => NEGATE(s)
-      case BuiltInFunc.URI(s)                               => URI(s)
-      case BuiltInFunc.CONCAT(appendTo, append)             => CONCAT(appendTo, append)
-      case BuiltInFunc.STR(s)                               => STR(s)
-      case BuiltInFunc.STRAFTER(s, StringVal.STRING(f, _))  => STRAFTER(s, f)
-      case BuiltInFunc.STRBEFORE(s, StringVal.STRING(f, _)) => STRBEFORE(s, f)
+      case Conditional.EQUALS(l, r)                      => EQUALS(l, r)
+      case Conditional.GT(l, r)                          => GT(l, r)
+      case Conditional.LT(l, r)                          => LT(l, r)
+      case Conditional.GTE(l, r)                         => GTE(l, r)
+      case Conditional.LTE(l, r)                         => LTE(l, r)
+      case Conditional.OR(l, r)                          => OR(l, r)
+      case Conditional.AND(l, r)                         => AND(l, r)
+      case Conditional.NEGATE(s)                         => NEGATE(s)
+      case BuiltInFunc.URI(s)                            => URI(s)
+      case BuiltInFunc.CONCAT(appendTo, append)          => CONCAT(appendTo, append)
+      case BuiltInFunc.STR(s)                            => STR(s)
+      case BuiltInFunc.STRAFTER(s, StringVal.STRING(f))  => STRAFTER(s, f)
+      case BuiltInFunc.STRBEFORE(s, StringVal.STRING(f)) => STRBEFORE(s, f)
       case BuiltInFunc.SUBSTR(
             s,
             StringVal.NUM(pos),
@@ -89,35 +90,37 @@ object ExpressionF {
       case BuiltInFunc.ISBLANK(s) => ISBLANK(s)
       case BuiltInFunc.REPLACE(
             st,
-            StringVal.STRING(pattern, _),
-            StringVal.STRING(by, _),
-            StringVal.STRING(flags, _)
+            StringVal.STRING(pattern),
+            StringVal.STRING(by),
+            StringVal.STRING(flags)
           ) =>
         REPLACE(st, pattern, by, flags)
       case BuiltInFunc.REGEX(
             s,
-            StringVal.STRING(pattern, _),
-            StringVal.STRING(flags, _)
+            StringVal.STRING(pattern),
+            StringVal.STRING(flags)
           ) =>
         REGEX(s, pattern, flags)
-      case BuiltInFunc.STRENDS(s, StringVal.STRING(f, _))   => STRENDS(s, f)
-      case BuiltInFunc.STRSTARTS(s, StringVal.STRING(f, _)) => STRSTARTS(s, f)
-      case BuiltInFunc.STRDT(s, StringVal.URIVAL(uri))      => STRDT(s, uri)
-      case Aggregate.COUNT(e)                               => COUNT(e)
-      case Aggregate.SUM(e)                                 => SUM(e)
-      case Aggregate.MIN(e)                                 => MIN(e)
-      case Aggregate.MAX(e)                                 => MAX(e)
-      case Aggregate.AVG(e)                                 => AVG(e)
-      case Aggregate.SAMPLE(e)                              => SAMPLE(e)
-      case Aggregate.GROUP_CONCAT(e, separator)             => GROUP_CONCAT(e, separator)
-      case StringVal.STRING(s, tag)                         => STRING(s, tag)
-      case StringVal.NUM(s)                                 => NUM(s)
-      case StringVal.VARIABLE(s)                            => VARIABLE(s)
-      case StringVal.URIVAL(s)                              => URIVAL(s)
-      case StringVal.BLANK(s)                               => BLANK(s)
-      case StringVal.BOOL(s)                                => BOOL(s)
-      case ConditionOrder.ASC(e)                            => ASC(e)
-      case ConditionOrder.DESC(e)                           => DESC(e)
+      case BuiltInFunc.STRENDS(s, StringVal.STRING(f))   => STRENDS(s, f)
+      case BuiltInFunc.STRSTARTS(s, StringVal.STRING(f)) => STRSTARTS(s, f)
+      case BuiltInFunc.STRDT(s, StringVal.URIVAL(uri))   => STRDT(s, uri)
+      case Aggregate.COUNT(e)                            => COUNT(e)
+      case Aggregate.SUM(e)                              => SUM(e)
+      case Aggregate.MIN(e)                              => MIN(e)
+      case Aggregate.MAX(e)                              => MAX(e)
+      case Aggregate.AVG(e)                              => AVG(e)
+      case Aggregate.SAMPLE(e)                           => SAMPLE(e)
+      case Aggregate.GROUP_CONCAT(e, separator)          => GROUP_CONCAT(e, separator)
+      case StringVal.STRING(s)                           => STRING(s)
+      case StringVal.DT_STRING(s, tag)                   => DT_STRING(s, tag)
+      case StringVal.LANG_STRING(s, tag)                 => LANG_STRING(s, tag)
+      case StringVal.NUM(s)                              => NUM(s)
+      case StringVal.VARIABLE(s)                         => VARIABLE(s)
+      case StringVal.URIVAL(s)                           => URIVAL(s)
+      case StringVal.BLANK(s)                            => BLANK(s)
+      case StringVal.BOOL(s)                             => BOOL(s)
+      case ConditionOrder.ASC(e)                         => ASC(e)
+      case ConditionOrder.DESC(e)                        => DESC(e)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -189,7 +192,9 @@ object ExpressionF {
       case AVG(e)                     => Aggregate.AVG(e)
       case SAMPLE(e)                  => Aggregate.SAMPLE(e)
       case GROUP_CONCAT(e, separator) => Aggregate.GROUP_CONCAT(e, separator)
-      case STRING(s, tag)             => StringVal.STRING(s, tag)
+      case STRING(s)                  => StringVal.STRING(s)
+      case DT_STRING(s, tag)          => StringVal.DT_STRING(s, tag)
+      case LANG_STRING(s, tag)        => StringVal.LANG_STRING(s, tag)
       case NUM(s)                     => StringVal.NUM(s)
       case VARIABLE(s)                => StringVal.VARIABLE(s)
       case URIVAL(s)                  => StringVal.URIVAL(s)
@@ -225,11 +230,12 @@ object ExpressionF {
         case URI(s)                   => Func.iri(s).pure[M]
         case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]
         case STR(s)                   => Func.str(s).pure[M]
-        case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
-        case STRBEFORE(s, f)          => Func.strbefore(s, f).pure[M]
-        case STRDT(e, uri)            => Func.strdt(e, uri).pure[M]
-        case SUBSTR(s, pos, len)      => Func.substr(s, pos, len).pure[M]
-        case ISBLANK(s)               => Func.isBlank(s).pure[M]
+        case STRAFTER(s, f) =>
+          Func.strafter(s, f).pure[M]
+        case STRBEFORE(s, f)     => Func.strbefore(s, f).pure[M]
+        case STRDT(e, uri)       => Func.strdt(e, uri).pure[M]
+        case SUBSTR(s, pos, len) => Func.substr(s, pos, len).pure[M]
+        case ISBLANK(s)          => Func.isBlank(s).pure[M]
         case REPLACE(st, pattern, by, flags) =>
           Func.replace(st, pattern, by, flags).pure[M]
         case COUNT(e)                   => unknownFunction("COUNT")
@@ -239,8 +245,9 @@ object ExpressionF {
         case AVG(e)                     => unknownFunction("AVG")
         case SAMPLE(e)                  => unknownFunction("SAMPLE")
         case GROUP_CONCAT(e, separator) => unknownFunction("GROUP_CONCAT")
-        case STRING(s, None)            => lit(s).pure[M]
-        case STRING(s, Some(tag))       => lit(s""""$s"^^$tag""").pure[M]
+        case STRING(s)                  => lit(s).pure[M]
+        case DT_STRING(s, tag)          => lit(s""""$s"^^$tag""").pure[M]
+        case LANG_STRING(s, tag)        => lit(s""""$s"$tag""").pure[M]
         case NUM(s)                     => lit(s).pure[M]
         case VARIABLE(s) =>
           M.inspect[Result, Config, Log, DataFrame, Column](_(s))

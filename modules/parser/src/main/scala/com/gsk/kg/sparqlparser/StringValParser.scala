@@ -9,10 +9,23 @@ object StringValParser {
   def lang[_: P]: P[String] = P("@" ~ CharsWhileIn("a-zA-Z")).!
   def iri[_: P]: P[String]  = P("<" ~ (CharsWhile(_ != '>')) ~ ">").!
   // RDF string literal could have optional language or optional iri
-  def string[_: P]: P[STRING] =
-    P("\"" ~ CharsWhile(_ != '\"').! ~ "\"" ~ (lang | "^^" ~ iri).?).map {
-      case (tx, tag) => STRING(tx, tag)
-    }
+
+  def langString[_: P]: P[LANG_STRING] = P(
+    "\"" ~ CharsWhile(_ != '\"').! ~ "\"" ~ lang
+  ).map { case (s, tag) =>
+    LANG_STRING(s, tag)
+  }
+
+  def dataTypeString[_: P]: P[DT_STRING] = P(
+    "\"" ~ CharsWhile(_ != '\"').! ~ "\"" ~ "^^" ~ iri
+  ).map { case (s, tag) =>
+    DT_STRING(s, tag)
+  }
+
+  def plainString[_: P]: P[STRING] = P(
+    "\"" ~ CharsWhile(_ != '\"').! ~ "\""
+  ).map(s => STRING(s))
+
   //TODO improve regex. Include all valid sparql varnames in spec: https://www.w3.org/TR/sparql11-query/#rPN_CHARS_BASE
   def variable[_: P]: P[VARIABLE] =
     P("?" ~ "?".? ~ CharsWhileIn("a-zA-Z0-9_.")).!.map(str =>
@@ -32,6 +45,6 @@ object StringValParser {
   }
 
   def tripleValParser[_: P]: P[StringVal] = P(
-    variable | urival | string | num | blankNode | bool
+    variable | urival | langString | dataTypeString | plainString | num | blankNode | bool
   )
 }
