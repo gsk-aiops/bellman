@@ -117,7 +117,7 @@ class StrbeforeSpec
     val df = List(
       (
         "<http://uri.com/subject/#a1>",
-        "<http://xmlns.com/foaf/0.1/name>",
+        "<http://xmlns.com/foaf/0.1/title>",
         arg1
       )
     ).toDF("s", "p", "o")
@@ -126,11 +126,11 @@ class StrbeforeSpec
       s"""
           PREFIX foaf: <http://xmlns.com/foaf/0.1/>
           CONSTRUCT {
-            ?x foaf:firstName ?firstName .
+            ?x foaf:titlePrefix ?titlePrefix .
           }
           WHERE{
-            ?x foaf:name ?name .
-            BIND(STRBEFORE(?name, $arg2) as ?firstName) .
+            ?x foaf:title ?title .
+            BIND(STRBEFORE(?title, $arg2) as ?titlePrefix) .
           }
           """
 
@@ -146,7 +146,7 @@ class StrbeforeSpec
     val df = List(
       (
         "<http://uri.com/subject/#a1>",
-        "<http://xmlns.com/foaf/0.1/name>",
+        "<http://xmlns.com/foaf/0.1/title>",
         arg1
       )
     ).toDF("s", "p", "o")
@@ -155,11 +155,11 @@ class StrbeforeSpec
       s"""
           PREFIX foaf: <http://xmlns.com/foaf/0.1/>
           CONSTRUCT {
-            ?x foaf:firstName ?firstName .
+            ?x foaf:titlePrefix ?titlePrefix .
           }
           WHERE{
-            ?x foaf:name ?name .
-            BIND(STRBEFORE(?name, $arg2) as ?firstName) .
+            ?x foaf:title ?title .
+            BIND(STRBEFORE(?title, $arg2) as ?titlePrefix) .
           }
           """
 
