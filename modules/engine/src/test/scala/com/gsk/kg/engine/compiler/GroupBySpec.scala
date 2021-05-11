@@ -107,20 +107,20 @@ class GroupBySpec
       val result = Compiler.compile(df, query, config)
 
       result.right.get.collect.toSet shouldEqual Set(
-        Row("<http://uri.com/subject/a1>", "2"),
-        Row("<http://uri.com/subject/a2>", "2"),
-        Row("<http://uri.com/subject/a3>", "1")
+        Row("<http://uri.com/subject/a1>", "\"2\"^^xsd:int"),
+        Row("<http://uri.com/subject/a2>", "\"2\"^^xsd:int"),
+        Row("<http://uri.com/subject/a3>", "\"1\"^^xsd:int")
       )
     }
 
     "operate correctly there's GROUP BY and a AVG function" in {
 
       val df = List(
-        ("<http://uri.com/subject/a1>", "1", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a1>", "2", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a2>", "3", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a2>", "4", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a3>", "5", "<http://uri.com/object>")
+        ("<http://uri.com/subject/a1>", "\"1\"^^xsd:int", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a1>", "\"2\"^^xsd:int", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a2>", "\"3\"^^xsd:int", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a2>", "\"4\"^^xsd:int", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a3>", "\"5\"^^xsd:int", "<http://uri.com/object>")
       ).toDF("s", "p", "o")
 
       val query =
@@ -134,9 +134,9 @@ class GroupBySpec
       val result = Compiler.compile(df, query, config)
 
       result.right.get.collect.toSet shouldEqual Set(
-        Row("<http://uri.com/subject/a1>", "1.5"),
-        Row("<http://uri.com/subject/a2>", "3.5"),
-        Row("<http://uri.com/subject/a3>", "5.0")
+        Row("<http://uri.com/subject/a1>", "\"1.5\"^^xsd:double"),
+        Row("<http://uri.com/subject/a2>", "\"3.5\"^^xsd:double"),
+        Row("<http://uri.com/subject/a3>", "\"5.0\"^^xsd:double")
       )
     }
 
@@ -360,8 +360,7 @@ class GroupBySpec
       }
     }
 
-    "operate correctly there's GROUP BY and a SUM function" in {
-
+    "not work for non RDF literal values" in {
       val df = List(
         ("<http://uri.com/subject/a1>", "2", "<http://uri.com/object>"),
         ("<http://uri.com/subject/a1>", "1", "<http://uri.com/object>"),
@@ -381,9 +380,9 @@ class GroupBySpec
       val result = Compiler.compile(df, query, config)
 
       result.right.get.collect.toSet shouldEqual Set(
-        Row("<http://uri.com/subject/a1>", "3.0"),
-        Row("<http://uri.com/subject/a2>", "3.0"),
-        Row("<http://uri.com/subject/a3>", "1.0")
+        Row("<http://uri.com/subject/a1>", null),
+        Row("<http://uri.com/subject/a2>", null),
+        Row("<http://uri.com/subject/a3>", null)
       )
     }
 
@@ -408,9 +407,9 @@ class GroupBySpec
       val result = Compiler.compile(df, query, config)
 
       result.right.get.collect.toSet shouldEqual Set(
-        Row("<http://uri.com/subject/a1>", "3.0"),
-        Row("<http://uri.com/subject/a2>", "3.0"),
-        Row("<http://uri.com/subject/a3>", "1.0")
+        Row("<http://uri.com/subject/a1>", "\"3.0\"^^xsd:double"),
+        Row("<http://uri.com/subject/a2>", "\"3.0\"^^xsd:double"),
+        Row("<http://uri.com/subject/a3>", "\"1.0\"^^xsd:double")
       )
     }
 
@@ -435,9 +434,9 @@ class GroupBySpec
       val result = Compiler.compile(df, query, config)
 
       result.right.get.collect.toSet shouldEqual Set(
-        Row("<http://uri.com/subject/a1>", "1.5"),
-        Row("<http://uri.com/subject/a2>", "1.5"),
-        Row("<http://uri.com/subject/a3>", "1.5")
+        Row("<http://uri.com/subject/a1>", "\"1.5\"^^xsd:double"),
+        Row("<http://uri.com/subject/a2>", "\"1.5\"^^xsd:double"),
+        Row("<http://uri.com/subject/a3>", "\"1.5\"^^xsd:double")
       )
     }
 

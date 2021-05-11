@@ -316,6 +316,22 @@ object Func {
   def isTypedLiteral(col: Column): Column =
     col.startsWith("\"") && col.contains("\"^^")
 
+  def isNumeric(col: Column): Column =
+    extractType(col).isInCollection(
+      Set(
+        "xsd:int",
+        "xsd:integer",
+        "xsd:decimal",
+        "xsd:float",
+        "xsd:double",
+        "<http://www.w3.org/2001/XMLSchema#int>",
+        "<http://www.w3.org/2001/XMLSchema#integer>",
+        "<http://www.w3.org/2001/XMLSchema#float>",
+        "<http://www.w3.org/2001/XMLSchema#decimal>",
+        "<http://www.w3.org/2001/XMLSchema#double>"
+      )
+    )
+
   def extractType(col: Column): Column =
     when(
       isTypedLiteral(col),
@@ -323,10 +339,16 @@ object Func {
     ).otherwise(lit(null))
 
   def extractNumber(col: Column): Column =
+    extractNumberImpl(col, lit(null))
+
+  def tryExtractNumber(col: Column): Column =
+    extractNumberImpl(col, col)
+
+  private def extractNumberImpl(col: Column, default: Column) =
     when(
-      isTypedLiteral(col),
+      isTypedLiteral(col) && isNumeric(col),
       strbefore(ltrim(col, "\""), "\"^^")
-    ).otherwise(col)
+    ).otherwise(default)
 
   /** This helper method tries to parse a datetime expressed as a RDF
     * datetime string `"0193-07-03T20:50:09.000+04:00"^^xsd:dateTime`
