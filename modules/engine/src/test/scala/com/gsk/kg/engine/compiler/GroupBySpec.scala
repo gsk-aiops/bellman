@@ -233,7 +233,7 @@ class GroupBySpec
         val query =
           """
           PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-          
+
           SELECT ?s (MIN(?age) AS ?o)
           WHERE {
             ?s foaf:age ?age .
@@ -343,7 +343,7 @@ class GroupBySpec
         val query =
           """
           PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-          
+
           SELECT ?s (MAX(?age) AS ?o)
           WHERE {
             ?s foaf:age ?age .
@@ -384,6 +384,60 @@ class GroupBySpec
         Row("<http://uri.com/subject/a1>", "3.0"),
         Row("<http://uri.com/subject/a2>", "3.0"),
         Row("<http://uri.com/subject/a3>", "1.0")
+      )
+    }
+
+    "operate correctly there's GROUP BY and a SUM function using typed literals" in {
+
+      val df = List(
+        ("<http://uri.com/subject/a1>", "\"2\"^^xsd:float", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a1>", "\"1\"^^xsd:float", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a2>", "\"2\"^^xsd:float", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a2>", "\"1\"^^xsd:float", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a3>", "\"1\"^^xsd:float", "<http://uri.com/object>")
+      ).toDF("s", "p", "o")
+
+      val query =
+        """
+          SELECT ?a SUM(?b)
+          WHERE {
+            ?a ?b <http://uri.com/object>
+          } GROUP BY ?a
+          """
+
+      val result = Compiler.compile(df, query, config)
+
+      result.right.get.collect.toSet shouldEqual Set(
+        Row("<http://uri.com/subject/a1>", "3.0"),
+        Row("<http://uri.com/subject/a2>", "3.0"),
+        Row("<http://uri.com/subject/a3>", "1.0")
+      )
+    }
+
+    "operate correctly there's GROUP BY and a AVG function using typed literals" in {
+
+      val df = List(
+        ("<http://uri.com/subject/a1>", "\"2\"^^xsd:float", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a1>", "\"1\"^^xsd:float", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a2>", "\"2\"^^xsd:float", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a2>", "\"1\"^^xsd:float", "<http://uri.com/object>"),
+        ("<http://uri.com/subject/a3>", "\"1.5\"^^xsd:float", "<http://uri.com/object>")
+      ).toDF("s", "p", "o")
+
+      val query =
+        """
+          SELECT ?a AVG(?b)
+          WHERE {
+            ?a ?b <http://uri.com/object>
+          } GROUP BY ?a
+          """
+
+      val result = Compiler.compile(df, query, config)
+
+      result.right.get.collect.toSet shouldEqual Set(
+        Row("<http://uri.com/subject/a1>", "1.5"),
+        Row("<http://uri.com/subject/a2>", "1.5"),
+        Row("<http://uri.com/subject/a3>", "1.5")
       )
     }
 

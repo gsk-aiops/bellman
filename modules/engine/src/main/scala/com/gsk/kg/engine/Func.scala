@@ -313,6 +313,21 @@ object Func {
   def groupConcat(col: Column, separator: String): Column =
     ???
 
+  def isTypedLiteral(col: Column): Column =
+    col.startsWith("\"") && col.contains("\"^^")
+
+  def extractType(col: Column): Column =
+    when(
+      isTypedLiteral(col),
+      strafter(col, "\"^^")
+    ).otherwise(lit(null))
+
+  def extractNumber(col: Column): Column =
+    when(
+      isTypedLiteral(col),
+      strbefore(ltrim(col, "\""), "\"^^")
+    ).otherwise(col)
+
   /** This helper method tries to parse a datetime expressed as a RDF
     * datetime string `"0193-07-03T20:50:09.000+04:00"^^xsd:dateTime`
     * to a column with underlying type datetime.
