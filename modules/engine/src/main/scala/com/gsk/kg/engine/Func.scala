@@ -4,6 +4,8 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
 
+import com.gsk.kg.engine.Func.StringFunctionUtils._
+
 object Func {
 
   /** Performs logical binary operation '==' over two columns
@@ -161,60 +163,22 @@ object Func {
       when(substring_index(c, s, -1) === c, lit(""))
         .otherwise(substring_index(c, s, -1))
 
-    val isLocalizedLocalized =
-      RdfFormatter.isLocalizedString(col) && RdfFormatter.isLocalizedString(
-        lit(str)
-      )
-    // scalastyle:off
-    val strafterLocalizedLocalized: Column = {
-      val left  = LocalizedString(col)
-      val right = LocalizedString(str)
-      when(
-        left.tag =!= right.tag,
-        lit(null)
-      ).otherwise(
-        LocalizedString.formatLocalized(left, str)(getLeftOrEmpty)
-      )
-    }
-    // scalastyle:on
-
-    val isLocalizedPlain = RdfFormatter.isLocalizedString(col)
-    val strafterLocalizedPlain: Column = {
-      val left = LocalizedString(col)
-      LocalizedString.formatLocalized(left, str)(getLeftOrEmpty)
-    }
-
-    val isTypedTyped =
-      RdfFormatter.isDatatypeLiteral(col) && RdfFormatter.isDatatypeLiteral(
-        lit(str)
-      )
-    // scalastyle:off
-    val strafterTypedTyped: Column = {
-      val left  = TypedString(col)
-      val right = TypedString(str)
-      when(
-        left.tag =!= right.tag,
-        lit(null)
-      ).otherwise(
-        TypedString.formatTyped(left, str)(getLeftOrEmpty)
-      )
-    }
-    // scalastyle:off
-
-    val isTypedPlain = RdfFormatter.isDatatypeLiteral(col)
-    def strafterTypedPlain: Column = {
-      val left = TypedString(col)
-      TypedString.formatTyped(left, str)(getLeftOrEmpty)
-    }
-
     if (isEmptyPattern(str)) {
       col
     } else {
-      when(isLocalizedLocalized, strafterLocalizedLocalized)
-        .when(isLocalizedPlain, strafterLocalizedPlain)
-        .when(isTypedTyped, strafterTypedTyped)
-        .when(isTypedPlain, strafterTypedPlain)
-        .otherwise(getLeftOrEmpty(col, str))
+      when(
+        isLocalizedLocalizedArgs(col, str),
+        strFuncArgsLocalizedLocalized(col, str)(getLeftOrEmpty)
+      ).when(
+        isLocalizedPlainArgs(col),
+        strFuncArgsLocalizedPlain(col, str)(getLeftOrEmpty)
+      ).when(
+        isTypedTypedArgs(col, str),
+        strFuncArgsTypedTyped(col, str)(getLeftOrEmpty)
+      ).when(
+        isTypedPlainArgs(col),
+        strFuncArgsTypedPlain(col, str)(getLeftOrEmpty)
+      ).otherwise(getLeftOrEmpty(col, str))
     }
   }
 
@@ -522,5 +486,67 @@ object Func {
         t.tag
       )
     )
+  }
+
+  object StringFunctionUtils {
+    def isLocalizedLocalizedArgs(arg1: Column, arg2: String): Column =
+      RdfFormatter.isLocalizedString(arg1) && RdfFormatter.isLocalizedString(
+        lit(arg2)
+      )
+
+    def isTypedTypedArgs(arg1: Column, arg2: String): Column =
+      RdfFormatter.isDatatypeLiteral(arg1) && RdfFormatter.isDatatypeLiteral(
+        lit(arg2)
+      )
+
+    def isTypedPlainArgs(arg1: Column): Column =
+      RdfFormatter.isDatatypeLiteral(arg1)
+
+    def isLocalizedPlainArgs(arg1: Column): Column =
+      RdfFormatter.isLocalizedString(arg1)
+
+    // scalastyle:off
+    def strFuncArgsLocalizedLocalized(col: Column, str: String)(
+        f: (Column, String) => Column
+    ): Column = {
+      val left  = LocalizedString(col)
+      val right = LocalizedString(str)
+      when(
+        left.tag =!= right.tag,
+        lit(null)
+      ).otherwise(
+        LocalizedString.formatLocalized(left, str)(f)
+      )
+    }
+    // scalastyle:on
+
+    def strFuncArgsLocalizedPlain(col: Column, str: String)(
+        f: (Column, String) => Column
+    ): Column = {
+      val left = LocalizedString(col)
+      LocalizedString.formatLocalized(left, str)(f)
+    }
+
+    // scalastyle:off
+    def strFuncArgsTypedTyped(col: Column, str: String)(
+        f: (Column, String) => Column
+    ) = {
+      val left  = TypedString(col)
+      val right = TypedString(str)
+      when(
+        left.tag =!= right.tag,
+        lit(null)
+      ).otherwise(
+        TypedString.formatTyped(left, str)(f)
+      )
+    }
+    // scalastyle:off
+
+    def strFuncArgsTypedPlain(col: Column, str: String)(
+        f: (Column, String) => Column
+    ): Column = {
+      val left = TypedString(col)
+      TypedString.formatTyped(left, str)(f)
+    }
   }
 }

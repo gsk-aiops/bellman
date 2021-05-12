@@ -48,8 +48,7 @@ object RdfFormatter {
       col.cast(DataTypes.StringType)
     ).when(
       isLocalizedString(col),
-      when(col.startsWith("\""), col.cast(DataTypes.StringType))
-        .otherwise(format_string("\"%s", col))
+      col.cast(DataTypes.StringType)
     ).when(
       isUri(col),
       when(
