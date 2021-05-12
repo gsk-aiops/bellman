@@ -78,10 +78,10 @@ object ExpressionF {
       case BuiltInFunc.CONCAT(appendTo, append)         => CONCAT(appendTo, append)
       case BuiltInFunc.STR(s)                           => STR(s)
       case BuiltInFunc.STRAFTER(s, StringVal.STRING(f)) => STRAFTER(s, f)
-      case BuiltInFunc.STRAFTER(s, StringVal.LANG_STRING(s2, tag)) =>
-        STRAFTER(s, s2)
-      case BuiltInFunc.STRAFTER(s, StringVal.DT_STRING(s2, tag)) =>
-        STRAFTER(s, s2)
+      case BuiltInFunc.STRAFTER(s, l @ StringVal.LANG_STRING(_, _)) =>
+        STRAFTER(s, StringVal.LANG_STRING.unApply(l))
+      case BuiltInFunc.STRAFTER(s, t @ StringVal.DT_STRING(_, _)) =>
+        STRAFTER(s, StringVal.DT_STRING.unApply(t))
       case BuiltInFunc.STRBEFORE(s, StringVal.STRING(f)) => STRBEFORE(s, f)
       case BuiltInFunc.SUBSTR(
             s,

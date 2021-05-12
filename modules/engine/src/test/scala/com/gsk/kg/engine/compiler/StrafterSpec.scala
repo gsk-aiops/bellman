@@ -1,10 +1,12 @@
 package com.gsk.kg.engine.compiler
 
+import org.apache.spark.sql.Row
+
 import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.EngineError.ParsingError
 import com.gsk.kg.sparqlparser.TestConfig
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.spark.sql.Row
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -74,12 +76,11 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"c\"@en") // Jena's output
+          Row("\"c\"@en")
         )
       }
 
-      // TODO: Un-ignore when language literals support
-      "language literal and language literal" ignore {
+      "language literal and language literal" in {
         val df = List(
           (
             "Peter",
@@ -102,7 +103,7 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"\"") // Jena's output
+          Row(null)
         )
       }
 
@@ -118,7 +119,7 @@ class StrafterSpec
         val query =
           """
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#string>
+            |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
@@ -130,7 +131,7 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"\"") // Jena outputs empty string
+          Row("\"abc\"")
         )
       }
 
@@ -190,8 +191,7 @@ class StrafterSpec
         )
       }
 
-      // TODO: Un-ignore when language literals support
-      "language literal and empty language literal" ignore {
+      "language literal and empty language literal" in {
         val df = List(
           (
             "Peter",
@@ -219,8 +219,7 @@ class StrafterSpec
         )
       }
 
-      // TODO: Un-ignore when language literals support
-      "language literal and empty plain string" ignore {
+      "language literal and empty plain string" in {
         val df = List(
           (
             "Peter",
@@ -330,8 +329,7 @@ class StrafterSpec
         )
       }
 
-      // TODO: Un-ignore when language literals support
-      "language literal variable and language literal" ignore {
+      "language literal variable and language literal" in {
         val df = List(
           (
             "Peter",
@@ -354,7 +352,7 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"\"") // Jena's output
+          Row(null)
         )
       }
 
@@ -370,7 +368,7 @@ class StrafterSpec
         val query =
           """
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#string>
+            |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
@@ -382,7 +380,7 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"\"")
+          Row("\"abc\"^^xsd:string")
         )
       }
 
@@ -442,8 +440,7 @@ class StrafterSpec
         )
       }
 
-      // TODO: Un-ignore when language literals support
-      "language literal variable and empty language literal" ignore {
+      "language literal variable and empty language literal" in {
         val df = List(
           (
             "Peter",
@@ -471,8 +468,7 @@ class StrafterSpec
         )
       }
 
-      // TODO: Un-ignore when language literals support
-      "language literal variable and empty plain string" ignore {
+      "language literal variable and empty plain string" in {
         val df = List(
           (
             "Peter",
@@ -500,7 +496,6 @@ class StrafterSpec
         )
       }
 
-      // TODO: Un-ignore when fixed variables holding URIs on string functions
       "URI variable and string" ignore {
         val df = List(
           (

@@ -155,9 +155,64 @@ object Func {
     * @param str
     * @return
     */
-  def strafter(col: Column, str: String): Column =
-    when(substring_index(col, str, -1) === col, lit(""))
-      .otherwise(substring_index(col, str, -1))
+  def strafter(col: Column, str: String): Column = {
+
+    def getLeftOrEmpty(c: Column, s: String): Column =
+      when(substring_index(c, s, -1) === c, lit(""))
+        .otherwise(substring_index(c, s, -1))
+
+    val isLocalizedLocalized =
+      RdfFormatter.isLocalizedString(col) && RdfFormatter.isLocalizedString(
+        lit(str)
+      )
+    val strafterLocalizedLocalized: Column = {
+      val left  = LocalizedString(col)
+      val right = LocalizedString(str)
+      when(
+        left.tag =!= right.tag,
+        lit(null) // scalastyle:off
+      ).otherwise(
+        LocalizedString.formatLocalized(left, str)(getLeftOrEmpty)
+      )
+    }
+
+    val isLocalizedPlain = RdfFormatter.isLocalizedString(col)
+    val strafterLocalizedPlain: Column = {
+      val left = LocalizedString(col)
+      LocalizedString.formatLocalized(left, str)(getLeftOrEmpty)
+    }
+
+    val isTypedTyped =
+      RdfFormatter.isDatatypeLiteral(col) && RdfFormatter.isDatatypeLiteral(
+        lit(str)
+      )
+    val strafterTypedTyped: Column = {
+      val left  = TypedString(col)
+      val right = TypedString(str)
+      when(
+        left.tag =!= right.tag,
+        lit(null) // scalastyle:off
+      ).otherwise(
+        TypedString.formatTyped(left, str)(getLeftOrEmpty)
+      )
+    }
+
+    val isTypedPlain = RdfFormatter.isDatatypeLiteral(col)
+    def strafterTypedPlain: Column = {
+      val left = TypedString(col)
+      TypedString.formatTyped(left, str)(getLeftOrEmpty)
+    }
+
+    if (isEmptyPattern(str)) {
+      col
+    } else {
+      when(isLocalizedLocalized, strafterLocalizedLocalized)
+        .when(isLocalizedPlain, strafterLocalizedPlain)
+        .when(isTypedTyped, strafterTypedTyped)
+        .when(isTypedPlain, strafterTypedPlain)
+        .otherwise(getLeftOrEmpty(col, str))
+    }
+  }
 
   /** Implementation of SparQL STRBEFORE on Spark dataframes.
     *
@@ -378,4 +433,87 @@ object Func {
     ).otherwise(operator(l, r))
 
   val ExtractDateTime = """^"(.*)"\^\^(.*)dateTime(.*)$"""
+
+  private def isEmptyPattern(pattern: String): Boolean = {
+    if (pattern.isEmpty) {
+      true
+    } else if (pattern.contains("@")) {
+      val left = pattern.split("@").head.replace("\"", "")
+      if (left.isEmpty) {
+        true
+      } else {
+        false
+      }
+    } else if (pattern.contains("^^")) {
+      val left = pattern.split("\\^\\^").head.replace("\"", "")
+      if (left.isEmpty) {
+        true
+      } else {
+        false
+      }
+    } else {
+      false
+    }
+  }
+
+  final case class LocalizedString(value: Column, tag: Column)
+  object LocalizedString {
+    def apply(c: Column): LocalizedString = {
+      new LocalizedString(
+        substring_index(c, "@", 1),
+        substring_index(c, "@", -1)
+      )
+    }
+
+    def apply(s: String): LocalizedString = {
+      val split = s.split("@").toSeq
+      new LocalizedString(
+        lit(split.head.replace("\"", "")),
+        lit(split.last)
+      )
+    }
+
+    def formatLocalized(l: LocalizedString, s: String)(
+        f: (Column, String) => Column
+    ): Column =
+      when(
+        f(l.value, s) === lit(""),
+        f(l.value, s)
+      ).otherwise(
+        cc(
+          format_string("\"%s@", f(l.value, s)),
+          l.tag
+        )
+      )
+  }
+
+  final case class TypedString(value: Column, tag: Column)
+  object TypedString {
+    def apply(c: Column): TypedString = {
+      new TypedString(
+        substring_index(c, "^^", 1),
+        substring_index(c, "^^", -1)
+      )
+    }
+
+    def apply(s: String): TypedString = {
+      val split = s.split("\\^\\^")
+      new TypedString(
+        lit(split.head.replace("\"", "")),
+        lit(split.last)
+      )
+    }
+
+    def formatTyped(t: TypedString, s: String)(
+        f: (Column, String) => Column
+    ): Column = when(
+      f(t.value, s) === lit(""),
+      f(t.value, s)
+    ).otherwise(
+      cc(
+        format_string("\"%s^^", f(t.value, s)),
+        t.tag
+      )
+    )
+  }
 }
