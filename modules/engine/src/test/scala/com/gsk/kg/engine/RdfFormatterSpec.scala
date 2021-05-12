@@ -25,7 +25,7 @@ class RdfFormatterSpec
     val df = List(
       ("\"string\"@en", "_:blanknode", "http://uri.com"),
       ("\"string\"@en", "_:blanknode", "<http://uri.com>"),
-      ("string\"@en", "_:blanknode", "<http://uri.com>"),
+      ("\"string\"@en", "_:blanknode", "<http://uri.com>"),
       ("false", "true", "another string"),
       ("\"false\"^^xsd:boolean", "\"true\"^^xsd:boolean", "1")
     ).toDF("s", "p", "o")
