@@ -19,8 +19,8 @@ package object syntax {
       */
     def sparql(query: String, config: Config): DataFrame =
       Compiler.compile(df, query, config) match {
-	      case Left(a) => throw EngineException(a)
-	      case Right(b) => b
+        case Left(a)  => throw EngineException(a)
+        case Right(b) => b
       }
 
     /** Compile query with dataframe with default configuration
@@ -31,6 +31,7 @@ package object syntax {
       sparql(query, Config.default)
   }
 
-  case class EngineException(error: EngineError) extends RuntimeException(error.toString())
+  final case class EngineException(error: EngineError)
+      extends RuntimeException(error.toString())
 
 }
