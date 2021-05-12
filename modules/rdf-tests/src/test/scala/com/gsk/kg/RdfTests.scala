@@ -29,7 +29,7 @@ class RdfTests extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
   override implicit def enableHiveSupport: Boolean = false
 
-  val query = """
+  val findAllSuitesQuery = """
     PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX : <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/construct/manifest#>
     PREFIX rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
@@ -67,7 +67,7 @@ class RdfTests extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
   suites foreach { suite =>
     suite should {
-      val results = queryModel(query, suite)
+      val results = queryModel(findAllSuitesQuery, suite)
 
       results foreach { result =>
         val name = result.get("?name").toString()
