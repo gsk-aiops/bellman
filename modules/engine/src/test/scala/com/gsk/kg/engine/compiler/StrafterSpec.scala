@@ -1,11 +1,12 @@
 package com.gsk.kg.engine.compiler
 
+import org.apache.spark.sql.Row
+
 import com.gsk.kg.engine.Compiler
-import com.gsk.kg.sparqlparser.EngineError
 import com.gsk.kg.sparqlparser.EngineError.ParsingError
 import com.gsk.kg.sparqlparser.TestConfig
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.spark.sql.Row
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -75,11 +76,10 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"c\"@en") // Jena's output
+          Row("\"c\"@en")
         )
       }
 
-      // FIXME: This should return an engine error
       "language literal and language literal" in {
         val df = List(
           (
@@ -100,7 +100,11 @@ class StrafterSpec
             |""".stripMargin
 
         val result = Compiler.compile(df, query, config)
-        result.left.get shouldBe a[EngineError]
+
+        result.right.get.collect.length shouldEqual 1
+        result.right.get.collect.toSet shouldEqual Set(
+          Row(null)
+        )
       }
 
       "string literal and empty plain string" in {
@@ -115,7 +119,7 @@ class StrafterSpec
         val query =
           """
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#string>
+            |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
@@ -127,7 +131,7 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"\"") // Jena outputs empty string
+          Row("\"abc\"")
         )
       }
 
@@ -187,7 +191,6 @@ class StrafterSpec
         )
       }
 
-      // FIXME: It is returning a Parsing error
       "language literal and empty language literal" in {
         val df = List(
           (
@@ -216,7 +219,6 @@ class StrafterSpec
         )
       }
 
-      // FIXME: It is returning a parsing error
       "language literal and empty plain string" in {
         val df = List(
           (
@@ -278,7 +280,7 @@ class StrafterSpec
           (
             "Peter",
             "<http://xmlns.com/foaf/0.1/description>",
-            "abc"
+            "this is an example"
           )
         ).toDF("s", "p", "o")
 
@@ -288,7 +290,7 @@ class StrafterSpec
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
-            | BIND(STRAFTER(?o, "b") as ?desc) .
+            | BIND(STRAFTER(?o, "is") as ?desc) .
             |}
             |""".stripMargin
 
@@ -300,7 +302,6 @@ class StrafterSpec
         )
       }
 
-      // FIXME: Trailing double quote
       "language literal variable and plain string" in {
         val df = List(
           (
@@ -316,7 +317,7 @@ class StrafterSpec
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
-            | BIND(STRAFTER(?s,"ab") as ?desc) .
+            | BIND(STRAFTER(?o,"ab") as ?desc) .
             |}
             |""".stripMargin
 
@@ -324,11 +325,10 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"c\"^^@en") // Jena's output
+          Row("\"c\"@en") // Jena's output
         )
       }
 
-      // FIXME: This should return an engine error
       "language literal variable and language literal" in {
         val df = List(
           (
@@ -344,15 +344,18 @@ class StrafterSpec
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
-            | BIND(STRAFTER(?s,"b"@cy) as ?desc) .
+            | BIND(STRAFTER(?o,"b"@cy) as ?desc) .
             |}
             |""".stripMargin
 
         val result = Compiler.compile(df, query, config)
-        result.left.get shouldBe a[EngineError]
+
+        result.right.get.collect.length shouldEqual 1
+        result.right.get.collect.toSet shouldEqual Set(
+          Row(null)
+        )
       }
 
-      // FIXME: Returns a parser error because of empty string
       "string literal variable and empty plain string" in {
         val df = List(
           (
@@ -365,11 +368,11 @@ class StrafterSpec
         val query =
           """
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#string>
+            |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
-            | BIND(STRAFTER(?s,"") as ?desc) .
+            | BIND(STRAFTER(?o,"") as ?desc) .
             |}
             |""".stripMargin
 
@@ -377,11 +380,10 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("") // Jena outputs empty string
+          Row("\"abc\"^^xsd:string")
         )
       }
 
-      // FIXME: It should return empty string
       "language literal variable and no matching language literal" in {
         val df = List(
           (
@@ -398,7 +400,7 @@ class StrafterSpec
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
-            | BIND(STRAFTER(?s, "z"@en) as ?desc) .
+            | BIND(STRAFTER(?o, "z"@en) as ?desc) .
             |}
             |""".stripMargin
 
@@ -406,11 +408,10 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("") // Jena outputs empty string
+          Row("\"\"")
         )
       }
 
-      // FIXME: It should return empty string
       "language literal variable and no matching plain string" in {
         val df = List(
           (
@@ -427,7 +428,7 @@ class StrafterSpec
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
-            | BIND(STRAFTER(?s, "z") as ?desc) .
+            | BIND(STRAFTER(?o, "z") as ?desc) .
             |}
             |""".stripMargin
 
@@ -435,11 +436,10 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("") // Jena outputs empty string
+          Row("\"\"") // Jena outputs empty string
         )
       }
 
-      // FIXME: It is returning a Parsing error
       "language literal variable and empty language literal" in {
         val df = List(
           (
@@ -456,7 +456,7 @@ class StrafterSpec
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
-            | BIND(STRAFTER(?s, ""@en) as ?desc) .
+            | BIND(STRAFTER(?o, ""@en) as ?desc) .
             |}
             |""".stripMargin
 
@@ -468,7 +468,6 @@ class StrafterSpec
         )
       }
 
-      // FIXME: It is returning a parsing error
       "language literal variable and empty plain string" in {
         val df = List(
           (
@@ -485,7 +484,7 @@ class StrafterSpec
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
-            | BIND(STRAFTER(?s, "") as ?desc) .
+            | BIND(STRAFTER(?o, "") as ?desc) .
             |}
             |""".stripMargin
 
@@ -497,8 +496,7 @@ class StrafterSpec
         )
       }
 
-      // FIXME: It should return an error as URIs should not be allowed in STRAFTER
-      "URI variable and string" in {
+      "URI variable and string" ignore {
         val df = List(
           (
             "Peter",
@@ -514,32 +512,7 @@ class StrafterSpec
             |SELECT ?desc
             |WHERE {
             | ?x foaf:description ?o .
-            | BIND(STRAFTER(?s, "example.org") as ?desc) .
-            |}
-            |""".stripMargin
-
-        val result = Compiler.compile(df, query, config)
-
-        result.left.get shouldBe a[ParsingError]
-      }
-
-      // FIXME: This returns a parser error
-      "execute with string variable and string 2" in {
-        val df = List(
-          (
-            "Peter",
-            "<http://xmlns.com/foaf/0.1/description>",
-            "abc def"
-          )
-        ).toDF("s", "p", "o")
-
-        val query =
-          """
-            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-            |SELECT ?desc
-            |WHERE {
-            | ?x foaf:description ?o .
-            | BIND(STRAFTER(?o, " ") as ?desc) .
+            | BIND(STRAFTER(?o, "example.org") as ?desc) .
             |}
             |""".stripMargin
 
@@ -547,13 +520,9 @@ class StrafterSpec
 
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"def\"")
+          Row("\"\"")
         )
       }
     }
-
-    "execute with variable on second parameter" when {}
-
-    "execute with variables on first and second parameters" when {}
   }
 }

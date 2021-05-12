@@ -279,6 +279,37 @@ class FuncSpec
         Row("")
       )
     }
+
+    // See: https://www.w3.org/TR/sparql11-query/#func-strafter
+    "ww3c test" in {
+      import sqlContext.implicits._
+
+      val cases = List(
+        ("abc", "b", "c"),
+        ("\"abc\"@en", "ab", "\"c\"@en"),
+        ("\"abc\"@en", "\"b\"@cy", null),
+        ("\"abc\"^^xsd:string", "", "\"abc\"^^xsd:string"),
+        ("\"abc\"^^xsd:string", "\"a\"^^xsd:other", null),
+        ("\"abc\"^^xsd:string", "\"\"^^xsd:string", "\"abc\"^^xsd:string"),
+        ("\"abc\"^^xsd:string", "\"z\"^^xsd:string", ""),
+        ("abc", "xyz", ""),
+        ("\"abc\"@en", "\"z\"@en", ""),
+        ("\"abc\"@en", "z", ""),
+        ("\"abc\"@en", "\"\"@en", "\"abc\"@en"),
+        ("\"abc\"@en", "", "\"abc\"@en")
+      )
+
+      cases.map { case (arg1, arg2, expect) =>
+        val df       = List(arg1).toDF("arg1")
+        val strafter = Func.strafter(df("arg1"), arg2)
+        val result = df
+          .select(strafter)
+          .as("result")
+          .collect()
+
+        result shouldEqual Array(Row(expect))
+      }
+    }
   }
 
   "Func.strbefore" should {
@@ -882,6 +913,134 @@ class FuncSpec
       ).toDF("input", "expected")
 
       val df = initial.withColumn("result", Func.str(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
+  "Func.isTypedLiteral" should {
+    "identify RDF literals correctly" in {
+      import sqlContext.implicits._
+
+      val initial = List(
+        ("\"1\"^^xsd:int", true),
+        ("\"1.1\"^^xsd:decimal", true),
+        ("\"1.1\"^^xsd:float", true),
+        ("\"1.1\"^^xsd:double", true),
+        ("\"1\"", false),
+        ("1", false),
+        ("false", false)
+      ).toDF("input", "expected")
+
+      val df =
+        initial.withColumn("result", Func.isTypedLiteral(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
+  "Func.extractNumber" should {
+    "extract the numeric part of numeric RDF literals" in {
+      import sqlContext.implicits._
+
+      val initial = List(
+        ("\"1\"^^xsd:int", "1"),
+        ("\"1\"^^xsd:integer", "1"),
+        ("\"1.1\"^^xsd:decimal", "1.1"),
+        ("\"1.1\"^^xsd:float", "1.1"),
+        ("\"1.1\"^^xsd:double", "1.1"),
+        ("\"1\"^^<http://www.w3.org/2001/XMLSchema#int>", "1"),
+        ("\"1\"^^<http://www.w3.org/2001/XMLSchema#integer>", "1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#decimal>", "1.1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#float>", "1.1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#double>", "1.1")
+      ).toDF("input", "expected")
+
+      val df =
+        initial.withColumn("result", Func.extractNumber(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+
+    "return null if the value is not an RDF literal, or is not numeric" in {
+      import sqlContext.implicits._
+
+      val initial = List(
+        ("\"1\"^^xsd:string", null),
+        ("\"03-03-2020\"^^xsd:date", null),
+        ("1.1", null)
+      ).toDF("input", "expected")
+
+      val df =
+        initial.withColumn("result", Func.extractNumber(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
+  "Func.tryExtractNumber" should {
+    "extract the numeric part of numeric RDF literals" in {
+      import sqlContext.implicits._
+
+      val initial = List(
+        ("\"1\"^^xsd:int", "1"),
+        ("\"1\"^^xsd:integer", "1"),
+        ("\"1.1\"^^xsd:decimal", "1.1"),
+        ("\"1.1\"^^xsd:float", "1.1"),
+        ("\"1.1\"^^xsd:double", "1.1"),
+        ("\"1\"^^<http://www.w3.org/2001/XMLSchema#int>", "1"),
+        ("\"1\"^^<http://www.w3.org/2001/XMLSchema#integer>", "1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#decimal>", "1.1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#float>", "1.1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#double>", "1.1")
+      ).toDF("input", "expected")
+
+      val df =
+        initial.withColumn("result", Func.tryExtractNumber(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+
+    "return the value unchanged if the value is not an RDF literal, or is not numeric" in {
+      import sqlContext.implicits._
+
+      val initial = List(
+        ("\"1\"^^xsd:string", "\"1\"^^xsd:string"),
+        ("\"03-03-2020\"^^xsd:date", "\"03-03-2020\"^^xsd:date"),
+        ("1.1", "1.1")
+      ).toDF("input", "expected")
+
+      val df =
+        initial.withColumn("result", Func.tryExtractNumber(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
+  "Func.extractType" should {
+    "extract the type from an RDF literal" in {
+      import sqlContext.implicits._
+
+      val initial = List(
+        ("\"1\"^^xsd:int", "xsd:int"),
+        ("\"1.1\"^^xsd:decimal", "xsd:decimal"),
+        ("\"1.1\"^^xsd:float", "xsd:float"),
+        ("\"1.1\"^^xsd:double", "xsd:double")
+      ).toDF("input", "expected")
+
+      val df = initial.withColumn("result", Func.extractType(initial("input")))
 
       df.collect.foreach { case Row(_, expected, result) =>
         expected shouldEqual result

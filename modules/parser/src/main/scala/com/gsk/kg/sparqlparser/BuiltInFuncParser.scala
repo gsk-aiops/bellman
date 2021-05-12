@@ -32,7 +32,7 @@ object BuiltInFuncParser {
   def strParen[_: P]: P[STR] =
     P("(" ~ str ~ ExpressionParser.parser ~ ")").map(s => STR(s))
   def strafterParen[_: P]: P[STRAFTER] = P(
-    "(" ~ strafter ~ StringValParser.litParser ~ StringValParser.litParser ~ ")"
+    "(" ~ strafter ~ (StringValParser.litParser | BuiltInFuncParser.parser) ~ (StringValParser.litParser | BuiltInFuncParser.parser) ~ ")"
   ).map { s =>
     STRAFTER(s._1, s._2)
   }

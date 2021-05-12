@@ -217,15 +217,21 @@ object Engine {
       val cols: List[Column] = vars.map(_.s).map(col).map(Func.sample)
       df.agg(cols.head, cols.tail: _*).pure[M]
     case Some((VARIABLE(name), Aggregate.COUNT(VARIABLE(v)))) =>
-      df.agg(count(v).cast("int").as(name)).pure[M]
+      df.agg(count(col(v)).cast("int").as(name))
+        .withColumn(name, Func.strdt(col(name), "xsd:int"))
+        .pure[M]
     case Some((VARIABLE(name), Aggregate.SUM(VARIABLE(v)))) =>
-      df.agg(sum(v).cast("float").as(name)).pure[M]
+      df.agg(sum(Func.extractNumber(col(v))).cast("float").as(name))
+        .withColumn(name, Func.strdt(col(name), "xsd:double"))
+        .pure[M]
     case Some((VARIABLE(name), Aggregate.MIN(VARIABLE(v)))) =>
-      df.agg(min(v).as(name)).pure[M]
+      df.agg(min(Func.tryExtractNumber(col(v))).as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.MAX(VARIABLE(v)))) =>
-      df.agg(max(v).as(name)).pure[M]
+      df.agg(max(Func.tryExtractNumber(col(v))).as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.AVG(VARIABLE(v)))) =>
-      df.agg(avg(v).cast("float").as(name)).pure[M]
+      df.agg(avg(Func.extractNumber(col(v))).cast("float").as(name))
+        .withColumn(name, Func.strdt(col(name), "xsd:double"))
+        .pure[M]
     case Some((VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v)))) =>
       df.agg(Func.sample(col(v)).as(name)).pure[M]
     case Some(

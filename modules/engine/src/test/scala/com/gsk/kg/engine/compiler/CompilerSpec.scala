@@ -1,8 +1,5 @@
 package com.gsk.kg.engine.compiler
 
-import org.apache.jena.riot.RDFParser
-import org.apache.jena.riot.lang.CollectorStreamTriples
-
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 
@@ -164,10 +161,10 @@ class CompilerSpec
       }
       """
 
-      val inputDF = readNTtoDF("fixtures/reference-q1-input.nt")
+      val inputDF = readNTtoDF("fixtures/reference-q1-input.nt")(sqlContext)
       val outputDF =
         RdfFormatter.formatDataFrame(
-          readNTtoDF("fixtures/reference-q1-output.nt"),
+          readNTtoDF("fixtures/reference-q1-output.nt")(sqlContext),
           config
         )
 
@@ -376,30 +373,6 @@ class CompilerSpec
         )
       }
     }
-  }
-
-  private def readNTtoDF(path: String) = {
-
-    import scala.collection.JavaConverters._
-
-    val filename                            = s"modules/engine/src/test/resources/$path"
-    val inputStream: CollectorStreamTriples = new CollectorStreamTriples()
-    RDFParser.source(filename).parse(inputStream)
-
-    inputStream
-      .getCollected()
-      .asScala
-      .toList
-      .map(triple =>
-        (
-          triple.getSubject().toString(),
-          triple.getPredicate().toString(),
-          triple.getObject().toString(),
-          ""
-        )
-      )
-      .toDF("s", "p", "o", "g")
-
   }
 
 }
