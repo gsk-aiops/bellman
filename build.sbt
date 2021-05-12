@@ -186,7 +186,7 @@ lazy val `bellman-spark-engine` = project
 
     import org.apache.spark._
     import org.apache.spark.sql._
-    
+
     import pureconfig.generic.auto._
     import pureconfig._
 
@@ -195,7 +195,7 @@ lazy val `bellman-spark-engine` = project
       .master("local")
       .config("spark.driver.host", "localhost")
       .getOrCreate()
-      
+
     implicit val sc: SQLContext = spark.sqlContext
     val config = ConfigSource.default.loadOrThrow[Config]
 
@@ -230,7 +230,7 @@ lazy val `bellman-spark-engine` = project
       val dag = DAG.fromQuery.apply(q)
       println(dag.toTree.drawTree)
     }
-    
+
     def printOptimizedTree(query: String): Unit = {
       val q = QueryConstruct.parse(query, Config.default)._1
       val dag = Optimizer.optimize.apply((DAG.fromQuery.apply(q), Graphs.empty)).runA(Config.default, null).right.get
@@ -287,6 +287,30 @@ lazy val `bellman-site` = project
   .dependsOn(`bellman-spark-engine`, `bellman-algebra-parser`)
   .disablePlugins(ScalastylePlugin)
   .enablePlugins(MicrositesPlugin)
+
+lazy val `bellman-rdf-tests` = project
+  .in(file("modules/rdf-tests"))
+  .settings(moduleName := "bellman-rdf-tests")
+  .settings(buildSettings)
+  .settings(noPublishSettings)
+  .settings(commonDependencies)
+  .settings(compilerPlugins)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.apache.jena"  % "jena-arq" % Versions("jena"),
+      "com.holdenkarau" %% "spark-testing-base" % Versions(
+        "spark-testing-base"
+      )                 % Test,
+      "org.scalacheck" %% "scalacheck" % Versions("scalacheck") % Test
+    ),
+    dependencyOverrides ++= Seq(
+      "com.fasterxml.jackson.core"    % "jackson-databind" % Versions("jackson"),
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % Versions(
+        "jackson"
+      )
+    )
+  )
+  .dependsOn(`bellman-spark-engine`, `bellman-algebra-parser`)
 
 addCommandAlias(
   "build-microsite",

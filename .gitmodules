@@ -1,0 +1,3 @@
+[submodule "modules/rdf-tests/src/test/resources/rdf-tests"]
+	path = modules/rdf-tests/src/test/resources/rdf-tests
+	url = https://github.com/w3c/rdf-tests
