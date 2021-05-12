@@ -73,32 +73,32 @@ object RdfFormatter {
     )
   }
 
-  private def isDatatypeLiteral(column: Column): Column =
+  def isDatatypeLiteral(column: Column): Column =
     column.startsWith("\"") && column.contains("\"^^")
 
-  private def isBlank(column: Column): Column =
+  def isBlank(column: Column): Column =
     column.startsWith("_:")
 
-  private def isBoolean(column: Column): Column =
+  def isBoolean(column: Column): Column =
     column === lit("true") || column === lit("false")
 
-  private def isUri(column: Column): Column =
+  def isUri(column: Column): Column =
     column.startsWith("<") && column.endsWith(">") ||
       column.startsWith("http://") ||
       column.startsWith("https://") ||
       column.startsWith("mailto:")
 
-  private def isNumber(column: Column): Column =
+  def isNumber(column: Column): Column =
     column.cast(DataTypes.DoubleType).isNotNull ||
       column.cast(DataTypes.FloatType).isNotNull ||
       column.cast(DataTypes.LongType).isNotNull ||
       column.cast(DataTypes.ShortType).isNotNull ||
       column.cast(DataTypes.IntegerType).isNotNull
 
-  private def isNull(column: Column): Column =
+  def isNull(column: Column): Column =
     column === lit("null") || column.isNull
 
-  private def isLocalizedString(column: Column): Column =
+  def isLocalizedString(column: Column): Column =
     column.contains("\"@")
 
 }
