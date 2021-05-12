@@ -4,6 +4,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SQLContext
 
 import com.gsk.kg.config.Config
+import com.gsk.kg.sparqlparser.EngineError
 
 package object syntax {
 
@@ -17,7 +18,10 @@ package object syntax {
       * @return
       */
     def sparql(query: String, config: Config): DataFrame =
-      Compiler.compile(df, query, config).right.get
+      Compiler.compile(df, query, config) match {
+	      case Left(a) => throw EngineException(a)
+	      case Right(b) => b
+      }
 
     /** Compile query with dataframe with default configuration
       * @param query
@@ -26,5 +30,7 @@ package object syntax {
     def sparql(query: String): DataFrame =
       sparql(query, Config.default)
   }
+
+  case class EngineException(error: EngineError) extends RuntimeException(error.toString())
 
 }
