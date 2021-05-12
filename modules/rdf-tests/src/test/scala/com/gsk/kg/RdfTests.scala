@@ -122,7 +122,7 @@ class RdfTests extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
   private def readModel(path: String) =
     RDFDataMgr.loadModel(
-      s"modules/rdf-tests/src/test/resources/data-sparql11/$path"
+      s"modules/rdf-tests/src/test/resources/rdf-tests/sparql11/data-sparql11/$path"
     )
 
   private def readToDF(filename: String) = {
