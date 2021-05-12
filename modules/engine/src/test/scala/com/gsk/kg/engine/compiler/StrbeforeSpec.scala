@@ -79,6 +79,7 @@ class StrbeforeSpec
     }
 
     // Passing
+    // QUESTION: If input arg is not wrapped in quotes, why would the return value be wrapped in quotes?
     "arg1 is simple literal and arg two is simple literal" in {
       // strbefore("abc","xyz") -> ""
       val arg1     = "abc"
