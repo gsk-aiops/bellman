@@ -190,9 +190,29 @@ object Func {
     * @param str
     * @return
     */
-  def strbefore(col: Column, str: String): Column =
-    when(substring_index(col, str, 1) === col, lit(""))
-      .otherwise(substring_index(col, str, 1))
+  def strbefore(col: Column, str: String): Column = {
+    def getLeftOrEmpty(c: Column, s: String): Column =
+      when(substring_index(c, s, 1) === c, lit(""))
+        .otherwise(substring_index(c, s, 1))
+
+    if (isEmptyPattern(str)) {
+      col
+    } else {
+      when(
+        isLocalizedLocalizedArgs(col, str),
+        strFuncArgsLocalizedLocalized(col, str)(getLeftOrEmpty)
+      ).when(
+        isLocalizedPlainArgs(col),
+        strFuncArgsLocalizedPlain(col, str)(getLeftOrEmpty)
+      ).when(
+        isTypedTypedArgs(col, str),
+        strFuncArgsTypedTyped(col, str)(getLeftOrEmpty)
+      ).when(
+        isTypedPlainArgs(col),
+        strFuncArgsTypedPlain(col, str)(getLeftOrEmpty)
+      ).otherwise(getLeftOrEmpty(col, str))
+    }
+  }
 
   /** Implementation of SparQL SUBSTR on Spark dataframes.
     *
