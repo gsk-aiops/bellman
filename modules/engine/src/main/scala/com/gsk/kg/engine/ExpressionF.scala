@@ -66,18 +66,22 @@ object ExpressionF {
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
-      case Conditional.EQUALS(l, r)                      => EQUALS(l, r)
-      case Conditional.GT(l, r)                          => GT(l, r)
-      case Conditional.LT(l, r)                          => LT(l, r)
-      case Conditional.GTE(l, r)                         => GTE(l, r)
-      case Conditional.LTE(l, r)                         => LTE(l, r)
-      case Conditional.OR(l, r)                          => OR(l, r)
-      case Conditional.AND(l, r)                         => AND(l, r)
-      case Conditional.NEGATE(s)                         => NEGATE(s)
-      case BuiltInFunc.URI(s)                            => URI(s)
-      case BuiltInFunc.CONCAT(appendTo, append)          => CONCAT(appendTo, append)
-      case BuiltInFunc.STR(s)                            => STR(s)
-      case BuiltInFunc.STRAFTER(s, StringVal.STRING(f))  => STRAFTER(s, f)
+      case Conditional.EQUALS(l, r)                     => EQUALS(l, r)
+      case Conditional.GT(l, r)                         => GT(l, r)
+      case Conditional.LT(l, r)                         => LT(l, r)
+      case Conditional.GTE(l, r)                        => GTE(l, r)
+      case Conditional.LTE(l, r)                        => LTE(l, r)
+      case Conditional.OR(l, r)                         => OR(l, r)
+      case Conditional.AND(l, r)                        => AND(l, r)
+      case Conditional.NEGATE(s)                        => NEGATE(s)
+      case BuiltInFunc.URI(s)                           => URI(s)
+      case BuiltInFunc.CONCAT(appendTo, append)         => CONCAT(appendTo, append)
+      case BuiltInFunc.STR(s)                           => STR(s)
+      case BuiltInFunc.STRAFTER(s, StringVal.STRING(f)) => STRAFTER(s, f)
+      case BuiltInFunc.STRAFTER(s, l @ StringVal.LANG_STRING(_, _)) =>
+        STRAFTER(s, StringVal.LANG_STRING.unApply(l))
+      case BuiltInFunc.STRAFTER(s, t @ StringVal.DT_STRING(_, _)) =>
+        STRAFTER(s, StringVal.DT_STRING.unApply(t))
       case BuiltInFunc.STRBEFORE(s, StringVal.STRING(f)) => STRBEFORE(s, f)
       case BuiltInFunc.SUBSTR(
             s,
