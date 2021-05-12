@@ -165,16 +165,18 @@ object Func {
       RdfFormatter.isLocalizedString(col) && RdfFormatter.isLocalizedString(
         lit(str)
       )
+    // scalastyle:off
     val strafterLocalizedLocalized: Column = {
       val left  = LocalizedString(col)
       val right = LocalizedString(str)
       when(
         left.tag =!= right.tag,
-        lit(null) // scalastyle:off
+        lit(null)
       ).otherwise(
         LocalizedString.formatLocalized(left, str)(getLeftOrEmpty)
       )
     }
+    // scalastyle:on
 
     val isLocalizedPlain = RdfFormatter.isLocalizedString(col)
     val strafterLocalizedPlain: Column = {
@@ -186,16 +188,18 @@ object Func {
       RdfFormatter.isDatatypeLiteral(col) && RdfFormatter.isDatatypeLiteral(
         lit(str)
       )
+    // scalastyle:off
     val strafterTypedTyped: Column = {
       val left  = TypedString(col)
       val right = TypedString(str)
       when(
         left.tag =!= right.tag,
-        lit(null) // scalastyle:off
+        lit(null)
       ).otherwise(
         TypedString.formatTyped(left, str)(getLeftOrEmpty)
       )
     }
+    // scalastyle:off
 
     val isTypedPlain = RdfFormatter.isDatatypeLiteral(col)
     def strafterTypedPlain: Column = {
@@ -390,8 +394,11 @@ object Func {
   // scalastyle:off
   def extractType(col: Column): Column =
     when(
-      isTypedLiteral(col),
-      strafter(col, "\"^^")
+      isTypedLiteral(col), {
+        val del = "\"^^"
+        when(substring_index(col, del, -1) === del, lit(""))
+          .otherwise(substring_index(col, del, -1))
+      }
     ).otherwise(lit(null))
 
   def extractNumber(col: Column): Column =
