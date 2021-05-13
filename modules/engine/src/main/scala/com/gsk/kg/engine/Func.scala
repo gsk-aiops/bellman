@@ -5,6 +5,8 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
 
+import com.gsk.kg.engine.Func.StringFunctionUtils._
+
 object Func {
 
   /** Performs logical binary operation '==' over two columns
