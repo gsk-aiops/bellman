@@ -594,6 +594,14 @@ class FuncSpec
         Row("Ciao Dolly")
       )
     }
+
+    //TODO: Add tests
+//    concat("foo", "bar")	"foobar"
+//    concat("foo"@en, "bar"@en)	"foobar"@en
+//    concat("foo"^^xsd:string, "bar"^^xsd:string)	"foobar"^^xsd:string
+//    concat("foo", "bar"^^xsd:string)	"foobar"
+//    concat("foo"@en, "bar")	"foobar"
+//    concat("foo"@en, "bar"^^xsd:string)	"foobar"
   }
 
   "Func.equals" should {

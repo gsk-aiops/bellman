@@ -65,16 +65,17 @@ object ExpressionF {
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
-      case Conditional.EQUALS(l, r)                     => EQUALS(l, r)
-      case Conditional.GT(l, r)                         => GT(l, r)
-      case Conditional.LT(l, r)                         => LT(l, r)
-      case Conditional.GTE(l, r)                        => GTE(l, r)
-      case Conditional.LTE(l, r)                        => LTE(l, r)
-      case Conditional.OR(l, r)                         => OR(l, r)
-      case Conditional.AND(l, r)                        => AND(l, r)
-      case Conditional.NEGATE(s)                        => NEGATE(s)
-      case BuiltInFunc.URI(s)                           => URI(s)
-      case BuiltInFunc.CONCAT(appendTo, append)         => CONCAT(appendTo, append)
+      case Conditional.EQUALS(l, r) => EQUALS(l, r)
+      case Conditional.GT(l, r)     => GT(l, r)
+      case Conditional.LT(l, r)     => LT(l, r)
+      case Conditional.GTE(l, r)    => GTE(l, r)
+      case Conditional.LTE(l, r)    => LTE(l, r)
+      case Conditional.OR(l, r)     => OR(l, r)
+      case Conditional.AND(l, r)    => AND(l, r)
+      case Conditional.NEGATE(s)    => NEGATE(s)
+      case BuiltInFunc.URI(s)       => URI(s)
+      case BuiltInFunc.CONCAT(appendTo, append) =>
+        CONCAT(appendTo, NonEmptyList.fromListUnsafe(append))
       case BuiltInFunc.STR(s)                           => STR(s)
       case BuiltInFunc.STRAFTER(s, StringVal.STRING(f)) => STRAFTER(s, f)
       case BuiltInFunc.STRAFTER(s, l @ StringVal.LANG_STRING(_, _)) =>
@@ -165,7 +166,7 @@ object ExpressionF {
       case CONCAT(appendTo, append) =>
         BuiltInFunc.CONCAT(
           appendTo.asInstanceOf[StringLike],
-          append.map(_.asInstanceOf[StringLike])
+          append.map(_.asInstanceOf[StringLike]).toList
         )
       case STR(s) => BuiltInFunc.STR(s.asInstanceOf[StringLike])
       case STRAFTER(s, f) =>

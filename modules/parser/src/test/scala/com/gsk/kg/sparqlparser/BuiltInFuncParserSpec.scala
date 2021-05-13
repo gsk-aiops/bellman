@@ -1,8 +1,5 @@
 package com.gsk.kg.sparqlparser
 
-import cats.data.NonEmptyList
-import cats.syntax.list._
-
 import com.gsk.kg.sparqlparser.BuiltInFunc._
 import com.gsk.kg.sparqlparser.StringVal._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -33,6 +30,19 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       case CONCAT(
             STRING("http://id.gsk.com/dm/1.0/"),
             _
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  it should "return COCANT type when multiple arguments" in {
+    val s = "(concat \"http://id.gsk.com/dm/1.0/\" ?src ?dst)"
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case CONCAT(
+            STRING("http://id.gsk.com/dm/1.0/"),
+            List(VARIABLE("?src"), VARIABLE("?dst"))
           ) =>
         succeed
       case _ => fail
@@ -127,10 +137,11 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     p.get.value match {
       case URI(
             STRBEFORE(
-              CONCAT(STR(VARIABLE(a1: String)), STR(VARIABLE(a2: String))),
+              CONCAT(
+                STR(VARIABLE(a1)),
+                List(STR(VARIABLE(a2)))
+              ),
               STRING("#")
-              CONCAT (STR(VARIABLE(a1: String)), _),
-              STRING("#", _)
             )
           ) =>
         succeed

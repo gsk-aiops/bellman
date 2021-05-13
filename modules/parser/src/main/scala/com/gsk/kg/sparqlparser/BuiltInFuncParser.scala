@@ -5,8 +5,6 @@ import com.gsk.kg.sparqlparser.BuiltInFunc._
 import fastparse.MultiLineWhitespace._
 import fastparse._
 
-import cats.syntax.list._
-
 object BuiltInFuncParser {
   /*
   Functions on strings: https://www.w3.org/TR/sparql11-query/#func-strings
@@ -29,16 +27,9 @@ object BuiltInFuncParser {
   def concatParen[_: P]: P[CONCAT] =
     ("(" ~ concat ~ ExpressionParser.parser ~ ExpressionParser.parser.rep(
       1
-    ) ~ ")")
-      .flatMap { c =>
-        c._2.toList.toNel
-          .map { append =>
-            ParsingRun.current.freshSuccess(CONCAT(c._1, append))
-          }
-          .getOrElse {
-            ParsingRun.current.freshFailure()
-          }
-      }
+    ) ~ ")").map { case (appendTo, append) =>
+      CONCAT(appendTo, append.toList)
+    }
   def strParen[_: P]: P[STR] =
     P("(" ~ str ~ ExpressionParser.parser ~ ")").map(s => STR(s))
   def strafterParen[_: P]: P[STRAFTER] = P(

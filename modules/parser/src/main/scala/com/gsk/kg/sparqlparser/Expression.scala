@@ -1,6 +1,5 @@
 package com.gsk.kg.sparqlparser
 
-import cats.data.NonEmptyList
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
 
 /** @see Model after [[https://www.w3.org/TR/sparql11-query/#rExpression]]
@@ -28,7 +27,7 @@ object BuiltInFunc {
   final case class URI(s: Expression) extends BuiltInFunc
   final case class CONCAT(
       appendTo: Expression,
-      append: NonEmptyList[Expression]
+      append: List[Expression]
   )                                                        extends BuiltInFunc
   final case class STR(s: Expression)                      extends BuiltInFunc
   final case class STRAFTER(s: Expression, f: Expression)  extends BuiltInFunc
