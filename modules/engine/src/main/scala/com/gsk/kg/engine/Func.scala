@@ -311,9 +311,8 @@ object Func {
     * @param b
     * @return
     */
-  def concat(a: Column, b: Column): Column = {
+  def concat(a: Column, b: Column): Column =
     cc(trim(a, "\""), trim(b, "\""))
-  }
 
   /** Concatenate a [[String]] with a [[Column]], generating a new [[Column]]
     *
@@ -469,7 +468,7 @@ object Func {
         f(l.value, s)
       ).otherwise(
         cc(
-          format_string(localFormat, f(l.value, s)),  ///////////
+          format_string(localFormat, f(l.value, s)),
           l.tag
         )
       )
@@ -499,7 +498,7 @@ object Func {
       f(t.value, s)
     ).otherwise(
       cc(
-        format_string(typedFormat, f(t.value, s)),  /////////////
+        format_string(typedFormat, f(t.value, s)),
         t.tag
       )
     )
@@ -537,7 +536,11 @@ object Func {
     }
     // scalastyle:on
 
-    def strFuncArgsLocalizedPlain(col: Column, str: String, localFormat: String)(
+    def strFuncArgsLocalizedPlain(
+        col: Column,
+        str: String,
+        localFormat: String
+    )(
         f: (Column, String) => Column
     ): Column = {
       val left = LocalizedString(col)
