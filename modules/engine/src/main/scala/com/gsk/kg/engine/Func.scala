@@ -198,7 +198,7 @@ object Func {
         .otherwise(substring_index(c, s, 1))
 
     if (isEmptyPattern(str)) {
-      col
+      lit("")
     } else {
       when(
         isLocalizedLocalizedArgs(col, str),
