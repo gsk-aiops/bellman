@@ -88,8 +88,9 @@ class TreeRepSpec
 
     parse(q, config)
       .map { case (query, _) =>
-        val dag = DAG.fromQuery.apply(query)
-        dag.toTree.drawTree.trim shouldEqual """
+        val dag    = DAG.fromQuery.apply(query)
+        val result = dag.toTree.drawTree.trim
+        result shouldEqual """
 Construct
 |
 +- BGP

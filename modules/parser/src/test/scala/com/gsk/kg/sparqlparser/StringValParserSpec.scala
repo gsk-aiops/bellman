@@ -9,8 +9,8 @@ class StringValParserSpec extends AnyFlatSpec {
     val s = "\"abc\"@en"
     val p = fastparse.parse(s, StringValParser.tripleValParser(_))
     p.get.value match {
-      case LANG_STRING("abc", "@en") => succeed
-      case _                         => fail
+      case LANG_STRING("abc", "en") => succeed
+      case _                        => fail
     }
     val s1 = "\"345\"^^<http://www.w3.org/2001/XMLSchema#xsd:integer>"
     val p1 = fastparse.parse(s1, StringValParser.tripleValParser(_))

@@ -279,6 +279,37 @@ class FuncSpec
         Row("")
       )
     }
+
+    // See: https://www.w3.org/TR/sparql11-query/#func-strafter
+    "ww3c test" in {
+      import sqlContext.implicits._
+
+      val cases = List(
+        ("abc", "b", "c"),
+        ("\"abc\"@en", "ab", "\"c\"@en"),
+        ("\"abc\"@en", "\"b\"@cy", null),
+        ("\"abc\"^^xsd:string", "", "\"abc\"^^xsd:string"),
+        ("\"abc\"^^xsd:string", "\"a\"^^xsd:other", null),
+        ("\"abc\"^^xsd:string", "\"\"^^xsd:string", "\"abc\"^^xsd:string"),
+        ("\"abc\"^^xsd:string", "\"z\"^^xsd:string", ""),
+        ("abc", "xyz", ""),
+        ("\"abc\"@en", "\"z\"@en", ""),
+        ("\"abc\"@en", "z", ""),
+        ("\"abc\"@en", "\"\"@en", "\"abc\"@en"),
+        ("\"abc\"@en", "", "\"abc\"@en")
+      )
+
+      cases.map { case (arg1, arg2, expect) =>
+        val df       = List(arg1).toDF("arg1")
+        val strafter = Func.strafter(df("arg1"), arg2)
+        val result = df
+          .select(strafter)
+          .as("result")
+          .collect()
+
+        result shouldEqual Array(Row(expect))
+      }
+    }
   }
 
   "Func.strbefore" should {
