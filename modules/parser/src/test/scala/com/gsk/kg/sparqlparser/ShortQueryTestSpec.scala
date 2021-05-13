@@ -65,7 +65,7 @@ class ShortQueryTestSpec extends AnyFlatSpec with TestUtils with TestConfig {
           assert(triples(0).o == BOOL("true"))
           assert(triples(1).s == NUM("0.3"))
           assert(triples(2).o == NUM("-1234"))
-          assert(triples(3).o == LANG_STRING("xyz", "@en"))
+          assert(triples(3).o == LANG_STRING("xyz", "en"))
           assert(triples(4).o == STRING("cde"))
         case _ => fail
       }
