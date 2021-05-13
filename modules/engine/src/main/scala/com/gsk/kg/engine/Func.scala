@@ -320,9 +320,7 @@ object Func {
     * @return
     */
   def concat(a: String, b: Column): Column = {
-    val right =
-      when(b.startsWith("\""), regexp_replace(b, "\"", "")).otherwise(b)
-    cc(lit(a), right)
+    cc(lit(a), trim(b, "\""))
   }
 
   /** Concatenate a [[Column]] with a [[String]], generating a new [[Column]]
@@ -332,9 +330,7 @@ object Func {
     * @return
     */
   def concat(a: Column, b: String): Column = {
-    val left =
-      when(a.startsWith("\""), regexp_replace(a, "\"", "")).otherwise(a)
-    cc(left, lit(b))
+    cc(trim(a, "\""), lit(b))
   }
 
   /** Sample is a set function which returns an arbitrary value from
@@ -390,7 +386,7 @@ object Func {
   private def extractNumberImpl(col: Column, default: Column) =
     when(
       isTypedLiteral(col) && isNumeric(col),
-      strbefore(ltrim(col, "\""), "\"^^")
+      strbefore(ltrim(col, "\""), "\"")
     ).otherwise(default)
 
   /** This helper method tries to parse a datetime expressed as a RDF
