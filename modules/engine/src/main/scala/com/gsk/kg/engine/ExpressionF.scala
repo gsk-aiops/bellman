@@ -79,9 +79,9 @@ object ExpressionF {
       case BuiltInFunc.STR(s)                           => STR(s)
       case BuiltInFunc.STRAFTER(s, StringVal.STRING(f)) => STRAFTER(s, f)
       case BuiltInFunc.STRAFTER(s, l @ StringVal.LANG_STRING(_, _)) =>
-        STRAFTER(s, StringVal.LANG_STRING.unApply(l))
+        STRAFTER(s, StringVal.LANG_STRING.toString(l))
       case BuiltInFunc.STRAFTER(s, t @ StringVal.DT_STRING(_, _)) =>
-        STRAFTER(s, StringVal.DT_STRING.unApply(t))
+        STRAFTER(s, StringVal.DT_STRING.toString(t))
       case BuiltInFunc.STRBEFORE(s, StringVal.STRING(f)) => STRBEFORE(s, f)
       case BuiltInFunc.STRBEFORE(s, l @ StringVal.LANG_STRING(_, _)) =>
         STRBEFORE(s, StringVal.LANG_STRING.unApply(l))
@@ -238,12 +238,11 @@ object ExpressionF {
         case URI(s)                   => Func.iri(s).pure[M]
         case CONCAT(appendTo, append) => Func.concat(appendTo, append).pure[M]
         case STR(s)                   => Func.str(s).pure[M]
-        case STRAFTER(s, f) =>
-          Func.strafter(s, f).pure[M]
-        case STRBEFORE(s, f)     => Func.strbefore(s, f).pure[M]
-        case STRDT(e, uri)       => Func.strdt(e, uri).pure[M]
-        case SUBSTR(s, pos, len) => Func.substr(s, pos, len).pure[M]
-        case ISBLANK(s)          => Func.isBlank(s).pure[M]
+        case STRAFTER(s, f)           => Func.strafter(s, f).pure[M]
+        case STRBEFORE(s, f)          => Func.strbefore(s, f).pure[M]
+        case STRDT(e, uri)            => Func.strdt(e, uri).pure[M]
+        case SUBSTR(s, pos, len)      => Func.substr(s, pos, len).pure[M]
+        case ISBLANK(s)               => Func.isBlank(s).pure[M]
         case REPLACE(st, pattern, by, flags) =>
           Func.replace(st, pattern, by, flags).pure[M]
         case COUNT(e)                   => unknownFunction("COUNT")
@@ -255,7 +254,7 @@ object ExpressionF {
         case GROUP_CONCAT(e, separator) => unknownFunction("GROUP_CONCAT")
         case STRING(s)                  => lit(s).pure[M]
         case DT_STRING(s, tag)          => lit(s""""$s"^^$tag""").pure[M]
-        case LANG_STRING(s, tag)        => lit(s""""$s"$tag""").pure[M]
+        case LANG_STRING(s, tag)        => lit(s""""$s"@$tag""").pure[M]
         case NUM(s)                     => lit(s).pure[M]
         case VARIABLE(s) =>
           M.inspect[Result, Config, Log, DataFrame, Column](_(s))

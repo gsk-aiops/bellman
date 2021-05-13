@@ -81,11 +81,11 @@ object StringVal {
   final case class STRING(s: String)                 extends StringVal
   final case class DT_STRING(s: String, tag: String) extends StringVal
   object DT_STRING {
-    def unApply(t: DT_STRING): String = s""""${t.s}"^^${t.tag}"""
+    def toString(t: DT_STRING): String = s""""${t.s}"^^${t.tag}"""
   }
   final case class LANG_STRING(s: String, tag: String) extends StringVal
   object LANG_STRING {
-    def unApply(l: LANG_STRING): String = s""""${l.s}"${l.tag}"""
+    def toString(l: LANG_STRING): String = s""""${l.s}"@${l.tag}"""
   }
   final case class NUM(s: String)      extends StringVal
   final case class VARIABLE(s: String) extends StringVal

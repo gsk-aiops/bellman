@@ -6,7 +6,7 @@ import fastparse.MultiLineWhitespace._
 import fastparse._
 
 object StringValParser {
-  def lang[_: P]: P[String] = P("@" ~ CharsWhileIn("a-zA-Z")).!
+  def lang[_: P]: P[String] = P("@" ~ CharsWhileIn("a-zA-Z").!)
   def iri[_: P]: P[String]  = P("<" ~ (CharsWhile(_ != '>')) ~ ">").!
   // RDF string literal could have optional language or optional iri
 
@@ -32,7 +32,9 @@ object StringValParser {
 
   def plainString[_: P]: P[STRING] = P(
     "\"" ~ CharsWhile(_ != '\"').! ~ "\""
-  ).map(s => STRING(s))
+  ).map { s =>
+    STRING(s)
+  }
 
   def emptyString[_: P]: P[STRING] = P(
     "\"\""
