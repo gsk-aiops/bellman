@@ -31,8 +31,6 @@ class StrbeforeSpec
 
   "perform STRBEFORE function correctly" when {
 
-    // Passing
-    // QUESTION: If input arg is not wrapped in quotes, why would the return value be wrapped in quotes?
     "arg1 is simple literal and arg2 is simple literal" in {
       // strbefore("abc", "b") -> "a"
       val arg1     = "abc"
@@ -42,9 +40,6 @@ class StrbeforeSpec
       actual shouldEqual expected
     }
 
-    // Failing
-    // Expected :["a"@en]
-    // Actual   :["""a@en"]
     "arg1 is plain literal with language tag and arg2 is simple literal" in {
       // strbefore("abc"@en, "bc") -> "a"@en
       val arg1     = "\"abc\"@en"
@@ -54,8 +49,6 @@ class StrbeforeSpec
       actual shouldEqual expected
     }
 
-    // Passing
-    // TODO: Should throw incompatibility error
     "arg1 is plain literal with language tag and arg2 is plain literal with incompatible language tag" in {
       // strbefore("abc"@en, "b"@cy) -> error
       val arg1     = "\"abc\"@en"
@@ -65,9 +58,6 @@ class StrbeforeSpec
       actual shouldEqual expected
     }
 
-    // Failing
-    // Expected :[""^^xsd:string]
-    // Actual   :["abc"^^xsd:string]
     "arg1 is xsd:string and arg two is empty string simple literal" in {
       // strbefore("abc"^^xsd:string, "") -> ""^^xsd:string
       val arg1     = "\"abc\"^^xsd:string"
@@ -77,8 +67,6 @@ class StrbeforeSpec
       actual shouldEqual expected
     }
 
-    // Passing
-    // QUESTION: If input arg is not wrapped in quotes, why would the return value be wrapped in quotes?
     "arg1 is simple literal and arg two is simple literal" in {
       // strbefore("abc","xyz") -> ""
       val arg1     = "abc"
@@ -89,7 +77,6 @@ class StrbeforeSpec
     }
   }
 
-  // Passing
   "arg1 is plain literal with language tag and arg2 is plain literal with compatible language tag" in {
     // strbefore("abc"@en, "z"@en) -> ""
     val arg1     = "\"abc\"@en"
@@ -99,7 +86,6 @@ class StrbeforeSpec
     actual shouldEqual expected
   }
 
-  // Passing
   "arg1 is plain literal with language tag and arg2 is simple literal" in {
     // strbefore("abc"@en, "z") -> ""
     val arg1     = "\"abc\"@en"
@@ -109,9 +95,6 @@ class StrbeforeSpec
     actual shouldEqual expected
   }
 
-  // Failing
-  // Expected :[""@en]
-  // Actual   :["abc"@en]
   "arg1 is plain literal with language tag and arg2 is empty string plain literal with compatible language tag" in {
     // strbefore("abc"@en, ""@en) -> ""@en
     val arg1     = "\"abc\"@en"
@@ -121,9 +104,6 @@ class StrbeforeSpec
     actual shouldEqual expected
   }
 
-  // Failing
-  // Expected :[""@en]
-  // Actual   :["abc"@en]
   "arg1 is plain literal with language tag and arg2 is empty simple string" in {
     // strbefore("abc"@en, "") -> ""@en
     val arg1     = "\"abc\"@en"

@@ -169,16 +169,16 @@ object Func {
     } else {
       when(
         isLocalizedLocalizedArgs(col, str),
-        strFuncArgsLocalizedLocalized(col, str)(getLeftOrEmpty)
+        strFuncArgsLocalizedLocalized(col, str, "\"%s@")(getLeftOrEmpty)
       ).when(
         isLocalizedPlainArgs(col),
-        strFuncArgsLocalizedPlain(col, str)(getLeftOrEmpty)
+        strFuncArgsLocalizedPlain(col, str, "\"%s@")(getLeftOrEmpty)
       ).when(
         isTypedTypedArgs(col, str),
-        strFuncArgsTypedTyped(col, str)(getLeftOrEmpty)
+        strFuncArgsTypedTyped(col, str, "\"%s^^")(getLeftOrEmpty)
       ).when(
         isTypedPlainArgs(col),
-        strFuncArgsTypedPlain(col, str)(getLeftOrEmpty)
+        strFuncArgsTypedPlain(col, str, "\"%s^^")(getLeftOrEmpty)
       ).otherwise(getLeftOrEmpty(col, str))
     }
   }
@@ -198,20 +198,20 @@ object Func {
         .otherwise(substring_index(c, s, 1))
 
     if (isEmptyPattern(str)) {
-      lit("")
+      cc(lit("\"\""), substring_index(col, "\"", -1))
     } else {
       when(
         isLocalizedLocalizedArgs(col, str),
-        strFuncArgsLocalizedLocalized(col, str)(getLeftOrEmpty)
+        strFuncArgsLocalizedLocalized(col, str, "%s\"@")(getLeftOrEmpty)
       ).when(
         isLocalizedPlainArgs(col),
-        strFuncArgsLocalizedPlain(col, str)(getLeftOrEmpty)
+        strFuncArgsLocalizedPlain(col, str, "%s\"@")(getLeftOrEmpty)
       ).when(
         isTypedTypedArgs(col, str),
-        strFuncArgsTypedTyped(col, str)(getLeftOrEmpty)
+        strFuncArgsTypedTyped(col, str, "%s\"^^")(getLeftOrEmpty)
       ).when(
         isTypedPlainArgs(col),
-        strFuncArgsTypedPlain(col, str)(getLeftOrEmpty)
+        strFuncArgsTypedPlain(col, str, "%s\"^^")(getLeftOrEmpty)
       ).otherwise(getLeftOrEmpty(col, str))
     }
   }
@@ -312,11 +312,7 @@ object Func {
     * @return
     */
   def concat(a: Column, b: Column): Column = {
-    val left =
-      when(a.startsWith("\""), regexp_replace(a, "\"", "")).otherwise(a)
-    val right =
-      when(b.startsWith("\""), regexp_replace(b, "\"", "")).otherwise(b)
-    cc(left, right)
+    cc(trim(a, "\""), trim(b, "\""))
   }
 
   /** Concatenate a [[String]] with a [[Column]], generating a new [[Column]]
@@ -465,7 +461,7 @@ object Func {
       )
     }
 
-    def formatLocalized(l: LocalizedString, s: String)(
+    def formatLocalized(l: LocalizedString, s: String, localFormat: String)(
         f: (Column, String) => Column
     ): Column =
       when(
@@ -473,7 +469,7 @@ object Func {
         f(l.value, s)
       ).otherwise(
         cc(
-          format_string("\"%s@", f(l.value, s)),
+          format_string(localFormat, f(l.value, s)),  ///////////
           l.tag
         )
       )
@@ -496,14 +492,14 @@ object Func {
       )
     }
 
-    def formatTyped(t: TypedString, s: String)(
+    def formatTyped(t: TypedString, s: String, typedFormat: String)(
         f: (Column, String) => Column
     ): Column = when(
       f(t.value, s) === lit(""),
       f(t.value, s)
     ).otherwise(
       cc(
-        format_string("\"%s^^", f(t.value, s)),
+        format_string(typedFormat, f(t.value, s)),  /////////////
         t.tag
       )
     )
@@ -527,7 +523,7 @@ object Func {
       RdfFormatter.isLocalizedString(arg1)
 
     // scalastyle:off
-    def strFuncArgsLocalizedLocalized(col: Column, str: String)(
+    def strFuncArgsLocalizedLocalized(col: Column, str: String, format: String)(
         f: (Column, String) => Column
     ): Column = {
       val left  = LocalizedString(col)
@@ -536,20 +532,20 @@ object Func {
         left.tag =!= right.tag,
         lit(null)
       ).otherwise(
-        LocalizedString.formatLocalized(left, str)(f)
+        LocalizedString.formatLocalized(left, str, format)(f)
       )
     }
     // scalastyle:on
 
-    def strFuncArgsLocalizedPlain(col: Column, str: String)(
+    def strFuncArgsLocalizedPlain(col: Column, str: String, localFormat: String)(
         f: (Column, String) => Column
     ): Column = {
       val left = LocalizedString(col)
-      LocalizedString.formatLocalized(left, str)(f)
+      LocalizedString.formatLocalized(left, str, localFormat)(f)
     }
 
     // scalastyle:off
-    def strFuncArgsTypedTyped(col: Column, str: String)(
+    def strFuncArgsTypedTyped(col: Column, str: String, typedFormat: String)(
         f: (Column, String) => Column
     ) = {
       val left  = TypedString(col)
@@ -558,16 +554,16 @@ object Func {
         left.tag =!= right.tag,
         lit(null)
       ).otherwise(
-        TypedString.formatTyped(left, str)(f)
+        TypedString.formatTyped(left, str, typedFormat)(f)
       )
     }
     // scalastyle:off
 
-    def strFuncArgsTypedPlain(col: Column, str: String)(
+    def strFuncArgsTypedPlain(col: Column, str: String, typedFormat: String)(
         f: (Column, String) => Column
     ): Column = {
       val left = TypedString(col)
-      TypedString.formatTyped(left, str)(f)
+      TypedString.formatTyped(left, str, typedFormat)(f)
     }
   }
 }

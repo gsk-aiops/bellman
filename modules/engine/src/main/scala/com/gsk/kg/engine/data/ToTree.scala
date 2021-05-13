@@ -150,7 +150,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
             Node("STRDT", Stream(s, Leaf(uri)))
           case ExpressionF.SUBSTR(s, pos, len) =>
             Node(
-              "REGEX",
+              "SUBSTR",
               Stream(s, Leaf(pos.toString), Leaf(len.toString))
             )
           case ExpressionF.ISBLANK(s) => Node("ISBLANK", Stream(s))
