@@ -460,7 +460,7 @@ object Func {
       )
     }
 
-    def formatLocalized(l: LocalizedString, s: String, localFormat: String)(
+    def formatLocalized(l: LocalizedString, s: String, localizedFormat: String)(
         f: (Column, String) => Column
     ): Column =
       when(
@@ -468,7 +468,7 @@ object Func {
         f(l.value, s)
       ).otherwise(
         cc(
-          format_string(localFormat, f(l.value, s)),
+          format_string(localizedFormat, f(l.value, s)),
           l.tag
         )
       )
@@ -522,7 +522,7 @@ object Func {
       RdfFormatter.isLocalizedString(arg1)
 
     // scalastyle:off
-    def strFuncArgsLocalizedLocalized(col: Column, str: String, format: String)(
+    def strFuncArgsLocalizedLocalized(col: Column, str: String, localizedFormat: String)(
         f: (Column, String) => Column
     ): Column = {
       val left  = LocalizedString(col)
@@ -531,7 +531,7 @@ object Func {
         left.tag =!= right.tag,
         lit(null)
       ).otherwise(
-        LocalizedString.formatLocalized(left, str, format)(f)
+        LocalizedString.formatLocalized(left, str, localizedFormat)(f)
       )
     }
     // scalastyle:on
@@ -539,12 +539,12 @@ object Func {
     def strFuncArgsLocalizedPlain(
         col: Column,
         str: String,
-        localFormat: String
+        localizedFormat: String
     )(
         f: (Column, String) => Column
     ): Column = {
       val left = LocalizedString(col)
-      LocalizedString.formatLocalized(left, str, localFormat)(f)
+      LocalizedString.formatLocalized(left, str, localizedFormat)(f)
     }
 
     // scalastyle:off
