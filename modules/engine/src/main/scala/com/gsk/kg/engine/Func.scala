@@ -1,6 +1,5 @@
 package com.gsk.kg.engine
 
-import com.gsk.kg.engine.Func.StringFunctionUtils._
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
@@ -522,7 +521,11 @@ object Func {
       RdfFormatter.isLocalizedString(arg1)
 
     // scalastyle:off
-    def strFuncArgsLocalizedLocalized(col: Column, str: String, localizedFormat: String)(
+    def strFuncArgsLocalizedLocalized(
+        col: Column,
+        str: String,
+        localizedFormat: String
+    )(
         f: (Column, String) => Column
     ): Column = {
       val left  = LocalizedString(col)
