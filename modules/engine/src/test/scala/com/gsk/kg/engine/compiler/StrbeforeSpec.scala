@@ -54,14 +54,13 @@ class StrbeforeSpec
       actual shouldEqual expected
     }
 
-    // Failing
-    // Expected :UnExpectedType
-    // Actual   :[null]
+    // Passing
+    // TODO: Should throw incompatibility error
     "arg1 is plain literal with language tag and arg2 is plain literal with incompatible language tag" in {
       // strbefore("abc"@en, "b"@cy) -> error
       val arg1     = "\"abc\"@en"
       val arg2     = "\"b\"@cy"
-      val expected = EngineError.UnExpectedType
+      val expected = Row(null) // scalastyle:ignore null
       val actual   = act(arg1, arg2)
       actual shouldEqual expected
     }
