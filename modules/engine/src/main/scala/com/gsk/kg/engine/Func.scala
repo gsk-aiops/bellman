@@ -319,9 +319,8 @@ object Func {
     * @param b
     * @return
     */
-  def concat(a: String, b: Column): Column = {
+  def concat(a: String, b: Column): Column =
     cc(lit(a), trim(b, "\""))
-  }
 
   /** Concatenate a [[Column]] with a [[String]], generating a new [[Column]]
     *
@@ -329,9 +328,8 @@ object Func {
     * @param b
     * @return
     */
-  def concat(a: Column, b: String): Column = {
+  def concat(a: Column, b: String): Column =
     cc(trim(a, "\""), lit(b))
-  }
 
   /** Sample is a set function which returns an arbitrary value from
     * the multiset passed to it.
