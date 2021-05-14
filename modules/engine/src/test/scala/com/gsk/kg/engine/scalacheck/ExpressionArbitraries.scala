@@ -35,7 +35,10 @@ trait ExpressionArbitraries extends CommonGenerators {
 
   val builtinFuncGenerator: Gen[Expression] = Gen.oneOf(
     Gen.lzy(expressionGenerator).map(BuiltInFunc.URI(_)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
+    (
+      Gen.lzy(expressionGenerator),
+      smallNonEmptyListOf(expressionGenerator)
+    )
       .mapN(BuiltInFunc.CONCAT(_, _)),
     Gen.lzy(expressionGenerator).map(BuiltInFunc.STR(_)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
