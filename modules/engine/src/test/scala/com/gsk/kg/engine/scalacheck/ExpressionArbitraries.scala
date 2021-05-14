@@ -37,7 +37,7 @@ trait ExpressionArbitraries extends CommonGenerators {
     Gen.lzy(expressionGenerator).map(BuiltInFunc.URI(_)),
     (
       Gen.lzy(expressionGenerator),
-      Gen.nonEmptyListOf(Gen.lzy(expressionGenerator))
+      smallNonEmptyListOf(expressionGenerator)
     )
       .mapN(BuiltInFunc.CONCAT(_, _)),
     Gen.lzy(expressionGenerator).map(BuiltInFunc.STR(_)),

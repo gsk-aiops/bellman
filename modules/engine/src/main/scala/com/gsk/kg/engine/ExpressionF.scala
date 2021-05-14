@@ -2,11 +2,14 @@ package com.gsk.kg.engine
 
 import cats.data.NonEmptyList
 import cats.implicits._
+
 import higherkindness.droste._
 import higherkindness.droste.macros.deriveTraverse
+
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
+
 import com.gsk.kg.config.Config
 import com.gsk.kg.sparqlparser._
 
