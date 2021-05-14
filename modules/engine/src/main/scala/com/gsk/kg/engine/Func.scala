@@ -1,5 +1,7 @@
 package com.gsk.kg.engine
 
+import cats.data.NonEmptyList
+
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
@@ -345,26 +347,25 @@ object Func {
     * @param b
     * @return
     */
-  def concat(a: Column, b: Column): Column =
-    cc(trim(a, "\""), trim(b, "\""))
+  def concat(appendTo: Column, append: NonEmptyList[Column]): Column = {
+    val (lvalue, ltag) = unfold(appendTo)
+    val concatValues = append.toList.foldLeft(lvalue) { case (acc, elem) =>
+      val (rvalue, _) = unfold(elem)
+      cc(acc, rvalue)
+    }
 
-  /** Concatenate a [[String]] with a [[Column]], generating a new [[Column]]
-    *
-    * @param a
-    * @param b
-    * @return
-    */
-  def concat(a: String, b: Column): Column =
-    cc(lit(a), trim(b, "\""))
-
-  /** Concatenate a [[Column]] with a [[String]], generating a new [[Column]]
-    *
-    * @param a
-    * @param b
-    * @return
-    */
-  def concat(a: Column, b: String): Column =
-    cc(trim(a, "\""), lit(b))
+    when(
+      areAllArgsSameTypeAndSameTags(appendTo, append.toList),
+      when(
+        RdfFormatter.isLocalizedString(appendTo),
+        format_string("\"%s\"@%s", concatValues, ltag)
+      ).otherwise(
+        format_string("\"%s\"^^%s", concatValues, ltag)
+      )
+    ).otherwise(
+      concatValues
+    )
+  }
 
   /** Sample is a set function which returns an arbitrary value from
     * the multiset passed to it.
@@ -533,6 +534,70 @@ object Func {
   }
 
   object StringFunctionUtils {
+
+    def unfold(arg: Column): (Column, Column) = {
+      val getValue = when(
+        RdfFormatter.isLocalizedString(arg), {
+          val l = LocalizedString(arg)
+          trim(l.value, "\"")
+        }
+      ).when(
+        RdfFormatter.isDatatypeLiteral(arg), {
+          val l = TypedString(arg)
+          trim(l.value, "\"")
+        }
+      ).otherwise(
+        trim(arg, "\"")
+      )
+
+      val getTag = when(
+        RdfFormatter.isLocalizedString(arg), {
+          val l = LocalizedString(arg)
+          l.tag
+        }
+      ).when(
+        RdfFormatter.isDatatypeLiteral(arg), {
+          val l = TypedString(arg)
+          l.tag
+        }
+      ).otherwise(
+        lit("")
+      )
+
+      (getValue, getTag)
+    }
+
+    def areAllArgsSameTypeAndSameTags(
+        arg1: Column,
+        args: List[Column]
+    ): Column = {
+      when(
+        RdfFormatter.isLocalizedString(arg1), {
+          val l = LocalizedString(arg1)
+          args.foldLeft(lit(true)) { case (acc, elem) =>
+            acc && when(
+              RdfFormatter.isLocalizedString(elem), {
+                val r = LocalizedString(elem)
+                l.tag === r.tag
+              }
+            ).otherwise(lit(false))
+          }
+        }
+      ).when(
+        RdfFormatter.isDatatypeLiteral(arg1), {
+          val l = TypedString(arg1)
+          args.foldLeft(lit(true)) { case (acc, elem) =>
+            acc && when(
+              RdfFormatter.isDatatypeLiteral(elem), {
+                val r = TypedString(elem)
+                l.tag === r.tag
+              }
+            ).otherwise(lit(false))
+          }
+        }
+      ).otherwise(lit(false))
+    }
+
     def isLocalizedLocalizedArgs(arg1: Column, arg2: String): Column =
       RdfFormatter.isLocalizedString(arg1) && RdfFormatter.isLocalizedString(
         lit(arg2)

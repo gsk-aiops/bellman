@@ -25,8 +25,10 @@ sealed trait StringLike extends Expression
 sealed trait BuiltInFunc extends StringLike
 object BuiltInFunc {
   final case class URI(s: Expression) extends BuiltInFunc
-  final case class CONCAT(appendTo: Expression, append: Expression)
-      extends BuiltInFunc
+  final case class CONCAT(
+      appendTo: Expression,
+      append: List[Expression]
+  )                                                        extends BuiltInFunc
   final case class STR(s: Expression)                      extends BuiltInFunc
   final case class STRAFTER(s: Expression, f: Expression)  extends BuiltInFunc
   final case class STRBEFORE(s: Expression, f: Expression) extends BuiltInFunc

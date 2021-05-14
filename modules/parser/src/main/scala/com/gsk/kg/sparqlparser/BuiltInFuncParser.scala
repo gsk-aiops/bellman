@@ -25,10 +25,11 @@ object BuiltInFuncParser {
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
   def concatParen[_: P]: P[CONCAT] =
-    ("(" ~ concat ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
-      .map { c =>
-        CONCAT(c._1, c._2)
-      }
+    ("(" ~ concat ~ ExpressionParser.parser ~ ExpressionParser.parser.rep(
+      1
+    ) ~ ")").map { case (appendTo, append) =>
+      CONCAT(appendTo, append.toList)
+    }
   def strParen[_: P]: P[STR] =
     P("(" ~ str ~ ExpressionParser.parser ~ ")").map(s => STR(s))
   def strafterParen[_: P]: P[STRAFTER] = P(
