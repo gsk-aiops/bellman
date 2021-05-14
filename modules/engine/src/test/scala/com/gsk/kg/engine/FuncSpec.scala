@@ -409,6 +409,42 @@ class FuncSpec
     }
   }
 
+  "Func.lcase" should {
+
+    "convert all lexical characters to lower case" in {
+
+      val df = List(
+        "HELLO",
+        "\"HELLO\"@en",
+        "\"HELLO\"^^xsd:string"
+      ).toDF("text")
+
+      df.select(Func.lcase(df("text")).as("result")).collect shouldEqual Array(
+        Row("hello"),
+        Row("\"hello\"@en"),
+        Row("\"hello\"^^xsd:string")
+      )
+    }
+  }
+
+  "Func.ucase" should {
+
+    "convert all lexical characters to upper case" in {
+
+      val df = List(
+        "hello",
+        "\"hello\"@en",
+        "\"hello\"^^xsd:string"
+      ).toDF("text")
+
+      df.select(Func.ucase(df("text")).as("result")).collect shouldEqual Array(
+        Row("HELLO"),
+        Row("\"HELLO\"@en"),
+        Row("\"HELLO\"^^xsd:string")
+      )
+    }
+  }
+
   "Func.strdt" should {
 
     "return a literal with lexical for and type specified" in {

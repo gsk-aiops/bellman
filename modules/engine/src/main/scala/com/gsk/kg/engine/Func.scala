@@ -343,6 +343,86 @@ object Func {
   def sample(col: Column): Column =
     first(col, true)
 
+  /** Implementation of SparQL LCASE on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-lcase]]
+    * @param col
+    * @return
+    */
+  def lcase(col: Column): Column = {
+    when(
+      col.contains("\"@"),
+      format_string(
+        "%s",
+        cc(
+          cc(
+            cc(
+              lit("\""),
+              lower(trim(substring_index(col, "\"@", 1), "\""))
+            ),
+            lit("\"")
+          ),
+          cc(lit("@"), substring_index(col, "\"@", -1))
+        )
+      )
+    ).when(
+      col.contains("\"^^"),
+      format_string(
+        "%s",
+        cc(
+          cc(
+            cc(
+              lit("\""),
+              lower(trim(substring_index(col, "\"^^", 1), "\""))
+            ),
+            lit("\"")
+          ),
+          cc(lit("^^"), substring_index(col, "\"^^", -1))
+        )
+      )
+    ).otherwise(lower(trim(col, "\"")))
+  }
+
+  /** Implementation of SparQL UCASE on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-ucase]]
+    * @param col
+    * @return
+    */
+  def ucase(col: Column): Column = {
+    when(
+      col.contains("\"@"),
+      format_string(
+        "%s",
+        cc(
+          cc(
+            cc(
+              lit("\""),
+              upper(trim(substring_index(col, "\"@", 1), "\""))
+            ),
+            lit("\"")
+          ),
+          cc(lit("@"), substring_index(col, "\"@", -1))
+        )
+      )
+    ).when(
+      col.contains("\"^^"),
+      format_string(
+        "%s",
+        cc(
+          cc(
+            cc(
+              lit("\""),
+              upper(trim(substring_index(col, "\"^^", 1), "\""))
+            ),
+            lit("\"")
+          ),
+          cc(lit("^^"), substring_index(col, "\"^^", -1))
+        )
+      )
+    ).otherwise(upper(trim(col, "\"")))
+  }
+
   def groupConcat(col: Column, separator: String): Column =
     ???
 
