@@ -22,8 +22,7 @@ import com.gsk.kg.sparqlparser._
 @deriveTraverse sealed trait ExpressionF[+A]
 
 object ExpressionF {
-  // scalastyle: off
-
+  // scalastyle: off number.of.methods
   final case class EQUALS[A](l: A, r: A) extends ExpressionF[A]
   final case class REGEX[A](s: A, pattern: String, flags: String)
       extends ExpressionF[A]
@@ -288,6 +287,5 @@ object ExpressionF {
     M.liftF[Result, Config, Log, DataFrame, Column](
       EngineError.UnknownFunction(name).asLeft[Column]
     )
-
-  // scalastyle: on
+  // scalastyle: on number.of.methods
 }
