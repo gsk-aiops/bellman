@@ -490,9 +490,7 @@ class ConstructSpec
       arrayResult.map(_.get(0)).distinct should have size 6
     }
 
-    // TODO: Un-ignore when fixed string functions on URIs (angle brackets congruency)
-    // See: https://github.com/gsk-aiops/bellman/issues/328
-    "execute and return no duplicates" ignore {
+    "execute and return no duplicates when input dataframe has duplicates" in {
 
       val df: DataFrame = List(
         (
