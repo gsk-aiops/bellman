@@ -83,6 +83,10 @@ object ExpressionF {
       case BuiltInFunc.STRAFTER(s, t @ StringVal.DT_STRING(_, _)) =>
         STRAFTER(s, StringVal.DT_STRING.toString(t))
       case BuiltInFunc.STRBEFORE(s, StringVal.STRING(f)) => STRBEFORE(s, f)
+      case BuiltInFunc.STRBEFORE(s, l @ StringVal.LANG_STRING(_, _)) =>
+        STRBEFORE(s, StringVal.LANG_STRING.toString(l))
+      case BuiltInFunc.STRBEFORE(s, t @ StringVal.DT_STRING(_, _)) =>
+        STRBEFORE(s, StringVal.DT_STRING.toString(t))
       case BuiltInFunc.SUBSTR(
             s,
             StringVal.NUM(pos),

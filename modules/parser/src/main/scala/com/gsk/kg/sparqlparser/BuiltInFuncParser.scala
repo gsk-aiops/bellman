@@ -38,7 +38,7 @@ object BuiltInFuncParser {
   }
 
   def strbeforeParen[_: P]: P[STRBEFORE] = P(
-    "(" ~ strbefore ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")"
+    "(" ~ strbefore ~ (StringValParser.litParser | BuiltInFuncParser.parser) ~ (StringValParser.litParser | BuiltInFuncParser.parser) ~ ")"
   ).map { s =>
     STRBEFORE(s._1, s._2)
   }
