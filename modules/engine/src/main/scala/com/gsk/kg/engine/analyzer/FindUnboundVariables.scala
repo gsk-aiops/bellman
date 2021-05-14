@@ -126,7 +126,7 @@ object FindVariablesOnExpression {
         case AND(l, r)                       => l ++ r
         case NEGATE(s)                       => s
         case URI(s)                          => s
-        case CONCAT(appendTo, append)        => appendTo ++ append
+        case CONCAT(appendTo, append)        => appendTo ++ append.toList.toSet.flatten
         case STR(s)                          => s
         case STRAFTER(s, f)                  => s
         case STRBEFORE(s, f)                 => s

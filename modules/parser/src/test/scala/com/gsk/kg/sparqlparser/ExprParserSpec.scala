@@ -274,7 +274,7 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
             VARIABLE(s1: String),
             URI(
               STRAFTER(
-                CONCAT(STR(VARIABLE(s2: String)), STR(VARIABLE(s3: String))),
+                CONCAT(STR(VARIABLE(s2: String)), _),
                 STRING("#")
               )
             ),

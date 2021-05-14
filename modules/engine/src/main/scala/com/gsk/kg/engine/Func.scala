@@ -1,5 +1,7 @@
 package com.gsk.kg.engine
 
+import cats.data.NonEmptyList
+
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
@@ -168,16 +170,16 @@ object Func {
     } else {
       when(
         isLocalizedLocalizedArgs(col, str),
-        strFuncArgsLocalizedLocalized(col, str)(getLeftOrEmpty)
+        strFuncArgsLocalizedLocalized(col, str, "\"%s@")(getLeftOrEmpty)
       ).when(
         isLocalizedPlainArgs(col),
-        strFuncArgsLocalizedPlain(col, str)(getLeftOrEmpty)
+        strFuncArgsLocalizedPlain(col, str, "\"%s@")(getLeftOrEmpty)
       ).when(
         isTypedTypedArgs(col, str),
-        strFuncArgsTypedTyped(col, str)(getLeftOrEmpty)
+        strFuncArgsTypedTyped(col, str, "\"%s^^")(getLeftOrEmpty)
       ).when(
         isTypedPlainArgs(col),
-        strFuncArgsTypedPlain(col, str)(getLeftOrEmpty)
+        strFuncArgsTypedPlain(col, str, "\"%s^^")(getLeftOrEmpty)
       ).otherwise(getLeftOrEmpty(col, str))
     }
   }
@@ -191,9 +193,29 @@ object Func {
     * @param str
     * @return
     */
-  def strbefore(col: Column, str: String): Column =
-    when(substring_index(col, str, 1) === col, lit(""))
-      .otherwise(substring_index(col, str, 1))
+  def strbefore(col: Column, str: String): Column = {
+    def getLeftOrEmpty(c: Column, s: String): Column =
+      when(substring_index(c, s, 1) === c, lit(""))
+        .otherwise(substring_index(c, s, 1))
+
+    if (isEmptyPattern(str)) {
+      cc(lit("\"\""), substring_index(col, "\"", -1))
+    } else {
+      when(
+        isLocalizedLocalizedArgs(col, str),
+        strFuncArgsLocalizedLocalized(col, str, "%s\"@")(getLeftOrEmpty)
+      ).when(
+        isLocalizedPlainArgs(col),
+        strFuncArgsLocalizedPlain(col, str, "%s\"@")(getLeftOrEmpty)
+      ).when(
+        isTypedTypedArgs(col, str),
+        strFuncArgsTypedTyped(col, str, "%s\"^^")(getLeftOrEmpty)
+      ).when(
+        isTypedPlainArgs(col),
+        strFuncArgsTypedPlain(col, str, "%s\"^^")(getLeftOrEmpty)
+      ).otherwise(getLeftOrEmpty(col, str))
+    }
+  }
 
   /** Implementation of SparQL SUBSTR on Spark dataframes.
     *
@@ -290,36 +312,24 @@ object Func {
     * @param b
     * @return
     */
-  def concat(a: Column, b: Column): Column = {
-    val left =
-      when(a.startsWith("\""), regexp_replace(a, "\"", "")).otherwise(a)
-    val right =
-      when(b.startsWith("\""), regexp_replace(b, "\"", "")).otherwise(b)
-    cc(left, right)
-  }
+  def concat(appendTo: Column, append: NonEmptyList[Column]): Column = {
+    val (lvalue, ltag) = unfold(appendTo)
+    val concatValues = append.toList.foldLeft(lvalue) { case (acc, elem) =>
+      val (rvalue, _) = unfold(elem)
+      cc(acc, rvalue)
+    }
 
-  /** Concatenate a [[String]] with a [[Column]], generating a new [[Column]]
-    *
-    * @param a
-    * @param b
-    * @return
-    */
-  def concat(a: String, b: Column): Column = {
-    val right =
-      when(b.startsWith("\""), regexp_replace(b, "\"", "")).otherwise(b)
-    cc(lit(a), right)
-  }
-
-  /** Concatenate a [[Column]] with a [[String]], generating a new [[Column]]
-    *
-    * @param a
-    * @param b
-    * @return
-    */
-  def concat(a: Column, b: String): Column = {
-    val left =
-      when(a.startsWith("\""), regexp_replace(a, "\"", "")).otherwise(a)
-    cc(left, lit(b))
+    when(
+      areAllArgsSameTypeAndSameTags(appendTo, append.toList),
+      when(
+        RdfFormatter.isLocalizedString(appendTo),
+        format_string("\"%s\"@%s", concatValues, ltag)
+      ).otherwise(
+        format_string("\"%s\"^^%s", concatValues, ltag)
+      )
+    ).otherwise(
+      concatValues
+    )
   }
 
   /** Sample is a set function which returns an arbitrary value from
@@ -375,7 +385,7 @@ object Func {
   private def extractNumberImpl(col: Column, default: Column) =
     when(
       isTypedLiteral(col) && isNumeric(col),
-      strbefore(ltrim(col, "\""), "\"^^")
+      strbefore(ltrim(col, "\""), "\"")
     ).otherwise(default)
 
   /** This helper method tries to parse a datetime expressed as a RDF
@@ -444,7 +454,7 @@ object Func {
       )
     }
 
-    def formatLocalized(l: LocalizedString, s: String)(
+    def formatLocalized(l: LocalizedString, s: String, localizedFormat: String)(
         f: (Column, String) => Column
     ): Column =
       when(
@@ -452,7 +462,7 @@ object Func {
         f(l.value, s)
       ).otherwise(
         cc(
-          format_string("\"%s@", f(l.value, s)),
+          format_string(localizedFormat, f(l.value, s)),
           l.tag
         )
       )
@@ -475,20 +485,84 @@ object Func {
       )
     }
 
-    def formatTyped(t: TypedString, s: String)(
+    def formatTyped(t: TypedString, s: String, typedFormat: String)(
         f: (Column, String) => Column
     ): Column = when(
       f(t.value, s) === lit(""),
       f(t.value, s)
     ).otherwise(
       cc(
-        format_string("\"%s^^", f(t.value, s)),
+        format_string(typedFormat, f(t.value, s)),
         t.tag
       )
     )
   }
 
   object StringFunctionUtils {
+
+    def unfold(arg: Column): (Column, Column) = {
+      val getValue = when(
+        RdfFormatter.isLocalizedString(arg), {
+          val l = LocalizedString(arg)
+          trim(l.value, "\"")
+        }
+      ).when(
+        RdfFormatter.isDatatypeLiteral(arg), {
+          val l = TypedString(arg)
+          trim(l.value, "\"")
+        }
+      ).otherwise(
+        trim(arg, "\"")
+      )
+
+      val getTag = when(
+        RdfFormatter.isLocalizedString(arg), {
+          val l = LocalizedString(arg)
+          l.tag
+        }
+      ).when(
+        RdfFormatter.isDatatypeLiteral(arg), {
+          val l = TypedString(arg)
+          l.tag
+        }
+      ).otherwise(
+        lit("")
+      )
+
+      (getValue, getTag)
+    }
+
+    def areAllArgsSameTypeAndSameTags(
+        arg1: Column,
+        args: List[Column]
+    ): Column = {
+      when(
+        RdfFormatter.isLocalizedString(arg1), {
+          val l = LocalizedString(arg1)
+          args.foldLeft(lit(true)) { case (acc, elem) =>
+            acc && when(
+              RdfFormatter.isLocalizedString(elem), {
+                val r = LocalizedString(elem)
+                l.tag === r.tag
+              }
+            ).otherwise(lit(false))
+          }
+        }
+      ).when(
+        RdfFormatter.isDatatypeLiteral(arg1), {
+          val l = TypedString(arg1)
+          args.foldLeft(lit(true)) { case (acc, elem) =>
+            acc && when(
+              RdfFormatter.isDatatypeLiteral(elem), {
+                val r = TypedString(elem)
+                l.tag === r.tag
+              }
+            ).otherwise(lit(false))
+          }
+        }
+      ).otherwise(lit(false))
+    }
+
     def isLocalizedLocalizedArgs(arg1: Column, arg2: String): Column =
       RdfFormatter.isLocalizedString(arg1) && RdfFormatter.isLocalizedString(
         lit(arg2)
@@ -506,7 +580,11 @@ object Func {
       RdfFormatter.isLocalizedString(arg1)
 
     // scalastyle:off
-    def strFuncArgsLocalizedLocalized(col: Column, str: String)(
+    def strFuncArgsLocalizedLocalized(
+        col: Column,
+        str: String,
+        localizedFormat: String
+    )(
         f: (Column, String) => Column
     ): Column = {
       val left  = LocalizedString(col)
@@ -515,20 +593,24 @@ object Func {
         left.tag =!= right.tag,
         lit(null)
       ).otherwise(
-        LocalizedString.formatLocalized(left, str)(f)
+        LocalizedString.formatLocalized(left, str, localizedFormat)(f)
       )
     }
     // scalastyle:on
 
-    def strFuncArgsLocalizedPlain(col: Column, str: String)(
+    def strFuncArgsLocalizedPlain(
+        col: Column,
+        str: String,
+        localizedFormat: String
+    )(
         f: (Column, String) => Column
     ): Column = {
       val left = LocalizedString(col)
-      LocalizedString.formatLocalized(left, str)(f)
+      LocalizedString.formatLocalized(left, str, localizedFormat)(f)
     }
 
     // scalastyle:off
-    def strFuncArgsTypedTyped(col: Column, str: String)(
+    def strFuncArgsTypedTyped(col: Column, str: String, typedFormat: String)(
         f: (Column, String) => Column
     ) = {
       val left  = TypedString(col)
@@ -537,16 +619,16 @@ object Func {
         left.tag =!= right.tag,
         lit(null)
       ).otherwise(
-        TypedString.formatTyped(left, str)(f)
+        TypedString.formatTyped(left, str, typedFormat)(f)
       )
     }
     // scalastyle:off
 
-    def strFuncArgsTypedPlain(col: Column, str: String)(
+    def strFuncArgsTypedPlain(col: Column, str: String, typedFormat: String)(
         f: (Column, String) => Column
     ): Column = {
       val left = TypedString(col)
-      TypedString.formatTyped(left, str)(f)
+      TypedString.formatTyped(left, str, typedFormat)(f)
     }
   }
 }

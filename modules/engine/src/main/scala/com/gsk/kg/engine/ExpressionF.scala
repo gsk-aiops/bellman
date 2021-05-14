@@ -1,5 +1,6 @@
 package com.gsk.kg.engine
 
+import cats.data.NonEmptyList
 import cats.implicits._
 
 import higherkindness.droste._
@@ -25,21 +26,22 @@ object ExpressionF {
   final case class EQUALS[A](l: A, r: A) extends ExpressionF[A]
   final case class REGEX[A](s: A, pattern: String, flags: String)
       extends ExpressionF[A]
-  final case class STRENDS[A](s: A, f: String)       extends ExpressionF[A]
-  final case class STRSTARTS[A](s: A, f: String)     extends ExpressionF[A]
-  final case class STRDT[A](s: A, uri: String)       extends ExpressionF[A]
-  final case class GT[A](l: A, r: A)                 extends ExpressionF[A]
-  final case class LT[A](l: A, r: A)                 extends ExpressionF[A]
-  final case class GTE[A](l: A, r: A)                extends ExpressionF[A]
-  final case class LTE[A](l: A, r: A)                extends ExpressionF[A]
-  final case class OR[A](l: A, r: A)                 extends ExpressionF[A]
-  final case class AND[A](l: A, r: A)                extends ExpressionF[A]
-  final case class NEGATE[A](s: A)                   extends ExpressionF[A]
-  final case class URI[A](s: A)                      extends ExpressionF[A]
-  final case class CONCAT[A](appendTo: A, append: A) extends ExpressionF[A]
-  final case class STR[A](s: A)                      extends ExpressionF[A]
-  final case class STRAFTER[A](s: A, f: String)      extends ExpressionF[A]
-  final case class STRBEFORE[A](s: A, f: String)     extends ExpressionF[A]
+  final case class STRENDS[A](s: A, f: String)   extends ExpressionF[A]
+  final case class STRSTARTS[A](s: A, f: String) extends ExpressionF[A]
+  final case class STRDT[A](s: A, uri: String)   extends ExpressionF[A]
+  final case class GT[A](l: A, r: A)             extends ExpressionF[A]
+  final case class LT[A](l: A, r: A)             extends ExpressionF[A]
+  final case class GTE[A](l: A, r: A)            extends ExpressionF[A]
+  final case class LTE[A](l: A, r: A)            extends ExpressionF[A]
+  final case class OR[A](l: A, r: A)             extends ExpressionF[A]
+  final case class AND[A](l: A, r: A)            extends ExpressionF[A]
+  final case class NEGATE[A](s: A)               extends ExpressionF[A]
+  final case class URI[A](s: A)                  extends ExpressionF[A]
+  final case class CONCAT[A](appendTo: A, append: NonEmptyList[A])
+      extends ExpressionF[A]
+  final case class STR[A](s: A)                  extends ExpressionF[A]
+  final case class STRAFTER[A](s: A, f: String)  extends ExpressionF[A]
+  final case class STRBEFORE[A](s: A, f: String) extends ExpressionF[A]
   final case class SUBSTR[A](s: A, pos: Int, len: Option[Int])
       extends ExpressionF[A]
   final case class ISBLANK[A](s: A) extends ExpressionF[A]
@@ -66,16 +68,17 @@ object ExpressionF {
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
-      case Conditional.EQUALS(l, r)                     => EQUALS(l, r)
-      case Conditional.GT(l, r)                         => GT(l, r)
-      case Conditional.LT(l, r)                         => LT(l, r)
-      case Conditional.GTE(l, r)                        => GTE(l, r)
-      case Conditional.LTE(l, r)                        => LTE(l, r)
-      case Conditional.OR(l, r)                         => OR(l, r)
-      case Conditional.AND(l, r)                        => AND(l, r)
-      case Conditional.NEGATE(s)                        => NEGATE(s)
-      case BuiltInFunc.URI(s)                           => URI(s)
-      case BuiltInFunc.CONCAT(appendTo, append)         => CONCAT(appendTo, append)
+      case Conditional.EQUALS(l, r) => EQUALS(l, r)
+      case Conditional.GT(l, r)     => GT(l, r)
+      case Conditional.LT(l, r)     => LT(l, r)
+      case Conditional.GTE(l, r)    => GTE(l, r)
+      case Conditional.LTE(l, r)    => LTE(l, r)
+      case Conditional.OR(l, r)     => OR(l, r)
+      case Conditional.AND(l, r)    => AND(l, r)
+      case Conditional.NEGATE(s)    => NEGATE(s)
+      case BuiltInFunc.URI(s)       => URI(s)
+      case BuiltInFunc.CONCAT(appendTo, append) =>
+        CONCAT(appendTo, NonEmptyList.fromListUnsafe(append))
       case BuiltInFunc.STR(s)                           => STR(s)
       case BuiltInFunc.STRAFTER(s, StringVal.STRING(f)) => STRAFTER(s, f)
       case BuiltInFunc.STRAFTER(s, l @ StringVal.LANG_STRING(_, _)) =>
@@ -83,6 +86,10 @@ object ExpressionF {
       case BuiltInFunc.STRAFTER(s, t @ StringVal.DT_STRING(_, _)) =>
         STRAFTER(s, StringVal.DT_STRING.toString(t))
       case BuiltInFunc.STRBEFORE(s, StringVal.STRING(f)) => STRBEFORE(s, f)
+      case BuiltInFunc.STRBEFORE(s, l @ StringVal.LANG_STRING(_, _)) =>
+        STRBEFORE(s, StringVal.LANG_STRING.toString(l))
+      case BuiltInFunc.STRBEFORE(s, t @ StringVal.DT_STRING(_, _)) =>
+        STRBEFORE(s, StringVal.DT_STRING.toString(t))
       case BuiltInFunc.SUBSTR(
             s,
             StringVal.NUM(pos),
@@ -162,7 +169,7 @@ object ExpressionF {
       case CONCAT(appendTo, append) =>
         BuiltInFunc.CONCAT(
           appendTo.asInstanceOf[StringLike],
-          append.asInstanceOf[StringLike]
+          append.map(_.asInstanceOf[StringLike]).toList
         )
       case STR(s) => BuiltInFunc.STR(s.asInstanceOf[StringLike])
       case STRAFTER(s, f) =>
