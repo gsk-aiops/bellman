@@ -223,11 +223,46 @@ object Func {
     * @param len
     * @return
     */
-  def substr(col: Column, pos: Int, len: Option[Int]): Column =
-    len match {
-      case Some(l) => col.substr(pos, l)
-      case None    => col.substr(lit(pos), length(col) - pos + 1)
+  def substr(col: Column, pos: Int, len: Option[Int]): Column = {
+    def ss(col: Column, pos: Int, len: Option[Int]) = {
+      len match {
+        case Some(l) => col.substr(pos, l)
+        case None    => col.substr(lit(pos), length(col) - pos + 1)
+      }
     }
+
+    when(
+      col.contains("\"@"),
+      format_string(
+        "%s",
+        cc(
+          cc(
+            cc(
+              lit("\""),
+              ss(trim(substring_index(col, "\"@", 1), "\""), pos, len)
+            ),
+            lit("\"")
+          ),
+          cc(lit("@"), substring_index(col, "\"@", -1))
+        )
+      )
+    ).when(
+      col.contains("\"^^"),
+      format_string(
+        "%s",
+        cc(
+          cc(
+            cc(
+              lit("\""),
+              ss(trim(substring_index(col, "\"^^", 1), "\""), pos, len)
+            ),
+            lit("\"")
+          ),
+          cc(lit("^^"), substring_index(col, "\"^^", -1))
+        )
+      )
+    ).otherwise(ss(trim(col, "\""), pos, len))
+  }
 
   /** Implementation of SparQL STRENDS on Spark dataframes.
     *
