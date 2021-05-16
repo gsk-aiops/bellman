@@ -11,7 +11,7 @@ lazy val Versions = Map(
   "scala212"             -> "2.12.12",
   "scala211"             -> "2.11.12",
   "droste"               -> "0.8.0",
-  "spark"                -> "2.4.0",
+  "spark"                -> "2.4.8",
   "spark-testing-base"   -> "2.4.5_0.14.0",
   "jackson"              -> "2.12.1",
   "scalacheck"           -> "1.15.2",
