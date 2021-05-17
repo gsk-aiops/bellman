@@ -78,7 +78,7 @@ object ExprParser {
 
   def groupParen[_: P]: P[Group] = P(
     "(" ~ group ~ "(" ~ (StringValParser.variable).rep(
-      1
+      0
     ) ~ ")" ~ assignment.repX(max = 1) ~ graphPattern ~ ")"
   ).map(p => Group(p._1, p._2.headOption, p._3))
 
