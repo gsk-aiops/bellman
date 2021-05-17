@@ -44,6 +44,8 @@ object ExpressionF {
   final case class AND[A](l: A, r: A)    extends ExpressionF[A]
   final case class NEGATE[A](s: A)       extends ExpressionF[A]
   final case class URI[A](s: A)          extends ExpressionF[A]
+  final case class LCASE[A](s: A)        extends ExpressionF[A]
+  final case class UCASE[A](s: A)        extends ExpressionF[A]
   final case class CONCAT[A](appendTo: A, append: NonEmptyList[A])
       extends ExpressionF[A]
   final case class STR[A](s: A)     extends ExpressionF[A]
@@ -78,6 +80,8 @@ object ExpressionF {
       case Conditional.AND(l, r)    => AND(l, r)
       case Conditional.NEGATE(s)    => NEGATE(s)
       case BuiltInFunc.URI(s)       => URI(s)
+      case BuiltInFunc.LCASE(s)     => LCASE(s)
+      case BuiltInFunc.UCASE(s)     => UCASE(s)
       case BuiltInFunc.CONCAT(appendTo, append) =>
         CONCAT(appendTo, NonEmptyList.fromListUnsafe(append))
       case BuiltInFunc.STR(s)                           => STR(s)
@@ -146,6 +150,10 @@ object ExpressionF {
       case OR(l, r)     => Conditional.OR(l, r)
       case AND(l, r)    => Conditional.AND(l, r)
       case NEGATE(s)    => Conditional.NEGATE(s)
+      case UCASE(s) =>
+        BuiltInFunc.UCASE(s.asInstanceOf[StringLike])
+      case LCASE(s) =>
+        BuiltInFunc.LCASE(s.asInstanceOf[StringLike])
       case REGEX(s, pattern, flags) =>
         BuiltInFunc.REGEX(
           s.asInstanceOf[StringLike],
@@ -250,6 +258,8 @@ object ExpressionF {
         case AND(l, r)                  => Func.and(l, r).pure[M]
         case NEGATE(s)                  => Func.negate(s).pure[M]
         case URI(s)                     => Func.iri(s).pure[M]
+        case LCASE(s)                   => Func.lcase(s).pure[M]
+        case UCASE(s)                   => Func.ucase(s).pure[M]
         case STR(s)                     => Func.str(s).pure[M]
         case ISBLANK(s)                 => Func.isBlank(s).pure[M]
         case COUNT(e)                   => unknownFunction("COUNT")
