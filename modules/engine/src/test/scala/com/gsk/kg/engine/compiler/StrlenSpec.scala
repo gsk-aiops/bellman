@@ -65,7 +65,7 @@ class StrlenSpec
 
       val result = Compiler.compile(df, query, config)
 
-      result.right.get.collect.toSet shouldEqual 3
+      result.right.get.collect.length shouldEqual 3
       result.right.get.collect.toSet shouldEqual Set(
         Row("\"Alice\""),
         Row("\"Alice\"^^xsd:string"),

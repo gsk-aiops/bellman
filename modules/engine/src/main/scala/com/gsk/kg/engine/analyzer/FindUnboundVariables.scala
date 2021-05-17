@@ -115,9 +115,6 @@ object FindVariablesOnExpression {
     val algebra: Algebra[ExpressionF, Set[VARIABLE]] =
       Algebra[ExpressionF, Set[VARIABLE]] {
         case EQUALS(l, r)                    => l ++ r
-        case REGEX(s, pattern, flags)        => s
-        case STRENDS(s, f)                   => s
-        case STRSTARTS(s, f)                 => s
         case GT(l, r)                        => l ++ r
         case LT(l, r)                        => l ++ r
         case GTE(l, r)                       => l ++ r
@@ -126,14 +123,18 @@ object FindVariablesOnExpression {
         case AND(l, r)                       => l ++ r
         case NEGATE(s)                       => s
         case URI(s)                          => s
+        case REGEX(s, pattern, flags)        => s
+        case REPLACE(st, pattern, by, flags) => st
+        case STRENDS(s, f)                   => s
+        case STRSTARTS(s, f)                 => s
         case CONCAT(appendTo, append)        => appendTo ++ append.toList.toSet.flatten
         case STR(s)                          => s
         case STRAFTER(s, f)                  => s
         case STRBEFORE(s, f)                 => s
         case STRDT(s, uri)                   => s
         case SUBSTR(s, pos, len)             => s
+        case STRLEN(s)                       => s
         case ISBLANK(s)                      => s
-        case REPLACE(st, pattern, by, flags) => st
         case COUNT(e)                        => e
         case SUM(e)                          => e
         case MIN(e)                          => e
