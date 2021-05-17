@@ -272,9 +272,9 @@ object Func {
   /** Implementation of SparQL STRLEN on Spark dataframes.
     * Counts string number of characters
     *
-    * strlen("chat")	4
-    * strlen("chat"@en)	4
-    * strlen("chat"^^xsd:string)	4
+    * strlen("chat") -> 4
+    * strlen("chat"@en) -> 4
+    * strlen("chat"^^xsd:string) -> 4
     *
     * @param col
     * @return
