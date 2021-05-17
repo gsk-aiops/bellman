@@ -402,6 +402,52 @@ object Func {
   def sample(col: Column): Column =
     first(col, true)
 
+  /** Implementation of SparQL LCASE on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-lcase]]
+    * @param col
+    * @return
+    */
+  def lcase(col: Column): Column =
+    applyRdfFormat(col)(lower)
+
+  /** Implementation of SparQL UCASE on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-ucase]]
+    * @param col
+    * @return
+    */
+  def ucase(col: Column): Column =
+    applyRdfFormat(col)(upper)
+
+  private def formatRdfString(col: Column, sep: String)(
+      f: Column => Column
+  ): Column = {
+    format_string(
+      "%s",
+      cc(
+        cc(
+          cc(
+            lit("\""),
+            f(trim(substring_index(col, "\"" + sep, 1), "\""))
+          ),
+          lit("\"")
+        ),
+        cc(lit(sep), substring_index(col, "\"" + sep, -1))
+      )
+    )
+  }
+
+  private def applyRdfFormat(col: Column)(f: Column => Column): Column = {
+    when(
+      col.contains("\"@"),
+      formatRdfString(col, "@")(f)
+    ).when(
+      col.contains("\"^^"),
+      formatRdfString(col, "^^")(f)
+    ).otherwise(f(trim(col, "\"")))
+  }
+
   def groupConcat(col: Column, separator: String): Column =
     ???
 

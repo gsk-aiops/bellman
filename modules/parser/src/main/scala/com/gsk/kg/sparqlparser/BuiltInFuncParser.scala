@@ -22,6 +22,8 @@ object BuiltInFuncParser {
   def strdt[_: P]: P[Unit]     = P("strdt")
   def substr[_: P]: P[Unit]    = P("substr")
   def strlen[_: P]: P[Unit]    = P("strlen")
+  def lcase[_: P]: P[Unit]     = P("lcase")
+  def ucase[_: P]: P[Unit]     = P("ucase")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
@@ -97,6 +99,14 @@ object BuiltInFuncParser {
       "(" ~ strlen ~ ExpressionParser.parser ~ ")"
     ).map(STRLEN)
 
+  def lcaseParen[_: P]: P[LCASE] =
+    P("(" ~ lcase ~ ExpressionParser.parser ~ ")")
+      .map(f => LCASE(f))
+
+  def ucaseParen[_: P]: P[UCASE] =
+    P("(" ~ ucase ~ ExpressionParser.parser ~ ")")
+      .map(f => UCASE(f))
+
   def funcPatterns[_: P]: P[StringLike] =
     P(
       uriParen
@@ -115,6 +125,8 @@ object BuiltInFuncParser {
         | regexWithFlagsParen
         | strdtParen
         | strlenParen
+        | lcaseParen
+        | ucaseParen
     )
 //      | StringValParser.string
 //      | StringValParser.variable)
