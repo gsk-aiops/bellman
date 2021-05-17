@@ -182,23 +182,12 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     }
   }
 
-  "LCASE parser" should "return LCASE type" in {
+  "strlen function" should "return STRLEN type" in {
     val p =
-      fastparse.parse("""(lcase ?d)""", BuiltInFuncParser.lcaseParen(_))
+      fastparse.parse("""(strlen ?d)""", BuiltInFuncParser.strlenParen(_))
     p.get.value match {
-      case LCASE(VARIABLE("?d")) =>
-        succeed
-      case _ => fail
-    }
-  }
-
-  "UCASE parser" should "return UCASE type" in {
-    val p =
-      fastparse.parse("""(ucase ?d)""", BuiltInFuncParser.ucaseParen(_))
-    p.get.value match {
-      case UCASE(VARIABLE("?d")) =>
-        succeed
-      case _ => fail
+      case STRLEN(VARIABLE("?d")) => succeed
+      case _                      => fail
     }
   }
 
