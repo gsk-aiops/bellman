@@ -409,7 +409,7 @@ object Func {
     * @return
     */
   def lcase(col: Column): Column =
-    formatRdfString(col, lower)
+    applyRdfFormat(col)(lower)
 
   /** Implementation of SparQL UCASE on Spark dataframes.
     *
@@ -418,39 +418,33 @@ object Func {
     * @return
     */
   def ucase(col: Column): Column =
-    formatRdfString(col, upper)
+    applyRdfFormat(col)(upper)
 
-  private def formatRdfString(col: Column, f: Column => Column): Column = {
+  private def formatRdfString(col: Column, sep: String)(
+      f: Column => Column
+  ): Column = {
+    format_string(
+      "%s",
+      cc(
+        cc(
+          cc(
+            lit("\""),
+            f(trim(substring_index(col, "\"" + sep, 1), "\""))
+          ),
+          lit("\"")
+        ),
+        cc(lit(sep), substring_index(col, "\"" + sep, -1))
+      )
+    )
+  }
+
+  private def applyRdfFormat(col: Column)(f: Column => Column): Column = {
     when(
       col.contains("\"@"),
-      format_string(
-        "%s",
-        cc(
-          cc(
-            cc(
-              lit("\""),
-              f(trim(substring_index(col, "\"@", 1), "\""))
-            ),
-            lit("\"")
-          ),
-          cc(lit("@"), substring_index(col, "\"@", -1))
-        )
-      )
+      formatRdfString(col, "@")(f)
     ).when(
       col.contains("\"^^"),
-      format_string(
-        "%s",
-        cc(
-          cc(
-            cc(
-              lit("\""),
-              f(trim(substring_index(col, "\"^^", 1), "\""))
-            ),
-            lit("\"")
-          ),
-          cc(lit("^^"), substring_index(col, "\"^^", -1))
-        )
-      )
+      formatRdfString(col, "^^")(f)
     ).otherwise(f(trim(col, "\"")))
   }
 
