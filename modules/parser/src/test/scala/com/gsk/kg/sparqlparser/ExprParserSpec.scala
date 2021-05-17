@@ -1,6 +1,8 @@
 package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.BuiltInFunc._
+import com.gsk.kg.sparqlparser.ConditionOrder.ASC
+import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Conditional._
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.StringVal._
@@ -272,8 +274,8 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
             VARIABLE(s1: String),
             URI(
               STRAFTER(
-                CONCAT(STR(VARIABLE(s2: String)), STR(VARIABLE(s3: String))),
-                STRING("#", _)
+                CONCAT(STR(VARIABLE(s2: String)), _),
+                STRING("#")
               )
             ),
             BGP(l1: Seq[Quad])
@@ -291,20 +293,20 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     p.get.value match {
       case Filter(
             Seq(
-              STRSTARTS(STR(VARIABLE("?src")), STRING("ner:", None)),
-              GT(VARIABLE("?year"), STRING("2015", None))
+              STRSTARTS(STR(VARIABLE("?src")), STRING("ner:")),
+              GT(VARIABLE("?year"), STRING("2015"))
             ),
             BGP(
               Seq(
                 Quad(
                   VARIABLE("?d"),
-                  URIVAL("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-                  URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/Document"),
+                  URIVAL("<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"),
+                  URIVAL("<http://gsk-kg.rdip.gsk.com/dm/1.0/Document>"),
                   _
                 ),
                 Quad(
                   VARIABLE("?d"),
-                  URIVAL("http://gsk-kg.rdip.gsk.com/dm/1.0/docSource"),
+                  URIVAL("<http://gsk-kg.rdip.gsk.com/dm/1.0/docSource>"),
                   VARIABLE("?src"),
                   _
                 )
@@ -323,7 +325,7 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     )
     p.get.value match {
       case Filter(
-            List(GT(VARIABLE("?year"), STRING("2015", None))),
+            List(GT(VARIABLE("?year"), STRING("2015"))),
             BGP(l1: Seq[Quad])
           ) =>
         succeed
@@ -338,7 +340,7 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     )
     p.get.value match {
       case Filter(
-            List(LT(VARIABLE("?year"), STRING("2015", None))),
+            List(LT(VARIABLE("?year"), STRING("2015"))),
             BGP(l1: Seq[Quad])
           ) =>
         succeed
@@ -398,16 +400,168 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
                   Seq(
                     Quad(
                       VARIABLE("?p1"),
-                      URIVAL("http://www.w3.org/2006/vcard/ns#hasAddress"),
+                      URIVAL("<http://www.w3.org/2006/vcard/ns#hasAddress>"),
                       VARIABLE("?ad"),
                       List(GRAPH_VARIABLE)
                     ),
                     Quad(
                       VARIABLE("?p2"),
-                      URIVAL("http://www.w3.org/2006/vcard/ns#hasAddress"),
+                      URIVAL("<http://www.w3.org/2006/vcard/ns#hasAddress>"),
                       VARIABLE("?ad"),
                       List(GRAPH_VARIABLE)
                     )
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  it should "parse correctly when there's no explicit GROUP BY expression" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q41-groupby-implicit.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?count")),
+            Extend(
+              VARIABLE("?count"),
+              VARIABLE("?0"),
+              Group(
+                Seq(),
+                Some((VARIABLE("?0"), Aggregate.COUNT(VARIABLE("?s")))),
+                BGP(
+                  Seq(
+                    Quad(
+                      VARIABLE("?s"),
+                      URIVAL(
+                        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"
+                      ),
+                      URIVAL(
+                        "<http://gsk-kg.rdip.gsk.com/dm/1.0/LinkedEntity>"
+                      ),
+                      List(GRAPH_VARIABLE)
+                    )
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "Order By" should "return proper type when simple variable" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q41-orderby-simple-variable.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?name")),
+            Order(
+              Seq(ASC(VARIABLE("?name"))),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?x"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/name>"),
+                    VARIABLE("?name"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  it should "return proper type when simple condition" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q42-orderby-simple-condition.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?name")),
+            Order(
+              Seq(DESC(ISBLANK(VARIABLE("?x")))),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?x"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/name>"),
+                    VARIABLE("?name"),
+                    List(GRAPH_VARIABLE)
+                  ),
+                  Quad(
+                    VARIABLE("?x"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/age>"),
+                    VARIABLE("?age"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  it should "return proper type when mixing multiple variables and multiple conditions" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q43-orderby-multi-mixing.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?name")),
+            Order(
+              Seq(
+                DESC(VARIABLE("?name")),
+                ASC(VARIABLE("?age")),
+                DESC(VARIABLE("?age")),
+                ASC(VARIABLE("?name")),
+                DESC(
+                  OR(
+                    ISBLANK(VARIABLE("?x")),
+                    ISBLANK(VARIABLE("?age"))
+                  )
+                )
+              ),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?x"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/name>"),
+                    VARIABLE("?name"),
+                    List(GRAPH_VARIABLE)
+                  ),
+                  Quad(
+                    VARIABLE("?x"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/age>"),
+                    VARIABLE("?age"),
+                    List(GRAPH_VARIABLE)
                   )
                 )
               )

@@ -32,9 +32,10 @@ object Analyzer {
 
       x match {
         case Invalid(e) =>
-          M.liftF[Result, Config, Log, DataFrame, T](
-            EngineError.AnalyzerError(e).asLeft
-          )
+          e.traverse(err => Log.error("Analyzer", err)) *>
+            M.liftF[Result, Config, Log, DataFrame, T](
+              EngineError.AnalyzerError(e).asLeft
+            )
         case Valid(e) => t.pure[M]
       }
     }

@@ -10,6 +10,9 @@ import higherkindness.droste.Algebra
 import higherkindness.droste.Basis
 import higherkindness.droste.scheme
 
+import com.gsk.kg.sparqlparser.ConditionOrder
+import com.gsk.kg.sparqlparser.ConditionOrder.ASC
+import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.Expression
 
@@ -43,6 +46,14 @@ object ToTree extends LowPriorityToTreeInstances0 {
         )
       )
   }
+
+  implicit val conditionOrderToTree: ToTree[ConditionOrder] =
+    new ToTree[ConditionOrder] {
+      override def toTree(t: ConditionOrder): TreeRep[String] = t match {
+        case ASC(e)  => TreeRep.Node("Asc", Stream(e.toTree))
+        case DESC(e) => TreeRep.Node("Desc", Stream(e.toTree))
+      }
+    }
 
   // scalastyle:off
   implicit def dagToTree[T: Basis[DAG, *]]: ToTree[T] =
@@ -91,6 +102,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
             val v: List[Expression]                 = vars
             val f: Option[(Expression, Expression)] = func
             Node("Group", Stream(v.toTree, f.toTree, r))
+          case DAG.Order(conds, r) =>
+            Node("Order", conds.map(_.toTree).toList.toStream #::: Stream(r))
           case DAG.Distinct(r) => Node("Distinct", Stream(r))
           case DAG.Noop(str)   => Leaf(s"Noop($str)")
         }
@@ -102,6 +115,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
     }
   // scalastyle:on
 
+  // scalastyle:off
   implicit def expressionfToTree[T: Basis[ExpressionF, *]]: ToTree[T] =
     new ToTree[T] {
       def toTree(tree: T): TreeRep[String] = {
@@ -120,35 +134,52 @@ object ToTree extends LowPriorityToTreeInstances0 {
               "REGEX",
               Stream(s, Leaf(pattern.toString), Leaf(flags.toString))
             )
+          case ExpressionF.REPLACE(st, pattern, by, flags) =>
+            Node("REPLACE", Stream(st, Leaf(pattern), Leaf(by), Leaf(flags)))
           case ExpressionF.STRENDS(s, f) =>
             Node("STRENDS", Stream(s, Leaf(f.toString)))
           case ExpressionF.STRSTARTS(s, f) =>
             Node("STRSTARTS", Stream(s, Leaf(f.toString)))
-          case ExpressionF.URI(s) => Node("URI", Stream(s))
+          case ExpressionF.URI(s)   => Node("URI", Stream(s))
+          case ExpressionF.LCASE(s) => Node("LCASE", Stream(s))
+          case ExpressionF.UCASE(s) => Node("UCASE", Stream(s))
           case ExpressionF.CONCAT(appendTo, append) =>
-            Node("CONCAT", Stream(appendTo, append))
+            Node("CONCAT", Stream(appendTo) #::: append.toList.toStream)
           case ExpressionF.STR(s) => Node("STR", Stream(s))
           case ExpressionF.STRAFTER(s, f) =>
             Node("STRAFTER", Stream(s, Leaf(f.toString)))
+          case ExpressionF.STRBEFORE(s, f) =>
+            Node("STRBEFORE", Stream(s, Leaf(f.toString)))
+          case ExpressionF.STRDT(s, uri) =>
+            Node("STRDT", Stream(s, Leaf(uri)))
+          case ExpressionF.SUBSTR(s, pos, len) =>
+            Node(
+              "SUBSTR",
+              Stream(s, Leaf(pos.toString), Leaf(len.toString))
+            )
+          case ExpressionF.STRLEN(s)  => Node("STRLEN", Stream(s))
           case ExpressionF.ISBLANK(s) => Node("ISBLANK", Stream(s))
-          case ExpressionF.REPLACE(st, pattern, by, flags) =>
-            Node("REPLACE", Stream(st, Leaf(pattern), Leaf(by), Leaf(flags)))
-          case ExpressionF.COUNT(e)  => Node("COUNT", Stream(e))
-          case ExpressionF.SUM(e)    => Node("SUM", Stream(e))
-          case ExpressionF.MIN(e)    => Node("MIN", Stream(e))
-          case ExpressionF.MAX(e)    => Node("MAX", Stream(e))
-          case ExpressionF.AVG(e)    => Node("AVG", Stream(e))
-          case ExpressionF.SAMPLE(e) => Node("SAMPLE", Stream(e))
+          case ExpressionF.COUNT(e)   => Node("COUNT", Stream(e))
+          case ExpressionF.SUM(e)     => Node("SUM", Stream(e))
+          case ExpressionF.MIN(e)     => Node("MIN", Stream(e))
+          case ExpressionF.MAX(e)     => Node("MAX", Stream(e))
+          case ExpressionF.AVG(e)     => Node("AVG", Stream(e))
+          case ExpressionF.SAMPLE(e)  => Node("SAMPLE", Stream(e))
           case ExpressionF.GROUP_CONCAT(e, separator) =>
             Node("GROUP_CONCAT", Stream(e, separator.toTree))
-          case ExpressionF.STRING(s, tag) =>
-            tag.fold(Leaf(s"STRING($s)"))(t => Leaf(s"STRING($s, $t)"))
+          case ExpressionF.STRING(s) =>
+            Leaf(s"STRING($s)")
+          case ExpressionF.DT_STRING(s, tag) =>
+            Leaf(s"DT_STRING($s, $tag)")
+          case ExpressionF.LANG_STRING(s, tag) =>
+            Leaf(s"LANG_STRING($s, $tag")
           case ExpressionF.NUM(s)      => Leaf(s"NUM($s)")
           case ExpressionF.VARIABLE(s) => Leaf(s"VARIABLE($s)")
           case ExpressionF.URIVAL(s)   => Leaf(s"URIVAL($s)")
           case ExpressionF.BLANK(s)    => Leaf(s"BLANK($s)")
           case ExpressionF.BOOL(s)     => Leaf(s"BOOL($s)")
-
+          case ExpressionF.ASC(e)      => Node(s"ASC", Stream(e))
+          case ExpressionF.DESC(e)     => Node(s"DESC", Stream(e))
         }
 
         val t = scheme.cata(alg)
@@ -157,6 +188,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
       }
 
     }
+  // scalastyle:on
 
   implicit def listToTree[A: ToTree]: ToTree[List[A]] =
     new ToTree[List[A]] {

@@ -2,6 +2,7 @@ package com.gsk.kg.engine
 
 import cats.Foldable
 import cats.data.NonEmptyList
+import cats.implicits.toTraverseOps
 import cats.instances.all._
 import cats.syntax.applicative._
 import cats.syntax.either._
@@ -21,6 +22,8 @@ import org.apache.spark.sql.types._
 import com.gsk.kg.config.Config
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.data.ChunkedList.Chunk
+import com.gsk.kg.sparqlparser.ConditionOrder.ASC
+import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr.Quad
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.StringVal
@@ -50,6 +53,7 @@ object Engine {
       case DAG.Limit(limit, r)         => evaluateLimit(limit, r)
       case DAG.Distinct(r)             => evaluateDistinct(r)
       case DAG.Group(vars, func, r)    => evaluateGroup(vars, func, r)
+      case DAG.Order(conds, r)         => evaluateOrder(conds, r)
       case DAG.Noop(str)               => notImplemented("Noop")
     }
 
@@ -213,15 +217,21 @@ object Engine {
       val cols: List[Column] = vars.map(_.s).map(col).map(Func.sample)
       df.agg(cols.head, cols.tail: _*).pure[M]
     case Some((VARIABLE(name), Aggregate.COUNT(VARIABLE(v)))) =>
-      df.agg(count(v).cast("int").as(name)).pure[M]
+      df.agg(count(col(v)).cast("int").as(name))
+        .withColumn(name, Func.strdt(col(name), "xsd:int"))
+        .pure[M]
     case Some((VARIABLE(name), Aggregate.SUM(VARIABLE(v)))) =>
-      df.agg(sum(v).cast("float").as(name)).pure[M]
+      df.agg(sum(Func.extractNumber(col(v))).cast("float").as(name))
+        .withColumn(name, Func.strdt(col(name), "xsd:double"))
+        .pure[M]
     case Some((VARIABLE(name), Aggregate.MIN(VARIABLE(v)))) =>
-      df.agg(min(v).as(name)).pure[M]
+      df.agg(min(Func.tryExtractNumber(col(v))).as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.MAX(VARIABLE(v)))) =>
-      df.agg(max(v).as(name)).pure[M]
+      df.agg(max(Func.tryExtractNumber(col(v))).as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.AVG(VARIABLE(v)))) =>
-      df.agg(avg(v).cast("float").as(name)).pure[M]
+      df.agg(avg(Func.extractNumber(col(v))).cast("float").as(name))
+        .withColumn(name, Func.strdt(col(name), "xsd:double"))
+        .pure[M]
     case Some((VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v)))) =>
       df.agg(Func.sample(col(v)).as(name)).pure[M]
     case Some(
@@ -236,6 +246,34 @@ object Engine {
           .UnknownFunction("Aggregate function: " + fn.toString)
           .asLeft[DataFrame]
       )
+  }
+
+  private def evaluateOrder(
+      conds: NonEmptyList[ConditionOrder],
+      r: Multiset
+  ): M[Multiset] = {
+    M.ask[Result, Config, Log, DataFrame].flatMapF { config =>
+      conds
+        .map {
+          case ASC(VARIABLE(v)) =>
+            col(v).asc.asRight
+          case ASC(e) =>
+            ExpressionF
+              .compile[Expression](e, config)
+              .apply(r.dataframe)
+              .map(_.asc)
+          case DESC(VARIABLE(v)) =>
+            col(v).desc.asRight
+          case DESC(e) =>
+            ExpressionF
+              .compile[Expression](e, config)
+              .apply(r.dataframe)
+              .map(_.desc)
+        }
+        .toList
+        .sequence[Either[EngineError, *], Column]
+        .map(columns => r.copy(dataframe = r.dataframe.orderBy(columns: _*)))
+    }
   }
 
   private def evaluateLeftJoin(
@@ -328,7 +366,7 @@ object Engine {
           Row.fromSeq(fields)
         }
       }
-      .orderBy("s", "p")
+      .distinct()
 
     Multiset(
       Set.empty,

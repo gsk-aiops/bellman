@@ -1,7 +1,10 @@
 package com.gsk.kg.engine
 
+import cats.syntax.list._
+
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.functions.lit
 
 import com.gsk.kg.engine.scalacheck.CommonGenerators
 
@@ -23,6 +26,8 @@ class FuncSpec
     with ScalaCheckDrivenPropertyChecks
     with CommonGenerators {
 
+  import sqlContext.implicits._
+
   override implicit def reuseContextIfPossible: Boolean = true
 
   override implicit def enableHiveSupport: Boolean = false
@@ -30,7 +35,6 @@ class FuncSpec
   "Func.negate" should {
 
     "return the input boolean column negated" in {
-      import sqlContext.implicits._
 
       val df = List(
         true,
@@ -46,7 +50,6 @@ class FuncSpec
     }
 
     "fail when the input column contain values that are not boolean values" in {
-      import sqlContext.implicits._
 
       val df = List(
         "a",
@@ -65,7 +68,6 @@ class FuncSpec
   "Func.isBlank" should {
 
     "return whether a node is a blank node or not" in {
-      import sqlContext.implicits._
 
       val df = List(
         "_:a",
@@ -92,7 +94,6 @@ class FuncSpec
   "Func.replace" should {
 
     "replace when pattern occurs" in {
-      import sqlContext.implicits._
 
       val df = List(
         "abcd",
@@ -112,7 +113,6 @@ class FuncSpec
     }
 
     "replace(abracadabra, bra, *) returns a*cada*" in {
-      import sqlContext.implicits._
 
       val df = List("abracadabra").toDF("text")
 
@@ -124,7 +124,6 @@ class FuncSpec
     }
 
     "replace(abracadabra, a.*a, *) returns *" in {
-      import sqlContext.implicits._
 
       val df = List("abracadabra").toDF("text")
 
@@ -136,7 +135,6 @@ class FuncSpec
     }
 
     "replace(abracadabra, a.*?a, *) returns *c*bra" in {
-      import sqlContext.implicits._
 
       val df = List("abracadabra").toDF("text")
 
@@ -148,7 +146,6 @@ class FuncSpec
     }
 
     "replace(abracadabra, a, \"\") returns brcdbr" in {
-      import sqlContext.implicits._
 
       val df = List("abracadabra").toDF("text")
 
@@ -160,7 +157,6 @@ class FuncSpec
     }
 
     "replace(abracadabra, a(.), a$1$1) returns abbraccaddabbra" in {
-      import sqlContext.implicits._
 
       val df = List("abracadabra").toDF("text")
 
@@ -173,7 +169,6 @@ class FuncSpec
     }
 
     "replace(abracadabra, .*?, $1) raises an error, because the pattern matches the zero-length string" in {
-      import sqlContext.implicits._
 
       val df = List(
         "abracadabra"
@@ -187,7 +182,6 @@ class FuncSpec
     }
 
     "replace(AAAA, A+, b) returns b" in {
-      import sqlContext.implicits._
 
       val df = List("AAAA").toDF("text")
 
@@ -199,7 +193,6 @@ class FuncSpec
     }
 
     "replace(AAAA, A+?, b) returns bbbb" in {
-      import sqlContext.implicits._
 
       val df = List(
         "AAAA"
@@ -213,7 +206,6 @@ class FuncSpec
     }
 
     "replace(darted, ^(.*?)d(.*)$, $1c$2) returns carted. (The first d is replaced.)" in {
-      import sqlContext.implicits._
 
       val df = List(
         "darted"
@@ -228,7 +220,6 @@ class FuncSpec
     }
 
     "replace when pattern occurs with flags" in {
-      import sqlContext.implicits._
 
       val df = List(
         "abcd",
@@ -251,7 +242,6 @@ class FuncSpec
   "Func.strafter" should {
 
     "find the correct string if it exists" in {
-      import sqlContext.implicits._
 
       val df = List(
         "hello#potato",
@@ -266,7 +256,6 @@ class FuncSpec
     }
 
     "return empty strings otherwise" in {
-      import sqlContext.implicits._
 
       val df = List(
         "hello potato",
@@ -279,12 +268,72 @@ class FuncSpec
         Row("")
       )
     }
+
+    // See: https://www.w3.org/TR/sparql11-query/#func-strafter
+    "ww3c test" in {
+
+      val cases = List(
+        ("abc", "b", "c"),
+        ("\"abc\"@en", "ab", "\"c\"@en"),
+        ("\"abc\"@en", "\"b\"@cy", null),
+        ("\"abc\"^^xsd:string", "", "\"abc\"^^xsd:string"),
+        ("\"abc\"^^xsd:string", "\"a\"^^xsd:other", null),
+        ("\"abc\"^^xsd:string", "\"\"^^xsd:string", "\"abc\"^^xsd:string"),
+        ("\"abc\"^^xsd:string", "\"z\"^^xsd:string", ""),
+        ("abc", "xyz", ""),
+        ("\"abc\"@en", "\"z\"@en", ""),
+        ("\"abc\"@en", "z", ""),
+        ("\"abc\"@en", "\"\"@en", "\"abc\"@en"),
+        ("\"abc\"@en", "", "\"abc\"@en")
+      )
+
+      cases.map { case (arg1, arg2, expect) =>
+        val df       = List(arg1).toDF("arg1")
+        val strafter = Func.strafter(df("arg1"), arg2)
+        val result = df
+          .select(strafter)
+          .as("result")
+          .collect()
+
+        result shouldEqual Array(Row(expect))
+      }
+    }
+  }
+
+  "Func.strbefore" should {
+
+    "find the correct string if it exists" in {
+
+      val df = List(
+        "hello potato",
+        "goodbye tomato"
+      ).toDF("text")
+
+      df.select(Func.strbefore(df("text"), " ").as("result"))
+        .collect shouldEqual Array(
+        Row("hello"),
+        Row("goodbye")
+      )
+    }
+
+    "return empty strings otherwise" in {
+
+      val df = List(
+        "hello potato",
+        "goodbye tomato"
+      ).toDF("text")
+
+      df.select(Func.strbefore(df("text"), "#").as("result"))
+        .collect shouldEqual Array(
+        Row(""),
+        Row("")
+      )
+    }
   }
 
   "Func.iri" should {
 
     "do nothing for IRIs" in {
-      import sqlContext.implicits._
 
       val df = List(
         "http://google.com",
@@ -292,8 +341,8 @@ class FuncSpec
       ).toDF("text")
 
       df.select(Func.iri(df("text")).as("result")).collect shouldEqual Array(
-        Row("http://google.com"),
-        Row("http://other.com")
+        Row("<http://google.com>"),
+        Row("<http://other.com>")
       )
     }
   }
@@ -301,7 +350,6 @@ class FuncSpec
   "Func.strends" should {
 
     "return true if a field ends with a given string" in {
-      import sqlContext.implicits._
 
       val df = List(
         "sports car",
@@ -316,7 +364,6 @@ class FuncSpec
     }
 
     "return false otherwise" in {
-      import sqlContext.implicits._
 
       val df = List(
         "hello world",
@@ -334,7 +381,6 @@ class FuncSpec
   "Func.strstarts" should {
 
     "return true if a field starts with a given string" in {
-      import sqlContext.implicits._
 
       val df = List(
         "hello world",
@@ -349,7 +395,6 @@ class FuncSpec
     }
 
     "return false otherwise" in {
-      import sqlContext.implicits._
 
       val df = List(
         "hello world",
@@ -364,10 +409,65 @@ class FuncSpec
     }
   }
 
+  "Func.lcase" should {
+
+    "convert all lexical characters to lower case" in {
+
+      val df = List(
+        "HELLO",
+        "\"HELLO\"@en",
+        "\"HELLO\"^^xsd:string"
+      ).toDF("text")
+
+      df.select(Func.lcase(df("text")).as("result")).collect shouldEqual Array(
+        Row("hello"),
+        Row("\"hello\"@en"),
+        Row("\"hello\"^^xsd:string")
+      )
+    }
+  }
+
+  "Func.ucase" should {
+
+    "convert all lexical characters to upper case" in {
+
+      val df = List(
+        "hello",
+        "\"hello\"@en",
+        "\"hello\"^^xsd:string"
+      ).toDF("text")
+
+      df.select(Func.ucase(df("text")).as("result")).collect shouldEqual Array(
+        Row("HELLO"),
+        Row("\"HELLO\"@en"),
+        Row("\"HELLO\"^^xsd:string")
+      )
+    }
+  }
+
+  "Func.strdt" should {
+
+    "return a literal with lexical for and type specified" in {
+
+      val df = List(
+        "123"
+      ).toDF("s")
+
+      val result = df
+        .select(
+          Func.strdt(df("s"), "<http://www.w3.org/2001/XMLSchema#integer>")
+        )
+        .collect
+
+      result shouldEqual Array(
+        Row("\"123\"^^<http://www.w3.org/2001/XMLSchema#integer>")
+      )
+    }
+  }
+
   "Func.regex" should {
 
     "return true if a field matches the given regex pattern" in {
-      import sqlContext.implicits._
 
       val df = List(
         "Alice",
@@ -382,7 +482,6 @@ class FuncSpec
     }
 
     "return false otherwise" in {
-      import sqlContext.implicits._
 
       val df = List(
         "Alice",
@@ -400,54 +499,169 @@ class FuncSpec
   "Func.concat" should {
 
     "concatenate two string columns" in {
-      import sqlContext.implicits._
 
       val df = List(
         ("Hello", " Dolly"),
         ("Here's a song", " Dolly")
       ).toDF("a", "b")
 
-      df.select(Func.concat(df("a"), df("b")).as("verses"))
+      df.select(Func.concat(df("a"), List(df("b")).toNel.get).as("verses"))
         .collect shouldEqual Array(
         Row("Hello Dolly"),
         Row("Here's a song Dolly")
       )
     }
 
-    "concatenate a column with a literal string" in {
-      import sqlContext.implicits._
+    "concatenate two string columns with quotes" in {
+
+      val df = List(
+        ("\"Hello\"", "\" Dolly\""),
+        ("\"Hello\"", " Dolly"),
+        ("Hello", "\" Dolly\""),
+        ("Hello", " Dolly")
+      ).toDF("a", "b")
+
+      df.select(Func.concat(df("a"), List(df("b")).toNel.get).as("verses"))
+        .collect shouldEqual Array(
+        Row("Hello Dolly"),
+        Row("Hello Dolly"),
+        Row("Hello Dolly"),
+        Row("Hello Dolly")
+      )
+    }
+
+    "concatenate a column in quotes with a literal string" in {
 
       val df = List(
         ("Hello", " Dolly"),
         ("Here's a song", " Dolly")
       ).toDF("a", "b")
 
-      df.select(Func.concat(df("a"), " world!").as("sentences"))
-        .collect shouldEqual Array(
+      df.select(
+        Func.concat(df("a"), List(lit(" world!")).toNel.get).as("sentences")
+      ).collect shouldEqual Array(
+        Row("Hello world!"),
+        Row("Here's a song world!")
+      )
+    }
+
+    "concatenate a column with a literal string in quotes" in {
+
+      val df = List(
+        ("\"Hello\"", " Dolly"),
+        ("Here's a song", " Dolly")
+      ).toDF("a", "b")
+
+      df.select(
+        Func.concat(df("a"), List(lit(" world!")).toNel.get).as("sentences")
+      ).collect shouldEqual Array(
         Row("Hello world!"),
         Row("Here's a song world!")
       )
     }
 
     "concatenate a literal string with a column" in {
-      import sqlContext.implicits._
 
       val df = List(
         ("Hello", " Dolly"),
         ("Here's a song", " Dolly")
       ).toDF("a", "b")
 
-      df.select(Func.concat("Ciao", df("b")).as("verses"))
+      df.select(Func.concat(lit("Ciao"), List(df("b")).toNel.get).as("verses"))
         .collect shouldEqual Array(
         Row("Ciao Dolly"),
         Row("Ciao Dolly")
+      )
+    }
+
+    "concatenate a literal string with a column in quotes" in {
+
+      val df = List(
+        ("Hello", "\" Dolly\""),
+        ("Here's a song", " Dolly")
+      ).toDF("a", "b")
+
+      df.select(Func.concat(lit("Ciao"), List(df("b")).toNel.get).as("verses"))
+        .collect shouldEqual Array(
+        Row("Ciao Dolly"),
+        Row("Ciao Dolly")
+      )
+    }
+
+    "concatenate mixing literals and string columns multiple times" in {
+
+      val df = List(
+        ("Hello", "\" Dolly\""),
+        ("Here's a song", " Dolly")
+      ).toDF("a", "b")
+
+      df.select(Func.concat(lit("Ciao"), List(df("b")).toNel.get).as("verses"))
+        .collect shouldEqual Array(
+        Row("Ciao Dolly"),
+        Row("Ciao Dolly")
+      )
+    }
+
+    "www3c tests" in {
+
+      val cases = List(
+        ("foo", "bar", "foobar"),
+        ("\"foo\"@en", "\"bar\"@en", "\"foobar\"@en"),
+        (
+          "\"foo\"^^xsd:string",
+          "\"bar\"^^xsd:string",
+          "\"foobar\"^^xsd:string"
+        ),
+        ("foo", "\"bar\"^^xsd:string", "foobar"),
+        ("\"foo\"@en", "bar", "foobar"),
+        ("\"foo\"@en", "\"bar\"^^xsd:string", "foobar")
+      )
+
+      cases.map { case (arg1, arg2, expected) =>
+        val df     = List(arg1).toDF("arg1")
+        val concat = Func.concat(df("arg1"), List(lit(arg2)).toNel.get)
+        val result =
+          df.select(concat).as("result").collect()
+        result shouldEqual Array(Row(expected))
+      }
+    }
+  }
+
+  "Func.strlen" should {
+
+    "count characters on plain string" in {
+      val df = List(
+        "chat"
+      ).toDF("a")
+
+      df.select(Func.strlen(df("a"))).collect shouldEqual Array(
+        Row(4)
+      )
+    }
+
+    "count characters on typed string" in {
+      val df = List(
+        "\"chat\"^^xsd:string"
+      ).toDF("a")
+
+      df.select(Func.strlen(df("a"))).collect shouldEqual Array(
+        Row(4)
+      )
+    }
+
+    "count characters on localized string" in {
+      val df = List(
+        "\"chat\"@en"
+      ).toDF("a")
+
+      df.select(Func.strlen(df("a"))).collect shouldEqual Array(
+        Row(4)
       )
     }
   }
 
   "Func.equals" should {
     "operate on equal dates correctly" in {
-      import sqlContext.implicits._
 
       forAll { datetime: LocalDateTime =>
         val df = List(
@@ -464,7 +678,6 @@ class FuncSpec
     }
 
     "operate on different dates correctly" in {
-      import sqlContext.implicits._
 
       forAll { datetime: LocalDateTime =>
         val df = List(
@@ -483,7 +696,6 @@ class FuncSpec
 
   "Func.parseDAteFromRDFDateTime" should {
     "work for all types of dates specified by RDF spec" in {
-      import sqlContext.implicits._
 
       val df = List(
         """"2001-10-26T21:32:52"^^xsd:dateTime""",
@@ -501,7 +713,6 @@ class FuncSpec
 
   "Func.gt" should {
     "work for integer values" in {
-      import sqlContext.implicits._
 
       val df = List(
         (2, 1)
@@ -513,7 +724,6 @@ class FuncSpec
     }
 
     "work in datetimes without a zone" in {
-      import sqlContext.implicits._
 
       forAll { datetime: LocalDateTime =>
         val df = List(
@@ -530,7 +740,6 @@ class FuncSpec
     }
 
     "work in datetimes with zone" in {
-      import sqlContext.implicits._
 
       forAll { datetime: LocalDateTime =>
         val df = List(
@@ -551,7 +760,6 @@ class FuncSpec
 
   "Func.lt" should {
     "work for integer values" in {
-      import sqlContext.implicits._
 
       val df = List(
         (1, 2)
@@ -563,7 +771,6 @@ class FuncSpec
     }
 
     "work in datetimes without a zone" in {
-      import sqlContext.implicits._
 
       forAll { datetime: LocalDateTime =>
         val df = List(
@@ -580,7 +787,6 @@ class FuncSpec
     }
 
     "work in datetimes with zone" in {
-      import sqlContext.implicits._
 
       forAll { datetime: LocalDateTime =>
         val df = List(
@@ -601,7 +807,6 @@ class FuncSpec
 
   "Func.gte" should {
     "work for integer values" in {
-      import sqlContext.implicits._
 
       val df = List(
         (2, 1),
@@ -615,7 +820,6 @@ class FuncSpec
     }
 
     "work in datetimes without a zone" in {
-      import sqlContext.implicits._
 
       forAll { datetime: LocalDateTime =>
         val df = List(
@@ -632,7 +836,6 @@ class FuncSpec
     }
 
     "work in datetimes with zone" in {
-      import sqlContext.implicits._
 
       forAll { datetime: LocalDateTime =>
         val df = List(
@@ -653,7 +856,6 @@ class FuncSpec
 
   "Func.lte" should {
     "work for integer values" in {
-      import sqlContext.implicits._
 
       val df = List(
         (1, 2),
@@ -667,7 +869,6 @@ class FuncSpec
     }
 
     "work in datetimes without a zone" in {
-      import sqlContext.implicits._
 
       forAll { datetime: LocalDateTime =>
         val df = List(
@@ -684,7 +885,6 @@ class FuncSpec
     }
 
     "work in datetimes with zone" in {
-      import sqlContext.implicits._
 
       forAll { datetime: LocalDateTime =>
         val df = List(
@@ -701,12 +901,42 @@ class FuncSpec
         )
       }
     }
+
+    "Func.substr" should {
+
+      "correctly return the substring of a given column without length specified" in {
+
+        val df = List(
+          "hello world",
+          "hello universe"
+        ).toDF("text")
+
+        df.select(Func.substr(df("text"), 5, None).as("result"))
+          .collect shouldEqual Array(
+          Row("o world"),
+          Row("o universe")
+        )
+      }
+
+      "correctly return the substring of a given column with length specified" in {
+
+        val df = List(
+          "hello world",
+          "hello universe"
+        ).toDF("text")
+
+        df.select(Func.substr(df("text"), 5, Some(3)).as("result"))
+          .collect shouldEqual Array(
+          Row("o w"),
+          Row("o u")
+        )
+      }
+    }
   }
 
   "Func.sample" should {
 
     "return an arbitrary value from the column" in {
-      import sqlContext.implicits._
 
       val elems = List(1, 2, 3, 4, 5)
       val df    = elems.toDF("a")
@@ -716,6 +946,161 @@ class FuncSpec
       )
     }
 
+  }
+
+  "Func.str" should {
+    "remove angle brackets from uris" in {
+
+      val initial = List(
+        ("<mailto:pepe@examplle.com>", "mailto:pepe@examplle.com"),
+        ("<http://example.com>", "http://example.com")
+      ).toDF("input", "expected")
+
+      val df = initial.withColumn("result", Func.str(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+
+    "don't modify non-uri strings" in {
+
+      val initial = List(
+        ("mailto:pepe@examplle.com>", "mailto:pepe@examplle.com>"),
+        ("http://example.com>", "http://example.com>"),
+        ("hello", "hello"),
+        ("\"test\"", "\"test\""),
+        ("1", "1")
+      ).toDF("input", "expected")
+
+      val df = initial.withColumn("result", Func.str(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
+  "Func.isTypedLiteral" should {
+    "identify RDF literals correctly" in {
+
+      val initial = List(
+        ("\"1\"^^xsd:int", true),
+        ("\"1.1\"^^xsd:decimal", true),
+        ("\"1.1\"^^xsd:float", true),
+        ("\"1.1\"^^xsd:double", true),
+        ("\"1\"", false),
+        ("1", false),
+        ("false", false)
+      ).toDF("input", "expected")
+
+      val df =
+        initial.withColumn("result", Func.isTypedLiteral(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
+  "Func.extractNumber" should {
+    "extract the numeric part of numeric RDF literals" in {
+
+      val initial = List(
+        ("\"1\"^^xsd:int", "1"),
+        ("\"1\"^^xsd:integer", "1"),
+        ("\"1.1\"^^xsd:decimal", "1.1"),
+        ("\"1.1\"^^xsd:float", "1.1"),
+        ("\"1.1\"^^xsd:double", "1.1"),
+        ("\"1\"^^<http://www.w3.org/2001/XMLSchema#int>", "1"),
+        ("\"1\"^^<http://www.w3.org/2001/XMLSchema#integer>", "1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#decimal>", "1.1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#float>", "1.1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#double>", "1.1")
+      ).toDF("input", "expected")
+
+      val df =
+        initial.withColumn("result", Func.extractNumber(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+
+    "return null if the value is not an RDF literal, or is not numeric" in {
+
+      val initial = List(
+        ("\"1\"^^xsd:string", null),
+        ("\"03-03-2020\"^^xsd:date", null),
+        ("1.1", null)
+      ).toDF("input", "expected")
+
+      val df =
+        initial.withColumn("result", Func.extractNumber(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
+  "Func.tryExtractNumber" should {
+    "extract the numeric part of numeric RDF literals" in {
+
+      val initial = List(
+        ("\"1\"^^xsd:int", "1"),
+        ("\"1\"^^xsd:integer", "1"),
+        ("\"1.1\"^^xsd:decimal", "1.1"),
+        ("\"1.1\"^^xsd:float", "1.1"),
+        ("\"1.1\"^^xsd:double", "1.1"),
+        ("\"1\"^^<http://www.w3.org/2001/XMLSchema#int>", "1"),
+        ("\"1\"^^<http://www.w3.org/2001/XMLSchema#integer>", "1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#decimal>", "1.1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#float>", "1.1"),
+        ("\"1.1\"^^<http://www.w3.org/2001/XMLSchema#double>", "1.1")
+      ).toDF("input", "expected")
+
+      val df =
+        initial.withColumn("result", Func.tryExtractNumber(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+
+    "return the value unchanged if the value is not an RDF literal, or is not numeric" in {
+
+      val initial = List(
+        ("\"1\"^^xsd:string", "\"1\"^^xsd:string"),
+        ("\"03-03-2020\"^^xsd:date", "\"03-03-2020\"^^xsd:date"),
+        ("1.1", "1.1")
+      ).toDF("input", "expected")
+
+      val df =
+        initial.withColumn("result", Func.tryExtractNumber(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
+  "Func.extractType" should {
+    "extract the type from an RDF literal" in {
+
+      val initial = List(
+        ("\"1\"^^xsd:int", "xsd:int"),
+        ("\"1.1\"^^xsd:decimal", "xsd:decimal"),
+        ("\"1.1\"^^xsd:float", "xsd:float"),
+        ("\"1.1\"^^xsd:double", "xsd:double")
+      ).toDF("input", "expected")
+
+      val df = initial.withColumn("result", Func.extractType(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
   }
 
   def toRDFDateTime(datetime: TemporalAccessor): String =

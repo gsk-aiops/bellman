@@ -13,25 +13,38 @@ object BuiltInFuncParser {
   def concat[_: P]: P[Unit]    = P("concat")
   def str[_: P]: P[Unit]       = P("str")
   def strafter[_: P]: P[Unit]  = P("strafter")
+  def strbefore[_: P]: P[Unit] = P("strbefore")
   def isBlank[_: P]: P[Unit]   = P("isBlank")
   def replace[_: P]: P[Unit]   = P("replace")
   def regex[_: P]: P[Unit]     = P("regex")
   def strends[_: P]: P[Unit]   = P("strends")
   def strstarts[_: P]: P[Unit] = P("strstarts")
+  def strdt[_: P]: P[Unit]     = P("strdt")
+  def substr[_: P]: P[Unit]    = P("substr")
+  def strlen[_: P]: P[Unit]    = P("strlen")
+  def lcase[_: P]: P[Unit]     = P("lcase")
+  def ucase[_: P]: P[Unit]     = P("ucase")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
   def concatParen[_: P]: P[CONCAT] =
-    ("(" ~ concat ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
-      .map { c =>
-        CONCAT(c._1, c._2)
-      }
+    ("(" ~ concat ~ ExpressionParser.parser ~ ExpressionParser.parser.rep(
+      1
+    ) ~ ")").map { case (appendTo, append) =>
+      CONCAT(appendTo, append.toList)
+    }
   def strParen[_: P]: P[STR] =
     P("(" ~ str ~ ExpressionParser.parser ~ ")").map(s => STR(s))
   def strafterParen[_: P]: P[STRAFTER] = P(
-    "(" ~ strafter ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")"
+    "(" ~ strafter ~ (StringValParser.litParser | BuiltInFuncParser.parser) ~ (StringValParser.litParser | BuiltInFuncParser.parser) ~ ")"
   ).map { s =>
     STRAFTER(s._1, s._2)
+  }
+
+  def strbeforeParen[_: P]: P[STRBEFORE] = P(
+    "(" ~ strbefore ~ (StringValParser.litParser | BuiltInFuncParser.parser) ~ (StringValParser.litParser | BuiltInFuncParser.parser) ~ ")"
+  ).map { s =>
+    STRBEFORE(s._1, s._2)
   }
 
   def isBlankParen[_: P]: P[ISBLANK] =
@@ -67,19 +80,53 @@ object BuiltInFuncParser {
     P("(" ~ strstarts ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
       .map(f => STRSTARTS(f._1, f._2))
 
+  def strdtParen[_: P]: P[STRDT] =
+    P("(" ~ strdt ~ ExpressionParser.parser ~ StringValParser.urival ~ ")")
+      .map(f => STRDT(f._1, f._2))
+
+  def substrParen[_: P]: P[SUBSTR] =
+    P("(" ~ substr ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
+      .map(f => SUBSTR(f._1, f._2))
+
+  def substrWithLengthParen[_: P]: P[SUBSTR] =
+    P(
+      "(" ~ substr ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")"
+    )
+      .map(f => SUBSTR(f._1, f._2, Option(f._3)))
+
+  def strlenParen[_: P]: P[STRLEN] =
+    P(
+      "(" ~ strlen ~ ExpressionParser.parser ~ ")"
+    ).map(STRLEN)
+
+  def lcaseParen[_: P]: P[LCASE] =
+    P("(" ~ lcase ~ ExpressionParser.parser ~ ")")
+      .map(f => LCASE(f))
+
+  def ucaseParen[_: P]: P[UCASE] =
+    P("(" ~ ucase ~ ExpressionParser.parser ~ ")")
+      .map(f => UCASE(f))
+
   def funcPatterns[_: P]: P[StringLike] =
     P(
       uriParen
         | concatParen
         | strParen
         | strafterParen
+        | strbeforeParen
         | strendsParen
         | strstartsParen
+        | substrParen
+        | substrWithLengthParen
         | isBlankParen
         | replaceParen
         | replaceWithFlagsParen
         | regexParen
         | regexWithFlagsParen
+        | strdtParen
+        | strlenParen
+        | lcaseParen
+        | ucaseParen
     )
 //      | StringValParser.string
 //      | StringValParser.variable)

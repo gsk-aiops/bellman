@@ -10,8 +10,8 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val s = "(uri \"http://id.gsk.com/dm/1.0/\")"
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
-      case URI(STRING("http://id.gsk.com/dm/1.0/", _)) => succeed
-      case _                                           => fail
+      case URI(STRING("http://id.gsk.com/dm/1.0/")) => succeed
+      case _                                        => fail
     }
   }
 
@@ -28,7 +28,23 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val s = "(concat \"http://id.gsk.com/dm/1.0/\" ?src)"
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
-      case CONCAT(STRING("http://id.gsk.com/dm/1.0/", _), VARIABLE("?src")) =>
+      case CONCAT(
+            STRING("http://id.gsk.com/dm/1.0/"),
+            _
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  it should "return COCANT type when multiple arguments" in {
+    val s = "(concat \"http://id.gsk.com/dm/1.0/\" ?src ?dst)"
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case CONCAT(
+            STRING("http://id.gsk.com/dm/1.0/"),
+            List(VARIABLE("?src"), VARIABLE("?dst"))
+          ) =>
         succeed
       case _ => fail
     }
@@ -39,7 +55,10 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case URI(
-            CONCAT(STRING("http://id.gsk.com/dm/1.0/", _), VARIABLE("?src"))
+            CONCAT(
+              STRING("http://id.gsk.com/dm/1.0/"),
+              _
+            )
           ) =>
         succeed
       case _ => fail
@@ -59,8 +78,8 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val s = "(strafter ( str ?d) \"#\")"
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
-      case STRAFTER(STR(VARIABLE(s1: String)), STRING(s2: String, _)) => succeed
-      case _                                                          => fail
+      case STRAFTER(STR(VARIABLE(s1: String)), STRING(s2: String)) => succeed
+      case _                                                       => fail
     }
   }
 
@@ -70,8 +89,60 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     p.get.value match {
       case URI(
             STRAFTER(
-              CONCAT(STR(VARIABLE(a1: String)), STR(VARIABLE(a2: String))),
-              STRING("#", _)
+              CONCAT(STR(VARIABLE(a1: String)), _),
+              STRING("#")
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "strbefore function" should "return STRBEFORE type" in {
+    val s = "(strbefore ( str ?d) \"#\")"
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case STRBEFORE(STR(VARIABLE(s1: String)), STRING(s2: String)) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "substr function without length" should "return SUBSTR type" in {
+    val s = "(substr ?d 1)"
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case SUBSTR(VARIABLE(s1: String), NUM(s2: String), None) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "substr function with length" should "return SUBSTR type" in {
+    val s = "(substr ?d 1 1)"
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case SUBSTR(
+            VARIABLE(s1: String),
+            NUM(s2: String),
+            Some(NUM(s3: String))
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "Deeply nested strbefore function" should "return nested STRBEFORE type" in {
+    val s = "(uri (strbefore (concat (str ?d) (str ?src)) \"#\"))"
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case URI(
+            STRBEFORE(
+              CONCAT(
+                STR(VARIABLE(a1)),
+                List(STR(VARIABLE(a2)))
+              ),
+              STRING("#")
             )
           ) =>
         succeed
@@ -83,7 +154,7 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val s = """(strends (str ?modelname) "ner:")"""
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
-      case STRENDS(STR(VARIABLE("?modelname")), STRING("ner:", None)) =>
+      case STRENDS(STR(VARIABLE("?modelname")), STRING("ner:")) =>
         succeed
       case _ => fail
     }
@@ -93,9 +164,30 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val s = """(strstarts (str ?modelname) "ner:")"""
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
-      case STRSTARTS(STR(VARIABLE("?modelname")), STRING("ner:", None)) =>
+      case STRSTARTS(STR(VARIABLE("?modelname")), STRING("ner:")) =>
         succeed
       case _ => fail
+    }
+  }
+
+  "strdt function" should "return STRDT type" in {
+    val s =
+      """(strdt ?c <http://geo.org#country>)"""
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case STRDT(VARIABLE("?c"), URIVAL("<http://geo.org#country>")) =>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "strlen function" should "return STRLEN type" in {
+    val p =
+      fastparse.parse("""(strlen ?d)""", BuiltInFuncParser.strlenParen(_))
+    p.get.value match {
+      case STRLEN(VARIABLE("?d")) => succeed
+      case _                      => fail
     }
   }
 
@@ -103,7 +195,7 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val p =
       fastparse.parse("""(regex ?d "Hello")""", BuiltInFuncParser.regexParen(_))
     p.get.value match {
-      case REGEX(VARIABLE("?d"), STRING("Hello", None), _) =>
+      case REGEX(VARIABLE("?d"), STRING("Hello"), _) =>
         succeed
       case _ => fail
     }
@@ -116,7 +208,7 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
         BuiltInFuncParser.regexWithFlagsParen(_)
       )
     p.get.value match {
-      case REGEX(VARIABLE("?d"), STRING("Hello", None), STRING("i", None)) =>
+      case REGEX(VARIABLE("?d"), STRING("Hello"), STRING("i")) =>
         succeed
       case _ => fail
     }
@@ -131,8 +223,8 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     p.get.value match {
       case REPLACE(
             VARIABLE("?d"),
-            STRING("Hello", None),
-            STRING("Olleh", None),
+            STRING("Hello"),
+            STRING("Olleh"),
             _
           ) =>
         succeed
@@ -149,10 +241,30 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     p.get.value match {
       case REPLACE(
             VARIABLE("?d"),
-            STRING("Hello", None),
-            STRING("Olleh", None),
-            STRING("i", None)
+            STRING("Hello"),
+            STRING("Olleh"),
+            STRING("i")
           ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "LCASE parser" should "return LCASE type" in {
+    val p =
+      fastparse.parse("""(lcase ?d)""", BuiltInFuncParser.lcaseParen(_))
+    p.get.value match {
+      case LCASE(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "UCASE parser" should "return UCASE type" in {
+    val p =
+      fastparse.parse("""(ucase ?d)""", BuiltInFuncParser.ucaseParen(_))
+    p.get.value match {
+      case UCASE(VARIABLE("?d")) =>
         succeed
       case _ => fail
     }

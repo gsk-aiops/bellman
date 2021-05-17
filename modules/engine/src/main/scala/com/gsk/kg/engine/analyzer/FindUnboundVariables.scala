@@ -8,7 +8,9 @@ import cats.{Group => _, _}
 import higherkindness.droste.{Project => _, _}
 
 import com.gsk.kg.engine.DAG._
+import com.gsk.kg.engine.ExpressionF._
 import com.gsk.kg.engine.data.ChunkedList
+import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
@@ -46,7 +48,7 @@ object FindUnboundVariables {
   val findUnboundVariables: AlgebraM[ST, DAG, Set[VARIABLE]] =
     AlgebraM[ST, DAG, Set[VARIABLE]] {
       case Describe(vars, r) => (vars.toSet diff r).pure[ST]
-      case Ask(r)            => Set.empty.pure[ST]
+      case Ask(r)            => Set.empty[VARIABLE].pure[ST]
       case Construct(bgp, r) =>
         val used = bgp.quads
           .flatMap(_.getVariables)
@@ -76,15 +78,85 @@ object FindUnboundVariables {
 
         State
           .modify[Set[VARIABLE]](x => x union vars)
-          .flatMap(_ => Set.empty.pure[ST])
+          .flatMap(_ => Set.empty[VARIABLE].pure[ST])
       case LeftJoin(l, r, filters) => (l union r).pure[ST]
       case Union(l, r)             => (l union r).pure[ST]
-      case Filter(funcs, expr)     => expr.pure[ST]
-      case Join(l, r)              => r.pure[ST]
-      case Offset(offset, r)       => r.pure[ST]
-      case Limit(limit, r)         => r.pure[ST]
-      case Distinct(r)             => r.pure[ST]
-      case Group(vars, func, r)    => r.pure[ST]
-      case Noop(trace)             => Set.empty.pure[ST]
+      case Filter(funcs, expr) =>
+        val funcsVars = funcs.toList.toSet
+          .foldLeft(Set.empty[VARIABLE]) { case (acc, func) =>
+            acc ++ FindVariablesOnExpression.apply[Expression](func)
+          }
+        for {
+          declared <- State.get
+        } yield (funcsVars diff declared) ++ expr
+      case Join(l, r)        => (l union r).pure[ST]
+      case Offset(offset, r) => r.pure[ST]
+      case Limit(limit, r)   => r.pure[ST]
+      case Distinct(r)       => r.pure[ST]
+      case Group(vars, func, r) =>
+        for {
+          declared <- State.get
+        } yield (vars.toSet diff declared) ++ r
+      case DAG.Order(conds, r) =>
+        val condVars = conds.toList.toSet
+          .foldLeft(Set.empty[VARIABLE]) { case (acc, cond) =>
+            acc ++ FindVariablesOnExpression.apply[Expression](cond)
+          }
+        for {
+          declared <- State.get
+        } yield (condVars diff declared) ++ r
+      case Noop(trace) => Set.empty[VARIABLE].pure[ST]
     }
+}
+
+object FindVariablesOnExpression {
+
+  def apply[T](t: T)(implicit T: Basis[ExpressionF, T]): Set[VARIABLE] = {
+    val algebra: Algebra[ExpressionF, Set[VARIABLE]] =
+      Algebra[ExpressionF, Set[VARIABLE]] {
+        case EQUALS(l, r)                    => l ++ r
+        case GT(l, r)                        => l ++ r
+        case LT(l, r)                        => l ++ r
+        case GTE(l, r)                       => l ++ r
+        case LTE(l, r)                       => l ++ r
+        case OR(l, r)                        => l ++ r
+        case AND(l, r)                       => l ++ r
+        case NEGATE(s)                       => s
+        case URI(s)                          => s
+        case REGEX(s, pattern, flags)        => s
+        case REPLACE(st, pattern, by, flags) => st
+        case STRENDS(s, f)                   => s
+        case STRSTARTS(s, f)                 => s
+        case CONCAT(appendTo, append)        => appendTo ++ append.toList.toSet.flatten
+        case STR(s)                          => s
+        case STRAFTER(s, f)                  => s
+        case STRBEFORE(s, f)                 => s
+        case STRDT(s, uri)                   => s
+        case SUBSTR(s, pos, len)             => s
+        case STRLEN(s)                       => s
+        case ISBLANK(s)                      => s
+        case COUNT(e)                        => e
+        case SUM(e)                          => e
+        case MIN(e)                          => e
+        case MAX(e)                          => e
+        case AVG(e)                          => e
+        case SAMPLE(e)                       => e
+        case GROUP_CONCAT(e, separator)      => e
+        case STRING(s)                       => Set.empty[VARIABLE]
+        case DT_STRING(s, tag)               => Set.empty[VARIABLE]
+        case LANG_STRING(s, tag)             => Set.empty[VARIABLE]
+        case NUM(s)                          => Set.empty[VARIABLE]
+        case ExpressionF.VARIABLE(s)         => Set(VARIABLE(s))
+        case URIVAL(s)                       => Set.empty[VARIABLE]
+        case BLANK(s)                        => Set.empty[VARIABLE]
+        case BOOL(s)                         => Set.empty[VARIABLE]
+        case ASC(e)                          => e
+        case DESC(e)                         => e
+      }
+
+    val eval =
+      scheme.cata[ExpressionF, T, Set[VARIABLE]](algebra)
+
+    eval(t)
+  }
 }

@@ -74,6 +74,91 @@ class AnalyzerSpec
       )
   }
 
+  it should "find unbound variables when variable in ORDER BY not declared in WHERE clause" in {
+    val q =
+      """
+        |PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT ?name
+        |WHERE { ?x foaf:name ?name ; foaf:age ?age }
+        |ORDER BY DESC(?name) ?age DESC(?age) ASC(?names) DESC((isBlank(?x) || isBlank(?age)))
+        |""".stripMargin
+
+    val parsed: Either[EngineError, (Query, Graphs)] = parse(q, config)
+    parsed
+      .flatMap { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
+        Analyzer.analyze.apply(dag).runA(config, null)
+      }
+      .fold(
+        { error =>
+          error shouldEqual EngineError.AnalyzerError(
+            NonEmptyChain(
+              "found free variables VARIABLE(?names)"
+            )
+          )
+        },
+        _ => fail
+      )
+  }
+
+  it should "find unbound variables when variable in GROUP BY not declared in WHERE clause" in {
+    val q =
+      """
+        |SELECT ?c SUM(?b)
+        |WHERE {
+        | ?a ?b <http://uri.com/object>
+        |} GROUP BY ?c
+        |""".stripMargin
+
+    val parsed: Either[EngineError, (Query, Graphs)] = parse(q, config)
+    parsed
+      .flatMap { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
+        Analyzer.analyze.apply(dag).runA(config, null)
+      }
+      .fold(
+        { error =>
+          error shouldEqual EngineError.AnalyzerError(
+            NonEmptyChain(
+              "found free variables VARIABLE(?c)"
+            )
+          )
+        },
+        _ => fail
+      )
+  }
+
+  it should "find unbound variables when variable in FILTER and not declared in BGPs" in {
+    val q =
+      """
+        PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+        |
+        |SELECT  ?x ?name
+        |WHERE   {
+        |   ?x foaf:name ?name .
+        |   FILTER(isBlank(?x) && !isBlank(?age))
+        |}
+        |""".stripMargin
+
+    val parsed: Either[EngineError, (Query, Graphs)] = parse(q, config)
+    parsed
+      .flatMap { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
+        Analyzer.analyze.apply(dag).runA(config, null)
+      }
+      .fold(
+        { error =>
+          error shouldEqual EngineError.AnalyzerError(
+            NonEmptyChain(
+              "found free variables VARIABLE(?age)"
+            )
+          )
+        },
+        _ => fail
+      )
+  }
+
   it should "find bound variables even when they're bound as part of expressions" in {
     val q =
       """

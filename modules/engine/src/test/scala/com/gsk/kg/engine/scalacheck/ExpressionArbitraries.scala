@@ -21,8 +21,11 @@ trait ExpressionArbitraries extends CommonGenerators {
     )
 
   val stringValGenerator: Gen[StringVal] = Gen.oneOf(
-    (nonEmptyStringGenerator, Gen.option(sparqlDataTypesGen))
-      .mapN(StringVal.STRING(_, _)),
+    nonEmptyStringGenerator.map(StringVal.STRING(_)),
+    (nonEmptyStringGenerator, sparqlDataTypesGen)
+      .mapN(StringVal.DT_STRING(_, _)),
+    (nonEmptyStringGenerator, nonEmptyStringGenerator.map(x => s"@$x"))
+      .mapN(StringVal.LANG_STRING(_, _)),
     Gen.numStr.map(StringVal.NUM(_)),
     nonEmptyStringGenerator.map(str => StringVal.VARIABLE(s"?$str")),
     nonEmptyStringGenerator.map(uri => StringVal.URIVAL(uri)),
@@ -32,7 +35,10 @@ trait ExpressionArbitraries extends CommonGenerators {
 
   val builtinFuncGenerator: Gen[Expression] = Gen.oneOf(
     Gen.lzy(expressionGenerator).map(BuiltInFunc.URI(_)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
+    (
+      Gen.lzy(expressionGenerator),
+      smallNonEmptyListOf(expressionGenerator)
+    )
       .mapN(BuiltInFunc.CONCAT(_, _)),
     Gen.lzy(expressionGenerator).map(BuiltInFunc.STR(_)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
@@ -40,7 +46,17 @@ trait ExpressionArbitraries extends CommonGenerators {
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
       .mapN(BuiltInFunc.STRAFTER(_, _)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
+      .mapN(BuiltInFunc.STRBEFORE(_, _)),
+    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
+      .mapN(BuiltInFunc.SUBSTR(_, _)),
+    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
       .mapN(BuiltInFunc.STRSTARTS(_, _)),
+    (Gen
+      .lzy(expressionGenerator))
+      .map(BuiltInFunc.LCASE(_)),
+    (Gen
+      .lzy(expressionGenerator))
+      .map(BuiltInFunc.UCASE(_)),
     Gen.lzy(expressionGenerator).map(BuiltInFunc.ISBLANK(_)),
     (
       Gen.lzy(expressionGenerator),
