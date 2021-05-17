@@ -420,6 +420,45 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     }
   }
 
+  it should "parse correctly when there's no explicit GROUP BY expression" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q41-groupby-implicit.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?count")),
+            Extend(
+              VARIABLE("?count"),
+              VARIABLE("?0"),
+              Group(
+                Seq(),
+                Some((VARIABLE("?0"), Aggregate.COUNT(VARIABLE("?s")))),
+                BGP(
+                  Seq(
+                    Quad(
+                      VARIABLE("?s"),
+                      URIVAL(
+                        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"
+                      ),
+                      URIVAL(
+                        "<http://gsk-kg.rdip.gsk.com/dm/1.0/LinkedEntity>"
+                      ),
+                      List(GRAPH_VARIABLE)
+                    )
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
   "Order By" should "return proper type when simple variable" in {
     val p = fastparse.parse(
       sparql2Algebra(
