@@ -408,39 +408,8 @@ object Func {
     * @param col
     * @return
     */
-  def lcase(col: Column): Column = {
-    when(
-      col.contains("\"@"),
-      format_string(
-        "%s",
-        cc(
-          cc(
-            cc(
-              lit("\""),
-              lower(trim(substring_index(col, "\"@", 1), "\""))
-            ),
-            lit("\"")
-          ),
-          cc(lit("@"), substring_index(col, "\"@", -1))
-        )
-      )
-    ).when(
-      col.contains("\"^^"),
-      format_string(
-        "%s",
-        cc(
-          cc(
-            cc(
-              lit("\""),
-              lower(trim(substring_index(col, "\"^^", 1), "\""))
-            ),
-            lit("\"")
-          ),
-          cc(lit("^^"), substring_index(col, "\"^^", -1))
-        )
-      )
-    ).otherwise(lower(trim(col, "\"")))
-  }
+  def lcase(col: Column): Column =
+    formatRdfString(col, lower)
 
   /** Implementation of SparQL UCASE on Spark dataframes.
     *
@@ -448,7 +417,10 @@ object Func {
     * @param col
     * @return
     */
-  def ucase(col: Column): Column = {
+  def ucase(col: Column): Column =
+    formatRdfString(col, upper)
+
+  private def formatRdfString(col: Column, f: Column => Column): Column = {
     when(
       col.contains("\"@"),
       format_string(
@@ -457,7 +429,7 @@ object Func {
           cc(
             cc(
               lit("\""),
-              upper(trim(substring_index(col, "\"@", 1), "\""))
+              f(trim(substring_index(col, "\"@", 1), "\""))
             ),
             lit("\"")
           ),
@@ -472,14 +444,14 @@ object Func {
           cc(
             cc(
               lit("\""),
-              upper(trim(substring_index(col, "\"^^", 1), "\""))
+              f(trim(substring_index(col, "\"^^", 1), "\""))
             ),
             lit("\"")
           ),
           cc(lit("^^"), substring_index(col, "\"^^", -1))
         )
       )
-    ).otherwise(upper(trim(col, "\"")))
+    ).otherwise(f(trim(col, "\"")))
   }
 
   def groupConcat(col: Column, separator: String): Column =
