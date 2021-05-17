@@ -225,11 +225,46 @@ object Func {
     * @param len
     * @return
     */
-  def substr(col: Column, pos: Int, len: Option[Int]): Column =
-    len match {
-      case Some(l) => col.substr(pos, l)
-      case None    => col.substr(lit(pos), length(col) - pos + 1)
+  def substr(col: Column, pos: Int, len: Option[Int]): Column = {
+    def ss(col: Column, pos: Int, len: Option[Int]) = {
+      len match {
+        case Some(l) => col.substr(pos, l)
+        case None    => col.substr(lit(pos), length(col) - pos + 1)
+      }
     }
+
+    when(
+      col.contains("\"@"),
+      format_string(
+        "%s",
+        cc(
+          cc(
+            cc(
+              lit("\""),
+              ss(trim(substring_index(col, "\"@", 1), "\""), pos, len)
+            ),
+            lit("\"")
+          ),
+          cc(lit("@"), substring_index(col, "\"@", -1))
+        )
+      )
+    ).when(
+      col.contains("\"^^"),
+      format_string(
+        "%s",
+        cc(
+          cc(
+            cc(
+              lit("\""),
+              ss(trim(substring_index(col, "\"^^", 1), "\""), pos, len)
+            ),
+            lit("\"")
+          ),
+          cc(lit("^^"), substring_index(col, "\"^^", -1))
+        )
+      )
+    ).otherwise(ss(trim(col, "\""), pos, len))
+  }
 
   /** Implementation of SparQL STRENDS on Spark dataframes.
     *
@@ -268,6 +303,30 @@ object Func {
     */
   def strdt(col: Column, uri: String): Column =
     cc(lit("\""), col, lit("\""), lit(s"^^$uri"))
+
+  /** Implementation of SparQL STRLEN on Spark dataframes.
+    * Counts string number of characters
+    *
+    * strlen("chat") -> 4
+    * strlen("chat"@en) -> 4
+    * strlen("chat"^^xsd:string) -> 4
+    *
+    * @param col
+    * @return
+    */
+  def strlen(col: Column): Column = {
+    when(
+      RdfFormatter.isLocalizedString(col), {
+        val l = LocalizedString(col)
+        length(regexp_replace(l.value, "\"", ""))
+      }
+    ).when(
+      RdfFormatter.isDatatypeLiteral(col), {
+        val t = TypedString(col)
+        length(regexp_replace(t.value, "\"", ""))
+      }
+    ).otherwise(length(col))
+  }
 
   /** The IRI function constructs an IRI by resolving the string
     * argument (see RFC 3986 and RFC 3987 or any later RFC that
