@@ -17,74 +17,132 @@ class SubstrSpec
 
   import sqlContext.implicits._
 
+  /*
+  https://www.w3.org/TR/sparql11-query/#func-substr
+  substr("foobar", 4) -> "bar"
+  substr("foobar"@en, 4) -> "bar"@en
+  substr("foobar"^^xsd:string, 4) -> "bar"^^xsd:string
+  substr("foobar", 4, 1) -> "b"
+  substr("foobar"@en, 4, 1) -> "b"@en
+  substr("foobar"^^xsd:string, 4, 1) -> "b"^^xsd:string
+   */
+
   "perform SUBSTR function correctly" when {
 
-    "used on string literals with a specified length" in {
-      val df = List(
-        (
-          "<http://uri.com/subject/#a1>",
-          "<http://xmlns.com/foaf/0.1/name>",
-          "Alice"
-        ),
-        (
-          "<http://uri.com/subject/#a3>",
-          "<http://xmlns.com/foaf/0.1/name>",
-          "Alison"
-        )
-      ).toDF("s", "p", "o")
-
-      val query =
-        """
-          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-          CONSTRUCT {
-            ?x foaf:subName ?subName .
-          }
-          WHERE{
-            ?x foaf:name ?name .
-            BIND(SUBSTR(?name, 1, 1) as ?subName) .
-          }
-          """
-
-      val result = Compiler.compile(df, query, config)
-
-      result.right.get.drop("s", "p").collect.toSet shouldEqual Set(
-        Row("\"A\""),
-        Row("\"A\"")
-      )
+    "str is simple string and only pos is specified" in {
+      // substr("foobar", 4) -> "bar"
+      val str      = "foobar"
+      val pos      = 4
+      val expected = Row("\"bar\"")
+      val actual   = actWithPos(str, pos)
+      actual shouldEqual expected
     }
 
-    "used on string literals without a specified length" in {
-      val df = List(
-        (
-          "<http://uri.com/subject/#a1>",
-          "<http://xmlns.com/foaf/0.1/name>",
-          "Alice"
-        ),
-        (
-          "<http://uri.com/subject/#a3>",
-          "<http://xmlns.com/foaf/0.1/name>",
-          "Alison"
-        )
-      ).toDF("s", "p", "o")
+    "str is plain literal with language tag and only pos is specified" in {
+      // substr("foobar"@en, 4) -> "bar"@en
+      val str      = "\"foobar\"@en"
+      val pos      = 4
+      val expected = Row("\"bar\"@en")
+      val actual   = actWithPos(str, pos)
+      actual shouldEqual expected
+    }
 
-      val query =
-        """
-          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-          CONSTRUCT {
-            ?x foaf:subName ?subName .
-          }
-          WHERE{
-            ?x foaf:name ?name .
-            BIND(SUBSTR(?name, 3) as ?subName) .
-          }
-          """
+    "str is typed string and only pos is specified" in {
+      // substr("foobar"^^xsd:string, 4) -> "bar"^^xsd:string
+      val str      = "\"foobar\"^^xsd:string"
+      val pos      = 4
+      val expected = Row("\"bar\"^^xsd:string")
+      val actual   = actWithPos(str, pos)
+      actual shouldEqual expected
+    }
 
-      val result = Compiler.compile(df, query, config)
+    "str is simple string and pos and len are specified" in {
+      // substr("foobar", 4, 1) -> "b"
+      val str      = "foobar"
+      val pos      = 4
+      val len      = 1
+      val expected = Row("\"b\"")
+      val actual   = actWithPosLen(str, pos, len)
+      actual shouldEqual expected
+    }
 
-      result.right.get.drop("s", "p").collect.toSet shouldEqual Set(
-        Row("\"ice\""),
-        Row("\"ison\"")
-      )
+    "str is plain literal with language tag and pos and len are specified" in {
+      // substr("foobar"@en, 4, 1) -> "b"@en
+      val str      = "\"foobar\"@en"
+      val pos      = 4
+      val len      = 1
+      val expected = Row("\"b\"@en")
+      val actual   = actWithPosLen(str, pos, len)
+      actual shouldEqual expected
+    }
+
+    "str is typed string and pos and len are specified" in {
+      // substr("foobar"^^xsd:string, 4, 1) -> "b"^^xsd:string
+      val str      = "\"foobar\"^^xsd:string"
+      val pos      = 4
+      val len      = 1
+      val expected = Row("\"b\"^^xsd:string")
+      val actual   = actWithPosLen(str, pos, len)
+      actual shouldEqual expected
     }
   }
+
+  private def actWithPos(str: String, pos: Int): Row = {
+    val df = List(
+      (
+        "<http://uri.com/subject/#a1>",
+        "<http://xmlns.com/foaf/0.1/title>",
+        str
+      )
+    ).toDF("s", "p", "o")
+
+    val query =
+      s"""
+          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+          CONSTRUCT {
+            ?x foaf:titlePrefix ?titlePrefix .
+          }
+          WHERE{
+            ?x foaf:title ?title .
+            BIND(SUBSTR(?title, $pos) as ?titlePrefix) .
+          }
+          """
+
+    Compiler
+      .compile(df, query, config)
+      .right
+      .get
+      .drop("s", "p")
+      .head()
+  }
+
+  private def actWithPosLen(str: String, pos: Int, len: Int): Row = {
+    val df = List(
+      (
+        "<http://uri.com/subject/#a1>",
+        "<http://xmlns.com/foaf/0.1/title>",
+        str
+      )
+    ).toDF("s", "p", "o")
+
+    val query =
+      s"""
+          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+          CONSTRUCT {
+            ?x foaf:titlePrefix ?titlePrefix .
+          }
+          WHERE{
+            ?x foaf:title ?title .
+            BIND(SUBSTR(?title, $pos, $len) as ?titlePrefix) .
+          }
+          """
+
+    Compiler
+      .compile(df, query, config)
+      .right
+      .get
+      .drop("s", "p")
+      .head()
+  }
+
 }
