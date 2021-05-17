@@ -14,3 +14,4 @@ jobs:
         with:
           github-token: ${{ secrets.ADMIN_GITHUB_TOKEN }}
           author-email: 694179+pepegar@users.noreply.github.com
+          cache-ttl: 0s
