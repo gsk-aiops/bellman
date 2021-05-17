@@ -591,6 +591,39 @@ class FuncSpec
     }
   }
 
+  "Func.strlen" should {
+
+    "count characters on plain string" in {
+      val df = List(
+        "chat"
+      ).toDF("a")
+
+      df.select(Func.strlen(df("a"))).collect shouldEqual Array(
+        Row(4)
+      )
+    }
+
+    "count characters on typed string" in {
+      val df = List(
+        "\"chat\"^^xsd:string"
+      ).toDF("a")
+
+      df.select(Func.strlen(df("a"))).collect shouldEqual Array(
+        Row(4)
+      )
+    }
+
+    "count characters on localized string" in {
+      val df = List(
+        "\"chat\"@en"
+      ).toDF("a")
+
+      df.select(Func.strlen(df("a"))).collect shouldEqual Array(
+        Row(4)
+      )
+    }
+  }
+
   "Func.equals" should {
     "operate on equal dates correctly" in {
 

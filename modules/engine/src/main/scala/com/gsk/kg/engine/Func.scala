@@ -304,6 +304,30 @@ object Func {
   def strdt(col: Column, uri: String): Column =
     cc(lit("\""), col, lit("\""), lit(s"^^$uri"))
 
+  /** Implementation of SparQL STRLEN on Spark dataframes.
+    * Counts string number of characters
+    *
+    * strlen("chat") -> 4
+    * strlen("chat"@en) -> 4
+    * strlen("chat"^^xsd:string) -> 4
+    *
+    * @param col
+    * @return
+    */
+  def strlen(col: Column): Column = {
+    when(
+      RdfFormatter.isLocalizedString(col), {
+        val l = LocalizedString(col)
+        length(regexp_replace(l.value, "\"", ""))
+      }
+    ).when(
+      RdfFormatter.isDatatypeLiteral(col), {
+        val t = TypedString(col)
+        length(regexp_replace(t.value, "\"", ""))
+      }
+    ).otherwise(length(col))
+  }
+
   /** The IRI function constructs an IRI by resolving the string
     * argument (see RFC 3986 and RFC 3987 or any later RFC that
     * superceeds RFC 3986 or RFC 3987). The IRI is resolved against
