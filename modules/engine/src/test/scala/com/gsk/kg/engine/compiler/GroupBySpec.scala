@@ -542,5 +542,50 @@ class GroupBySpec
 
       result.right.get.collect should have length 3
     }
+
+    "work correctly when the query doesn't contain an explicit GROUP BY clause" in {
+
+      val df = List(
+        (
+          "<http://uri.com/subject/a1>",
+          "<http://uri.com/predicate>",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a1>",
+          "<http://uri.com/predicate>",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a2>",
+          "<http://uri.com/predicate>",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a2>",
+          "<http://uri.com/predicate>",
+          "<http://uri.com/object>"
+        ),
+        (
+          "<http://uri.com/subject/a3>",
+          "<http://uri.com/predicate>",
+          "<http://uri.com/object>"
+        )
+      ).toDF("s", "p", "o")
+
+      val query =
+        """
+          SELECT COUNT(?a)
+          WHERE {
+            ?a <http://uri.com/predicate> <http://uri.com/object>
+          }
+          """
+
+      val result = Compiler.compile(df, query, config)
+
+      result.right.get.collect.toSet shouldEqual Set(
+        Row("\"5\"^^xsd:int")
+      )
+    }
   }
 }
