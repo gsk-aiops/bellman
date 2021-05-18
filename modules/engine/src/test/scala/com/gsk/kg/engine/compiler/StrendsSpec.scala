@@ -17,46 +17,105 @@ class StrendsSpec
 
   import sqlContext.implicits._
 
+  /*
+  strEnds("foobar", "bar") -> true
+  strEnds("foobar"@en, "bar"@en) -> true
+  strEnds("foobar"^^xsd:string, "bar"^^xsd:string) -> true
+  strEnds("foobar"^^xsd:string, "bar") -> true
+  strEnds("foobar", "bar"^^xsd:string) -> true
+  strEnds("foobar"@en, "bar") -> true
+  strEnds("foobar"@en, "bar"^^xsd:string) -> true
+   */
+
   "perform STRENDS function correctly" when {
 
-    "used on string literals" in {
-      val df = List(
-        (
-          "<http://uri.com/subject/a1>",
-          "<http://xmlns.com/foaf/0.1/name>",
-          "Alice"
-        ),
-        (
-          "<http://uri.com/subject/a2>",
-          "<http://xmlns.com/foaf/0.1/name>",
-          "alice"
-        ),
-        (
-          "<http://uri.com/subject/a5>",
-          "<http://xmlns.com/foaf/0.1/name>",
-          "Alex"
-        ),
-        (
-          "<http://uri.com/subject/a6>",
-          "<http://xmlns.com/foaf/0.1/name>",
-          "alex"
-        )
-      ).toDF("s", "p", "o")
+    "arg1 is simple string and arg2 is simple string" in {
+      // strEnds("foobar", "bar") -> true
+      val arg1     = "foobar"
+      val arg2     = "\"bar\""
+      val expected = Row("\"foobar\"")
+      val actual   = act(arg1, arg2)
+      actual shouldEqual expected
+    }
 
-      val query =
-        """
+    "arg1 is plain literal with language tag and arg2 is plain literal with language tag" in {
+      // strEnds("foobar"@en, "bar"@en) -> true
+      val arg1     = "\"foobar\"@en"
+      val arg2     = "\"bar\"@en"
+      val expected = Row("\"foobar\"@en")
+      val actual   = act(arg1, arg2)
+      actual shouldEqual expected
+    }
+
+    "arg1 is typed string and arg2 is typed string" in {
+      // strEnds("foobar"^^xsd:string, "bar"^^xsd:string) -> true
+      val arg1     = "\"foobar\"^^xsd:string"
+      val arg2     = "\"bar\"^^xsd:string"
+      val expected = Row("\"foobar\"^^xsd:string")
+      val actual   = act(arg1, arg2)
+      actual shouldEqual expected
+    }
+
+    "arg1 is typed string and arg2 is simple string" in {
+      // strEnds("foobar"^^xsd:string, "bar") -> true
+      val arg1     = "\"foobar\"^^xsd:string"
+      val arg2     = "\"bar\""
+      val expected = Row("\"foobar\"^^xsd:string")
+      val actual   = act(arg1, arg2)
+      actual shouldEqual expected
+    }
+
+    "arg1 is simple string and arg2 is typed string" in {
+      // strEnds("foobar", "bar"^^xsd:string) -> true
+      val arg1     = "foobar"
+      val arg2     = "\"bar\"^^xsd:string"
+      val expected = Row("\"foobar\"")
+      val actual   = act(arg1, arg2)
+      actual shouldEqual expected
+    }
+
+    "arg1 is plain literal with language tag and arg2 is simple string" in {
+      // strEnds("foobar"@en, "bar") -> true
+      val arg1     = "\"foobar\"@en"
+      val arg2     = "\"bar\""
+      val expected = Row("\"foobar\"@en")
+      val actual   = act(arg1, arg2)
+      actual shouldEqual expected
+    }
+
+    "arg1 is plain literal with language tag and arg2 is typed string" in {
+      // strEnds("foobar"@en, "bar"^^xsd:string) -> true
+      val arg1     = "\"foobar\"@en"
+      val arg2     = "\"bar\"^^xsd:string"
+      val expected = Row("\"foobar\"@en")
+      val actual   = act(arg1, arg2)
+      actual shouldEqual expected
+    }
+  }
+
+  private def act(arg1: String, arg2: String): Row = {
+    val df = List(
+      (
+        "<http://uri.com/subject/#a1>",
+        "<http://xmlns.com/foaf/0.1/name>",
+        arg1
+      )
+    ).toDF("s", "p", "o")
+
+    val query =
+      s"""
           PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+          PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
           SELECT ?name
-           WHERE { ?x foaf:name  ?name
-                   FILTER strends(?name, "ce") }
+           WHERE { ?x foaf:name ?name
+               FILTER STRENDS(?name, $arg2) }
           """
 
-      val result = Compiler.compile(df, query, config)
-
-      result.right.get.collect.toSet shouldEqual Set(
-        Row("\"Alice\""),
-        Row("\"alice\"")
-      )
-    }
+    Compiler
+      .compile(df, query, config)
+      .right
+      .get
+      .drop("s", "p")
+      .head()
   }
 }
