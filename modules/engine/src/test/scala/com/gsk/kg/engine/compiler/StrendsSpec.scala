@@ -25,7 +25,7 @@ class StrendsSpec
   strEnds("foobar", "bar"^^xsd:string) -> true
   strEnds("foobar"@en, "bar") -> true
   strEnds("foobar"@en, "bar"^^xsd:string) -> true
-  */
+   */
 
   "perform STRENDS function correctly" when {
 

@@ -117,15 +117,11 @@ object ExpressionF {
             StringVal.STRING(flags)
           ) =>
         REGEX(s, pattern, flags)
-
       case BuiltInFunc.STRENDS(s, StringVal.STRING(f)) => STRENDS(s, f)
-
       case BuiltInFunc.STRENDS(s, l @ StringVal.LANG_STRING(_, _)) =>
         STRENDS(s, StringVal.LANG_STRING.toString(l))
-
       case BuiltInFunc.STRENDS(s, t @ StringVal.DT_STRING(_, _)) =>
         STRENDS(s, StringVal.DT_STRING.toString(t))
-
       case BuiltInFunc.STRSTARTS(s, StringVal.STRING(f)) => STRSTARTS(s, f)
       case BuiltInFunc.STRDT(s, StringVal.URIVAL(uri))   => STRDT(s, uri)
       case BuiltInFunc.ISBLANK(s)                        => ISBLANK(s)
