@@ -302,8 +302,23 @@ object Func {
     * @param str
     * @return
     */
-  def strstarts(col: Column, str: String): Column =
-    col.startsWith(str)
+  def strstarts(col: Column, str: String): Column = {
+    val s = str match {
+      case s if str.contains("\"@") || str.contains("\"^^") =>
+        s.stripPrefix("\"").split("\"").head
+      case s => s.stripPrefix("\"").stripSuffix("\"")
+    }
+
+    when(
+      col.contains("\"@"),
+      trim(substring_index(col, "\"@", 1), "\"").startsWith(s)
+    )
+      .when(
+        col.contains("\"^^"),
+        trim(substring_index(col, "\"^^", 1), "\"").startsWith(s)
+      )
+      .otherwise(trim(col, "\"").startsWith(s))
+  }
 
   /** Implementation of SparQL STRDT on Spark dataframes.
     * The STRDT function constructs a literal with lexical form and type as specified by the arguments.
