@@ -130,6 +130,8 @@ object FindVariablesOnExpression {
         case MAX(e)                          => e
         case AVG(e)                          => e
         case SAMPLE(e)                       => e
+        case LCASE(e)                        => e
+        case UCASE(e)                        => e
         case GROUP_CONCAT(e, separator)      => e
         case STRING(s)                       => Set.empty[VARIABLE]
         case DT_STRING(s, tag)               => Set.empty[VARIABLE]
