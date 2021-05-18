@@ -226,13 +226,13 @@ lazy val `bellman-spark-engine` = project
     }
 
     def printTree(query: String): Unit = {
-      val q = QueryConstruct.parse(query, Config.default)._1
+      val q = QueryConstruct.parse(query, Config.default).right.get._1
       val dag = DAG.fromQuery.apply(q)
       println(dag.toTree.drawTree)
     }
 
     def printOptimizedTree(query: String): Unit = {
-      val q = QueryConstruct.parse(query, Config.default)._1
+      val q = QueryConstruct.parse(query, Config.default).right.get._1
       val dag = Optimizer.optimize.apply((DAG.fromQuery.apply(q), Graphs.empty)).runA(Config.default, null).right.get
       println(dag.toTree.drawTree)
     }

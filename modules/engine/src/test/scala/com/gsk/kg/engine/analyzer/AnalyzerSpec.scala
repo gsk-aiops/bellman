@@ -181,4 +181,37 @@ class AnalyzerSpec
       .fold(_ => fail, _ => succeed)
   }
 
+  it should "find unbound variables when they're declared in a subquery but not exposed" in {
+    val q = """
+      |PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+      |
+      |SELECT ?y ?name
+      |WHERE {
+      |  ?y foaf:knows ?x .
+      |  {
+      |    SELECT ?x
+      |    WHERE {
+      |      ?x foaf:name ?name .
+      |    }
+      |  }
+      |}""".stripMargin
+
+    val parsed: Either[EngineError, (Query, Graphs)] = parse(q, config)
+    parsed
+      .flatMap { case (query, _) =>
+        val dag = DAG.fromQuery.apply(query)
+        Analyzer.analyze.apply(dag).runA(config, null)
+      }
+      .fold(
+        { error =>
+          error shouldEqual EngineError.AnalyzerError(
+            NonEmptyChain(
+              "found free variables VARIABLE(?name)"
+            )
+          )
+        },
+        _ => fail("this query should fail in the analyzer")
+      )
+  }
+
 }
