@@ -1,7 +1,5 @@
 package com.gsk.kg.engine
 package analyzer
-
-import cats.data.State
 import cats.implicits._
 import cats.{Group => _, _}
 
@@ -26,14 +24,14 @@ import com.gsk.kg.sparqlparser.StringVal.VARIABLE
   */
 object FindUnboundVariables {
 
-  type ST[A] = State[Set[VARIABLE], A]
+  type DeclaredVars = Set[VARIABLE]
+  type UnboundVars  = Set[VARIABLE]
 
   def apply[T](implicit T: Basis[DAG, T]): Rule[T] = { t =>
-    val analyze = scheme.cataM[ST, DAG, T, Set[VARIABLE]](findUnboundVariables)
+    val analyze =
+      scheme.cata[DAG, T, (DeclaredVars, UnboundVars)](findUnboundVariables)
 
-    val unbound: Set[VARIABLE] = analyze(t)
-      .runA(Set.empty)
-      .value
+    val unbound: Set[VARIABLE] = analyze(t)._2
       .filterNot(_ == VARIABLE(GRAPH_VARIABLE.s))
 
     if (unbound.nonEmpty) {
@@ -45,30 +43,24 @@ object FindUnboundVariables {
     }
   }
 
-  val findUnboundVariables: AlgebraM[ST, DAG, Set[VARIABLE]] =
-    AlgebraM[ST, DAG, Set[VARIABLE]] {
-      case Describe(vars, r) => (vars.toSet diff r).pure[ST]
-      case Ask(r)            => Set.empty[VARIABLE].pure[ST]
-      case Construct(bgp, r) =>
+  val findUnboundVariables: Algebra[DAG, (DeclaredVars, UnboundVars)] =
+    Algebra[DAG, (DeclaredVars, UnboundVars)] {
+      case Describe(vars, (declared, unbound)) =>
+        (declared, (vars.toSet diff unbound))
+      case Ask((declared, unbound)) => (declared, unbound)
+      case Construct(bgp, (declared, unbound)) =>
         val used = bgp.quads
           .flatMap(_.getVariables)
           .map(_._1.asInstanceOf[VARIABLE])
           .toSet
-        for {
-          declared <- State.get
-        } yield (used diff declared) ++ r
-      case Scan(graph, expr) =>
-        State
-          .modify[Set[VARIABLE]](x => x + VARIABLE(graph))
-          .flatMap(_ => expr.pure[ST])
-      case Project(variables, r) =>
-        for {
-          declared <- State.get
-        } yield (variables.toSet diff declared) ++ r
-      case Bind(variable, expression, r) =>
-        State
-          .modify[Set[VARIABLE]](x => x + variable)
-          .flatMap(_ => r.pure[ST])
+
+        (declared, (used diff declared) ++ unbound)
+      case Scan(graph, (declared, unbound)) =>
+        (declared + VARIABLE(graph), unbound)
+      case Project(variables, (declared, unbound)) =>
+        (variables.toSet, (variables.toSet diff declared) ++ unbound)
+      case Bind(variable, expression, (declared, unbound)) =>
+        (declared + variable, unbound)
       case BGP(triples) =>
         val vars = Traverse[ChunkedList]
           .toList(triples)
@@ -76,36 +68,33 @@ object FindUnboundVariables {
           .map(_._1.asInstanceOf[VARIABLE])
           .toSet
 
-        State
-          .modify[Set[VARIABLE]](x => x union vars)
-          .flatMap(_ => Set.empty[VARIABLE].pure[ST])
-      case LeftJoin(l, r, filters) => (l union r).pure[ST]
-      case Union(l, r)             => (l union r).pure[ST]
-      case Filter(funcs, expr) =>
+        (vars, Set.empty)
+      case LeftJoin((declaredL, unboundL), (declaredR, unboundR), filters) =>
+        (declaredL ++ declaredR, unboundL ++ unboundR)
+      case Union((declaredL, unboundL), (declaredR, unboundR)) =>
+        (declaredL ++ declaredR, unboundL ++ unboundR)
+      case Filter(funcs, (declared, unbound)) =>
         val funcsVars = funcs.toList.toSet
           .foldLeft(Set.empty[VARIABLE]) { case (acc, func) =>
             acc ++ FindVariablesOnExpression.apply[Expression](func)
           }
-        for {
-          declared <- State.get
-        } yield (funcsVars diff declared) ++ expr
-      case Join(l, r)        => (l union r).pure[ST]
-      case Offset(offset, r) => r.pure[ST]
-      case Limit(limit, r)   => r.pure[ST]
-      case Distinct(r)       => r.pure[ST]
-      case Group(vars, func, r) =>
-        for {
-          declared <- State.get
-        } yield (vars.toSet diff declared) ++ r
-      case DAG.Order(conds, r) =>
+        (declared, (funcsVars diff declared) ++ unbound)
+      case Join((declaredL, unboundL), (declaredR, unboundR)) =>
+        (declaredL ++ declaredR, unboundL ++ unboundR)
+      case Offset(offset, r) => r
+      case Limit(limit, r)   => r
+      case Distinct(r)       => r
+      case Group(vars, func, (declared, unbound)) =>
+        (declared, (vars.toSet diff declared) ++ unbound)
+      case DAG.Order(conds, (declared, unbound)) =>
         val condVars = conds.toList.toSet
           .foldLeft(Set.empty[VARIABLE]) { case (acc, cond) =>
             acc ++ FindVariablesOnExpression.apply[Expression](cond)
           }
-        for {
-          declared <- State.get
-        } yield (condVars diff declared) ++ r
-      case Noop(trace) => Set.empty[VARIABLE].pure[ST]
+
+        (declared, (condVars diff declared) ++ unbound)
+      case Noop(trace) =>
+        (Set.empty, Set.empty)
     }
 }
 
