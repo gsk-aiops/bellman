@@ -275,20 +275,23 @@ object Func {
     * @param str
     * @return
     */
-  def strends(col: Column, str: String): Column =
-    col.endsWith(str)
+  def strends(col: Column, str: String): Column = {
+    val s = str match {
+      case s if str.contains("\"@") || str.contains("\"^^") =>
+        s.stripPrefix("\"").split("\"").head
+      case s => s.stripPrefix("\"").stripSuffix("\"")
+    }
 
-  /** Implementation of SparQL STRENDS on Spark dataframes.
-    *
-    * TODO (pepegar): Implement argument compatibility checks
-    *
-    * @see [[https://www.w3.org/TR/sparql11-query/#func-strstarts]]
-    * @param col
-    * @param str
-    * @return
-    */
-  def strends(col: Column, str: String): Column =
-    col.endsWith(str)
+    when(
+      col.contains("\"@"),
+      trim(substring_index(col, "\"@", 1), "\"").endsWith(s)
+    )
+      .when(
+        col.contains("\"^^"),
+        trim(substring_index(col, "\"^^", 1), "\"").endsWith(s)
+      )
+      .otherwise(trim(col, "\"").endsWith(s))
+  }
 
   /** Implementation of SparQL STRSTARTS on Spark dataframes.
     *
