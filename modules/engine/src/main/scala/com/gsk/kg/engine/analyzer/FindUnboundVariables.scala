@@ -132,6 +132,7 @@ object FindVariablesOnExpression {
         case SAMPLE(e)                       => e
         case LCASE(e)                        => e
         case UCASE(e)                        => e
+        case ISLITERAL(e)                    => e
         case GROUP_CONCAT(e, separator)      => e
         case STRING(s)                       => Set.empty[VARIABLE]
         case DT_STRING(s, tag)               => Set.empty[VARIABLE]

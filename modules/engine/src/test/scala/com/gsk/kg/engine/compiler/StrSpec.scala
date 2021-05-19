@@ -75,5 +75,62 @@ class StrSpec
         )
       )
     }
+
+    "implement isliteral correctly" in {
+      val df = List(
+        (
+          "\"a\"",
+          "\"b\"",
+          "\"c\""
+        ),
+        (
+          "\"a\"",
+          "\"b\"",
+          "\"c\"^^xsd:string"
+        ),
+        (
+          "\"a\"",
+          "\"b\"",
+          "\"c\"@fr"
+        ),
+        (
+          "\"a\"",
+          "\"b\"",
+          "true"
+        ),
+        (
+          "\"a\"",
+          "\"b\"",
+          "3"
+        ),
+        (
+          "\"a\"",
+          "\"b\"",
+          "<http://example.com/object>"
+        )
+      ).toDF("s", "p", "o")
+
+      val query =
+        """
+          SELECT ISLITERAL(?o)
+          WHERE{
+            ?s ?p ?o
+          }
+        """
+
+      val result = Compiler.compile(df, query, config) match {
+        case Left(a)  => throw new RuntimeException(a.toString)
+        case Right(b) => b
+      }
+
+      result.collect.toSet shouldEqual Set(
+        Row("true"),
+        Row("true"),
+        Row("true"),
+        Row("false"),
+        Row("false"),
+        Row("false")
+      )
+    }
   }
 }
