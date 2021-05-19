@@ -15,8 +15,17 @@ object Func {
     * @param r
     * @return
     */
-  def equals(l: Column, r: Column): Column =
+  def equals(l: Column, r: Column): Column = {
     applyOperator(l, r)(_ === _)
+      .when(
+        isNumeric(l) && isNumeric(r), {
+          val lTyped = TypedString(l)
+          val rTyped = TypedString(r)
+          lTyped.value === rTyped.value
+        }
+      )
+      .otherwise(l === r)
+  }
 
   /** Peforms logical binary operation '>' over two columns
     * @param l
@@ -25,6 +34,14 @@ object Func {
     */
   def gt(l: Column, r: Column): Column =
     applyOperator(l, r)(_ > _)
+      .when(
+        isNumeric(l) && isNumeric(r), {
+          val lTyped = TypedString(l)
+          val rTyped = TypedString(r)
+          lTyped.value > rTyped.value
+        }
+      )
+      .otherwise(l > r)
 
   /** Performs logical binary operation '<' over two columns
     * @param l
@@ -33,6 +50,14 @@ object Func {
     */
   def lt(l: Column, r: Column): Column =
     applyOperator(l, r)(_ < _)
+      .when(
+        isNumeric(l) && isNumeric(r), {
+          val lTyped = TypedString(l)
+          val rTyped = TypedString(r)
+          lTyped.value < rTyped.value
+        }
+      )
+      .otherwise(l < r)
 
   /** Performs logical binary operation '<=' over two columns
     * @param l
@@ -41,6 +66,14 @@ object Func {
     */
   def gte(l: Column, r: Column): Column =
     applyOperator(l, r)(_ >= _)
+      .when(
+        isNumeric(l) && isNumeric(r), {
+          val lTyped = TypedString(l)
+          val rTyped = TypedString(r)
+          lTyped.value >= rTyped.value
+        }
+      )
+      .otherwise(l >= r)
 
   /** Performs logical binary operation '>=' over two columns
     * @param l
@@ -49,6 +82,14 @@ object Func {
     */
   def lte(l: Column, r: Column): Column =
     applyOperator(l, r)(_ <= _)
+      .when(
+        isNumeric(l) && isNumeric(r), {
+          val lTyped = TypedString(l)
+          val rTyped = TypedString(r)
+          lTyped.value <= rTyped.value
+        }
+      )
+      .otherwise(l <= r)
 
   /** Performs logical binary operation 'or' over two columns
     * @param l
@@ -585,7 +626,7 @@ object Func {
         parseDateFromRDFDateTime(l.cast(StringType)),
         parseDateFromRDFDateTime(r.cast(StringType))
       )
-    ).otherwise(operator(l, r))
+    )
 
   val ExtractDateTime = """^"(.*)"\^\^(.*)dateTime(.*)$"""
 

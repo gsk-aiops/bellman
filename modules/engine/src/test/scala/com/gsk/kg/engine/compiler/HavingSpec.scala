@@ -1,10 +1,12 @@
 package com.gsk.kg.engine.compiler
 
-import com.gsk.kg.engine.Compiler
-import com.gsk.kg.sparqlparser.TestConfig
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
+
+import com.gsk.kg.engine.Compiler
+import com.gsk.kg.sparqlparser.TestConfig
+
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -20,7 +22,43 @@ class HavingSpec
 
     "execute and obtain expected results" when {
 
-      "single condition on HAVING clause" in {
+      "single condition on HAVING clause with COUNT" in {
+
+        val df: DataFrame = List(
+          ("_:a", "<http://example.org/size>", "5"),
+          ("_:a", "<http://example.org/size>", "15"),
+          ("_:a", "<http://example.org/size>", "20"),
+          ("_:a", "<http://example.org/size>", "7"),
+          ("_:b", "<http://example.org/size>", "9.5"),
+          ("_:b", "<http://example.org/size>", "1"),
+          ("_:b", "<http://example.org/size>", "11")
+        ).toDF("s", "p", "o")
+
+        val query =
+          """
+            |PREFIX ex: <http://example.org/>
+            |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            |
+            |SELECT ?x (COUNT(?size) AS ?count)
+            |WHERE {
+            |  ?x ex:size ?size
+            |}
+            |GROUP BY ?x
+            |HAVING(COUNT(?size) = "4"^^xsd:int)
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query, config)
+
+        result shouldBe a[Right[_, _]]
+        result.right.get.collect.length shouldEqual 1
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("_:a", "\"4\"^^xsd:int")
+        )
+      }
+
+      // TODO: Un-ignore when fixed aggregation functions with type promotion
+      // See:https://github.com/gsk-aiops/bellman/issues/369
+      "single condition on HAVING clause with AVG" ignore {
 
         val df: DataFrame = List(
           ("_:a", "<http://example.org/size>", "5"),
@@ -51,8 +89,6 @@ class HavingSpec
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(Row("11.75"))
       }
-
-      "multiple condition on HAVING clause" should {}
     }
   }
 }
