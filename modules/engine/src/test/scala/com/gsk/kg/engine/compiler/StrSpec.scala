@@ -119,9 +119,9 @@ class StrSpec
         """
 
       val result = Compiler.compile(df, query, config) match {
-	        case Left(a) => throw new RuntimeException(a.toString)
-	        case Right(b) => b
-        }
+        case Left(a)  => throw new RuntimeException(a.toString)
+        case Right(b) => b
+      }
 
       result.collect.toSet shouldEqual Set(
         Row("true"),

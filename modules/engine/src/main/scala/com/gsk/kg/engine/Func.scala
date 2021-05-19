@@ -453,7 +453,6 @@ object Func {
       lit(true)
     ).otherwise(lit(false))
 
-
   private def formatRdfString(col: Column, sep: String)(
       f: Column => Column
   ): Column = {
