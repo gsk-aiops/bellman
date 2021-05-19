@@ -275,23 +275,8 @@ object Func {
     * @param str
     * @return
     */
-  def strends(col: Column, str: String): Column = {
-    val s = str match {
-      case s if str.contains("\"@") || str.contains("\"^^") =>
-        s.stripPrefix("\"").split("\"").head
-      case s => s.stripPrefix("\"").stripSuffix("\"")
-    }
-
-    when(
-      col.contains("\"@"),
-      trim(substring_index(col, "\"@", 1), "\"").endsWith(s)
-    )
-      .when(
-        col.contains("\"^^"),
-        trim(substring_index(col, "\"^^", 1), "\"").endsWith(s)
-      )
-      .otherwise(trim(col, "\"").endsWith(s))
-  }
+  def strends(col: Column, str: String): Column =
+    extractStringLiteral(col).endsWith(extractStringLiteral(str))
 
   /** Implementation of SparQL STRSTARTS on Spark dataframes.
     *
@@ -303,7 +288,25 @@ object Func {
     * @return
     */
   def strstarts(col: Column, str: String): Column =
-    col.startsWith(str)
+    extractStringLiteral(col).startsWith(extractStringLiteral(str))
+
+  private def extractStringLiteral(col: Column): Column =
+    when(
+      col.startsWith("\"") && col.contains("\"@"),
+      trim(substring_index(col, "\"@", 1), "\"")
+    )
+      .when(
+        col.startsWith("\"") && col.contains("\"^^"),
+        trim(substring_index(col, "\"^^", 1), "\"")
+      )
+      .otherwise(trim(col, "\""))
+
+  private def extractStringLiteral(str: String): String =
+    str match {
+      case s if str.contains("\"@") || str.contains("\"^^") =>
+        s.stripPrefix("\"").split("\"").head
+      case s => s.stripPrefix("\"").stripSuffix("\"")
+    }
 
   /** Implementation of SparQL STRDT on Spark dataframes.
     * The STRDT function constructs a literal with lexical form and type as specified by the arguments.

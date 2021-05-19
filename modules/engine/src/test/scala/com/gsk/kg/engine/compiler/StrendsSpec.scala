@@ -18,6 +18,7 @@ class StrendsSpec
   import sqlContext.implicits._
 
   /*
+  https://www.w3.org/TR/sparql11-query/#func-strends
   strEnds("foobar", "bar") -> true
   strEnds("foobar"@en, "bar"@en) -> true
   strEnds("foobar"^^xsd:string, "bar"^^xsd:string) -> true
