@@ -435,6 +435,25 @@ object Func {
   def ucase(col: Column): Column =
     applyRdfFormat(col)(upper)
 
+  /** Implementation of SparQL ISLITERAL on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-isLiteral]]
+    * @param col
+    * @return
+    */
+  def isLiteral(col: Column): Column =
+    when(
+      col.startsWith("\"") && col.contains("\"@"),
+      lit(true)
+    ).when(
+      col.startsWith("\"") && col.contains("\"^^"),
+      lit(true)
+    ).when(
+      col.startsWith("\"") && col.endsWith("\""),
+      lit(true)
+    ).otherwise(lit(false))
+
+
   private def formatRdfString(col: Column, sep: String)(
       f: Column => Column
   ): Column = {

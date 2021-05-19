@@ -269,4 +269,14 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "ISLITERAL parser" should "return ISLITERAL type" in {
+    val p =
+      fastparse.parse("""(isLiteral ?d)""", BuiltInFuncParser.isLiteralParen(_))
+    p.get.value match {
+      case ISLITERAL(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
 }
