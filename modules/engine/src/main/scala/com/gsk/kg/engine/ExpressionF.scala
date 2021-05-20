@@ -46,6 +46,7 @@ object ExpressionF {
   final case class URI[A](s: A)          extends ExpressionF[A]
   final case class LCASE[A](s: A)        extends ExpressionF[A]
   final case class UCASE[A](s: A)        extends ExpressionF[A]
+  final case class ISLITERAL[A](s: A)    extends ExpressionF[A]
   final case class CONCAT[A](appendTo: A, append: NonEmptyList[A])
       extends ExpressionF[A]
   final case class STR[A](s: A)       extends ExpressionF[A]
@@ -83,6 +84,7 @@ object ExpressionF {
       case BuiltInFunc.URI(s)       => URI(s)
       case BuiltInFunc.LCASE(s)     => LCASE(s)
       case BuiltInFunc.UCASE(s)     => UCASE(s)
+      case BuiltInFunc.ISLITERAL(s) => ISLITERAL(s)
       case BuiltInFunc.CONCAT(appendTo, append) =>
         CONCAT(appendTo, NonEmptyList.fromListUnsafe(append))
       case BuiltInFunc.STR(s)                           => STR(s)
@@ -164,6 +166,8 @@ object ExpressionF {
         BuiltInFunc.UCASE(s.asInstanceOf[StringLike])
       case LCASE(s) =>
         BuiltInFunc.LCASE(s.asInstanceOf[StringLike])
+      case ISLITERAL(s) =>
+        BuiltInFunc.ISLITERAL(s.asInstanceOf[StringLike])
       case REGEX(s, pattern, flags) =>
         BuiltInFunc.REGEX(
           s.asInstanceOf[StringLike],
@@ -271,6 +275,7 @@ object ExpressionF {
         case URI(s)                     => Func.iri(s).pure[M]
         case LCASE(s)                   => Func.lcase(s).pure[M]
         case UCASE(s)                   => Func.ucase(s).pure[M]
+        case ISLITERAL(s)               => Func.isLiteral(s).pure[M]
         case STR(s)                     => Func.str(s).pure[M]
         case ISBLANK(s)                 => Func.isBlank(s).pure[M]
         case ISNUMERIC(s)               => Func.isNumeric(s).pure[M]

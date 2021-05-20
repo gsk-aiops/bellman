@@ -140,9 +140,10 @@ object ToTree extends LowPriorityToTreeInstances0 {
             Node("STRENDS", Stream(s, Leaf(f.toString)))
           case ExpressionF.STRSTARTS(s, f) =>
             Node("STRSTARTS", Stream(s, Leaf(f.toString)))
-          case ExpressionF.URI(s)   => Node("URI", Stream(s))
-          case ExpressionF.LCASE(s) => Node("LCASE", Stream(s))
-          case ExpressionF.UCASE(s) => Node("UCASE", Stream(s))
+          case ExpressionF.URI(s)       => Node("URI", Stream(s))
+          case ExpressionF.LCASE(s)     => Node("LCASE", Stream(s))
+          case ExpressionF.UCASE(s)     => Node("UCASE", Stream(s))
+          case ExpressionF.ISLITERAL(s) => Node("ISLITERAL", Stream(s))
           case ExpressionF.CONCAT(appendTo, append) =>
             Node("CONCAT", Stream(appendTo) #::: append.toList.toStream)
           case ExpressionF.STR(s) => Node("STR", Stream(s))

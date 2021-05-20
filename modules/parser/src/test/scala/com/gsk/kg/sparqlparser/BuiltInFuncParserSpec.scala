@@ -270,11 +270,11 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     }
   }
 
-  "ISNUMERIC parser" should "return ISNUMERIC type" in {
+  "ISLITERAL parser" should "return ISLITERAL type" in {
     val p =
-      fastparse.parse("""(isNumeric ?d)""", BuiltInFuncParser.isNumericParen(_))
+      fastparse.parse("""(isLiteral ?d)""", BuiltInFuncParser.isLiteralParen(_))
     p.get.value match {
-      case ISNUMERIC(VARIABLE("?d")) =>
+      case ISLITERAL(VARIABLE("?d")) =>
         succeed
       case _ => fail
     }
