@@ -157,14 +157,15 @@ object ToTree extends LowPriorityToTreeInstances0 {
               "SUBSTR",
               Stream(s, Leaf(pos.toString), Leaf(len.toString))
             )
-          case ExpressionF.STRLEN(s)  => Node("STRLEN", Stream(s))
-          case ExpressionF.ISBLANK(s) => Node("ISBLANK", Stream(s))
-          case ExpressionF.COUNT(e)   => Node("COUNT", Stream(e))
-          case ExpressionF.SUM(e)     => Node("SUM", Stream(e))
-          case ExpressionF.MIN(e)     => Node("MIN", Stream(e))
-          case ExpressionF.MAX(e)     => Node("MAX", Stream(e))
-          case ExpressionF.AVG(e)     => Node("AVG", Stream(e))
-          case ExpressionF.SAMPLE(e)  => Node("SAMPLE", Stream(e))
+          case ExpressionF.STRLEN(s)    => Node("STRLEN", Stream(s))
+          case ExpressionF.ISBLANK(s)   => Node("ISBLANK", Stream(s))
+          case ExpressionF.ISNUMERIC(s) => Node("ISNUMERIC", Stream(s))
+          case ExpressionF.COUNT(e)     => Node("COUNT", Stream(e))
+          case ExpressionF.SUM(e)       => Node("SUM", Stream(e))
+          case ExpressionF.MIN(e)       => Node("MIN", Stream(e))
+          case ExpressionF.MAX(e)       => Node("MAX", Stream(e))
+          case ExpressionF.AVG(e)       => Node("AVG", Stream(e))
+          case ExpressionF.SAMPLE(e)    => Node("SAMPLE", Stream(e))
           case ExpressionF.GROUP_CONCAT(e, separator) =>
             Node("GROUP_CONCAT", Stream(e, separator.toTree))
           case ExpressionF.STRING(s) =>

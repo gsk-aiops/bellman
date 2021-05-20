@@ -269,4 +269,14 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "ISNUMERIC parser" should "return ISNUMERIC type" in {
+    val p =
+      fastparse.parse("""(isNumeric ?d)""", BuiltInFuncParser.isNumericParen(_))
+    p.get.value match {
+      case ISNUMERIC(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
 }

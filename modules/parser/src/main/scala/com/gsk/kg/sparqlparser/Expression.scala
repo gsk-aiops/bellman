@@ -42,8 +42,9 @@ object BuiltInFunc {
       s: Expression,
       pos: Expression,
       length: Option[Expression] = None
-  )                                       extends BuiltInFunc
-  final case class ISBLANK(s: Expression) extends BuiltInFunc
+  )                                         extends BuiltInFunc
+  final case class ISBLANK(s: Expression)   extends BuiltInFunc
+  final case class ISNUMERIC(s: Expression) extends BuiltInFunc
   final case class REPLACE(
       st: Expression,
       pattern: Expression,

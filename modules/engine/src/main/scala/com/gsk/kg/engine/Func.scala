@@ -383,6 +383,55 @@ object Func {
     */
   def uri(col: Column): Column = iri(col)
 
+  /** Implementation of SparQL ISNUMERIC on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-isNumeric]]
+    * @param col
+    * @return
+    */
+  def isNumeric(col: Column): Column =
+    /*
+      This is a bit of a trick here...any valid numeric type will return true,
+      even though the cast is to int
+     */
+    when(col.cast("int").isNotNull, lit(true))
+      .when(
+        extractType(col).isInCollection(
+          Set(
+            "xsd:int",
+            "xsd:integer",
+            "xsd:decimal",
+            "xsd:float",
+            "xsd:double",
+            "xsd:nonPositiveInteger",
+            "xsd:negativeInteger",
+            "xsd:long",
+            "xsd:short",
+            "xsd:nonNegativeInteger",
+            "xsd:unsignedLong",
+            "xsd:unsignedInt",
+            "xsd:unsignedShort",
+            "xsd:positiveInteger",
+            "<http://www.w3.org/2001/XMLSchema#int>",
+            "<http://www.w3.org/2001/XMLSchema#integer>",
+            "<http://www.w3.org/2001/XMLSchema#float>",
+            "<http://www.w3.org/2001/XMLSchema#decimal>",
+            "<http://www.w3.org/2001/XMLSchema#double>",
+            "<http://www.w3.org/2001/XMLSchema#nonPositiveInteger>",
+            "<http://www.w3.org/2001/XMLSchema#negativeInteger>",
+            "<http://www.w3.org/2001/XMLSchema#long>",
+            "<http://www.w3.org/2001/XMLSchema#short>",
+            "<http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
+            "<http://www.w3.org/2001/XMLSchema#unsignedLong>",
+            "<http://www.w3.org/2001/XMLSchema#unsignedInt>",
+            "<http://www.w3.org/2001/XMLSchema#unsignedShort>",
+            "<http://www.w3.org/2001/XMLSchema#positiveInteger>"
+          )
+        ),
+        lit(true)
+      )
+      .otherwise(lit(false))
+
   /** Concatenate two [[Column]] into a new one
     *
     * @param a
@@ -471,22 +520,6 @@ object Func {
 
   def isTypedLiteral(col: Column): Column =
     col.startsWith("\"") && col.contains("\"^^")
-
-  def isNumeric(col: Column): Column =
-    extractType(col).isInCollection(
-      Set(
-        "xsd:int",
-        "xsd:integer",
-        "xsd:decimal",
-        "xsd:float",
-        "xsd:double",
-        "<http://www.w3.org/2001/XMLSchema#int>",
-        "<http://www.w3.org/2001/XMLSchema#integer>",
-        "<http://www.w3.org/2001/XMLSchema#float>",
-        "<http://www.w3.org/2001/XMLSchema#decimal>",
-        "<http://www.w3.org/2001/XMLSchema#double>"
-      )
-    )
 
   // scalastyle:off
   def extractType(col: Column): Column =
