@@ -2,14 +2,16 @@ package com.gsk.kg.engine
 
 import cats.data.NonEmptyList
 
-import java.nio.charset.StandardCharsets
-import java.util.regex.Pattern
-import org.apache.commons.codec.binary.Hex
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
 
 import com.gsk.kg.engine.Func.StringFunctionUtils._
+
+import java.nio.charset.StandardCharsets
+import java.util.regex.Pattern
+
+import org.apache.commons.codec.binary.Hex
 
 object Func {
 
