@@ -25,6 +25,7 @@ object BuiltInFuncParser {
   def lcase[_: P]: P[Unit]     = P("lcase")
   def ucase[_: P]: P[Unit]     = P("ucase")
   def isLiteral[_: P]: P[Unit] = P("isLiteral")
+  def isNumeric[_: P]: P[Unit] = P("isNumeric")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
@@ -112,6 +113,10 @@ object BuiltInFuncParser {
     P("(" ~ isLiteral ~ ExpressionParser.parser ~ ")")
       .map(f => ISLITERAL(f))
 
+  def isNumericParen[_: P]: P[ISNUMERIC] =
+    P("(" ~ isNumeric ~ ExpressionParser.parser ~ ")")
+      .map(f => ISNUMERIC(f))
+
   def funcPatterns[_: P]: P[StringLike] =
     P(
       uriParen
@@ -133,6 +138,7 @@ object BuiltInFuncParser {
         | lcaseParen
         | ucaseParen
         | isLiteralParen
+        | isNumericParen
     )
 //      | StringValParser.string
 //      | StringValParser.variable)

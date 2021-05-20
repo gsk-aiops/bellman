@@ -1103,6 +1103,45 @@ class FuncSpec
     }
   }
 
+  "Func.isNumeric" should {
+
+    "return true when the term is numeric" in {
+      val initial = List(
+        ("\"1\"^^xsd:int", true),
+        ("\"1.1\"^^xsd:decimal", true),
+        ("\"1.1\"^^xsd:float", true),
+        ("\"1.1\"^^xsd:double", true),
+        ("1", true),
+        ("1.111111", true),
+        ("-1.111", true),
+        ("-1", true),
+        ("0.0", true),
+        ("0", true)
+      ).toDF("input", "expected")
+
+      val df = initial.withColumn("result", Func.isNumeric(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+
+    "return false when the term is not numeric" in {
+      val initial = List(
+        ("\"1200\"^^xsd:byte", false),
+        ("\"1.1\"^^xsd:something", false),
+        ("asdfsadfasdf", false),
+        ("\"1.1\"", false)
+      ).toDF("input", "expected")
+
+      val df = initial.withColumn("result", Func.isNumeric(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
   def toRDFDateTime(datetime: TemporalAccessor): String =
     "\"" + DateTimeFormatter
       .ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]")
