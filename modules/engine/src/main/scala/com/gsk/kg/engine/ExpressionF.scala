@@ -60,6 +60,7 @@ object ExpressionF {
   final case class SAMPLE[A](e: A)    extends ExpressionF[A]
   final case class GROUP_CONCAT[A](e: A, separator: String)
       extends ExpressionF[A]
+  final case class ENCODE_FOR_URI[A](s: A)                extends ExpressionF[A]
   final case class STRING[A](s: String)                   extends ExpressionF[A]
   final case class DT_STRING[A](s: String, tag: String)   extends ExpressionF[A]
   final case class LANG_STRING[A](s: String, tag: String) extends ExpressionF[A]
@@ -133,6 +134,7 @@ object ExpressionF {
       case BuiltInFunc.STRDT(s, StringVal.URIVAL(uri)) => STRDT(s, uri)
       case BuiltInFunc.ISBLANK(s)                      => ISBLANK(s)
       case BuiltInFunc.ISNUMERIC(s)                    => ISNUMERIC(s)
+      case BuiltInFunc.ENCODE_FOR_URI(s)               => ENCODE_FOR_URI(s)
       case Aggregate.COUNT(e)                          => COUNT(e)
       case Aggregate.SUM(e)                            => SUM(e)
       case Aggregate.MIN(e)                            => MIN(e)
@@ -219,9 +221,11 @@ object ExpressionF {
           by.asInstanceOf[StringLike],
           flags.asInstanceOf[StringLike]
         )
-      case STRLEN(s)                  => BuiltInFunc.STRLEN(s.asInstanceOf[StringLike])
-      case ISBLANK(s)                 => BuiltInFunc.ISBLANK(s.asInstanceOf[StringLike])
-      case ISNUMERIC(s)               => BuiltInFunc.ISNUMERIC(s.asInstanceOf[StringLike])
+      case STRLEN(s)    => BuiltInFunc.STRLEN(s.asInstanceOf[StringLike])
+      case ISBLANK(s)   => BuiltInFunc.ISBLANK(s.asInstanceOf[StringLike])
+      case ISNUMERIC(s) => BuiltInFunc.ISNUMERIC(s.asInstanceOf[StringLike])
+      case ENCODE_FOR_URI(s) =>
+        BuiltInFunc.ENCODE_FOR_URI(s.asInstanceOf[StringLike])
       case COUNT(e)                   => Aggregate.COUNT(e)
       case SUM(e)                     => Aggregate.SUM(e)
       case MIN(e)                     => Aggregate.MIN(e)
@@ -279,6 +283,7 @@ object ExpressionF {
         case STR(s)                     => Func.str(s).pure[M]
         case ISBLANK(s)                 => Func.isBlank(s).pure[M]
         case ISNUMERIC(s)               => Func.isNumeric(s).pure[M]
+        case ENCODE_FOR_URI(s)          => Func.encodeForURI(s).pure[M]
         case COUNT(e)                   => unknownFunction("COUNT")
         case SUM(e)                     => unknownFunction("SUM")
         case MIN(e)                     => unknownFunction("MIN")

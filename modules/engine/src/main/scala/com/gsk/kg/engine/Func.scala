@@ -2,6 +2,9 @@ package com.gsk.kg.engine
 
 import cats.data.NonEmptyList
 
+import java.nio.charset.StandardCharsets
+import java.util.regex.Pattern
+import org.apache.commons.codec.binary.Hex
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
@@ -89,6 +92,39 @@ object Func {
     */
   def str(value: String): Column =
     str(lit(value))
+
+  /** Implementation of SparQL ENCODE_FOR_URI on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-encode]]
+    * @param str
+    * @return
+    */
+  def encodeForURI(str: String): Column =
+    lit(encodeUri(extractStringLiteral(str)))
+
+  /** Implementation of SparQL ENCODE_FOR_URI on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-encode]]
+    * @param col
+    * @return
+    */
+  def encodeForURI(col: Column): Column = {
+    val efu = udf((str: String) => encodeUri(str))
+    efu(extractStringLiteral(col))
+  }
+
+  private def encodeUri(str: String): String =
+    str.map {
+      case c if Pattern.matches("[A-Za-z0-9~._-]", c.toString) => c.toString
+      case c =>
+        val hex =
+          Hex.encodeHexString(c.toString.getBytes(StandardCharsets.UTF_8))
+        if (hex.length > 2) {
+          hex.grouped(hex.length / 2).map("%" + _.toUpperCase).mkString
+        } else {
+          "%" + hex.toUpperCase
+        }
+    }.mkString
 
   /** Returns a column with 'true' or 'false' rows indicating whether a column has blank nodes
     * @param col

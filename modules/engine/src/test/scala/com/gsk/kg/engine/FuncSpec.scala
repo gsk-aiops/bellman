@@ -1142,6 +1142,32 @@ class FuncSpec
     }
   }
 
+  "Func.encodeForURI" should {
+
+    "return correctly encoded URI" in {
+      val initial = List(
+        ("\"Los Angeles\"^^xsd:string", "Los%20Angeles"),
+        ("\"Los Angeles\"@en", "Los%20Angeles"),
+        ("Los Angeles", "Los%20Angeles"),
+        ("~bébé", "~b%C3%A9b%C3%A9"),
+        ("100% organic", "100%25%20organic"),
+        (
+          "http://www.example.com/00/Weather/CA/Los%20Angeles#ocean",
+          "http%3A%2F%2Fwww.example.com%2F00%2FWeather%2FCA%2FLos%2520Angeles%23ocean"
+        ),
+        ("--", "--"),
+        ("asdfsd345978a4534534fdsaf", "asdfsd345978a4534534fdsaf"),
+        ("", "")
+      ).toDF("input", "expected")
+
+      val df = initial.withColumn("result", Func.encodeForURI(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
   def toRDFDateTime(datetime: TemporalAccessor): String =
     "\"" + DateTimeFormatter
       .ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]")

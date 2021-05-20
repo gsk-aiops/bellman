@@ -135,6 +135,7 @@ object FindVariablesOnExpression {
         case UCASE(e)                        => e
         case ISLITERAL(e)                    => e
         case GROUP_CONCAT(e, separator)      => e
+        case ENCODE_FOR_URI(s)               => s
         case STRING(s)                       => Set.empty[VARIABLE]
         case DT_STRING(s, tag)               => Set.empty[VARIABLE]
         case LANG_STRING(s, tag)             => Set.empty[VARIABLE]
