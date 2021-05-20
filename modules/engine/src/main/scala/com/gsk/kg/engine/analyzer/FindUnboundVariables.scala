@@ -124,6 +124,7 @@ object FindVariablesOnExpression {
         case SUBSTR(s, pos, len)             => s
         case STRLEN(s)                       => s
         case ISBLANK(s)                      => s
+        case ISNUMERIC(s)                    => s
         case COUNT(e)                        => e
         case SUM(e)                          => e
         case MIN(e)                          => e

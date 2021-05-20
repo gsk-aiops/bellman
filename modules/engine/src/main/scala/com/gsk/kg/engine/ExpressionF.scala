@@ -49,14 +49,15 @@ object ExpressionF {
   final case class ISLITERAL[A](s: A)    extends ExpressionF[A]
   final case class CONCAT[A](appendTo: A, append: NonEmptyList[A])
       extends ExpressionF[A]
-  final case class STR[A](s: A)     extends ExpressionF[A]
-  final case class ISBLANK[A](s: A) extends ExpressionF[A]
-  final case class COUNT[A](e: A)   extends ExpressionF[A]
-  final case class SUM[A](e: A)     extends ExpressionF[A]
-  final case class MIN[A](e: A)     extends ExpressionF[A]
-  final case class MAX[A](e: A)     extends ExpressionF[A]
-  final case class AVG[A](e: A)     extends ExpressionF[A]
-  final case class SAMPLE[A](e: A)  extends ExpressionF[A]
+  final case class STR[A](s: A)       extends ExpressionF[A]
+  final case class ISBLANK[A](s: A)   extends ExpressionF[A]
+  final case class ISNUMERIC[A](s: A) extends ExpressionF[A]
+  final case class COUNT[A](e: A)     extends ExpressionF[A]
+  final case class SUM[A](e: A)       extends ExpressionF[A]
+  final case class MIN[A](e: A)       extends ExpressionF[A]
+  final case class MAX[A](e: A)       extends ExpressionF[A]
+  final case class AVG[A](e: A)       extends ExpressionF[A]
+  final case class SAMPLE[A](e: A)    extends ExpressionF[A]
   final case class GROUP_CONCAT[A](e: A, separator: String)
       extends ExpressionF[A]
   final case class STRING[A](s: String)                   extends ExpressionF[A]
@@ -131,6 +132,7 @@ object ExpressionF {
         STRSTARTS(s, StringVal.DT_STRING.toString(t))
       case BuiltInFunc.STRDT(s, StringVal.URIVAL(uri)) => STRDT(s, uri)
       case BuiltInFunc.ISBLANK(s)                      => ISBLANK(s)
+      case BuiltInFunc.ISNUMERIC(s)                    => ISNUMERIC(s)
       case Aggregate.COUNT(e)                          => COUNT(e)
       case Aggregate.SUM(e)                            => SUM(e)
       case Aggregate.MIN(e)                            => MIN(e)
@@ -219,6 +221,7 @@ object ExpressionF {
         )
       case STRLEN(s)                  => BuiltInFunc.STRLEN(s.asInstanceOf[StringLike])
       case ISBLANK(s)                 => BuiltInFunc.ISBLANK(s.asInstanceOf[StringLike])
+      case ISNUMERIC(s)               => BuiltInFunc.ISNUMERIC(s.asInstanceOf[StringLike])
       case COUNT(e)                   => Aggregate.COUNT(e)
       case SUM(e)                     => Aggregate.SUM(e)
       case MIN(e)                     => Aggregate.MIN(e)
@@ -275,6 +278,7 @@ object ExpressionF {
         case ISLITERAL(s)               => Func.isLiteral(s).pure[M]
         case STR(s)                     => Func.str(s).pure[M]
         case ISBLANK(s)                 => Func.isBlank(s).pure[M]
+        case ISNUMERIC(s)               => Func.isNumeric(s).pure[M]
         case COUNT(e)                   => unknownFunction("COUNT")
         case SUM(e)                     => unknownFunction("SUM")
         case MIN(e)                     => unknownFunction("MIN")
