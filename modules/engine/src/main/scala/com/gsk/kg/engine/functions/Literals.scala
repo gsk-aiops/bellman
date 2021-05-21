@@ -5,6 +5,10 @@ import org.apache.spark.sql.functions.{concat => cc, _}
 
 object Literals {
 
+  // scalastyle:off
+  val nullLiteral = lit(null)
+  // scalastyle:on
+
   sealed trait Literal {
     def value: Column
     def tag: Column
@@ -21,6 +25,12 @@ object Literals {
       )
     }
   }
+
+  def isNumericLiteral(col: Column): Column =
+    isIntNumericLiteral(col) ||
+      isDecimalNumericLiteral(col) ||
+      isFloatNumericLiteral(col) ||
+      isDoubleNumericLiteral(col)
 
   def isIntNumericLiteral(col: Column): Column = {
     val typed = TypedLiteral(col)

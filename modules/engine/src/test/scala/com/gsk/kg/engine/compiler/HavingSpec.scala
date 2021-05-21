@@ -44,7 +44,7 @@ class HavingSpec
             |  ?x ex:size ?size
             |}
             |GROUP BY ?x
-            |HAVING(COUNT(?size) = "4"^^xsd:int)
+            |HAVING(COUNT(?size) = 4)
             |""".stripMargin
 
         val result = Compiler.compile(df, query, config)
@@ -52,13 +52,11 @@ class HavingSpec
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("_:a", "\"4\"^^xsd:int")
+          Row("_:a", "4")
         )
       }
 
-      // TODO: Un-ignore when fixed aggregation functions with type promotion
-      // See:https://github.com/gsk-aiops/bellman/issues/369
-      "single condition on HAVING clause with AVG" ignore {
+      "single condition on HAVING clause with AVG" in {
 
         val df: DataFrame = List(
           ("_:a", "<http://example.org/size>", "5"),

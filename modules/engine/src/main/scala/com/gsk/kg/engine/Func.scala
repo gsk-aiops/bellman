@@ -480,17 +480,6 @@ object Func {
     )
   }
 
-  /** Sample is a set function which returns an arbitrary value from
-    * the multiset passed to it.
-    *
-    * Implemented using [[org.apache.spark.sql.functions.first]].
-    *
-    * @param col
-    * @return
-    */
-  def sample(col: Column): Column =
-    first(col, true)
-
   /** Implementation of SparQL LCASE on Spark dataframes.
     *
     * @see [[https://www.w3.org/TR/sparql11-query/#func-lcase]]
@@ -555,13 +544,9 @@ object Func {
     ).otherwise(f(trim(col, "\"")))
   }
 
-  def groupConcat(col: Column, separator: String): Column =
-    ???
-
   def isTypedLiteral(col: Column): Column =
     col.startsWith("\"") && col.contains("\"^^")
 
-  // scalastyle:off
   def extractType(col: Column): Column =
     when(
       isTypedLiteral(col), {
@@ -569,11 +554,10 @@ object Func {
         when(substring_index(col, del, -1) === del, lit(""))
           .otherwise(substring_index(col, del, -1))
       }
-    ).otherwise(lit(null))
+    ).otherwise(nullLiteral)
 
   def extractNumber(col: Column): Column =
-    extractNumberImpl(col, lit(null))
-  // scalastyle:on
+    extractNumberImpl(col, nullLiteral)
 
   def tryExtractNumber(col: Column): Column =
     extractNumberImpl(col, col)
@@ -595,7 +579,7 @@ object Func {
     when(
       regexp_extract(col, ExtractDateTime, 1) =!= lit(""),
       to_timestamp(regexp_extract(col, ExtractDateTime, 1))
-    ).otherwise(lit(null)) // scalastyle:off
+    ).otherwise(nullLiteral)
 
   private def applyDateTimeLiteral(l: Column, r: Column)(
       operator: (Column, Column) => Column
@@ -714,7 +698,6 @@ object Func {
     def isLocalizedPlainArgs(arg1: Column): Column =
       RdfFormatter.isLocalizedString(arg1)
 
-    // scalastyle:off
     def strFuncArgsLocalizedLocalized(
         col: Column,
         str: String,
@@ -726,12 +709,11 @@ object Func {
       val right = LocalizedLiteral(str)
       when(
         left.tag =!= right.tag,
-        lit(null)
+        nullLiteral
       ).otherwise(
         LocalizedLiteral.formatLocalized(left, str, localizedFormat)(f)
       )
     }
-    // scalastyle:on
 
     def strFuncArgsLocalizedPlain(
         col: Column,
@@ -744,7 +726,6 @@ object Func {
       LocalizedLiteral.formatLocalized(left, str, localizedFormat)(f)
     }
 
-    // scalastyle:off
     def strFuncArgsTypedTyped(col: Column, str: String, typedFormat: String)(
         f: (Column, String) => Column
     ): Column = {
@@ -752,12 +733,11 @@ object Func {
       val right = TypedLiteral(str)
       when(
         left.tag =!= right.tag,
-        lit(null)
+        nullLiteral
       ).otherwise(
         TypedLiteral.formatTyped(left, str, typedFormat)(f)
       )
     }
-    // scalastyle:off
 
     def strFuncArgsTypedPlain(col: Column, str: String, typedFormat: String)(
         f: (Column, String) => Column
