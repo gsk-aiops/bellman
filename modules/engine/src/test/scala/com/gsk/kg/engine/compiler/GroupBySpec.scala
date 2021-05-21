@@ -71,45 +71,47 @@ class GroupBySpec
       val df = List(
         (
           "<http://uri.com/subject/a1>",
-          "<http://uri.com/predicate>",
-          "<http://uri.com/object>"
+          "<http://uri.com/predicate/p1>",
+          "<http://uri.com/object/o1>"
         ),
         (
           "<http://uri.com/subject/a1>",
-          "<http://uri.com/predicate>",
-          "<http://uri.com/object>"
+          "<http://uri.com/predicate/p2>",
+          "<http://uri.com/object/o1>"
         ),
         (
           "<http://uri.com/subject/a2>",
-          "<http://uri.com/predicate>",
-          "<http://uri.com/object>"
+          "<http://uri.com/predicate/p3>",
+          "<http://uri.com/object/o1>"
         ),
         (
           "<http://uri.com/subject/a2>",
-          "<http://uri.com/predicate>",
-          "<http://uri.com/object>"
+          "<http://uri.com/predicate/p4>",
+          "<http://uri.com/object/o1>"
         ),
         (
           "<http://uri.com/subject/a3>",
-          "<http://uri.com/predicate>",
-          "<http://uri.com/object>"
+          "<http://uri.com/predicate/p5>",
+          "<http://uri.com/object/o1>"
         )
       ).toDF("s", "p", "o")
 
       val query =
         """
-          SELECT ?a COUNT(?a)
-          WHERE {
-            ?a <http://uri.com/predicate> <http://uri.com/object>
-          } GROUP BY ?a
-          """
+          |PREFIX obj: <http://uri.com/object/>
+          |
+          |SELECT ?a COUNT(?a)
+          |WHERE {
+          | ?a ?p obj:o1
+          |} GROUP BY ?a
+          |""".stripMargin
 
       val result = Compiler.compile(df, query, config)
 
       result.right.get.collect.toSet shouldEqual Set(
-        Row("<http://uri.com/subject/a1>", "\"2\"^^xsd:int"),
-        Row("<http://uri.com/subject/a2>", "\"2\"^^xsd:int"),
-        Row("<http://uri.com/subject/a3>", "\"1\"^^xsd:int")
+        Row("<http://uri.com/subject/a1>", "2"),
+        Row("<http://uri.com/subject/a2>", "2"),
+        Row("<http://uri.com/subject/a3>", "1")
       )
     }
 
@@ -123,22 +125,22 @@ class GroupBySpec
         ),
         (
           "<http://uri.com/subject/a1>",
-          "\"2\"^^xsd:int",
+          "\"2.0\"^^xsd:float",
           "<http://uri.com/object>"
         ),
         (
           "<http://uri.com/subject/a2>",
-          "\"3\"^^xsd:int",
+          "3",
           "<http://uri.com/object>"
         ),
         (
           "<http://uri.com/subject/a2>",
-          "\"4\"^^xsd:int",
+          "\"4\"^^xsd:decimal",
           "<http://uri.com/object>"
         ),
         (
           "<http://uri.com/subject/a3>",
-          "\"5\"^^xsd:int",
+          "\"5.0\"^^xsd:double",
           "<http://uri.com/object>"
         )
       ).toDF("s", "p", "o")
@@ -154,9 +156,9 @@ class GroupBySpec
       val result = Compiler.compile(df, query, config)
 
       result.right.get.collect.toSet shouldEqual Set(
-        Row("<http://uri.com/subject/a1>", "\"1.5\"^^xsd:double"),
-        Row("<http://uri.com/subject/a2>", "\"3.5\"^^xsd:double"),
-        Row("<http://uri.com/subject/a3>", "\"5.0\"^^xsd:double")
+        Row("<http://uri.com/subject/a1>", "1.5"),
+        Row("<http://uri.com/subject/a2>", "3.5"),
+        Row("<http://uri.com/subject/a3>", "5.0")
       )
     }
 
@@ -382,11 +384,7 @@ class GroupBySpec
 
     "not work for non RDF literal values" in {
       val df = List(
-        ("<http://uri.com/subject/a1>", "2", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a1>", "1", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a2>", "2", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a2>", "1", "<http://uri.com/object>"),
-        ("<http://uri.com/subject/a3>", "1", "<http://uri.com/object>")
+        ("<http://uri.com/subject/a1>", "hi", "<http://uri.com/object>")
       ).toDF("s", "p", "o")
 
       val query =
@@ -400,9 +398,7 @@ class GroupBySpec
       val result = Compiler.compile(df, query, config)
 
       result.right.get.collect.toSet shouldEqual Set(
-        Row("<http://uri.com/subject/a1>", null),
-        Row("<http://uri.com/subject/a2>", null),
-        Row("<http://uri.com/subject/a3>", null)
+        Row("<http://uri.com/subject/a1>", null)
       )
     }
 
@@ -411,27 +407,27 @@ class GroupBySpec
       val df = List(
         (
           "<http://uri.com/subject/a1>",
-          "\"2\"^^xsd:float",
+          "2",
           "<http://uri.com/object>"
         ),
         (
           "<http://uri.com/subject/a1>",
-          "\"1\"^^xsd:float",
+          "\"1.0\"^^xsd:float",
           "<http://uri.com/object>"
         ),
         (
           "<http://uri.com/subject/a2>",
-          "\"2\"^^xsd:float",
+          "\"2\"^^xsd:decimal",
           "<http://uri.com/object>"
         ),
         (
           "<http://uri.com/subject/a2>",
-          "\"1\"^^xsd:float",
+          "\"1.0\"^^xsd:double",
           "<http://uri.com/object>"
         ),
         (
           "<http://uri.com/subject/a3>",
-          "\"1\"^^xsd:float",
+          "\"1\"^^xsd:numeric",
           "<http://uri.com/object>"
         )
       ).toDF("s", "p", "o")
@@ -447,9 +443,9 @@ class GroupBySpec
       val result = Compiler.compile(df, query, config)
 
       result.right.get.collect.toSet shouldEqual Set(
-        Row("<http://uri.com/subject/a1>", "\"3.0\"^^xsd:double"),
-        Row("<http://uri.com/subject/a2>", "\"3.0\"^^xsd:double"),
-        Row("<http://uri.com/subject/a3>", "\"1.0\"^^xsd:double")
+        Row("<http://uri.com/subject/a1>", "3.0"),
+        Row("<http://uri.com/subject/a2>", "3.0"),
+        Row("<http://uri.com/subject/a3>", "1.0")
       )
     }
 
@@ -458,7 +454,7 @@ class GroupBySpec
       val df = List(
         (
           "<http://uri.com/subject/a1>",
-          "\"2\"^^xsd:float",
+          "\"2\"^^xsd:int",
           "<http://uri.com/object>"
         ),
         (
@@ -468,17 +464,17 @@ class GroupBySpec
         ),
         (
           "<http://uri.com/subject/a2>",
-          "\"2\"^^xsd:float",
+          "\"2.0\"^^xsd:float",
           "<http://uri.com/object>"
         ),
         (
           "<http://uri.com/subject/a2>",
-          "\"1\"^^xsd:float",
+          "1",
           "<http://uri.com/object>"
         ),
         (
           "<http://uri.com/subject/a3>",
-          "\"1.5\"^^xsd:float",
+          "\"1.5\"^^xsd:numeric",
           "<http://uri.com/object>"
         )
       ).toDF("s", "p", "o")
@@ -494,9 +490,9 @@ class GroupBySpec
       val result = Compiler.compile(df, query, config)
 
       result.right.get.collect.toSet shouldEqual Set(
-        Row("<http://uri.com/subject/a1>", "\"1.5\"^^xsd:double"),
-        Row("<http://uri.com/subject/a2>", "\"1.5\"^^xsd:double"),
-        Row("<http://uri.com/subject/a3>", "\"1.5\"^^xsd:double")
+        Row("<http://uri.com/subject/a1>", "1.5"),
+        Row("<http://uri.com/subject/a2>", "1.5"),
+        Row("<http://uri.com/subject/a3>", "1.5")
       )
     }
 
@@ -584,7 +580,7 @@ class GroupBySpec
       val result = Compiler.compile(df, query, config)
 
       result.right.get.collect.toSet shouldEqual Set(
-        Row("\"5\"^^xsd:int")
+        Row("5")
       )
     }
   }

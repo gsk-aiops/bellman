@@ -4,7 +4,7 @@ import cats.syntax.list._
 
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.functions._
 
 import com.gsk.kg.engine.scalacheck.CommonGenerators
 
@@ -661,6 +661,257 @@ class FuncSpec
   }
 
   "Func.equals" should {
+
+    "operates on numbers correctly" when {
+
+      "first argument is not typed number and second is other number type" in {
+        val plainNumberCorrectCases = List(
+          ("1", "1", true),
+          ("1", "\"1\"^^xsd:int", true),
+          ("1", "\"1\"^^xsd:integer", true),
+          ("1", "\"1\"^^xsd:decimal", true),
+          ("1.23", "\"1.23\"^^xsd:float", true),
+          ("1.23", "\"1.23\"^^xsd:double", true),
+          ("1.23", "\"1.23\"^^xsd:numeric", true)
+        )
+
+        val plainNumberWrongCases = List(
+          ("1", "2", false),
+          ("1", "\"2\"^^xsd:int", false),
+          ("1", "\"2\"^^xsd:integer", false),
+          ("1", "\"0\"^^xsd:decimal", false),
+          ("1.23", "\"1.1\"^^xsd:float", false),
+          ("1.23", "\"1.1\"^^xsd:double", false),
+          ("1.23", "\"1.1\"^^xsd:numeric", false)
+        )
+
+        val df = (plainNumberCorrectCases ++ plainNumberWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.equals(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is INT type number and second is other number type" in {
+
+        val intCorrectCases = List(
+          ("\"1\"^^xsd:int", "1", true),
+          ("\"1\"^^xsd:int", "1.0", true),
+          ("\"1\"^^xsd:int", "\"1\"^^xsd:int", true),
+          ("\"1\"^^xsd:int", "\"1\"^^xsd:integer", true),
+          ("\"1\"^^xsd:int", "\"1\"^^xsd:decimal", true),
+          ("\"1\"^^xsd:int", "\"1.0\"^^xsd:float", true),
+          ("\"1\"^^xsd:int", "\"1.0\"^^xsd:double", true),
+          ("\"1\"^^xsd:int", "\"1.0\"^^xsd:numeric", true)
+        )
+
+        val intWrongCases = List(
+          ("\"1\"^^xsd:int", "2", false),
+          ("\"1\"^^xsd:int", "1.1", false),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:int", false),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:integer", false),
+          ("\"1\"^^xsd:int", "\"0\"^^xsd:decimal", false),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:float", false),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:double", false),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:numeric", false)
+        )
+
+        val df = (intCorrectCases ++ intWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.equals(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is INTEGER type number and second is other number type" in {
+
+        val integerCorrectCases = List(
+          ("\"1\"^^xsd:integer", "1", true),
+          ("\"1\"^^xsd:integer", "1.0", true),
+          ("\"1\"^^xsd:integer", "\"1\"^^xsd:int", true),
+          ("\"1\"^^xsd:integer", "\"1\"^^xsd:integer", true),
+          ("\"1\"^^xsd:integer", "\"1\"^^xsd:decimal", true),
+          ("\"1\"^^xsd:integer", "\"1.0\"^^xsd:float", true),
+          ("\"1\"^^xsd:integer", "\"1.0\"^^xsd:double", true),
+          ("\"1\"^^xsd:integer", "\"1.0\"^^xsd:numeric", true)
+        )
+
+        val integerWrongCases = List(
+          ("\"1\"^^xsd:integer", "2", false),
+          ("\"1\"^^xsd:integer", "1.1", false),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:int", false),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:integer", false),
+          ("\"1\"^^xsd:integer", "\"0\"^^xsd:decimal", false),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:float", false),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:double", false),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:numeric", false)
+        )
+
+        val df = (integerCorrectCases ++ integerWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.equals(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is DECIMAL type number and second is other number type" in {
+
+        val decimalCorrectCases = List(
+          ("\"1\"^^xsd:decimal", "1", true),
+          ("\"1\"^^xsd:decimal", "1.0", true),
+          ("\"1\"^^xsd:decimal", "\"1\"^^xsd:int", true),
+          ("\"1\"^^xsd:decimal", "\"1\"^^xsd:integer", true),
+          ("\"1\"^^xsd:decimal", "\"1\"^^xsd:decimal", true),
+          ("\"1\"^^xsd:decimal", "\"1.0\"^^xsd:float", true),
+          ("\"1\"^^xsd:decimal", "\"1.0\"^^xsd:double", true),
+          ("\"1\"^^xsd:decimal", "\"1.0\"^^xsd:numeric", true)
+        )
+
+        val decimalWrongCases = List(
+          ("\"1\"^^xsd:decimal", "2", false),
+          ("\"1\"^^xsd:decimal", "1.1", false),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:int", false),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:integer", false),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:decimal", false),
+          ("\"1\"^^xsd:decimal", "\"1.24\"^^xsd:float", false),
+          ("\"1\"^^xsd:decimal", "\"1.24\"^^xsd:double", false),
+          ("\"1\"^^xsd:decimal", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (decimalCorrectCases ++ decimalWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.equals(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is FLOAT type number and second is other number type" in {
+
+        val floatCorrectCases = List(
+          ("\"1.23\"^^xsd:float", "1.23", true),
+          ("\"1.0\"^^xsd:float", "\"1\"^^xsd:int", true),
+          ("\"1.0\"^^xsd:float", "\"1\"^^xsd:integer", true),
+          ("\"1.0\"^^xsd:float", "\"1\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:float", "\"1.23\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:float", "\"1.23\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:float", "\"1.23\"^^xsd:numeric", true)
+        )
+
+        val floatWrongCases = List(
+          ("\"1.23\"^^xsd:float", "1.24", false),
+          ("\"1.23\"^^xsd:float", "\"1\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:float", "\"1\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:float", "\"1\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (floatCorrectCases ++ floatWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.equals(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is DOUBLE type number and second is other number type" in {
+
+        val doubleCorrectCases = List(
+          ("\"1.23\"^^xsd:double", "1.23", true),
+          ("\"1.0\"^^xsd:double", "\"1\"^^xsd:int", true),
+          ("\"1.0\"^^xsd:double", "\"1\"^^xsd:integer", true),
+          ("\"1.23\"^^xsd:double", "\"1.23\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:double", "\"1.23\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:double", "\"1.23\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:double", "\"1.23\"^^xsd:numeric", true)
+        )
+
+        val doubleWrongCases = List(
+          ("\"1.23\"^^xsd:double", "1.24", false),
+          ("\"1.23\"^^xsd:double", "\"1\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:double", "\"1\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (doubleCorrectCases ++ doubleWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.equals(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is NUMERIC type number and second is other number type" in {
+
+        val numericCorrectCases = List(
+          ("\"1.23\"^^xsd:numeric", "1.23", true),
+          ("\"1.0\"^^xsd:numeric", "\"1\"^^xsd:int", true),
+          ("\"1.0\"^^xsd:numeric", "\"1\"^^xsd:integer", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.23\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.23\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.23\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.23\"^^xsd:numeric", true)
+        )
+
+        val numericWrongCases = List(
+          ("\"1.23\"^^xsd:numeric", "1.24", false),
+          ("\"1.23\"^^xsd:numeric", "\"1\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:numeric", "\"1\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (numericCorrectCases ++ numericWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.equals(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+    }
+
     "operate on equal dates correctly" in {
 
       forAll { datetime: LocalDateTime =>
@@ -694,24 +945,258 @@ class FuncSpec
     }
   }
 
-  "Func.parseDAteFromRDFDateTime" should {
-    "work for all types of dates specified by RDF spec" in {
-
-      val df = List(
-        """"2001-10-26T21:32:52"^^xsd:dateTime""",
-        """"2001-10-26T21:32:52+02:00"^^xsd:dateTime""",
-        """"2001-10-26T19:32:52Z"^^xsd:dateTime""",
-        """"2001-10-26T19:32:52+00:00"^^xsd:dateTime""",
-        """"2001-10-26T21:32:52.12679"^^xsd:dateTime"""
-      ).toDF("date")
-
-      df.select(Func.parseDateFromRDFDateTime(df("date")))
-        .collect()
-        .map(_.get(0)) shouldNot contain(null)
-    }
-  }
-
   "Func.gt" should {
+
+    "operates on numbers correctly" when {
+
+      "first argument is not typed number and second is other number type" in {
+        val plainNumberCorrectCases = List(
+          ("2", "1", true),
+          ("2", "\"1\"^^xsd:int", true),
+          ("2", "\"1\"^^xsd:integer", true),
+          ("2", "\"1\"^^xsd:decimal", true),
+          ("1.24", "\"1.23\"^^xsd:float", true),
+          ("1.24", "\"1.23\"^^xsd:double", true),
+          ("1.24", "\"1.23\"^^xsd:numeric", true)
+        )
+
+        val plainNumberWrongCases = List(
+          ("1", "2", false),
+          ("1", "\"2\"^^xsd:int", false),
+          ("1", "\"2\"^^xsd:integer", false),
+          ("1", "\"2\"^^xsd:decimal", false),
+          ("1.23", "\"1.24\"^^xsd:float", false),
+          ("1.23", "\"1.24\"^^xsd:double", false),
+          ("1.23", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (plainNumberCorrectCases ++ plainNumberWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.gt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is INT type number and second is other number type" in {
+
+        val intCorrectCases = List(
+          ("\"2\"^^xsd:int", "1", true),
+          ("\"2\"^^xsd:int", "1.0", true),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:int", true),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:integer", true),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:decimal", true),
+          ("\"2\"^^xsd:int", "\"1.0\"^^xsd:float", true),
+          ("\"2\"^^xsd:int", "\"1.0\"^^xsd:double", true),
+          ("\"2\"^^xsd:int", "\"1.0\"^^xsd:numeric", true)
+        )
+
+        val intWrongCases = List(
+          ("\"1\"^^xsd:int", "2", false),
+          ("\"1\"^^xsd:int", "1.1", false),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:int", false),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:integer", false),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:decimal", false),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:float", false),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:double", false),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:numeric", false)
+        )
+
+        val df = (intCorrectCases ++ intWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.gt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is INTEGER type number and second is other number type" in {
+
+        val integerCorrectCases = List(
+          ("\"2\"^^xsd:integer", "1", true),
+          ("\"2\"^^xsd:integer", "1.0", true),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:int", true),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:integer", true),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:decimal", true),
+          ("\"2\"^^xsd:integer", "\"1.0\"^^xsd:float", true),
+          ("\"2\"^^xsd:integer", "\"1.0\"^^xsd:double", true),
+          ("\"2\"^^xsd:integer", "\"1.0\"^^xsd:numeric", true)
+        )
+
+        val integerWrongCases = List(
+          ("\"1\"^^xsd:integer", "2", false),
+          ("\"1\"^^xsd:integer", "1.1", false),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:int", false),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:integer", false),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:decimal", false),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:float", false),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:double", false),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:numeric", false)
+        )
+
+        val df = (integerCorrectCases ++ integerWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.gt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is DECIMAL type number and second is other number type" in {
+
+        val decimalCorrectCases = List(
+          ("\"2\"^^xsd:decimal", "1", true),
+          ("\"2\"^^xsd:decimal", "1.0", true),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:int", true),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:integer", true),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:decimal", true),
+          ("\"2\"^^xsd:decimal", "\"1.0\"^^xsd:float", true),
+          ("\"2\"^^xsd:decimal", "\"1.0\"^^xsd:double", true),
+          ("\"2\"^^xsd:decimal", "\"1.0\"^^xsd:numeric", true)
+        )
+
+        val decimalWrongCases = List(
+          ("\"1\"^^xsd:decimal", "2", false),
+          ("\"1\"^^xsd:decimal", "1.1", false),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:int", false),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:integer", false),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:decimal", false),
+          ("\"1\"^^xsd:decimal", "\"1.24\"^^xsd:float", false),
+          ("\"1\"^^xsd:decimal", "\"1.24\"^^xsd:double", false),
+          ("\"1\"^^xsd:decimal", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (decimalCorrectCases ++ decimalWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.gt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is FLOAT type number and second is other number type" in {
+
+        val floatCorrectCases = List(
+          ("\"1.23\"^^xsd:float", "1.22", true),
+          ("\"1.1\"^^xsd:float", "\"1\"^^xsd:int", true),
+          ("\"1.1\"^^xsd:float", "\"1\"^^xsd:integer", true),
+          ("\"1.1\"^^xsd:float", "\"1\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:float", "\"1.22\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:float", "\"1.22\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:float", "\"1.22\"^^xsd:numeric", true)
+        )
+
+        val floatWrongCases = List(
+          ("\"1.23\"^^xsd:float", "1.24", false),
+          ("\"1.23\"^^xsd:float", "\"2\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:float", "\"2\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:float", "\"2\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (floatCorrectCases ++ floatWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.gt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is DOUBLE type number and second is other number type" in {
+
+        val doubleCorrectCases = List(
+          ("\"1.23\"^^xsd:double", "1.22", true),
+          ("\"1.1\"^^xsd:double", "\"1\"^^xsd:int", true),
+          ("\"1.1\"^^xsd:double", "\"1\"^^xsd:integer", true),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:numeric", true)
+        )
+
+        val doubleWrongCases = List(
+          ("\"1.23\"^^xsd:double", "1.24", false),
+          ("\"1.23\"^^xsd:double", "\"2\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:double", "\"2\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (doubleCorrectCases ++ doubleWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.gt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is NUMERIC type number and second is other number type" in {
+
+        val numericCorrectCases = List(
+          ("\"1.23\"^^xsd:numeric", "1.22", true),
+          ("\"1.23\"^^xsd:numeric", "\"1\"^^xsd:int", true),
+          ("\"1.23\"^^xsd:numeric", "\"1\"^^xsd:integer", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:numeric", true)
+        )
+
+        val numericWrongCases = List(
+          ("\"1.23\"^^xsd:numeric", "1.24", false),
+          ("\"1.23\"^^xsd:numeric", "\"2\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:numeric", "\"2\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (numericCorrectCases ++ numericWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.gt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+    }
+
     "work for integer values" in {
 
       val df = List(
@@ -759,6 +1244,257 @@ class FuncSpec
   }
 
   "Func.lt" should {
+
+    "operates on numbers correctly" when {
+
+      "first argument is not typed number and second is other number type" in {
+        val plainNumberCorrectCases = List(
+          ("1", "2", true),
+          ("1", "\"2\"^^xsd:int", true),
+          ("1", "\"2\"^^xsd:integer", true),
+          ("1", "\"2\"^^xsd:decimal", true),
+          ("1.23", "\"1.24\"^^xsd:float", true),
+          ("1.23", "\"1.24\"^^xsd:double", true),
+          ("1.23", "\"1.24\"^^xsd:numeric", true)
+        )
+
+        val plainNumberWrongCases = List(
+          ("2", "1", false),
+          ("2", "\"1\"^^xsd:int", false),
+          ("2", "\"1\"^^xsd:integer", false),
+          ("2", "\"1\"^^xsd:decimal", false),
+          ("1.24", "\"1.23\"^^xsd:float", false),
+          ("1.24", "\"1.23\"^^xsd:double", false),
+          ("1.24", "\"1.23\"^^xsd:numeric", false)
+        )
+
+        val df = (plainNumberCorrectCases ++ plainNumberWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.lt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is INT type number and second is other number type" in {
+
+        val intCorrectCases = List(
+          ("\"1\"^^xsd:int", "2", true),
+          ("\"1\"^^xsd:int", "1.1", true),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:int", true),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:integer", true),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:decimal", true),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:float", true),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:double", true),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:numeric", true)
+        )
+
+        val intWrongCases = List(
+          ("\"2\"^^xsd:int", "1", false),
+          ("\"2\"^^xsd:int", "1.1", false),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:int", false),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:integer", false),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:decimal", false),
+          ("\"2\"^^xsd:int", "\"1.1\"^^xsd:float", false),
+          ("\"2\"^^xsd:int", "\"1.1\"^^xsd:double", false),
+          ("\"2\"^^xsd:int", "\"1.1\"^^xsd:numeric", false)
+        )
+
+        val df = (intCorrectCases ++ intWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.lt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is INTEGER type number and second is other number type" in {
+
+        val integerCorrectCases = List(
+          ("\"1\"^^xsd:integer", "2", true),
+          ("\"1\"^^xsd:integer", "1.1", true),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:int", true),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:integer", true),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:decimal", true),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:float", true),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:double", true),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:numeric", true)
+        )
+
+        val integerWrongCases = List(
+          ("\"2\"^^xsd:integer", "1", false),
+          ("\"2\"^^xsd:integer", "1.1", false),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:int", false),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:integer", false),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:decimal", false),
+          ("\"2\"^^xsd:integer", "\"1.1\"^^xsd:float", false),
+          ("\"2\"^^xsd:integer", "\"1.1\"^^xsd:double", false),
+          ("\"2\"^^xsd:integer", "\"1.1\"^^xsd:numeric", false)
+        )
+
+        val df = (integerCorrectCases ++ integerWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.lt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is DECIMAL type number and second is other number type" in {
+
+        val decimalCorrectCases = List(
+          ("\"1\"^^xsd:decimal", "2", true),
+          ("\"1\"^^xsd:decimal", "1.1", true),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:int", true),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:integer", true),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:decimal", true),
+          ("\"1\"^^xsd:decimal", "\"1.1\"^^xsd:float", true),
+          ("\"1\"^^xsd:decimal", "\"1.1\"^^xsd:double", true),
+          ("\"1\"^^xsd:decimal", "\"1.1\"^^xsd:numeric", true)
+        )
+
+        val decimalWrongCases = List(
+          ("\"2\"^^xsd:decimal", "1", false),
+          ("\"2\"^^xsd:decimal", "1.1", false),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:int", false),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:integer", false),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:decimal", false),
+          ("\"2\"^^xsd:decimal", "\"1.24\"^^xsd:float", false),
+          ("\"2\"^^xsd:decimal", "\"1.24\"^^xsd:double", false),
+          ("\"2\"^^xsd:decimal", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (decimalCorrectCases ++ decimalWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.lt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is FLOAT type number and second is other number type" in {
+
+        val floatCorrectCases = List(
+          ("\"1.23\"^^xsd:float", "1.24", true),
+          ("\"1.1\"^^xsd:float", "\"2\"^^xsd:int", true),
+          ("\"1.1\"^^xsd:float", "\"2\"^^xsd:integer", true),
+          ("\"1.1\"^^xsd:float", "\"2\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:numeric", true)
+        )
+
+        val floatWrongCases = List(
+          ("\"1.24\"^^xsd:float", "1.23", false),
+          ("\"1.24\"^^xsd:float", "\"1\"^^xsd:int", false),
+          ("\"1.24\"^^xsd:float", "\"1\"^^xsd:integer", false),
+          ("\"1.24\"^^xsd:float", "\"1\"^^xsd:decimal", false),
+          ("\"1.24\"^^xsd:float", "\"1.23\"^^xsd:float", false),
+          ("\"1.24\"^^xsd:float", "\"1.23\"^^xsd:double", false),
+          ("\"1.24\"^^xsd:float", "\"1.23\"^^xsd:numeric", false)
+        )
+
+        val df = (floatCorrectCases ++ floatWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.lt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is DOUBLE type number and second is other number type" in {
+
+        val doubleCorrectCases = List(
+          ("\"1.23\"^^xsd:double", "1.24", true),
+          ("\"1.1\"^^xsd:double", "\"2\"^^xsd:int", true),
+          ("\"1.1\"^^xsd:double", "\"2\"^^xsd:integer", true),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:numeric", true)
+        )
+
+        val doubleWrongCases = List(
+          ("\"1.23\"^^xsd:double", "1.22", false),
+          ("\"1.23\"^^xsd:double", "\"1\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:double", "\"1\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:numeric", false)
+        )
+
+        val df = (doubleCorrectCases ++ doubleWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.lt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is NUMERIC type number and second is other number type" in {
+
+        val numericCorrectCases = List(
+          ("\"1.23\"^^xsd:numeric", "1.24", true),
+          ("\"1.23\"^^xsd:numeric", "\"2\"^^xsd:int", true),
+          ("\"1.23\"^^xsd:numeric", "\"2\"^^xsd:integer", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:numeric", true)
+        )
+
+        val numericWrongCases = List(
+          ("\"1.23\"^^xsd:numeric", "1.22", false),
+          ("\"1.23\"^^xsd:numeric", "\"1\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:numeric", "\"1\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:numeric", false)
+        )
+
+        val df = (numericCorrectCases ++ numericWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.lt(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+    }
+
     "work for integer values" in {
 
       val df = List(
@@ -806,6 +1542,257 @@ class FuncSpec
   }
 
   "Func.gte" should {
+
+    "operates on numbers correctly" when {
+
+      "first argument is not typed number and second is other number type" in {
+        val plainNumberCorrectCases = List(
+          ("2", "1", true),
+          ("2", "\"1\"^^xsd:int", true),
+          ("2", "\"1\"^^xsd:integer", true),
+          ("2", "\"1\"^^xsd:decimal", true),
+          ("1.24", "\"1.23\"^^xsd:float", true),
+          ("1.24", "\"1.23\"^^xsd:double", true),
+          ("1.24", "\"1.23\"^^xsd:numeric", true)
+        )
+
+        val plainNumberWrongCases = List(
+          ("1", "2", false),
+          ("1", "\"2\"^^xsd:int", false),
+          ("1", "\"2\"^^xsd:integer", false),
+          ("1", "\"2\"^^xsd:decimal", false),
+          ("1.23", "\"1.24\"^^xsd:float", false),
+          ("1.23", "\"1.24\"^^xsd:double", false),
+          ("1.23", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (plainNumberCorrectCases ++ plainNumberWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.gte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is INT type number and second is other number type" in {
+
+        val intCorrectCases = List(
+          ("\"2\"^^xsd:int", "1", true),
+          ("\"2\"^^xsd:int", "1.0", true),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:int", true),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:integer", true),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:decimal", true),
+          ("\"2\"^^xsd:int", "\"1.0\"^^xsd:float", true),
+          ("\"2\"^^xsd:int", "\"1.0\"^^xsd:double", true),
+          ("\"2\"^^xsd:int", "\"1.0\"^^xsd:numeric", true)
+        )
+
+        val intWrongCases = List(
+          ("\"1\"^^xsd:int", "2", false),
+          ("\"1\"^^xsd:int", "1.1", false),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:int", false),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:integer", false),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:decimal", false),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:float", false),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:double", false),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:numeric", false)
+        )
+
+        val df = (intCorrectCases ++ intWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.gte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is INTEGER type number and second is other number type" in {
+
+        val integerCorrectCases = List(
+          ("\"2\"^^xsd:integer", "1", true),
+          ("\"2\"^^xsd:integer", "1.0", true),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:int", true),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:integer", true),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:decimal", true),
+          ("\"2\"^^xsd:integer", "\"1.0\"^^xsd:float", true),
+          ("\"2\"^^xsd:integer", "\"1.0\"^^xsd:double", true),
+          ("\"2\"^^xsd:integer", "\"1.0\"^^xsd:numeric", true)
+        )
+
+        val integerWrongCases = List(
+          ("\"1\"^^xsd:integer", "2", false),
+          ("\"1\"^^xsd:integer", "1.1", false),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:int", false),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:integer", false),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:decimal", false),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:float", false),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:double", false),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:numeric", false)
+        )
+
+        val df = (integerCorrectCases ++ integerWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.gte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is DECIMAL type number and second is other number type" in {
+
+        val decimalCorrectCases = List(
+          ("\"2\"^^xsd:decimal", "1", true),
+          ("\"2\"^^xsd:decimal", "1.0", true),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:int", true),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:integer", true),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:decimal", true),
+          ("\"2\"^^xsd:decimal", "\"1.0\"^^xsd:float", true),
+          ("\"2\"^^xsd:decimal", "\"1.0\"^^xsd:double", true),
+          ("\"2\"^^xsd:decimal", "\"1.0\"^^xsd:numeric", true)
+        )
+
+        val decimalWrongCases = List(
+          ("\"1\"^^xsd:decimal", "2", false),
+          ("\"1\"^^xsd:decimal", "1.1", false),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:int", false),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:integer", false),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:decimal", false),
+          ("\"1\"^^xsd:decimal", "\"1.24\"^^xsd:float", false),
+          ("\"1\"^^xsd:decimal", "\"1.24\"^^xsd:double", false),
+          ("\"1\"^^xsd:decimal", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (decimalCorrectCases ++ decimalWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.gte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is FLOAT type number and second is other number type" in {
+
+        val floatCorrectCases = List(
+          ("\"1.23\"^^xsd:float", "1.22", true),
+          ("\"1.1\"^^xsd:float", "\"1\"^^xsd:int", true),
+          ("\"1.1\"^^xsd:float", "\"1\"^^xsd:integer", true),
+          ("\"1.1\"^^xsd:float", "\"1\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:float", "\"1.22\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:float", "\"1.22\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:float", "\"1.22\"^^xsd:numeric", true)
+        )
+
+        val floatWrongCases = List(
+          ("\"1.23\"^^xsd:float", "1.24", false),
+          ("\"1.23\"^^xsd:float", "\"2\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:float", "\"2\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:float", "\"2\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (floatCorrectCases ++ floatWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.gte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is DOUBLE type number and second is other number type" in {
+
+        val doubleCorrectCases = List(
+          ("\"1.23\"^^xsd:double", "1.22", true),
+          ("\"1.1\"^^xsd:double", "\"1\"^^xsd:int", true),
+          ("\"1.1\"^^xsd:double", "\"1\"^^xsd:integer", true),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:numeric", true)
+        )
+
+        val doubleWrongCases = List(
+          ("\"1.23\"^^xsd:double", "1.24", false),
+          ("\"1.23\"^^xsd:double", "\"2\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:double", "\"2\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (doubleCorrectCases ++ doubleWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.gte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is NUMERIC type number and second is other number type" in {
+
+        val numericCorrectCases = List(
+          ("\"1.23\"^^xsd:numeric", "1.22", true),
+          ("\"1.23\"^^xsd:numeric", "\"1\"^^xsd:int", true),
+          ("\"1.23\"^^xsd:numeric", "\"1\"^^xsd:integer", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:numeric", true)
+        )
+
+        val numericWrongCases = List(
+          ("\"1.23\"^^xsd:numeric", "1.24", false),
+          ("\"1.23\"^^xsd:numeric", "\"2\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:numeric", "\"2\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (numericCorrectCases ++ numericWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.gte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+    }
+
     "work for integer values" in {
 
       val df = List(
@@ -855,6 +1842,257 @@ class FuncSpec
   }
 
   "Func.lte" should {
+
+    "operates on numbers correctly" when {
+
+      "first argument is not typed number and second is other number type" in {
+        val plainNumberCorrectCases = List(
+          ("1", "2", true),
+          ("1", "\"2\"^^xsd:int", true),
+          ("1", "\"2\"^^xsd:integer", true),
+          ("1", "\"2\"^^xsd:decimal", true),
+          ("1.23", "\"1.24\"^^xsd:float", true),
+          ("1.23", "\"1.24\"^^xsd:double", true),
+          ("1.23", "\"1.24\"^^xsd:numeric", true)
+        )
+
+        val plainNumberWrongCases = List(
+          ("2", "1", false),
+          ("2", "\"1\"^^xsd:int", false),
+          ("2", "\"1\"^^xsd:integer", false),
+          ("2", "\"1\"^^xsd:decimal", false),
+          ("1.24", "\"1.23\"^^xsd:float", false),
+          ("1.24", "\"1.23\"^^xsd:double", false),
+          ("1.24", "\"1.23\"^^xsd:numeric", false)
+        )
+
+        val df = (plainNumberCorrectCases ++ plainNumberWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.lte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is INT type number and second is other number type" in {
+
+        val intCorrectCases = List(
+          ("\"1\"^^xsd:int", "2", true),
+          ("\"1\"^^xsd:int", "1.1", true),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:int", true),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:integer", true),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:decimal", true),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:float", true),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:double", true),
+          ("\"1\"^^xsd:int", "\"1.1\"^^xsd:numeric", true)
+        )
+
+        val intWrongCases = List(
+          ("\"2\"^^xsd:int", "1", false),
+          ("\"2\"^^xsd:int", "1.1", false),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:int", false),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:integer", false),
+          ("\"2\"^^xsd:int", "\"1\"^^xsd:decimal", false),
+          ("\"2\"^^xsd:int", "\"1.1\"^^xsd:float", false),
+          ("\"2\"^^xsd:int", "\"1.1\"^^xsd:double", false),
+          ("\"2\"^^xsd:int", "\"1.1\"^^xsd:numeric", false)
+        )
+
+        val df = (intCorrectCases ++ intWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.lte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is INTEGER type number and second is other number type" in {
+
+        val integerCorrectCases = List(
+          ("\"1\"^^xsd:integer", "2", true),
+          ("\"1\"^^xsd:integer", "1.1", true),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:int", true),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:integer", true),
+          ("\"1\"^^xsd:integer", "\"2\"^^xsd:decimal", true),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:float", true),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:double", true),
+          ("\"1\"^^xsd:integer", "\"1.1\"^^xsd:numeric", true)
+        )
+
+        val integerWrongCases = List(
+          ("\"2\"^^xsd:integer", "1", false),
+          ("\"2\"^^xsd:integer", "1.1", false),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:int", false),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:integer", false),
+          ("\"2\"^^xsd:integer", "\"1\"^^xsd:decimal", false),
+          ("\"2\"^^xsd:integer", "\"1.1\"^^xsd:float", false),
+          ("\"2\"^^xsd:integer", "\"1.1\"^^xsd:double", false),
+          ("\"2\"^^xsd:integer", "\"1.1\"^^xsd:numeric", false)
+        )
+
+        val df = (integerCorrectCases ++ integerWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(Func.lte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is DECIMAL type number and second is other number type" in {
+
+        val decimalCorrectCases = List(
+          ("\"1\"^^xsd:decimal", "2", true),
+          ("\"1\"^^xsd:decimal", "1.1", true),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:int", true),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:integer", true),
+          ("\"1\"^^xsd:decimal", "\"2\"^^xsd:decimal", true),
+          ("\"1\"^^xsd:decimal", "\"1.1\"^^xsd:float", true),
+          ("\"1\"^^xsd:decimal", "\"1.1\"^^xsd:double", true),
+          ("\"1\"^^xsd:decimal", "\"1.1\"^^xsd:numeric", true)
+        )
+
+        val decimalWrongCases = List(
+          ("\"2\"^^xsd:decimal", "1", false),
+          ("\"2\"^^xsd:decimal", "1.1", false),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:int", false),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:integer", false),
+          ("\"2\"^^xsd:decimal", "\"1\"^^xsd:decimal", false),
+          ("\"2\"^^xsd:decimal", "\"1.24\"^^xsd:float", false),
+          ("\"2\"^^xsd:decimal", "\"1.24\"^^xsd:double", false),
+          ("\"2\"^^xsd:decimal", "\"1.24\"^^xsd:numeric", false)
+        )
+
+        val df = (decimalCorrectCases ++ decimalWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.lte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is FLOAT type number and second is other number type" in {
+
+        val floatCorrectCases = List(
+          ("\"1.23\"^^xsd:float", "1.24", true),
+          ("\"1.1\"^^xsd:float", "\"2\"^^xsd:int", true),
+          ("\"1.1\"^^xsd:float", "\"2\"^^xsd:integer", true),
+          ("\"1.1\"^^xsd:float", "\"2\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:float", "\"1.24\"^^xsd:numeric", true)
+        )
+
+        val floatWrongCases = List(
+          ("\"1.24\"^^xsd:float", "1.23", false),
+          ("\"1.24\"^^xsd:float", "\"1\"^^xsd:int", false),
+          ("\"1.24\"^^xsd:float", "\"1\"^^xsd:integer", false),
+          ("\"1.24\"^^xsd:float", "\"1\"^^xsd:decimal", false),
+          ("\"1.24\"^^xsd:float", "\"1.23\"^^xsd:float", false),
+          ("\"1.24\"^^xsd:float", "\"1.23\"^^xsd:double", false),
+          ("\"1.24\"^^xsd:float", "\"1.23\"^^xsd:numeric", false)
+        )
+
+        val df = (floatCorrectCases ++ floatWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.lte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is DOUBLE type number and second is other number type" in {
+
+        val doubleCorrectCases = List(
+          ("\"1.23\"^^xsd:double", "1.24", true),
+          ("\"1.1\"^^xsd:double", "\"2\"^^xsd:int", true),
+          ("\"1.1\"^^xsd:double", "\"2\"^^xsd:integer", true),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:double", "\"1.24\"^^xsd:numeric", true)
+        )
+
+        val doubleWrongCases = List(
+          ("\"1.23\"^^xsd:double", "1.22", false),
+          ("\"1.23\"^^xsd:double", "\"1\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:double", "\"1\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:double", "\"1.22\"^^xsd:numeric", false)
+        )
+
+        val df = (doubleCorrectCases ++ doubleWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.lte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
+      "first argument is NUMERIC type number and second is other number type" in {
+
+        val numericCorrectCases = List(
+          ("\"1.23\"^^xsd:numeric", "1.24", true),
+          ("\"1.23\"^^xsd:numeric", "\"2\"^^xsd:int", true),
+          ("\"1.23\"^^xsd:numeric", "\"2\"^^xsd:integer", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:decimal", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:float", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:double", true),
+          ("\"1.23\"^^xsd:numeric", "\"1.24\"^^xsd:numeric", true)
+        )
+
+        val numericWrongCases = List(
+          ("\"1.23\"^^xsd:numeric", "1.22", false),
+          ("\"1.23\"^^xsd:numeric", "\"1\"^^xsd:int", false),
+          ("\"1.23\"^^xsd:numeric", "\"1\"^^xsd:integer", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:decimal", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:float", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:double", false),
+          ("\"1.23\"^^xsd:numeric", "\"1.22\"^^xsd:numeric", false)
+        )
+
+        val df = (numericCorrectCases ++ numericWrongCases).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result =
+          df.select(Func.lte(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+    }
+
     "work for integer values" in {
 
       val df = List(
@@ -934,18 +2172,21 @@ class FuncSpec
     }
   }
 
-  "Func.sample" should {
+  "Func.parseDAteFromRDFDateTime" should {
+    "work for all types of dates specified by RDF spec" in {
 
-    "return an arbitrary value from the column" in {
+      val df = List(
+        """"2001-10-26T21:32:52"^^xsd:dateTime""",
+        """"2001-10-26T21:32:52+02:00"^^xsd:dateTime""",
+        """"2001-10-26T19:32:52Z"^^xsd:dateTime""",
+        """"2001-10-26T19:32:52+00:00"^^xsd:dateTime""",
+        """"2001-10-26T21:32:52.12679"^^xsd:dateTime"""
+      ).toDF("date")
 
-      val elems = List(1, 2, 3, 4, 5)
-      val df    = elems.toDF("a")
-
-      elems.toSet should contain(
-        df.select(Func.sample(df("a"))).collect().head.get(0)
-      )
+      df.select(Func.parseDateFromRDFDateTime(df("date")))
+        .collect()
+        .map(_.get(0)) shouldNot contain(null)
     }
-
   }
 
   "Func.str" should {
