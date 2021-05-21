@@ -169,6 +169,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.SAMPLE(e)    => Node("SAMPLE", Stream(e))
           case ExpressionF.GROUP_CONCAT(e, separator) =>
             Node("GROUP_CONCAT", Stream(e, separator.toTree))
+          case ExpressionF.ENCODE_FOR_URI(s) =>
+            Node("ENCODE_FOR_URI", Stream(s))
           case ExpressionF.STRING(s) =>
             Leaf(s"STRING($s)")
           case ExpressionF.DT_STRING(s, tag) =>
