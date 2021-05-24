@@ -2409,6 +2409,24 @@ class FuncSpec
     }
   }
 
+  "Func.lang" should {
+
+    "correctly return language tag" in {
+      val initial = List(
+        ("\"Los Angeles\"@en", "en"),
+        ("\"Los Angeles\"@es", "es"),
+        ("\"Los Angeles\"@en-US", "en-US"),
+        ("Los Angeles", "")
+      ).toDF("input", "expected")
+
+      val df = initial.withColumn("result", Func.lang(initial("input")))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
   def toRDFDateTime(datetime: TemporalAccessor): String =
     "\"" + DateTimeFormatter
       .ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]")
