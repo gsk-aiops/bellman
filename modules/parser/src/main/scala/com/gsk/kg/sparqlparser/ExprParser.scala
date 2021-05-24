@@ -2,7 +2,7 @@ package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
-
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 import fastparse.MultiLineWhitespace._
 import fastparse._
 
@@ -23,6 +23,9 @@ object ExprParser {
   def distinct[_: P]: P[Unit]    = P("distinct")
   def group[_: P]: P[Unit]       = P("group")
   def order[_: P]: P[Unit]       = P("order")
+  def table[_: P]: P[Unit]       = P("table")
+  def row[_: P]: P[Unit]         = P("row")
+  def vars[_: P]: P[Unit]        = P("vars")
 
   def opNull[_: P]: P[OpNil]      = P("(null)").map(_ => OpNil())
   def tableUnit[_: P]: P[TabUnit] = P("(table unit)").map(_ => TabUnit())
@@ -141,6 +144,21 @@ object ExprParser {
     Order(p._1, p._2)
   }
 
+  def tupleParen[_: P]: P[(VARIABLE, Expression)] = P(
+    "[" ~ StringValParser.variable ~ ExpressionParser.parser ~ "]"
+  )
+
+  def rowParen[_: P]: P[Row] = P(
+    "(" ~ row ~ tupleParen.rep(0) ~ ")"
+  ).map(r => Row(r))
+
+  def tableParen[_: P]: P[Table] = P(
+    "(" ~ table ~ "(" ~ vars ~ StringValParser.variable.rep(0) ~ ")" ~ rowParen
+      .rep(
+        0
+      ) ~ ")"
+  ).map { case (vs, rs) => Table(vs, rs) }
+
   def graphPattern[_: P]: P[Expr] =
     P(
       selectParen
@@ -157,6 +175,7 @@ object ExprParser {
         | filterListParen
         | groupParen
         | orderParen
+        | tableParen
         | opNull
         | tableUnit
     )

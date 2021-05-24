@@ -612,6 +612,172 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     }
   }
 
+  "Values" should "return proper type when simple variable" in {
+
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q44-values-simple-variable.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?book"), VARIABLE("?title"), VARIABLE("?price")),
+            Join(
+              Table(
+                Seq(VARIABLE("?book")),
+                Seq(
+                  Row(
+                    Seq(
+                      (
+                        VARIABLE("?book"),
+                        URIVAL("<http://example.org/book/book1>")
+                      )
+                    )
+                  ),
+                  Row(
+                    Seq(
+                      (
+                        VARIABLE("?book"),
+                        URIVAL("<http://example.org/book/book3>")
+                      )
+                    )
+                  )
+                )
+              ),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?book"),
+                    URIVAL("<http://purl.org/dc/elements/1.1/title>"),
+                    VARIABLE("?title"),
+                    List(GRAPH_VARIABLE)
+                  ),
+                  Quad(
+                    VARIABLE("?book"),
+                    URIVAL("<http://example.org/ns#price>"),
+                    VARIABLE("?price"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  it should "return proper type when multiple variables" in {
+
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q45-values-multiple-variables.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?book"), VARIABLE("?title"), VARIABLE("?price")),
+            Join(
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?book"),
+                    URIVAL("<http://purl.org/dc/elements/1.1/title>"),
+                    VARIABLE("?title"),
+                    List(GRAPH_VARIABLE)
+                  ),
+                  Quad(
+                    VARIABLE("?book"),
+                    URIVAL("<http://example.org/ns#price>"),
+                    VARIABLE("?price"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              ),
+              Table(
+                Seq(VARIABLE("?book"), VARIABLE("?title")),
+                Seq(
+                  Row(Seq((VARIABLE("?title"), STRING("SPARQL Tutorial")))),
+                  Row(
+                    Seq(
+                      (
+                        VARIABLE("?book"),
+                        URIVAL("<http://example.org/book/book2>")
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  it should "return proper type when multiple values on rows" in {
+
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q46-values-multiple-values-rows.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?book"), VARIABLE("?title"), VARIABLE("?price")),
+            Join(
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?book"),
+                    URIVAL("<http://purl.org/dc/elements/1.1/title>"),
+                    VARIABLE("?title"),
+                    List(GRAPH_VARIABLE)
+                  ),
+                  Quad(
+                    VARIABLE("?book"),
+                    URIVAL("<http://example.org/ns#price>"),
+                    VARIABLE("?price"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              ),
+              Table(
+                Seq(VARIABLE("?book"), VARIABLE("?title")),
+                Seq(
+                  Row(
+                    Seq(
+                      (VARIABLE("?title"), STRING("SPARQL Tutorial")),
+                      (
+                        VARIABLE("?book"),
+                        URIVAL("<http://example.org/book/book1>")
+                      )
+                    )
+                  ),
+                  Row(
+                    Seq(
+                      (VARIABLE("?title"), STRING("The Semantic Web")),
+                      (
+                        VARIABLE("?book"),
+                        URIVAL("<http://example.org/book/book2>")
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
   /*Below are where assertions are beginning to get complex. The assumption is that previous tests appropriately exercise the parser
   combinator functions. Reading expected results from file instead of explicitly defining inline.
    */

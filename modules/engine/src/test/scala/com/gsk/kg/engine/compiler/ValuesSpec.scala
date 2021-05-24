@@ -31,7 +31,7 @@ class ValuesSpec
           (
             "<http://example.org/book/book1>",
             "<http://example.org/ns#price>",
-            42
+            "42"
           ),
           (
             "<http://example.org/book/book2>",
@@ -41,7 +41,7 @@ class ValuesSpec
           (
             "<http://example.org/book/book2>",
             "<http://example.org/ns#price>",
-            23
+            "23"
           )
         ).toDF("s", "p", "o")
 
@@ -79,7 +79,7 @@ class ValuesSpec
           (
             "<http://example.org/book/book1>",
             "<http://example.org/ns#price>",
-            42
+            "42"
           ),
           (
             "<http://example.org/book/book2>",
@@ -89,7 +89,7 @@ class ValuesSpec
           (
             "<http://example.org/book/book2>",
             "<http://example.org/ns#price>",
-            23
+            "23"
           )
         ).toDF("s", "p", "o")
 
@@ -131,7 +131,7 @@ class ValuesSpec
           (
             "<http://example.org/book/book1>",
             "<http://example.org/ns#price>",
-            42
+            "42"
           ),
           (
             "<http://example.org/book/book2>",
@@ -141,7 +141,7 @@ class ValuesSpec
           (
             "<http://example.org/book/book2>",
             "<http://example.org/ns#price>",
-            23
+            "23"
           )
         ).toDF("s", "p", "o")
 
