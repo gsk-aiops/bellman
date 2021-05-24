@@ -30,6 +30,7 @@ object BuiltInFunc {
       append: List[Expression]
   )                                                        extends BuiltInFunc
   final case class STR(s: Expression)                      extends BuiltInFunc
+  final case class LANG(s: Expression)                     extends BuiltInFunc
   final case class LCASE(s: Expression)                    extends BuiltInFunc
   final case class UCASE(s: Expression)                    extends BuiltInFunc
   final case class ISLITERAL(s: Expression)                extends BuiltInFunc
