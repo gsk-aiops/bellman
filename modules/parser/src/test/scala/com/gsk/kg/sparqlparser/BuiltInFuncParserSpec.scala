@@ -289,4 +289,17 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "ENCODE_FOR_URI parser" should "return ENCODE_FOR_URI type" in {
+    val p =
+      fastparse.parse(
+        """(encode_for_uri ?d)""",
+        BuiltInFuncParser.encodeForURIParen(_)
+      )
+    p.get.value match {
+      case ENCODE_FOR_URI(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
 }

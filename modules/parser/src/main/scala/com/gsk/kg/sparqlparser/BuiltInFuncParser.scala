@@ -9,23 +9,24 @@ object BuiltInFuncParser {
   /*
   Functions on strings: https://www.w3.org/TR/sparql11-query/#func-strings
    */
-  def uri[_: P]: P[Unit]       = P("uri")
-  def concat[_: P]: P[Unit]    = P("concat")
-  def str[_: P]: P[Unit]       = P("str")
-  def strafter[_: P]: P[Unit]  = P("strafter")
-  def strbefore[_: P]: P[Unit] = P("strbefore")
-  def isBlank[_: P]: P[Unit]   = P("isBlank")
-  def replace[_: P]: P[Unit]   = P("replace")
-  def regex[_: P]: P[Unit]     = P("regex")
-  def strends[_: P]: P[Unit]   = P("strends")
-  def strstarts[_: P]: P[Unit] = P("strstarts")
-  def strdt[_: P]: P[Unit]     = P("strdt")
-  def substr[_: P]: P[Unit]    = P("substr")
-  def strlen[_: P]: P[Unit]    = P("strlen")
-  def lcase[_: P]: P[Unit]     = P("lcase")
-  def ucase[_: P]: P[Unit]     = P("ucase")
-  def isLiteral[_: P]: P[Unit] = P("isLiteral")
-  def isNumeric[_: P]: P[Unit] = P("isNumeric")
+  def uri[_: P]: P[Unit]          = P("uri")
+  def concat[_: P]: P[Unit]       = P("concat")
+  def str[_: P]: P[Unit]          = P("str")
+  def strafter[_: P]: P[Unit]     = P("strafter")
+  def strbefore[_: P]: P[Unit]    = P("strbefore")
+  def isBlank[_: P]: P[Unit]      = P("isBlank")
+  def replace[_: P]: P[Unit]      = P("replace")
+  def regex[_: P]: P[Unit]        = P("regex")
+  def strends[_: P]: P[Unit]      = P("strends")
+  def strstarts[_: P]: P[Unit]    = P("strstarts")
+  def strdt[_: P]: P[Unit]        = P("strdt")
+  def substr[_: P]: P[Unit]       = P("substr")
+  def strlen[_: P]: P[Unit]       = P("strlen")
+  def lcase[_: P]: P[Unit]        = P("lcase")
+  def ucase[_: P]: P[Unit]        = P("ucase")
+  def isLiteral[_: P]: P[Unit]    = P("isLiteral")
+  def isNumeric[_: P]: P[Unit]    = P("isNumeric")
+  def encodeForURI[_: P]: P[Unit] = P("encode_for_uri")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
@@ -117,6 +118,10 @@ object BuiltInFuncParser {
     P("(" ~ isNumeric ~ ExpressionParser.parser ~ ")")
       .map(f => ISNUMERIC(f))
 
+  def encodeForURIParen[_: P]: P[ENCODE_FOR_URI] =
+    P("(" ~ encodeForURI ~ ExpressionParser.parser ~ ")")
+      .map(f => ENCODE_FOR_URI(f))
+
   def funcPatterns[_: P]: P[StringLike] =
     P(
       uriParen
@@ -139,6 +144,7 @@ object BuiltInFuncParser {
         | ucaseParen
         | isLiteralParen
         | isNumericParen
+        | encodeForURIParen
     )
 //      | StringValParser.string
 //      | StringValParser.variable)

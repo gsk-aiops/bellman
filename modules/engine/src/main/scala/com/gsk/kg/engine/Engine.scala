@@ -22,6 +22,7 @@ import org.apache.spark.sql.types._
 import com.gsk.kg.config.Config
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.data.ChunkedList.Chunk
+import com.gsk.kg.engine.functions.FuncAgg
 import com.gsk.kg.sparqlparser.ConditionOrder.ASC
 import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr.Quad
@@ -214,30 +215,24 @@ object Engine {
       func: Option[(VARIABLE, Expression)]
   ): M[DataFrame] = func match {
     case None =>
-      val cols: List[Column] = vars.map(_.s).map(col).map(Func.sample)
+      val cols: List[Column] = vars.map(_.s).map(col).map(FuncAgg.sample)
       df.agg(cols.head, cols.tail: _*).pure[M]
     case Some((VARIABLE(name), Aggregate.COUNT(VARIABLE(v)))) =>
-      df.agg(count(col(v)).cast("int").as(name))
-        .withColumn(name, Func.strdt(col(name), "xsd:int"))
-        .pure[M]
+      df.agg(FuncAgg.countAgg(col(v)).as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.SUM(VARIABLE(v)))) =>
-      df.agg(sum(Func.extractNumber(col(v))).cast("float").as(name))
-        .withColumn(name, Func.strdt(col(name), "xsd:double"))
-        .pure[M]
+      df.agg(FuncAgg.sumAgg(col(v)).as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.MIN(VARIABLE(v)))) =>
-      df.agg(min(Func.tryExtractNumber(col(v))).as(name)).pure[M]
+      df.agg(FuncAgg.minAgg(col(v)).as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.MAX(VARIABLE(v)))) =>
-      df.agg(max(Func.tryExtractNumber(col(v))).as(name)).pure[M]
+      df.agg(FuncAgg.maxAgg(col(v)).as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.AVG(VARIABLE(v)))) =>
-      df.agg(avg(Func.extractNumber(col(v))).cast("float").as(name))
-        .withColumn(name, Func.strdt(col(name), "xsd:double"))
-        .pure[M]
+      df.agg(FuncAgg.avgAgg(col(v)).as(name)).pure[M]
     case Some((VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v)))) =>
-      df.agg(Func.sample(col(v)).as(name)).pure[M]
+      df.agg(FuncAgg.sample(col(v)).as(name)).pure[M]
     case Some(
           (VARIABLE(name), Aggregate.GROUP_CONCAT(VARIABLE(v), separator))
         ) =>
-      df.agg(Func.groupConcat(col(v), separator))
+      df.agg(FuncAgg.groupConcat(col(v), separator))
         .withColumnRenamed(v, name)
         .pure[M]
     case fn =>

@@ -7,6 +7,12 @@ import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
 
 import com.gsk.kg.engine.Func.StringFunctionUtils._
+import com.gsk.kg.engine.functions.Literals._
+
+import java.nio.charset.StandardCharsets
+import java.util.regex.Pattern
+
+import org.apache.commons.codec.binary.Hex
 
 object Func {
 
@@ -15,8 +21,13 @@ object Func {
     * @param r
     * @return
     */
-  def equals(l: Column, r: Column): Column =
-    applyOperator(l, r)(_ === _)
+  def equals(l: Column, r: Column): Column = {
+    applyDateTimeLiteral(l, r)(_ === _)
+      .otherwise(
+        promoteNumericBoolean(l, r)(_ === _)
+          .otherwise(l === r)
+      )
+  }
 
   /** Peforms logical binary operation '>' over two columns
     * @param l
@@ -24,7 +35,11 @@ object Func {
     * @return
     */
   def gt(l: Column, r: Column): Column =
-    applyOperator(l, r)(_ > _)
+    applyDateTimeLiteral(l, r)(_ > _)
+      .otherwise(
+        promoteNumericBoolean(l, r)(_ > _)
+          .otherwise(l > r)
+      )
 
   /** Performs logical binary operation '<' over two columns
     * @param l
@@ -32,7 +47,11 @@ object Func {
     * @return
     */
   def lt(l: Column, r: Column): Column =
-    applyOperator(l, r)(_ < _)
+    applyDateTimeLiteral(l, r)(_ < _)
+      .otherwise(
+        promoteNumericBoolean(l, r)(_ < _)
+          .otherwise(l < r)
+      )
 
   /** Performs logical binary operation '<=' over two columns
     * @param l
@@ -40,7 +59,11 @@ object Func {
     * @return
     */
   def gte(l: Column, r: Column): Column =
-    applyOperator(l, r)(_ >= _)
+    applyDateTimeLiteral(l, r)(_ >= _)
+      .otherwise(
+        promoteNumericBoolean(l, r)(_ >= _)
+          .otherwise(l >= r)
+      )
 
   /** Performs logical binary operation '>=' over two columns
     * @param l
@@ -48,7 +71,11 @@ object Func {
     * @return
     */
   def lte(l: Column, r: Column): Column =
-    applyOperator(l, r)(_ <= _)
+    applyDateTimeLiteral(l, r)(_ <= _)
+      .otherwise(
+        promoteNumericBoolean(l, r)(_ <= _)
+          .otherwise(l <= r)
+      )
 
   /** Performs logical binary operation 'or' over two columns
     * @param l
@@ -89,6 +116,39 @@ object Func {
     */
   def str(value: String): Column =
     str(lit(value))
+
+  /** Implementation of SparQL ENCODE_FOR_URI on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-encode]]
+    * @param str
+    * @return
+    */
+  def encodeForURI(str: String): Column =
+    lit(encodeUri(extractStringLiteral(str)))
+
+  /** Implementation of SparQL ENCODE_FOR_URI on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-encode]]
+    * @param col
+    * @return
+    */
+  def encodeForURI(col: Column): Column = {
+    val efu = udf((str: String) => encodeUri(str))
+    efu(extractStringLiteral(col))
+  }
+
+  private def encodeUri(str: String): String =
+    str.map {
+      case c if Pattern.matches("[A-Za-z0-9~._-]", c.toString) => c.toString
+      case c =>
+        val hex =
+          Hex.encodeHexString(c.toString.getBytes(StandardCharsets.UTF_8))
+        if (hex.length > 2) {
+          hex.grouped(hex.length / 2).map("%" + _.toUpperCase).mkString
+        } else {
+          "%" + hex.toUpperCase
+        }
+    }.mkString
 
   /** Returns a column with 'true' or 'false' rows indicating whether a column has blank nodes
     * @param col
@@ -335,12 +395,12 @@ object Func {
   def strlen(col: Column): Column = {
     when(
       RdfFormatter.isLocalizedString(col), {
-        val l = LocalizedString(col)
+        val l = LocalizedLiteral(col)
         length(regexp_replace(l.value, "\"", ""))
       }
     ).when(
       RdfFormatter.isDatatypeLiteral(col), {
-        val t = TypedString(col)
+        val t = TypedLiteral(col)
         length(regexp_replace(t.value, "\"", ""))
       }
     ).otherwise(length(col))
@@ -458,17 +518,6 @@ object Func {
     )
   }
 
-  /** Sample is a set function which returns an arbitrary value from
-    * the multiset passed to it.
-    *
-    * Implemented using [[org.apache.spark.sql.functions.first]].
-    *
-    * @param col
-    * @return
-    */
-  def sample(col: Column): Column =
-    first(col, true)
-
   /** Implementation of SparQL LCASE on Spark dataframes.
     *
     * @see [[https://www.w3.org/TR/sparql11-query/#func-lcase]]
@@ -533,13 +582,9 @@ object Func {
     ).otherwise(f(trim(col, "\"")))
   }
 
-  def groupConcat(col: Column, separator: String): Column =
-    ???
-
   def isTypedLiteral(col: Column): Column =
     col.startsWith("\"") && col.contains("\"^^")
 
-  // scalastyle:off
   def extractType(col: Column): Column =
     when(
       isTypedLiteral(col), {
@@ -547,11 +592,10 @@ object Func {
         when(substring_index(col, del, -1) === del, lit(""))
           .otherwise(substring_index(col, del, -1))
       }
-    ).otherwise(lit(null))
+    ).otherwise(nullLiteral)
 
   def extractNumber(col: Column): Column =
-    extractNumberImpl(col, lit(null))
-  // scalastyle:on
+    extractNumberImpl(col, nullLiteral)
 
   def tryExtractNumber(col: Column): Column =
     extractNumberImpl(col, col)
@@ -573,9 +617,9 @@ object Func {
     when(
       regexp_extract(col, ExtractDateTime, 1) =!= lit(""),
       to_timestamp(regexp_extract(col, ExtractDateTime, 1))
-    ).otherwise(lit(null)) // scalastyle:off
+    ).otherwise(nullLiteral)
 
-  private def applyOperator(l: Column, r: Column)(
+  private def applyDateTimeLiteral(l: Column, r: Column)(
       operator: (Column, Column) => Column
   ): Column =
     when(
@@ -585,7 +629,7 @@ object Func {
         parseDateFromRDFDateTime(l.cast(StringType)),
         parseDateFromRDFDateTime(r.cast(StringType))
       )
-    ).otherwise(operator(l, r))
+    )
 
   val ExtractDateTime = """^"(.*)"\^\^(.*)dateTime(.*)$"""
 
@@ -611,78 +655,17 @@ object Func {
     }
   }
 
-  final case class LocalizedString(value: Column, tag: Column)
-  object LocalizedString {
-    def apply(c: Column): LocalizedString = {
-      new LocalizedString(
-        substring_index(c, "@", 1),
-        substring_index(c, "@", -1)
-      )
-    }
-
-    def apply(s: String): LocalizedString = {
-      val split = s.split("@").toSeq
-      new LocalizedString(
-        lit(split.head.replace("\"", "")),
-        lit(split.last)
-      )
-    }
-
-    def formatLocalized(l: LocalizedString, s: String, localizedFormat: String)(
-        f: (Column, String) => Column
-    ): Column =
-      when(
-        f(l.value, s) === lit(""),
-        f(l.value, s)
-      ).otherwise(
-        cc(
-          format_string(localizedFormat, f(l.value, s)),
-          l.tag
-        )
-      )
-  }
-
-  final case class TypedString(value: Column, tag: Column)
-  object TypedString {
-    def apply(c: Column): TypedString = {
-      new TypedString(
-        substring_index(c, "^^", 1),
-        substring_index(c, "^^", -1)
-      )
-    }
-
-    def apply(s: String): TypedString = {
-      val split = s.split("\\^\\^")
-      new TypedString(
-        lit(split.head.replace("\"", "")),
-        lit(split.last)
-      )
-    }
-
-    def formatTyped(t: TypedString, s: String, typedFormat: String)(
-        f: (Column, String) => Column
-    ): Column = when(
-      f(t.value, s) === lit(""),
-      f(t.value, s)
-    ).otherwise(
-      cc(
-        format_string(typedFormat, f(t.value, s)),
-        t.tag
-      )
-    )
-  }
-
   object StringFunctionUtils {
 
     def unfold(arg: Column): (Column, Column) = {
       val getValue = when(
         RdfFormatter.isLocalizedString(arg), {
-          val l = LocalizedString(arg)
+          val l = LocalizedLiteral(arg)
           trim(l.value, "\"")
         }
       ).when(
         RdfFormatter.isDatatypeLiteral(arg), {
-          val l = TypedString(arg)
+          val l = TypedLiteral(arg)
           trim(l.value, "\"")
         }
       ).otherwise(
@@ -691,12 +674,12 @@ object Func {
 
       val getTag = when(
         RdfFormatter.isLocalizedString(arg), {
-          val l = LocalizedString(arg)
+          val l = LocalizedLiteral(arg)
           l.tag
         }
       ).when(
         RdfFormatter.isDatatypeLiteral(arg), {
-          val l = TypedString(arg)
+          val l = TypedLiteral(arg)
           l.tag
         }
       ).otherwise(
@@ -712,11 +695,11 @@ object Func {
     ): Column = {
       when(
         RdfFormatter.isLocalizedString(arg1), {
-          val l = LocalizedString(arg1)
+          val l = LocalizedLiteral(arg1)
           args.foldLeft(lit(true)) { case (acc, elem) =>
             acc && when(
               RdfFormatter.isLocalizedString(elem), {
-                val r = LocalizedString(elem)
+                val r = LocalizedLiteral(elem)
                 l.tag === r.tag
               }
             ).otherwise(lit(false))
@@ -724,11 +707,11 @@ object Func {
         }
       ).when(
         RdfFormatter.isDatatypeLiteral(arg1), {
-          val l = TypedString(arg1)
+          val l = TypedLiteral(arg1)
           args.foldLeft(lit(true)) { case (acc, elem) =>
             acc && when(
               RdfFormatter.isDatatypeLiteral(elem), {
-                val r = TypedString(elem)
+                val r = TypedLiteral(elem)
                 l.tag === r.tag
               }
             ).otherwise(lit(false))
@@ -753,7 +736,6 @@ object Func {
     def isLocalizedPlainArgs(arg1: Column): Column =
       RdfFormatter.isLocalizedString(arg1)
 
-    // scalastyle:off
     def strFuncArgsLocalizedLocalized(
         col: Column,
         str: String,
@@ -761,16 +743,15 @@ object Func {
     )(
         f: (Column, String) => Column
     ): Column = {
-      val left  = LocalizedString(col)
-      val right = LocalizedString(str)
+      val left  = LocalizedLiteral(col)
+      val right = LocalizedLiteral(str)
       when(
         left.tag =!= right.tag,
-        lit(null)
+        nullLiteral
       ).otherwise(
-        LocalizedString.formatLocalized(left, str, localizedFormat)(f)
+        LocalizedLiteral.formatLocalized(left, str, localizedFormat)(f)
       )
     }
-    // scalastyle:on
 
     def strFuncArgsLocalizedPlain(
         col: Column,
@@ -779,30 +760,28 @@ object Func {
     )(
         f: (Column, String) => Column
     ): Column = {
-      val left = LocalizedString(col)
-      LocalizedString.formatLocalized(left, str, localizedFormat)(f)
+      val left = LocalizedLiteral(col)
+      LocalizedLiteral.formatLocalized(left, str, localizedFormat)(f)
     }
 
-    // scalastyle:off
     def strFuncArgsTypedTyped(col: Column, str: String, typedFormat: String)(
         f: (Column, String) => Column
-    ) = {
-      val left  = TypedString(col)
-      val right = TypedString(str)
+    ): Column = {
+      val left  = TypedLiteral(col)
+      val right = TypedLiteral(str)
       when(
         left.tag =!= right.tag,
-        lit(null)
+        nullLiteral
       ).otherwise(
-        TypedString.formatTyped(left, str, typedFormat)(f)
+        TypedLiteral.formatTyped(left, str, typedFormat)(f)
       )
     }
-    // scalastyle:off
 
     def strFuncArgsTypedPlain(col: Column, str: String, typedFormat: String)(
         f: (Column, String) => Column
     ): Column = {
-      val left = TypedString(col)
-      TypedString.formatTyped(left, str, typedFormat)(f)
+      val left = TypedLiteral(col)
+      TypedLiteral.formatTyped(left, str, typedFormat)(f)
     }
   }
 }

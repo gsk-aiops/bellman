@@ -59,6 +59,7 @@ trait ExpressionArbitraries extends CommonGenerators {
       .map(BuiltInFunc.UCASE(_)),
     Gen.lzy(expressionGenerator).map(BuiltInFunc.ISBLANK(_)),
     Gen.lzy(expressionGenerator).map(BuiltInFunc.ISNUMERIC(_)),
+    Gen.lzy(expressionGenerator).map(BuiltInFunc.ENCODE_FOR_URI(_)),
     (
       Gen.lzy(expressionGenerator),
       Gen.lzy(expressionGenerator),
