@@ -590,12 +590,12 @@ class GroupBySpec
         (
           "<http://uri.com/subject/a1>",
           "<http://uri.com/predicate>",
-          "\"3\"^^xsd:int"
+          "\"4\"^^xsd:int"
         ),
         (
           "<http://uri.com/subject/a1>",
           "<http://uri.com/predicate>",
-          "\"3\"^^xsd:int"
+          "\"2\"^^xsd:int"
         ),
         (
           "<http://uri.com/subject/a2>",
@@ -605,12 +605,12 @@ class GroupBySpec
         (
           "<http://uri.com/subject/a2>",
           "<http://uri.com/predicate>",
-          "\"3\"^^xsd:int"
+          "\"4\"^^xsd:int"
         ),
         (
           "<http://uri.com/subject/a3>",
           "<http://uri.com/predicate>",
-          "\"3\"^^xsd:int"
+          "\"2\"^^xsd:int"
         )
       ).toDF("s", "p", "o")
 
@@ -627,8 +627,8 @@ class GroupBySpec
         case Right(b) => b
       }
 
-      result.collect.toSet shouldEqual Set(
-        Row("5")
+      result.collect shouldEqual Array(
+        Row("5", "3.0")
       )
     }
   }
