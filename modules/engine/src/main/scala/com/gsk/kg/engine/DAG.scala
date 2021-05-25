@@ -58,7 +58,7 @@ object DAG {
   @Lenses final case class Limit[A](limit: Long, r: A)   extends DAG[A]
   @Lenses final case class Group[A](
       vars: List[VARIABLE],
-      func: Option[(VARIABLE, Expression)],
+      func: List[(VARIABLE, Expression)],
       r: A
   ) extends DAG[A]
   @Lenses final case class Order[A](conds: NonEmptyList[ConditionOrder], r: A)
@@ -120,7 +120,7 @@ object DAG {
   def distinct[A](r: A): DAG[A] = Distinct[A](r)
   def group[A](
       vars: List[VARIABLE],
-      func: Option[(VARIABLE, Expression)],
+      func: List[(VARIABLE, Expression)],
       r: A
   ): DAG[A] =
     Group[A](vars, func, r)
@@ -165,7 +165,7 @@ object DAG {
   def distinctR[T: Embed[DAG, *]](r: T): T = distinct[T](r).embed
   def groupR[T: Embed[DAG, *]](
       vars: List[VARIABLE],
-      func: Option[(VARIABLE, Expression)],
+      func: List[(VARIABLE, Expression)],
       r: T
   ): T = group[T](vars, func, r).embed
   def orderR[T: Embed[DAG, *]](
@@ -204,7 +204,7 @@ object DAG {
       case ProjectF(vars, r)            => project(vars.toList, r)
       case QuadF(s, p, o, g)            => noop("QuadF not supported")
       case DistinctF(r)                 => distinct(r)
-      case GroupF(vars, func, r)        => group(vars.toList, func, r)
+      case GroupF(vars, func, r)        => group(vars.toList, func.toList, r)
       case OrderF(conds, r) =>
         order(NonEmptyList.fromListUnsafe(conds.toList), r)
       case OffsetLimitF(None, None, r)       => T.coalgebra(r)

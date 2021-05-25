@@ -99,8 +99,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
               Stream(limit.toTree, r)
             )
           case DAG.Group(vars, func, r) =>
-            val v: List[Expression]                 = vars
-            val f: Option[(Expression, Expression)] = func
+            val v: List[Expression]               = vars
+            val f: List[(Expression, Expression)] = func
             Node("Group", Stream(v.toTree, f.toTree, r))
           case DAG.Order(conds, r) =>
             Node("Order", conds.map(_.toTree).toList.toStream #::: Stream(r))

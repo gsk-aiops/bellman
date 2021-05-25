@@ -190,7 +190,7 @@ object Engine {
 
   private def evaluateGroup(
       vars: List[VARIABLE],
-      func: Option[(VARIABLE, Expression)],
+      func: List[(VARIABLE, Expression)],
       r: Multiset
   ): M[Multiset] = {
     val df = r.dataframe
@@ -209,38 +209,45 @@ object Engine {
       )
   }
 
+  private def toColumOperation(
+      func: (VARIABLE, Expression)
+  ): M[Column] = func match {
+    case (VARIABLE(name), Aggregate.COUNT(VARIABLE(v))) =>
+      FuncAgg.countAgg(col(v)).as(name).pure[M]
+    case (VARIABLE(name), Aggregate.SUM(VARIABLE(v))) =>
+      FuncAgg.sumAgg(col(v)).as(name).pure[M]
+    case (VARIABLE(name), Aggregate.MIN(VARIABLE(v))) =>
+      FuncAgg.minAgg(col(v)).as(name).pure[M]
+    case (VARIABLE(name), Aggregate.MAX(VARIABLE(v))) =>
+      FuncAgg.maxAgg(col(v)).as(name).pure[M]
+    case (VARIABLE(name), Aggregate.AVG(VARIABLE(v))) =>
+      FuncAgg.avgAgg(col(v)).as(name).pure[M]
+    case (VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v))) =>
+      FuncAgg.sample(col(v)).as(name).pure[M]
+    case (VARIABLE(name), Aggregate.GROUP_CONCAT(VARIABLE(v), separator)) =>
+      FuncAgg.groupConcat(col(v).as(name), separator).pure[M]
+    case fn =>
+      M.liftF[Result, Config, Log, DataFrame, Column](
+        EngineError
+          .UnknownFunction("Aggregate function: " + fn.toString)
+          .asLeft
+      )
+  }
+
   private def evaluateAggregation(
       vars: List[VARIABLE],
       df: RelationalGroupedDataset,
-      func: Option[(VARIABLE, Expression)]
+      func: List[(VARIABLE, Expression)]
   ): M[DataFrame] = func match {
-    case None =>
+    case Nil =>
       val cols: List[Column] = vars.map(_.s).map(col).map(FuncAgg.sample)
       df.agg(cols.head, cols.tail: _*).pure[M]
-    case Some((VARIABLE(name), Aggregate.COUNT(VARIABLE(v)))) =>
-      df.agg(FuncAgg.countAgg(col(v)).as(name)).pure[M]
-    case Some((VARIABLE(name), Aggregate.SUM(VARIABLE(v)))) =>
-      df.agg(FuncAgg.sumAgg(col(v)).as(name)).pure[M]
-    case Some((VARIABLE(name), Aggregate.MIN(VARIABLE(v)))) =>
-      df.agg(FuncAgg.minAgg(col(v)).as(name)).pure[M]
-    case Some((VARIABLE(name), Aggregate.MAX(VARIABLE(v)))) =>
-      df.agg(FuncAgg.maxAgg(col(v)).as(name)).pure[M]
-    case Some((VARIABLE(name), Aggregate.AVG(VARIABLE(v)))) =>
-      df.agg(FuncAgg.avgAgg(col(v)).as(name)).pure[M]
-    case Some((VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v)))) =>
-      df.agg(FuncAgg.sample(col(v)).as(name)).pure[M]
-    case Some(
-          (VARIABLE(name), Aggregate.GROUP_CONCAT(VARIABLE(v), separator))
-        ) =>
-      df.agg(FuncAgg.groupConcat(col(v), separator))
-        .withColumnRenamed(v, name)
-        .pure[M]
-    case fn =>
-      M.liftF[Result, Config, Log, DataFrame, DataFrame](
-        EngineError
-          .UnknownFunction("Aggregate function: " + fn.toString)
-          .asLeft[DataFrame]
-      )
+    case agg :: Nil =>
+      toColumOperation(agg).map(df.agg(_))
+    case aggs =>
+      aggs
+        .traverse(toColumOperation)
+        .map(columns => df.agg(columns.head, columns.tail: _*))
   }
 
   private def evaluateOrder(
