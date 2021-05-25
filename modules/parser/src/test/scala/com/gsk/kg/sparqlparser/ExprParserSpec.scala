@@ -356,8 +356,8 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     p.get.value match {
       case Project(
             Seq(VARIABLE("?p1")),
-            Group(Seq(VARIABLE("?p1")), None, BGP(_))
-          ) =>
+            Group(Seq(VARIABLE("?p1")), seq, BGP(_))
+          ) if seq.isEmpty =>
         succeed
       case _ => fail
     }
@@ -372,8 +372,8 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     p.get.value match {
       case Project(
             Seq(VARIABLE("?p1"), VARIABLE("?p2")),
-            Group(Seq(VARIABLE("?p1"), VARIABLE("?p2")), None, BGP(_))
-          ) =>
+            Group(Seq(VARIABLE("?p1"), VARIABLE("?p2")), seq, BGP(_))
+          ) if seq.isEmpty =>
         succeed
       case _ => fail
     }
@@ -395,7 +395,7 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
               VARIABLE("?0"),
               Group(
                 Seq(VARIABLE("?p1")),
-                Some((VARIABLE("?0"), Aggregate.COUNT(VARIABLE("?p1")))),
+                Seq((VARIABLE("?0"), Aggregate.COUNT(VARIABLE("?p1")))),
                 BGP(
                   Seq(
                     Quad(
@@ -436,7 +436,7 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
               VARIABLE("?0"),
               Group(
                 Seq(),
-                Some((VARIABLE("?0"), Aggregate.COUNT(VARIABLE("?s")))),
+                Seq((VARIABLE("?0"), Aggregate.COUNT(VARIABLE("?s")))),
                 BGP(
                   Seq(
                     Quad(
@@ -456,6 +456,46 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
           ) =>
         succeed
       case _ => fail
+    }
+  }
+
+  it should "work correctly when there's more than one aggregate function" in {
+    val query = """(group
+      ()
+      ((?.0 (count ?pred)) (?.1 (min ?year)))
+      (bgp
+        (triple ?pred
+                <http://example.com/year>
+                ?year)))
+    """
+
+    val p = fastparse
+      .parse(
+        query,
+        x => ExprParser.groupParen(x)
+      )
+
+    p.get.value match {
+      case Group(
+            Seq(),
+            Seq(
+              (VARIABLE("?0"), Aggregate.COUNT(VARIABLE("?pred"))),
+              (VARIABLE("?1"), Aggregate.MIN(VARIABLE("?year")))
+            ),
+            BGP(
+              Seq(
+                Quad(
+                  VARIABLE("?pred"),
+                  URIVAL("<http://example.com/year>"),
+                  VARIABLE("?year"),
+                  List(GRAPH_VARIABLE)
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ =>
+        fail("this query should parse to Group")
     }
   }
 

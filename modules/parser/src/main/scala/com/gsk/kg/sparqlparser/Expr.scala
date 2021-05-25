@@ -103,7 +103,7 @@ object Expr {
   ) extends Expr
   final case class Group(
       vars: Seq[VARIABLE],
-      func: Option[(VARIABLE, Expression)],
+      func: Seq[(VARIABLE, Expression)],
       r: Expr
   )                                                           extends Expr
   final case class Order(conds: Seq[ConditionOrder], r: Expr) extends Expr

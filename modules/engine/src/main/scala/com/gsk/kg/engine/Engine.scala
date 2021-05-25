@@ -190,7 +190,7 @@ object Engine {
 
   private def evaluateGroup(
       vars: List[VARIABLE],
-      func: Option[(VARIABLE, Expression)],
+      func: List[(VARIABLE, Expression)],
       r: Multiset
   ): M[Multiset] = {
     val df = r.dataframe
@@ -212,24 +212,24 @@ object Engine {
   private def evaluateAggregation(
       vars: List[VARIABLE],
       df: RelationalGroupedDataset,
-      func: Option[(VARIABLE, Expression)]
+      func: List[(VARIABLE, Expression)]
   ): M[DataFrame] = func match {
-    case None =>
+    case Nil =>
       val cols: List[Column] = vars.map(_.s).map(col).map(FuncAgg.sample)
       df.agg(cols.head, cols.tail: _*).pure[M]
-    case Some((VARIABLE(name), Aggregate.COUNT(VARIABLE(v)))) =>
+    case List((VARIABLE(name), Aggregate.COUNT(VARIABLE(v)))) =>
       df.agg(FuncAgg.countAgg(col(v)).as(name)).pure[M]
-    case Some((VARIABLE(name), Aggregate.SUM(VARIABLE(v)))) =>
+    case List((VARIABLE(name), Aggregate.SUM(VARIABLE(v)))) =>
       df.agg(FuncAgg.sumAgg(col(v)).as(name)).pure[M]
-    case Some((VARIABLE(name), Aggregate.MIN(VARIABLE(v)))) =>
+    case List((VARIABLE(name), Aggregate.MIN(VARIABLE(v)))) =>
       df.agg(FuncAgg.minAgg(col(v)).as(name)).pure[M]
-    case Some((VARIABLE(name), Aggregate.MAX(VARIABLE(v)))) =>
+    case List((VARIABLE(name), Aggregate.MAX(VARIABLE(v)))) =>
       df.agg(FuncAgg.maxAgg(col(v)).as(name)).pure[M]
-    case Some((VARIABLE(name), Aggregate.AVG(VARIABLE(v)))) =>
+    case List((VARIABLE(name), Aggregate.AVG(VARIABLE(v)))) =>
       df.agg(FuncAgg.avgAgg(col(v)).as(name)).pure[M]
-    case Some((VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v)))) =>
+    case List((VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v)))) =>
       df.agg(FuncAgg.sample(col(v)).as(name)).pure[M]
-    case Some(
+    case List(
           (VARIABLE(name), Aggregate.GROUP_CONCAT(VARIABLE(v), separator))
         ) =>
       df.agg(FuncAgg.groupConcat(col(v), separator))
