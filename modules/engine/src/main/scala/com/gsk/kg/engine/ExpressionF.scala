@@ -44,6 +44,7 @@ object ExpressionF {
   final case class AND[A](l: A, r: A)    extends ExpressionF[A]
   final case class NEGATE[A](s: A)       extends ExpressionF[A]
   final case class URI[A](s: A)          extends ExpressionF[A]
+  final case class LANG[A](s: A)         extends ExpressionF[A]
   final case class LCASE[A](s: A)        extends ExpressionF[A]
   final case class UCASE[A](s: A)        extends ExpressionF[A]
   final case class ISLITERAL[A](s: A)    extends ExpressionF[A]
@@ -83,6 +84,7 @@ object ExpressionF {
       case Conditional.AND(l, r)    => AND(l, r)
       case Conditional.NEGATE(s)    => NEGATE(s)
       case BuiltInFunc.URI(s)       => URI(s)
+      case BuiltInFunc.LANG(s)      => LANG(s)
       case BuiltInFunc.LCASE(s)     => LCASE(s)
       case BuiltInFunc.UCASE(s)     => UCASE(s)
       case BuiltInFunc.ISLITERAL(s) => ISLITERAL(s)
@@ -166,6 +168,8 @@ object ExpressionF {
       case NEGATE(s)    => Conditional.NEGATE(s)
       case UCASE(s) =>
         BuiltInFunc.UCASE(s.asInstanceOf[StringLike])
+      case LANG(s) =>
+        BuiltInFunc.LANG(s.asInstanceOf[StringLike])
       case LCASE(s) =>
         BuiltInFunc.LCASE(s.asInstanceOf[StringLike])
       case ISLITERAL(s) =>
@@ -277,6 +281,7 @@ object ExpressionF {
         case AND(l, r)                  => Func.and(l, r).pure[M]
         case NEGATE(s)                  => Func.negate(s).pure[M]
         case URI(s)                     => Func.iri(s).pure[M]
+        case LANG(s)                    => Func.lang(s).pure[M]
         case LCASE(s)                   => Func.lcase(s).pure[M]
         case UCASE(s)                   => Func.ucase(s).pure[M]
         case ISLITERAL(s)               => Func.isLiteral(s).pure[M]

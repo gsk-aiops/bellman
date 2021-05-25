@@ -518,6 +518,18 @@ object Func {
     )
   }
 
+  /** Implementation of SparQL LANG on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-lang]]
+    * @param col
+    * @return
+    */
+  def lang(col: Column): Column =
+    when(
+      col.startsWith("\"") && col.contains("\"@"),
+      trim(substring_index(col, "\"@", -1), "\"")
+    ).otherwise(lit(""))
+
   /** Implementation of SparQL LCASE on Spark dataframes.
     *
     * @see [[https://www.w3.org/TR/sparql11-query/#func-lcase]]

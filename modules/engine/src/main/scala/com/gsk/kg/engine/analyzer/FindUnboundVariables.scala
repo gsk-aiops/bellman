@@ -136,6 +136,7 @@ object FindVariablesOnExpression {
         case MAX(e)                          => e
         case AVG(e)                          => e
         case SAMPLE(e)                       => e
+        case LANG(e)                         => e
         case LCASE(e)                        => e
         case UCASE(e)                        => e
         case ISLITERAL(e)                    => e
