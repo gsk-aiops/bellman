@@ -54,6 +54,10 @@ trait ExpressionArbitraries extends CommonGenerators {
     (Gen
       .lzy(expressionGenerator))
       .map(BuiltInFunc.LANG(_)),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(BuiltInFunc.LANGMATCHES(_, _)),
     (Gen
       .lzy(expressionGenerator))
       .map(BuiltInFunc.LCASE(_)),
