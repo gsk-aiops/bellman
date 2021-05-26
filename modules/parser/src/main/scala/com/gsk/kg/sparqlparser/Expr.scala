@@ -109,7 +109,7 @@ object Expr {
   final case class Order(conds: Seq[ConditionOrder], r: Expr) extends Expr
   final case class Distinct(r: Expr)                          extends Expr
   final case class Table(vars: Seq[VARIABLE], rows: Seq[Row]) extends Expr
-  final case class Row(tuples: Seq[(VARIABLE, Expression)])   extends Expr
+  final case class Row(tuples: Seq[(VARIABLE, StringVal)])    extends Expr
   final case class OpNil()                                    extends Expr
   final case class TabUnit()                                  extends Expr
 }

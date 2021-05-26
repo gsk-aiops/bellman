@@ -3,6 +3,7 @@ package com.gsk.kg.sparqlparser
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+
 import fastparse.MultiLineWhitespace._
 import fastparse._
 
@@ -144,13 +145,13 @@ object ExprParser {
     Order(p._1, p._2)
   }
 
-  def tupleParen[_: P]: P[(VARIABLE, Expression)] = P(
-    "[" ~ StringValParser.variable ~ ExpressionParser.parser ~ "]"
+  def tupleParen[_: P]: P[(VARIABLE, StringVal)] = P(
+    "[" ~ StringValParser.variable ~ StringValParser.tripleValParser ~ "]"
   )
 
   def rowParen[_: P]: P[Row] = P(
     "(" ~ row ~ tupleParen.rep(0) ~ ")"
-  ).map(r => Row(r))
+  ).map(Row)
 
   def tableParen[_: P]: P[Table] = P(
     "(" ~ table ~ "(" ~ vars ~ StringValParser.variable.rep(0) ~ ")" ~ rowParen

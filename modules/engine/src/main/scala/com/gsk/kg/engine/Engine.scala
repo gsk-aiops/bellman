@@ -13,11 +13,11 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Encoder
 import org.apache.spark.sql.RelationalGroupedDataset
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{Row => SparkRow}
 
 import com.gsk.kg.config.Config
 import com.gsk.kg.engine.data.ChunkedList
@@ -26,6 +26,7 @@ import com.gsk.kg.engine.functions.FuncAgg
 import com.gsk.kg.sparqlparser.ConditionOrder.ASC
 import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr.Quad
+import com.gsk.kg.sparqlparser.Expr.Row
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringVal._
@@ -55,6 +56,7 @@ object Engine {
       case DAG.Distinct(r)             => evaluateDistinct(r)
       case DAG.Group(vars, func, r)    => evaluateGroup(vars, func, r)
       case DAG.Order(conds, r)         => evaluateOrder(conds, r)
+      case DAG.Table(vars, rows)       => evaluateTable(vars, rows)
       case DAG.Noop(str)               => notImplemented("Noop")
     }
 
@@ -93,7 +95,7 @@ object Engine {
     } yield dataFrame
   }
 
-  implicit val spoEncoder: Encoder[Row] = RowEncoder(
+  implicit val spoEncoder: Encoder[SparkRow] = RowEncoder(
     StructType(
       List(
         StructField("s", StringType),
@@ -365,7 +367,7 @@ object Engine {
             .sortBy(_._2)
             .map(_._1)
 
-          Row.fromSeq(fields)
+          SparkRow.fromSeq(fields)
         }
       }
       .distinct()
@@ -388,6 +390,37 @@ object Engine {
       }
     }
   }
+
+  private def evaluateTable(
+      vars: List[VARIABLE],
+      rows: List[Row]
+  )(implicit sc: SQLContext): M[Multiset] = {
+    import scala.collection.JavaConverters._
+
+    def parseRow(totalVars: Seq[VARIABLE], row: Row): SparkRow = {
+      SparkRow.fromSeq(totalVars.foldLeft(Seq.empty[String]) { case (acc, v) =>
+        val parsed = row.tuples
+          .groupBy(_._1.s)
+          .mapValues(_.map(_._2.s))
+          .getOrElse(v.s, Seq(null)) // scalastyle:ignore
+        acc ++ parsed
+      } :+ "")
+    }
+
+    val sparkRows = rows.map(r => parseRow(vars, r))
+    val schema = StructType(
+      vars
+        .map(name => StructField(name.s, StringType, true)) :+
+        StructField(GRAPH_VARIABLE.s, StringType, false)
+    )
+
+    val df = sc.sparkSession.createDataFrame(sparkRows.asJava, schema)
+
+    Multiset(
+      bindings = (vars :+ VARIABLE(GRAPH_VARIABLE.s)).toSet,
+      dataframe = df
+    )
+  }.pure[M]
 
   private def notImplemented(constructor: String): M[Multiset] =
     M.liftF[Result, Config, Log, DataFrame, Multiset](
