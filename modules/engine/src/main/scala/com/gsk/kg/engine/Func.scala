@@ -10,7 +10,10 @@ import com.gsk.kg.engine.Func.StringFunctionUtils._
 import com.gsk.kg.engine.functions.Literals._
 
 import java.nio.charset.StandardCharsets
+import java.util.Locale
 import java.util.regex.Pattern
+
+import scala.collection.JavaConverters._
 
 import org.apache.commons.codec.binary.Hex
 
@@ -529,6 +532,27 @@ object Func {
       col.startsWith("\"") && col.contains("\"@"),
       trim(substring_index(col, "\"@", -1), "\"")
     ).otherwise(lit(""))
+
+  /** Implementation of SparQL LANGMATCHES on Spark dataframes.
+    *
+    * @see [[https://www.w3.org/TR/sparql11-query/#func-langMatches]]
+    * @param col
+    * @return
+    */
+  def langMatches(col: Column, range: String): Column = {
+    val langMatch =
+      udf((tag: String, range: String) => hasMatchingLangTag(tag, range))
+    when(col === lit("") && range == "*", lit(false))
+      .otherwise(langMatch(col, lit(range)))
+  }
+
+  private def hasMatchingLangTag(tag: String, range: String): Boolean =
+    !Locale
+      .filter(
+        Locale.LanguageRange.parse(range),
+        List(Locale.forLanguageTag(tag)).asJava
+      )
+      .isEmpty
 
   /** Implementation of SparQL LCASE on Spark dataframes.
     *

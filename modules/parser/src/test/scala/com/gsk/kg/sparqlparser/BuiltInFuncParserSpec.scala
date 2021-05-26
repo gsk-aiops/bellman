@@ -312,4 +312,17 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "LANGMATCHES parser" should "return LANGMATCHES type" in {
+    val p =
+      fastparse.parse(
+        """(langMatches ?d "FR")""",
+        BuiltInFuncParser.langMatchesParen(_)
+      )
+    p.get.value match {
+      case LANGMATCHES(VARIABLE("?d"), STRING("FR")) =>
+        succeed
+      case _ => fail
+    }
+  }
 }

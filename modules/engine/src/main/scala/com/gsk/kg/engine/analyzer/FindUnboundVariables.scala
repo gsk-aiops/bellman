@@ -137,6 +137,7 @@ object FindVariablesOnExpression {
         case AVG(e)                          => e
         case SAMPLE(e)                       => e
         case LANG(e)                         => e
+        case LANGMATCHES(e, range)           => e
         case LCASE(e)                        => e
         case UCASE(e)                        => e
         case ISLITERAL(e)                    => e

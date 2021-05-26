@@ -34,20 +34,21 @@ object ExpressionF {
   final case class STRBEFORE[A](s: A, f: String) extends ExpressionF[A]
   final case class SUBSTR[A](s: A, pos: Int, len: Option[Int])
       extends ExpressionF[A]
-  final case class STRLEN[A](s: A)       extends ExpressionF[A]
-  final case class EQUALS[A](l: A, r: A) extends ExpressionF[A]
-  final case class GT[A](l: A, r: A)     extends ExpressionF[A]
-  final case class LT[A](l: A, r: A)     extends ExpressionF[A]
-  final case class GTE[A](l: A, r: A)    extends ExpressionF[A]
-  final case class LTE[A](l: A, r: A)    extends ExpressionF[A]
-  final case class OR[A](l: A, r: A)     extends ExpressionF[A]
-  final case class AND[A](l: A, r: A)    extends ExpressionF[A]
-  final case class NEGATE[A](s: A)       extends ExpressionF[A]
-  final case class URI[A](s: A)          extends ExpressionF[A]
-  final case class LANG[A](s: A)         extends ExpressionF[A]
-  final case class LCASE[A](s: A)        extends ExpressionF[A]
-  final case class UCASE[A](s: A)        extends ExpressionF[A]
-  final case class ISLITERAL[A](s: A)    extends ExpressionF[A]
+  final case class STRLEN[A](s: A)                     extends ExpressionF[A]
+  final case class EQUALS[A](l: A, r: A)               extends ExpressionF[A]
+  final case class GT[A](l: A, r: A)                   extends ExpressionF[A]
+  final case class LT[A](l: A, r: A)                   extends ExpressionF[A]
+  final case class GTE[A](l: A, r: A)                  extends ExpressionF[A]
+  final case class LTE[A](l: A, r: A)                  extends ExpressionF[A]
+  final case class OR[A](l: A, r: A)                   extends ExpressionF[A]
+  final case class AND[A](l: A, r: A)                  extends ExpressionF[A]
+  final case class NEGATE[A](s: A)                     extends ExpressionF[A]
+  final case class URI[A](s: A)                        extends ExpressionF[A]
+  final case class LANG[A](s: A)                       extends ExpressionF[A]
+  final case class LANGMATCHES[A](s: A, range: String) extends ExpressionF[A]
+  final case class LCASE[A](s: A)                      extends ExpressionF[A]
+  final case class UCASE[A](s: A)                      extends ExpressionF[A]
+  final case class ISLITERAL[A](s: A)                  extends ExpressionF[A]
   final case class CONCAT[A](appendTo: A, append: NonEmptyList[A])
       extends ExpressionF[A]
   final case class STR[A](s: A)       extends ExpressionF[A]
@@ -85,6 +86,8 @@ object ExpressionF {
       case Conditional.NEGATE(s)    => NEGATE(s)
       case BuiltInFunc.URI(s)       => URI(s)
       case BuiltInFunc.LANG(s)      => LANG(s)
+      case BuiltInFunc.LANGMATCHES(s, StringVal.STRING(range)) =>
+        LANGMATCHES(s, range)
       case BuiltInFunc.LCASE(s)     => LCASE(s)
       case BuiltInFunc.UCASE(s)     => UCASE(s)
       case BuiltInFunc.ISLITERAL(s) => ISLITERAL(s)
@@ -170,6 +173,11 @@ object ExpressionF {
         BuiltInFunc.UCASE(s.asInstanceOf[StringLike])
       case LANG(s) =>
         BuiltInFunc.LANG(s.asInstanceOf[StringLike])
+      case LANGMATCHES(s, range) =>
+        BuiltInFunc.LANGMATCHES(
+          s.asInstanceOf[StringLike],
+          range.asInstanceOf[StringLike]
+        )
       case LCASE(s) =>
         BuiltInFunc.LCASE(s.asInstanceOf[StringLike])
       case ISLITERAL(s) =>
@@ -282,6 +290,7 @@ object ExpressionF {
         case NEGATE(s)                  => Func.negate(s).pure[M]
         case URI(s)                     => Func.iri(s).pure[M]
         case LANG(s)                    => Func.lang(s).pure[M]
+        case LANGMATCHES(s, range)      => Func.langMatches(s, range).pure[M]
         case LCASE(s)                   => Func.lcase(s).pure[M]
         case UCASE(s)                   => Func.ucase(s).pure[M]
         case ISLITERAL(s)               => Func.isLiteral(s).pure[M]
