@@ -78,7 +78,7 @@ trait DAGArbitraries
   def groupGenerator[A](implicit A: Arbitrary[A]): Gen[Group[A]] =
     (
       Gen.nonEmptyListOf(variableGenerator),
-      Gen.option(
+      Gen.listOf(
         variableGenerator.flatMap(v => expressionGenerator.map(e => (v, e)))
       ),
       Gen.lzy(A.arbitrary)

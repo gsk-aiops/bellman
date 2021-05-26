@@ -72,15 +72,21 @@ object ExprParser {
         ParsingRun.current.freshFailure()
     }
 
-  def assignment[_: P]: P[(StringVal.VARIABLE, Expression)] = P(
-    "((" ~ StringValParser.variable ~ exprFunc ~ "))"
+  def assignment[_: P]: P[Seq[(StringVal.VARIABLE, Expression)]] = P(
+    "(" ~ ("(" ~ StringValParser.variable ~ exprFunc ~ ")").rep ~ ")"
   )
 
   def groupParen[_: P]: P[Group] = P(
     "(" ~ group ~ "(" ~ (StringValParser.variable).rep(
       0
-    ) ~ ")" ~ assignment.repX(max = 1) ~ graphPattern ~ ")"
-  ).map(p => Group(p._1, p._2.headOption, p._3))
+    ) ~ ")" ~ assignment.? ~ graphPattern ~ ")"
+  ).map(p =>
+    Group(
+      p._1,
+      p._2.fold(Seq.empty[(StringVal.VARIABLE, Expression)])(identity),
+      p._3
+    )
+  )
 
   def filterListParen[_: P]: P[Filter] =
     P("(" ~ filter ~ filterExprList ~ graphPattern ~ ")").map { p =>

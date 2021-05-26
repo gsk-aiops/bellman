@@ -583,5 +583,53 @@ class GroupBySpec
         Row("5")
       )
     }
+
+    "work correctly in queries with more than one aggregator" in {
+
+      val df = List(
+        (
+          "<http://uri.com/subject/a1>",
+          "<http://uri.com/predicate>",
+          "\"4\"^^xsd:int"
+        ),
+        (
+          "<http://uri.com/subject/a1>",
+          "<http://uri.com/predicate>",
+          "\"2\"^^xsd:int"
+        ),
+        (
+          "<http://uri.com/subject/a2>",
+          "<http://uri.com/predicate>",
+          "\"3\"^^xsd:int"
+        ),
+        (
+          "<http://uri.com/subject/a2>",
+          "<http://uri.com/predicate>",
+          "\"4\"^^xsd:int"
+        ),
+        (
+          "<http://uri.com/subject/a3>",
+          "<http://uri.com/predicate>",
+          "\"2\"^^xsd:int"
+        )
+      ).toDF("s", "p", "o")
+
+      val query =
+        """
+          SELECT COUNT(?o) AVG(?o)
+          WHERE {
+            ?s ?p ?o
+          }
+          """
+
+      val result = Compiler.compile(df, query, config) match {
+        case Left(a)  => throw new RuntimeException(a.toString)
+        case Right(b) => b
+      }
+
+      result.collect shouldEqual Array(
+        Row("5", "3.0")
+      )
+    }
   }
 }
