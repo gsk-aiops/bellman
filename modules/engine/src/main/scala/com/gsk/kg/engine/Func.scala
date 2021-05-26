@@ -13,9 +13,9 @@ import java.nio.charset.StandardCharsets
 import java.util.Locale
 import java.util.regex.Pattern
 
-import org.apache.commons.codec.binary.Hex
-
 import scala.collection.JavaConverters._
+
+import org.apache.commons.codec.binary.Hex
 
 object Func {
 
