@@ -542,7 +542,7 @@ object Func {
   def langMatches(col: Column, range: String): Column = {
     val langMatch =
       udf((tag: String, range: String) => hasMatchingLangTag(tag, range))
-    when(col === lit("") && lit(range) === "*", lit(false))
+    when(col === lit("") && range == "*", lit(false))
       .otherwise(langMatch(col, lit(range)))
   }
 
