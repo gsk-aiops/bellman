@@ -395,7 +395,6 @@ object Engine {
       vars: List[VARIABLE],
       rows: List[Row]
   )(implicit sc: SQLContext): M[Multiset] = {
-    import scala.collection.JavaConverters._
 
     def parseRow(totalVars: Seq[VARIABLE], row: Row): SparkRow = {
       SparkRow.fromSeq(totalVars.foldLeft(Seq.empty[String]) { case (acc, v) =>
@@ -414,7 +413,10 @@ object Engine {
         StructField(GRAPH_VARIABLE.s, StringType, false)
     )
 
-    val df = sc.sparkSession.createDataFrame(sparkRows.asJava, schema)
+    val df = sc.sparkSession.createDataFrame(
+      sc.sparkContext.parallelize(sparkRows),
+      schema
+    )
 
     Multiset(
       bindings = (vars :+ VARIABLE(GRAPH_VARIABLE.s)).toSet,
