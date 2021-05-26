@@ -98,6 +98,8 @@ object FindUnboundVariables {
           }
 
         (declared, (condVars diff declared) ++ unbound)
+      case Table(vars, rows) =>
+        (vars.toSet, Set.empty)
       case Noop(trace) =>
         (Set.empty, Set.empty)
     }

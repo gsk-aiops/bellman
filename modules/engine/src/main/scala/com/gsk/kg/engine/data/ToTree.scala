@@ -105,7 +105,12 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case DAG.Order(conds, r) =>
             Node("Order", conds.map(_.toTree).toList.toStream #::: Stream(r))
           case DAG.Distinct(r) => Node("Distinct", Stream(r))
-          case DAG.Noop(str)   => Leaf(s"Noop($str)")
+          case DAG.Table(vars, rows) =>
+            val v: List[Expression] = vars
+            val rs: List[List[(Expression, Expression)]] =
+              rows.map(_.tuples.toList)
+            Node("Table", Stream(v.toTree, rs.toTree))
+          case DAG.Noop(str) => Leaf(s"Noop($str)")
         }
 
         val t = scheme.cata(alg)

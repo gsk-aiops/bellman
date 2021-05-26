@@ -203,5 +203,8 @@ $RECYCLE.BIN/
 #vim
 *.swp
 
+#metals
+.metals
+
 sonatype.sbt
 .vscode

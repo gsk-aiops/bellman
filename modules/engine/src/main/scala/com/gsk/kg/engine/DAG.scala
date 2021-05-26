@@ -63,7 +63,9 @@ object DAG {
   ) extends DAG[A]
   @Lenses final case class Order[A](conds: NonEmptyList[ConditionOrder], r: A)
       extends DAG[A]
-  @Lenses final case class Distinct[A](r: A)      extends DAG[A]
+  @Lenses final case class Distinct[A](r: A) extends DAG[A]
+  @Lenses final case class Table[A](vars: List[VARIABLE], rows: List[Expr.Row])
+      extends DAG[A]
   @Lenses final case class Noop[A](trace: String) extends DAG[A]
 
   implicit val traverse: Traverse[DAG] = new DefaultTraverse[DAG] {
@@ -76,7 +78,7 @@ object DAG {
         case DAG.Project(variables, r) => f(r).map(project(variables, _))
         case DAG.Bind(variable, expression, r) =>
           f(r).map(bind(variable, expression, _))
-        case DAG.BGP(quads) => bgp(quads).pure[G]
+        case DAG.BGP(quads) => bgp[B](quads).pure[G]
         case DAG.LeftJoin(l, r, filters) =>
           (
             f(l),
@@ -93,7 +95,8 @@ object DAG {
         case DAG.Distinct(r)          => f(r).map(distinct)
         case DAG.Group(vars, func, r) => f(r).map(group(vars, func, _))
         case DAG.Order(conds, r)      => f(r).map(order(conds, _))
-        case DAG.Noop(str)            => noop(str).pure[G]
+        case DAG.Table(vars, rows)    => table[B](vars, rows).pure[G]
+        case DAG.Noop(str)            => noop[B](str).pure[G]
       }
   }
 
@@ -126,6 +129,8 @@ object DAG {
     Group[A](vars, func, r)
   def order[A](conds: NonEmptyList[ConditionOrder], r: A): DAG[A] =
     Order[A](conds, r)
+  def table[A](vars: List[VARIABLE], rows: List[Expr.Row]): DAG[A] =
+    Table[A](vars, rows)
   def noop[A](trace: String): DAG[A] = Noop[A](trace)
 
   // Smart constructors for building the recursive version directly
@@ -171,7 +176,9 @@ object DAG {
   def orderR[T: Embed[DAG, *]](
       conds: NonEmptyList[ConditionOrder],
       r: T
-  ): T                                          = order[T](conds, r).embed
+  ): T = order[T](conds, r).embed
+  def tableR[T: Embed[DAG, *]](vars: List[VARIABLE], rows: List[Expr.Row]): T =
+    table[T](vars, rows).embed
   def noopR[T: Embed[DAG, *]](trace: String): T = noop[T](trace).embed
 
   /** Transform a [[Query]] into its [[Fix[DAG]]] representation
@@ -213,7 +220,9 @@ object DAG {
       case OffsetLimitF(Some(o), Some(l), r) => offset(o, limit(l, r).embed)
       case FilterF(funcs, expr) =>
         filter(NonEmptyList.fromListUnsafe(funcs.toList), expr)
-      case TabUnitF() => noop("TabUnitF not supported yet")
+      case TableF(vars, rows) => table(vars.toList, rows.toList)
+      case RowF(tuples)       => noop("RowF not supported yet")
+      case TabUnitF()         => noop("TabUnitF not supported yet")
     }
 
   implicit def dagEq[A: Eq]: Eq[DAG[A]] =
@@ -240,6 +249,7 @@ object DAG {
   implicit def eqGroup[A]: Eq[Group[A]]         = Eq.fromUniversalEquals
   implicit def eqOrder[A]: Eq[Order[A]]         = Eq.fromUniversalEquals
   implicit def eqDistinct[A]: Eq[Distinct[A]]   = Eq.fromUniversalEquals
+  implicit def eqTable[A]: Eq[Table[A]]         = Eq.fromUniversalEquals
   implicit def eqNoop[A]: Eq[Noop[A]]           = Eq.fromUniversalEquals
 }
 
@@ -302,6 +312,8 @@ object optics {
     .partial[DAG[T], Group[T]] { case dag @ Group(_, _, _) => dag }(identity)
   def _order[T: Basis[DAG, *]]: Prism[DAG[T], Order[T]] = Prism
     .partial[DAG[T], Order[T]] { case dag @ Order(_, _) => dag }(identity)
+  def _table[T: Basis[DAG, *]]: Prism[DAG[T], Table[T]] = Prism
+    .partial[DAG[T], Table[T]] { case dag @ Table(_, _) => dag }(identity)
   def _noop[T: Basis[DAG, *]]: Prism[DAG[T], Noop[T]] =
     Prism.partial[DAG[T], Noop[T]] { case dag @ Noop(trace: String) => dag }(
       identity
@@ -339,6 +351,8 @@ object optics {
     basisIso[DAG, T] composePrism _group
   def _orderR[T: Basis[DAG, *]]: Prism[T, Order[T]] =
     basisIso[DAG, T] composePrism _order
+  def _tableR[T: Basis[DAG, *]]: Prism[T, Table[T]] =
+    basisIso[DAG, T] composePrism _table
   def _noopR[T: Basis[DAG, *]]: Prism[T, Noop[T]] =
     basisIso[DAG, T] composePrism _noop
 
