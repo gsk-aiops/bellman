@@ -205,3 +205,4 @@ $RECYCLE.BIN/
 
 sonatype.sbt
 .vscode
+.bloop
