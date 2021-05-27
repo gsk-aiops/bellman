@@ -499,6 +499,47 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     }
   }
 
+  "Minus" should "parse correctly" in {
+    val query = """(minus
+          (bgp (triple ?s ?p ?o))
+          (bgp (triple ?x ?y ?z)))
+        """
+
+    val p = fastparse
+      .parse(
+        query,
+        x => ExprParser.minusParen(x)
+      )
+
+    p.get.value match {
+      case Minus(
+            BGP(
+              Seq(
+                Quad(
+                  VARIABLE("?s"),
+                  VARIABLE("?p"),
+                  VARIABLE("?o"),
+                  List(GRAPH_VARIABLE)
+                )
+              )
+            ),
+            BGP(
+              Seq(
+                Quad(
+                  VARIABLE("?x"),
+                  VARIABLE("?y"),
+                  VARIABLE("?z"),
+                  List(GRAPH_VARIABLE)
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ =>
+        fail("this query should parse to Minus")
+    }
+  }
+
   "Order By" should "return proper type when simple variable" in {
     val p = fastparse.parse(
       sparql2Algebra(

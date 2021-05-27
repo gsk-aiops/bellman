@@ -27,6 +27,7 @@ object ExprParser {
   def table[_: P]: P[Unit]       = P("table")
   def row[_: P]: P[Unit]         = P("row")
   def vars[_: P]: P[Unit]        = P("vars")
+  def minus[_: P]: P[Unit]       = P("minus")
 
   def opNull[_: P]: P[OpNil]      = P("(null)").map(_ => OpNil())
   def tableUnit[_: P]: P[TabUnit] = P("(table unit)").map(_ => TabUnit())
@@ -159,6 +160,13 @@ object ExprParser {
         0
       ) ~ ")"
   ).map { case (vs, rs) => Table(vs, rs) }
+
+  def minusParen[_: P]: P[Minus] = P(
+    "(" ~ minus ~ graphPattern ~ graphPattern ~ ")"
+  ).map { p =>
+    Minus(p._1, p._2)
+  }
+
 
   def graphPattern[_: P]: P[Expr] =
     P(
