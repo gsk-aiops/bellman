@@ -2427,6 +2427,43 @@ class FuncSpec
     }
   }
 
+  "Func.langMatches" should {
+
+    "correctly apply function when used with range" in {
+      val initial = List(
+        ("fr", true),
+        ("fr-BE", true),
+        ("en", false),
+        ("", false)
+      ).toDF("tags", "expected")
+
+      val range = "FR"
+      val df =
+        initial.withColumn("result", Func.langMatches(initial("tags"), range))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+
+    "correctly apply function when used with wildcard" in {
+      val initial = List(
+        ("fr", true),
+        ("fr-BE", true),
+        ("en", true),
+        ("", false)
+      ).toDF("tags", "expected")
+
+      val range = "*"
+      val df =
+        initial.withColumn("result", Func.langMatches(initial("tags"), range))
+
+      df.collect.foreach { case Row(_, expected, result) =>
+        expected shouldEqual result
+      }
+    }
+  }
+
   def toRDFDateTime(datetime: TemporalAccessor): String =
     "\"" + DateTimeFormatter
       .ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]")

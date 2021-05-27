@@ -155,6 +155,8 @@ object prelude {
       RefTree.Ref(dag, Seq(vars.refTree.toField, r.toField))
     case dag @ DAG.Order(conds, r) =>
       RefTree.Ref(dag, Seq(conds.refTree.toField, r.toField))
+    case dag @ DAG.Table(vars, rows) =>
+      RefTree.Ref(dag, vars.map(_.refTree.toField))
     case dag @ DAG.Noop(str) => RefTree.Ref(dag, Seq())
   }
 }

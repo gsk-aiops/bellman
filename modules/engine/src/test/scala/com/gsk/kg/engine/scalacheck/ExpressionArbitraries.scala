@@ -54,6 +54,10 @@ trait ExpressionArbitraries extends CommonGenerators {
     (Gen
       .lzy(expressionGenerator))
       .map(BuiltInFunc.LANG(_)),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(BuiltInFunc.LANGMATCHES(_, _)),
     (Gen
       .lzy(expressionGenerator))
       .map(BuiltInFunc.LCASE(_)),
@@ -75,8 +79,6 @@ trait ExpressionArbitraries extends CommonGenerators {
   val conditionalGenerator: Gen[Expression] = Gen.oneOf(
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
       .mapN(Conditional.EQUALS(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(Conditional.NOTEQUALS(_, _)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
       .mapN(Conditional.GT(_, _)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))

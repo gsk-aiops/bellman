@@ -28,6 +28,7 @@ object BuiltInFuncParser {
   def isNumeric[_: P]: P[Unit]    = P("isNumeric")
   def encodeForURI[_: P]: P[Unit] = P("encode_for_uri")
   def lang[_: P]: P[Unit]         = P("lang")
+  def langMatches[_: P]: P[Unit]  = P("langMatches")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
@@ -127,6 +128,12 @@ object BuiltInFuncParser {
     P("(" ~ lang ~ ExpressionParser.parser ~ ")")
       .map(f => LANG(f))
 
+  def langMatchesParen[_: P]: P[LANGMATCHES] =
+    P(
+      "(" ~ langMatches ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")"
+    )
+      .map(f => LANGMATCHES(f._1, f._2))
+
   def funcPatterns[_: P]: P[StringLike] =
     P(
       uriParen
@@ -151,6 +158,7 @@ object BuiltInFuncParser {
         | isNumericParen
         | encodeForURIParen
         | langParen
+        | langMatchesParen
     )
 //      | StringValParser.string
 //      | StringValParser.variable)

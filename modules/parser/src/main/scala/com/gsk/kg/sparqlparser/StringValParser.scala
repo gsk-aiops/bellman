@@ -46,7 +46,7 @@ object StringValParser {
       VARIABLE(str.replace(".", ""))
     )
   def urival[_: P]: P[URIVAL] =
-    iri.map(URIVAL)
+    iri.map(x => URIVAL(x))
   def num[_: P]: P[NUM] =
     P("-".? ~ CharsWhileIn("0-9") ~ ("." ~ CharsWhileIn("0-9")).?).!.map {
       NUM

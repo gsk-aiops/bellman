@@ -9,15 +9,14 @@ sealed trait Expression
 sealed trait Conditional extends Expression
 
 object Conditional {
-  final case class EQUALS(l: Expression, r: Expression)    extends Conditional
-  final case class NOTEQUALS(l: Expression, r: Expression) extends Conditional
-  final case class GT(l: Expression, r: Expression)        extends Conditional
-  final case class GTE(l: Expression, r: Expression)       extends Conditional
-  final case class LT(l: Expression, r: Expression)        extends Conditional
-  final case class LTE(l: Expression, r: Expression)       extends Conditional
-  final case class OR(l: Expression, r: Expression)        extends Conditional
-  final case class AND(l: Expression, r: Expression)       extends Conditional
-  final case class NEGATE(s: Expression)                   extends Conditional
+  final case class EQUALS(l: Expression, r: Expression) extends Conditional
+  final case class GT(l: Expression, r: Expression)     extends Conditional
+  final case class GTE(l: Expression, r: Expression)    extends Conditional
+  final case class LT(l: Expression, r: Expression)     extends Conditional
+  final case class LTE(l: Expression, r: Expression)    extends Conditional
+  final case class OR(l: Expression, r: Expression)     extends Conditional
+  final case class AND(l: Expression, r: Expression)    extends Conditional
+  final case class NEGATE(s: Expression)                extends Conditional
 }
 
 sealed trait StringLike extends Expression
@@ -28,9 +27,11 @@ object BuiltInFunc {
   final case class CONCAT(
       appendTo: Expression,
       append: List[Expression]
-  )                                                        extends BuiltInFunc
-  final case class STR(s: Expression)                      extends BuiltInFunc
-  final case class LANG(s: Expression)                     extends BuiltInFunc
+  )                                    extends BuiltInFunc
+  final case class STR(s: Expression)  extends BuiltInFunc
+  final case class LANG(s: Expression) extends BuiltInFunc
+  final case class LANGMATCHES(s: Expression, range: Expression)
+      extends BuiltInFunc
   final case class LCASE(s: Expression)                    extends BuiltInFunc
   final case class UCASE(s: Expression)                    extends BuiltInFunc
   final case class ISLITERAL(s: Expression)                extends BuiltInFunc

@@ -105,7 +105,12 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case DAG.Order(conds, r) =>
             Node("Order", conds.map(_.toTree).toList.toStream #::: Stream(r))
           case DAG.Distinct(r) => Node("Distinct", Stream(r))
-          case DAG.Noop(str)   => Leaf(s"Noop($str)")
+          case DAG.Table(vars, rows) =>
+            val v: List[Expression] = vars
+            val rs: List[List[(Expression, Expression)]] =
+              rows.map(_.tuples.toList)
+            Node("Table", Stream(v.toTree, rs.toTree))
+          case DAG.Noop(str) => Leaf(s"Noop($str)")
         }
 
         val t = scheme.cata(alg)
@@ -140,7 +145,9 @@ object ToTree extends LowPriorityToTreeInstances0 {
             Node("STRENDS", Stream(s, Leaf(f.toString)))
           case ExpressionF.STRSTARTS(s, f) =>
             Node("STRSTARTS", Stream(s, Leaf(f.toString)))
-          case ExpressionF.URI(s)       => Node("URI", Stream(s))
+          case ExpressionF.URI(s) => Node("URI", Stream(s))
+          case ExpressionF.LANGMATCHES(s, range) =>
+            Node("LANGMATCHES", Stream(s, Leaf(range.toString)))
           case ExpressionF.LANG(s)      => Node("LANG", Stream(s))
           case ExpressionF.LCASE(s)     => Node("LCASE", Stream(s))
           case ExpressionF.UCASE(s)     => Node("UCASE", Stream(s))
