@@ -28,13 +28,21 @@ class ExistsSpec
             "<http://xmlns.com/foaf/0.1/name>",
             "Alice"
           ),
-          ("<http://example.org/alice>", "<http://xmlns.com/foaf/0.1/age>", 23),
+          (
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/age>",
+            "23"
+          ),
           (
             "<http://example.org/bob>",
             "<http://xmlns.com/foaf/0.1/name>",
             "Bob"
           ),
-          ("<http://example.org/bob>", "<http://xmlns.com/foaf/0.1/age>", 35),
+          (
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/age>",
+            "35"
+          ),
           (
             "<http://example.org/bob>",
             "<http://xmlns.com/foaf/0.1/mail>",
@@ -77,13 +85,21 @@ class ExistsSpec
             "<http://xmlns.com/foaf/0.1/name>",
             "Alice"
           ),
-          ("<http://example.org/alice>", "<http://xmlns.com/foaf/0.1/age>", 23),
+          (
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/age>",
+            "23"
+          ),
           (
             "<http://example.org/bob>",
             "<http://xmlns.com/foaf/0.1/name>",
             "Bob"
           ),
-          ("<http://example.org/bob>", "<http://xmlns.com/foaf/0.1/age>", 35),
+          (
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/age>",
+            "35"
+          ),
           (
             "<http://example.org/bob>",
             "<http://xmlns.com/foaf/0.1/mail>",

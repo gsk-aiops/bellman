@@ -1,7 +1,6 @@
 package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.Conditional._
-
 import fastparse.MultiLineWhitespace._
 import fastparse._
 
@@ -15,6 +14,7 @@ object ConditionalParser {
   def and[_: P]: P[Unit]       = P("&&")
   def or[_: P]: P[Unit]        = P("||")
   def negate[_: P]: P[Unit]    = P("!")
+  def exists[_: P]: P[Unit]    = P("exists")
 
   def equalsParen[_: P]: P[EQUALS] =
     P("(" ~ equals ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
@@ -53,6 +53,10 @@ object ConditionalParser {
       f => OR(f._1, f._2)
     )
 
+  def existsParen[_: P]: P[EXISTS] = P(
+    "(" ~ exists ~ ExprParser.graphPattern ~ ")"
+  ).map(EXISTS)
+
   def negateParen[_: P]: P[NEGATE] =
     P("(" ~ negate ~ ExpressionParser.parser ~ ")").map(NEGATE(_))
 
@@ -66,6 +70,7 @@ object ConditionalParser {
         | ltParen
         | andParen
         | orParen
+        | existsParen
         | negateParen
     )
 }

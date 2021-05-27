@@ -778,6 +778,106 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     }
   }
 
+  "Exists" should "return proper type when simple query" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q47-exists-simple-query.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?name"), VARIABLE("?age")),
+            Filter(
+              Seq(
+                EXISTS(
+                  BGP(
+                    Seq(
+                      Quad(
+                        VARIABLE("?s"),
+                        URIVAL("<http://xmlns.com/foaf/0.1/mail>"),
+                        VARIABLE("?mail"),
+                        List(GRAPH_VARIABLE)
+                      )
+                    )
+                  )
+                )
+              ),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/name>"),
+                    VARIABLE("?name"),
+                    List(GRAPH_VARIABLE)
+                  ),
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/age>"),
+                    VARIABLE("?age"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "Not exists" should "return property when simple query" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q48-not-exists-simple-query.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?name"), VARIABLE("?age")),
+            Filter(
+              Seq(
+                NEGATE(
+                  EXISTS(
+                    BGP(
+                      Seq(
+                        Quad(
+                          VARIABLE("?s"),
+                          URIVAL("<http://xmlns.com/foaf/0.1/mail>"),
+                          VARIABLE("?mail"),
+                          List(GRAPH_VARIABLE)
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/name>"),
+                    VARIABLE("?name"),
+                    List(GRAPH_VARIABLE)
+                  ),
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/age>"),
+                    VARIABLE("?age"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
   /*Below are where assertions are beginning to get complex. The assumption is that previous tests appropriately exercise the parser
   combinator functions. Reading expected results from file instead of explicitly defining inline.
    */
