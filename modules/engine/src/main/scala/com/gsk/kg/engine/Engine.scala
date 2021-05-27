@@ -106,7 +106,7 @@ object Engine {
   )
 
   private def evaluateAsk(r: Multiset)(implicit sc: SQLContext): M[Multiset] = {
-    val askVariable = VARIABLE("?askResult")
+    val askVariable = VARIABLE("?_askResult")
     val isEmpty     = !r.dataframe.isEmpty
     val schema      = StructType(Seq(StructField(askVariable.s, BooleanType, false)))
     val rows        = Seq(SparkRow(isEmpty))
