@@ -30,6 +30,7 @@ object ExprParser {
   def exists[_: P]: P[Unit]      = P("exists")
   def notExists[_: P]: P[Unit]   = P("notexists")
   def not[_: P]: P[Unit]         = P("!")
+  def minus[_: P]: P[Unit]       = P("minus")
 
   def opNull[_: P]: P[OpNil]      = P("(null)").map(_ => OpNil())
   def tableUnit[_: P]: P[TabUnit] = P("(table unit)").map(_ => TabUnit())
@@ -180,6 +181,12 @@ object ExprParser {
       }
   }
 
+  def minusParen[_: P]: P[Minus] = P(
+    "(" ~ minus ~ graphPattern ~ graphPattern ~ ")"
+  ).map { p =>
+    Minus(p._1, p._2)
+  }
+
   def graphPattern[_: P]: P[Expr] =
     P(
       selectParen
@@ -198,6 +205,7 @@ object ExprParser {
         | orderParen
         | tableParen
         | existsParen
+        | minusParen
         | opNull
         | tableUnit
     )
