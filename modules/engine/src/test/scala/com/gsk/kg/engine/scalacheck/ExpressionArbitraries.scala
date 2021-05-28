@@ -95,8 +95,6 @@ trait ExpressionArbitraries extends CommonGenerators {
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
       .mapN(Conditional.EQUALS(_, _)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(Conditional.NOTEQUALS(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
       .mapN(Conditional.GT(_, _)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
       .mapN(Conditional.GTE(_, _)),
