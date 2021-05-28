@@ -3,7 +3,7 @@ package com.gsk.kg.engine
 import cats.data.NonEmptyList
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions.{concat => cc, md5 => sparkMd5, sha1 => sparkSha1, _}
+import org.apache.spark.sql.functions.{concat => cc, md5 => sparkMd5, sha1 => sparkSha1, _} // scalastyle:ignore
 import org.apache.spark.sql.types.StringType
 
 import com.gsk.kg.engine.Func.StringFunctionUtils._
