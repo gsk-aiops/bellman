@@ -189,6 +189,8 @@ object SubqueryPushdown {
             DAG.leftJoinR(l(isFromSubquery), r(isFromSubquery), filters)
         case DAG.Union(l, r) =>
           isFromSubquery => DAG.unionR(l(isFromSubquery), r(isFromSubquery))
+        case DAG.Minus(l, r) =>
+          isFromSubquery => DAG.minusR(l(isFromSubquery), r(isFromSubquery))
         case DAG.Filter(funcs, expr) =>
           isFromSubquery => DAG.filterR(funcs, expr(isFromSubquery))
         case DAG.Join(l, r) =>

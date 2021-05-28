@@ -49,6 +49,7 @@ object Engine {
       case DAG.BGP(quads)              => evaluateBGP(quads)
       case DAG.LeftJoin(l, r, filters) => evaluateLeftJoin(l, r, filters)
       case DAG.Union(l, r)             => evaluateUnion(l, r)
+      case DAG.Minus(l, r)             => evaluateMinus(l, r)
       case DAG.Filter(funcs, expr)     => evaluateFilter(funcs, expr)
       case DAG.Join(l, r)              => evaluateJoin(l, r)
       case DAG.Offset(offset, r)       => evaluateOffset(offset, r)
@@ -126,6 +127,9 @@ object Engine {
 
   private def evaluateUnion(l: Multiset, r: Multiset): M[Multiset] =
     l.union(r).pure[M]
+
+  private def evaluateMinus(l: Multiset, r: Multiset): M[Multiset] =
+    l.minus(r).pure[M]
 
   private def evaluateScan(graph: String, expr: Multiset): M[Multiset] = {
     val bindings =

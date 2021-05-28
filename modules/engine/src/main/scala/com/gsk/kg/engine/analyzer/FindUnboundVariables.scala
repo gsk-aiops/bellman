@@ -78,6 +78,8 @@ object FindUnboundVariables {
         (declaredL ++ declaredR, unboundL ++ unboundR)
       case Union((declaredL, unboundL), (declaredR, unboundR)) =>
         (declaredL ++ declaredR, unboundL ++ unboundR)
+      case Minus((declaredL, unboundL), (declaredR, unboundR)) =>
+        (declaredL ++ declaredR, unboundL ++ unboundR)
       case Filter(funcs, (declared, unbound)) =>
         val funcsVars = funcs.toList.toSet
           .foldLeft(Set.empty[VARIABLE]) { case (acc, func) =>
