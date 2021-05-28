@@ -29,11 +29,11 @@ object BuiltInFuncParser {
   def encodeForURI[_: P]: P[Unit] = P("encode_for_uri")
   def lang[_: P]: P[Unit]         = P("lang")
   def langMatches[_: P]: P[Unit]  = P("langMatches")
-  def md5[_: P]: P[Unit]          = P("md5")
-  def sha1[_: P]: P[Unit]         = P("sha1")
-  def sha256[_: P]: P[Unit]       = P("sha256")
-  def sha384[_: P]: P[Unit]       = P("sha384")
-  def sha512[_: P]: P[Unit]       = P("sha512")
+  def md5[_: P]: P[Unit]          = P("md5" | "MD5")
+  def sha1[_: P]: P[Unit]         = P("sha1" | "SHA1")
+  def sha256[_: P]: P[Unit]       = P("sha256" | "SHA256")
+  def sha384[_: P]: P[Unit]       = P("sha384" | "SHA384")
+  def sha512[_: P]: P[Unit]       = P("sha512" | "SHA512")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
