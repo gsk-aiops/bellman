@@ -3,9 +3,9 @@ package com.gsk.kg.engine
 import cats.data.NonEmptyList
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.{functions => sparkFunctions}
 import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.{functions => sparkFunctions}
 
 import com.gsk.kg.engine.Func.StringFunctionUtils._
 import com.gsk.kg.engine.functions.Literals._
