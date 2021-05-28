@@ -82,6 +82,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case DAG.LeftJoin(l, r, filters) =>
             Node("LeftJoin", Stream(l, r) #::: filters.map(_.toTree).toStream)
           case DAG.Union(l, r) => Node("Union", Stream(l, r))
+          case DAG.Minus(l, r) => Node("Minus", Stream(l, r))
           case DAG.Filter(funcs, expr) =>
             Node(
               "Filter",

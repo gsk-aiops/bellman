@@ -198,6 +198,7 @@ object ExprParser {
         | graphParen
         | bgpParen
         | unionParen
+        | minusParen
         | extendParen
         | filterSingleParen
         | filterListParen
