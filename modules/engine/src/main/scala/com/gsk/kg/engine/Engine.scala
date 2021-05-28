@@ -39,7 +39,7 @@ object Engine {
   def evaluateAlgebraM(implicit sc: SQLContext): AlgebraM[M, DAG, Multiset] =
     AlgebraM[M, DAG, Multiset] {
       case DAG.Describe(vars, r) => notImplemented("Describe")
-      case DAG.Ask(r)            => notImplemented("Ask")
+      case DAG.Ask(r)            => evaluateAsk(r)
       case DAG.Construct(bgp, r) => evaluateConstruct(bgp, r)
       case DAG.Scan(graph, expr) =>
         evaluateScan(graph, expr)
@@ -104,6 +104,20 @@ object Engine {
       )
     )
   )
+
+  private def evaluateAsk(r: Multiset)(implicit sc: SQLContext): M[Multiset] = {
+    val askVariable = VARIABLE("?_askResult")
+    val isEmpty     = !r.dataframe.isEmpty
+    val schema      = StructType(Seq(StructField(askVariable.s, BooleanType, false)))
+    val rows        = Seq(SparkRow(isEmpty))
+    val askDf =
+      sc.sparkSession.createDataFrame(sc.sparkContext.parallelize(rows), schema)
+
+    Multiset(
+      bindings = Set(askVariable),
+      dataframe = askDf
+    )
+  }.pure[M]
 
   private def evaluateJoin(l: Multiset, r: Multiset)(implicit
       sc: SQLContext
@@ -184,7 +198,7 @@ object Engine {
           }
           .foldLeft(lit(true))(_ && _)
       }
-      .foldLeft(lit(false))(_ || _)
+      .foldLeft(lit(true))(_ && _)
   }
 
   private def evaluateDistinct(r: Multiset): M[Multiset] =
