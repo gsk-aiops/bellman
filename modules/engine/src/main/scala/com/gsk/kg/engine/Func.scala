@@ -3,7 +3,7 @@ package com.gsk.kg.engine
 import cats.data.NonEmptyList
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions.{concat => cc, md5 => sparkMd5, sha1 => sparkSha1, _} // scalastyle:ignore
+import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
 
 import com.gsk.kg.engine.Func.StringFunctionUtils._
@@ -360,7 +360,7 @@ object Func {
     * @return
     */
   def md5(col: Column): Column =
-    sparkMd5(extractStringLiteral(col))
+    functions.md5(extractStringLiteral(col))
 
   /** Implementation of SparQL MD5 on Spark dataframes.
     *
@@ -369,7 +369,7 @@ object Func {
     * @return
     */
   def md5(str: String): Column =
-    sparkMd5(lit(extractStringLiteral(str)))
+    functions.md5(lit(extractStringLiteral(str)))
 
   /** Implementation of SparQL SHA1 on Spark dataframes.
     *
@@ -378,7 +378,7 @@ object Func {
     * @return
     */
   def sha1(col: Column): Column =
-    sparkSha1(extractStringLiteral(col))
+    functions.sha1(extractStringLiteral(col))
 
   /** Implementation of SparQL SHA1 on Spark dataframes.
     *
@@ -387,7 +387,7 @@ object Func {
     * @return
     */
   def sha1(str: String): Column =
-    sparkSha1(lit(extractStringLiteral(str)))
+    functions.sha1(lit(extractStringLiteral(str)))
 
   /** Implementation of SparQL SHA256 on Spark dataframes.
     *
