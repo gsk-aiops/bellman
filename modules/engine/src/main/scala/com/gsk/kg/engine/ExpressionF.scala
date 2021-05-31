@@ -63,6 +63,11 @@ object ExpressionF {
   final case class GROUP_CONCAT[A](e: A, separator: String)
       extends ExpressionF[A]
   final case class ENCODE_FOR_URI[A](s: A)                extends ExpressionF[A]
+  final case class MD5[A](s: A)                           extends ExpressionF[A]
+  final case class SHA1[A](s: A)                          extends ExpressionF[A]
+  final case class SHA256[A](s: A)                        extends ExpressionF[A]
+  final case class SHA384[A](s: A)                        extends ExpressionF[A]
+  final case class SHA512[A](s: A)                        extends ExpressionF[A]
   final case class STRING[A](s: String)                   extends ExpressionF[A]
   final case class DT_STRING[A](s: String, tag: String)   extends ExpressionF[A]
   final case class LANG_STRING[A](s: String, tag: String) extends ExpressionF[A]
@@ -140,6 +145,11 @@ object ExpressionF {
       case BuiltInFunc.ISBLANK(s)                      => ISBLANK(s)
       case BuiltInFunc.ISNUMERIC(s)                    => ISNUMERIC(s)
       case BuiltInFunc.ENCODE_FOR_URI(s)               => ENCODE_FOR_URI(s)
+      case BuiltInFunc.MD5(s)                          => MD5(s)
+      case BuiltInFunc.SHA1(s)                         => SHA1(s)
+      case BuiltInFunc.SHA256(s)                       => SHA256(s)
+      case BuiltInFunc.SHA384(s)                       => SHA384(s)
+      case BuiltInFunc.SHA512(s)                       => SHA512(s)
       case Aggregate.COUNT(e)                          => COUNT(e)
       case Aggregate.SUM(e)                            => SUM(e)
       case Aggregate.MIN(e)                            => MIN(e)
@@ -238,6 +248,16 @@ object ExpressionF {
       case ISNUMERIC(s) => BuiltInFunc.ISNUMERIC(s.asInstanceOf[StringLike])
       case ENCODE_FOR_URI(s) =>
         BuiltInFunc.ENCODE_FOR_URI(s.asInstanceOf[StringLike])
+      case MD5(s) =>
+        BuiltInFunc.MD5(s.asInstanceOf[StringLike])
+      case SHA1(s) =>
+        BuiltInFunc.SHA1(s.asInstanceOf[StringLike])
+      case SHA256(s) =>
+        BuiltInFunc.SHA256(s.asInstanceOf[StringLike])
+      case SHA384(s) =>
+        BuiltInFunc.SHA384(s.asInstanceOf[StringLike])
+      case SHA512(s) =>
+        BuiltInFunc.SHA512(s.asInstanceOf[StringLike])
       case COUNT(e)                   => Aggregate.COUNT(e)
       case SUM(e)                     => Aggregate.SUM(e)
       case MIN(e)                     => Aggregate.MIN(e)
@@ -298,6 +318,11 @@ object ExpressionF {
         case ISBLANK(s)                 => Func.isBlank(s).pure[M]
         case ISNUMERIC(s)               => Func.isNumeric(s).pure[M]
         case ENCODE_FOR_URI(s)          => Func.encodeForURI(s).pure[M]
+        case MD5(s)                     => Func.md5(s).pure[M]
+        case SHA1(s)                    => Func.sha1(s).pure[M]
+        case SHA256(s)                  => Func.sha256(s).pure[M]
+        case SHA384(s)                  => Func.sha384(s).pure[M]
+        case SHA512(s)                  => Func.sha512(s).pure[M]
         case COUNT(e)                   => unknownFunction("COUNT")
         case SUM(e)                     => unknownFunction("SUM")
         case MIN(e)                     => unknownFunction("MIN")

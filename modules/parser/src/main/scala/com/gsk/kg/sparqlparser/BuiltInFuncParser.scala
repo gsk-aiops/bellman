@@ -29,6 +29,11 @@ object BuiltInFuncParser {
   def encodeForURI[_: P]: P[Unit] = P("encode_for_uri")
   def lang[_: P]: P[Unit]         = P("lang")
   def langMatches[_: P]: P[Unit]  = P("langMatches")
+  def md5[_: P]: P[Unit]          = P("md5" | "MD5")
+  def sha1[_: P]: P[Unit]         = P("sha1" | "SHA1")
+  def sha256[_: P]: P[Unit]       = P("sha256" | "SHA256")
+  def sha384[_: P]: P[Unit]       = P("sha384" | "SHA384")
+  def sha512[_: P]: P[Unit]       = P("sha512" | "SHA512")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
@@ -134,6 +139,26 @@ object BuiltInFuncParser {
     )
       .map(f => LANGMATCHES(f._1, f._2))
 
+  def md5Paren[_: P]: P[MD5] =
+    P("(" ~ md5 ~ ExpressionParser.parser ~ ")")
+      .map(f => MD5(f))
+
+  def sha1Paren[_: P]: P[SHA1] =
+    P("(" ~ sha1 ~ ExpressionParser.parser ~ ")")
+      .map(f => SHA1(f))
+
+  def sha256Paren[_: P]: P[SHA256] =
+    P("(" ~ sha256 ~ ExpressionParser.parser ~ ")")
+      .map(f => SHA256(f))
+
+  def sha384Paren[_: P]: P[SHA384] =
+    P("(" ~ sha384 ~ ExpressionParser.parser ~ ")")
+      .map(f => SHA384(f))
+
+  def sha512Paren[_: P]: P[SHA512] =
+    P("(" ~ sha512 ~ ExpressionParser.parser ~ ")")
+      .map(f => SHA512(f))
+
   def funcPatterns[_: P]: P[StringLike] =
     P(
       uriParen
@@ -159,6 +184,11 @@ object BuiltInFuncParser {
         | encodeForURIParen
         | langParen
         | langMatchesParen
+        | md5Paren
+        | sha1Paren
+        | sha256Paren
+        | sha384Paren
+        | sha512Paren
     )
 //      | StringValParser.string
 //      | StringValParser.variable)
