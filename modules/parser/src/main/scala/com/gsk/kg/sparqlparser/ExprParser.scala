@@ -167,7 +167,6 @@ object ExprParser {
     Minus(p._1, p._2)
   }
 
-
   def graphPattern[_: P]: P[Expr] =
     P(
       selectParen

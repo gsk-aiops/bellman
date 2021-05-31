@@ -1,6 +1,4 @@
 package com.gsk.kg.engine.compiler
-
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 
 import com.gsk.kg.engine.Compiler
@@ -10,7 +8,7 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class MinusSpec 
+class MinusSpec
     extends AnyWordSpec
     with Matchers
     with DataFrameSuiteBase
@@ -28,7 +26,7 @@ class MinusSpec
         ("a", "b", "c"),
         ("a", "b", "c"),
         ("a", "b", "c")
-        ).toDF("s", "p", "o")
+      ).toDF("s", "p", "o")
 
       val query = """
        SELECT *
@@ -40,7 +38,7 @@ class MinusSpec
        """
 
       val result = Compiler.compile(df, query, config) match {
-        case Left(a) => throw new RuntimeException(a.toString)
+        case Left(a)  => throw new RuntimeException(a.toString)
         case Right(b) => b
       }
 
@@ -58,7 +56,7 @@ class MinusSpec
         ("<http://example.com/g>", "<http://example.com/h>", "i"),
         ("<http://example.com/j>", "<http://example.com/k>", "l"),
         ("<http://example.com/m>", "<http://example.com/n>", "o")
-        ).toDF("s", "p", "o")
+      ).toDF("s", "p", "o")
 
       val query = """
        SELECT *
@@ -72,7 +70,7 @@ class MinusSpec
        """
 
       val result = Compiler.compile(df, query, config) match {
-        case Left(a) => throw new RuntimeException(a.toString)
+        case Left(a)  => throw new RuntimeException(a.toString)
         case Right(b) => b
       }
 
@@ -84,7 +82,7 @@ class MinusSpec
         Row("<http://example.com/j>", "<http://example.com/k>", "\"l\"")
       )
     }
-    
+
   }
 
 }
