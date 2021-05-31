@@ -49,6 +49,11 @@ object BuiltInFunc {
   final case class ISBLANK(s: Expression)        extends BuiltInFunc
   final case class ISNUMERIC(s: Expression)      extends BuiltInFunc
   final case class ENCODE_FOR_URI(s: Expression) extends BuiltInFunc
+  final case class MD5(s: Expression)            extends BuiltInFunc
+  final case class SHA1(s: Expression)           extends BuiltInFunc
+  final case class SHA256(s: Expression)         extends BuiltInFunc
+  final case class SHA384(s: Expression)         extends BuiltInFunc
+  final case class SHA512(s: Expression)         extends BuiltInFunc
   final case class REPLACE(
       st: Expression,
       pattern: Expression,

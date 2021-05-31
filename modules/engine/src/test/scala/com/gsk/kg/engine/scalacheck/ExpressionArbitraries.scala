@@ -73,7 +73,22 @@ trait ExpressionArbitraries extends CommonGenerators {
       Gen.lzy(expressionGenerator)
     ).mapN(BuiltInFunc.REPLACE(_, _, _)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(BuiltInFunc.REGEX(_, _))
+      .mapN(BuiltInFunc.REGEX(_, _)),
+    (Gen
+      .lzy(expressionGenerator))
+      .map(BuiltInFunc.MD5(_)),
+    (Gen
+      .lzy(expressionGenerator))
+      .map(BuiltInFunc.SHA1(_)),
+    (Gen
+      .lzy(expressionGenerator))
+      .map(BuiltInFunc.SHA256(_)),
+    (Gen
+      .lzy(expressionGenerator))
+      .map(BuiltInFunc.SHA384(_)),
+    (Gen
+      .lzy(expressionGenerator))
+      .map(BuiltInFunc.SHA512(_))
   )
 
   val conditionalGenerator: Gen[Expression] = Gen.oneOf(

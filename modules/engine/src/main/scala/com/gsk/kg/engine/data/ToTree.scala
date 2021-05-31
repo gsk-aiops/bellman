@@ -179,6 +179,11 @@ object ToTree extends LowPriorityToTreeInstances0 {
             Node("GROUP_CONCAT", Stream(e, separator.toTree))
           case ExpressionF.ENCODE_FOR_URI(s) =>
             Node("ENCODE_FOR_URI", Stream(s))
+          case ExpressionF.MD5(s)    => Node("MD5", Stream(s))
+          case ExpressionF.SHA1(s)   => Node("SHA1", Stream(s))
+          case ExpressionF.SHA256(s) => Node("SHA256", Stream(s))
+          case ExpressionF.SHA384(s) => Node("SHA384", Stream(s))
+          case ExpressionF.SHA512(s) => Node("SHA512", Stream(s))
           case ExpressionF.STRING(s) =>
             Leaf(s"STRING($s)")
           case ExpressionF.DT_STRING(s, tag) =>

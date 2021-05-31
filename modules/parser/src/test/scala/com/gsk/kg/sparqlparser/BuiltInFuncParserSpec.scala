@@ -325,4 +325,134 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "MD5 parser with variable" should "return MD5 type" in {
+    val p =
+      fastparse.parse(
+        """(md5 ?d)""",
+        BuiltInFuncParser.md5Paren(_)
+      )
+    p.get.value match {
+      case MD5(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "MD5 parser with string" should "return MD5 type" in {
+    val p =
+      fastparse.parse(
+        """(md5 "x")""",
+        BuiltInFuncParser.md5Paren(_)
+      )
+    p.get.value match {
+      case MD5(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "SHA1 parser with variable" should "return SHA1 type" in {
+    val p =
+      fastparse.parse(
+        """(sha1 ?d)""",
+        BuiltInFuncParser.sha1Paren(_)
+      )
+    p.get.value match {
+      case SHA1(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "SHA1 parser with string" should "return SHA1 type" in {
+    val p =
+      fastparse.parse(
+        """(sha1 "x")""",
+        BuiltInFuncParser.sha1Paren(_)
+      )
+    p.get.value match {
+      case SHA1(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "SHA256 parser with variable" should "return SHA256 type" in {
+    val p =
+      fastparse.parse(
+        """(sha256 ?d)""",
+        BuiltInFuncParser.sha256Paren(_)
+      )
+    p.get.value match {
+      case SHA256(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "SHA256 parser with string" should "return SHA256 type" in {
+    val p =
+      fastparse.parse(
+        """(sha256 "x")""",
+        BuiltInFuncParser.sha256Paren(_)
+      )
+    p.get.value match {
+      case SHA256(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "SHA384 parser with variable" should "return SHA384 type" in {
+    val p =
+      fastparse.parse(
+        """(sha384 ?d)""",
+        BuiltInFuncParser.sha384Paren(_)
+      )
+    p.get.value match {
+      case SHA384(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "SHA384 parser with string" should "return SHA384 type" in {
+    val p =
+      fastparse.parse(
+        """(sha384 "x")""",
+        BuiltInFuncParser.sha384Paren(_)
+      )
+    p.get.value match {
+      case SHA384(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "SHA512 parser with variable" should "return SHA512 type" in {
+    val p =
+      fastparse.parse(
+        """(sha512 ?d)""",
+        BuiltInFuncParser.sha512Paren(_)
+      )
+    p.get.value match {
+      case SHA512(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "SHA512 parser with string" should "return SHA512 type" in {
+    val p =
+      fastparse.parse(
+        """(sha512 "x")""",
+        BuiltInFuncParser.sha512Paren(_)
+      )
+    p.get.value match {
+      case SHA512(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
 }
