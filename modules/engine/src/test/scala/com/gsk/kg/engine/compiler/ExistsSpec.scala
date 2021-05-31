@@ -1,10 +1,12 @@
 package com.gsk.kg.engine.compiler
 
-import com.gsk.kg.engine.Compiler
-import com.gsk.kg.sparqlparser.TestConfig
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
+
+import com.gsk.kg.engine.Compiler
+import com.gsk.kg.sparqlparser.TestConfig
+
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -67,7 +69,49 @@ class ExistsSpec
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"Alice\"", "23")
+          Row("\"Bob\"", "35")
+        )
+      }
+
+      "combined with FILTER" in {
+
+        val df = List(
+          (
+            "<http://example/alice>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://xmlns.com/foaf/0.1/Person>"
+          ),
+          (
+            "<http://example/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
+            "Alice"
+          ),
+          (
+            "<http://example/bob>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://xmlns.com/foaf/0.1/Person>"
+          )
+        ).toDF("s", "p", "o")
+
+        val query =
+          """
+            |PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+            |PREFIX  foaf:   <http://xmlns.com/foaf/0.1/> 
+            |
+            |SELECT ?person
+            |WHERE 
+            |{
+            |    ?person rdf:type  foaf:Person .
+            |    FILTER EXISTS { ?person foaf:name ?name }
+            |}  
+          |""".stripMargin
+
+        val result = Compiler.compile(df, query, config)
+
+        result shouldBe a[Right[_, _]]
+        result.right.get.collect.length shouldEqual 1
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("<http://example/alice>")
         )
       }
     }
@@ -124,7 +168,49 @@ class ExistsSpec
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 1
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"Bob\"", "35")
+          Row("\"Alice\"", "23")
+        )
+      }
+
+      "combined with FILTER" in {
+
+        val df = List(
+          (
+            "<http://example/alice>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://xmlns.com/foaf/0.1/Person>"
+          ),
+          (
+            "<http://example/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
+            "Alice"
+          ),
+          (
+            "<http://example/bob>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://xmlns.com/foaf/0.1/Person>"
+          )
+        ).toDF("s", "p", "o")
+
+        val query =
+          """
+            |PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+            |PREFIX  foaf:   <http://xmlns.com/foaf/0.1/> 
+            |
+            |SELECT ?person
+            |WHERE 
+            |{
+            |    ?person rdf:type  foaf:Person .
+            |    FILTER NOT EXISTS { ?person foaf:name ?name }
+            |}     
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query, config)
+
+        result shouldBe a[Right[_, _]]
+        result.right.get.collect.length shouldEqual 1
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("<http://example/bob>")
         )
       }
     }

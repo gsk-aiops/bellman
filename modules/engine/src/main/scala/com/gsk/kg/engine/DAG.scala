@@ -66,7 +66,8 @@ object DAG {
   @Lenses final case class Distinct[A](r: A) extends DAG[A]
   @Lenses final case class Table[A](vars: List[VARIABLE], rows: List[Expr.Row])
       extends DAG[A]
-  @Lenses final case class Noop[A](trace: String) extends DAG[A]
+  @Lenses final case class Exists[A](not: Boolean, p: A, r: A) extends DAG[A]
+  @Lenses final case class Noop[A](trace: String)              extends DAG[A]
 
   implicit val traverse: Traverse[DAG] = new DefaultTraverse[DAG] {
     def traverse[G[_]: Applicative, A, B](fa: DAG[A])(f: A => G[B]): G[DAG[B]] =
@@ -96,6 +97,7 @@ object DAG {
         case DAG.Group(vars, func, r) => f(r).map(group(vars, func, _))
         case DAG.Order(conds, r)      => f(r).map(order(conds, _))
         case DAG.Table(vars, rows)    => table[B](vars, rows).pure[G]
+        case DAG.Exists(not, p, r)    => (f(p), f(r)).mapN(DAG.exists(not, _, _))
         case DAG.Noop(str)            => noop[B](str).pure[G]
       }
   }
@@ -131,6 +133,8 @@ object DAG {
     Order[A](conds, r)
   def table[A](vars: List[VARIABLE], rows: List[Expr.Row]): DAG[A] =
     Table[A](vars, rows)
+  def exists[A](not: Boolean, p: A, r: A): DAG[A] =
+    Exists[A](not, p, r)
   def noop[A](trace: String): DAG[A] = Noop[A](trace)
 
   // Smart constructors for building the recursive version directly
@@ -179,6 +183,8 @@ object DAG {
   ): T = order[T](conds, r).embed
   def tableR[T: Embed[DAG, *]](vars: List[VARIABLE], rows: List[Expr.Row]): T =
     table[T](vars, rows).embed
+  def existsR[T: Embed[DAG, *]](not: Boolean, p: T, r: T): T =
+    exists[T](not, p, r).embed
   def noopR[T: Embed[DAG, *]](trace: String): T = noop[T](trace).embed
 
   /** Transform a [[Query]] into its [[Fix[DAG]]] representation
@@ -221,6 +227,7 @@ object DAG {
       case FilterF(funcs, expr) =>
         filter(NonEmptyList.fromListUnsafe(funcs.toList), expr)
       case TableF(vars, rows) => table(vars.toList, rows.toList)
+      case ExistsF(not, p, r) => exists(not, p, r)
       case RowF(tuples)       => noop("RowF not supported yet")
       case TabUnitF()         => noop("TabUnitF not supported yet")
     }
@@ -250,6 +257,7 @@ object DAG {
   implicit def eqOrder[A]: Eq[Order[A]]         = Eq.fromUniversalEquals
   implicit def eqDistinct[A]: Eq[Distinct[A]]   = Eq.fromUniversalEquals
   implicit def eqTable[A]: Eq[Table[A]]         = Eq.fromUniversalEquals
+  implicit def eqExists[A]: Eq[Exists[A]]       = Eq.fromUniversalEquals
   implicit def eqNoop[A]: Eq[Noop[A]]           = Eq.fromUniversalEquals
 }
 
@@ -314,6 +322,8 @@ object optics {
     .partial[DAG[T], Order[T]] { case dag @ Order(_, _) => dag }(identity)
   def _table[T: Basis[DAG, *]]: Prism[DAG[T], Table[T]] = Prism
     .partial[DAG[T], Table[T]] { case dag @ Table(_, _) => dag }(identity)
+  def _exists[T: Basis[DAG, *]]: Prism[DAG[T], Exists[T]] = Prism
+    .partial[DAG[T], Exists[T]] { case dag @ Exists(_, _, _) => dag }(identity)
   def _noop[T: Basis[DAG, *]]: Prism[DAG[T], Noop[T]] =
     Prism.partial[DAG[T], Noop[T]] { case dag @ Noop(trace: String) => dag }(
       identity
@@ -353,6 +363,8 @@ object optics {
     basisIso[DAG, T] composePrism _order
   def _tableR[T: Basis[DAG, *]]: Prism[T, Table[T]] =
     basisIso[DAG, T] composePrism _table
+  def _existsR[T: Basis[DAG, *]]: Prism[T, Exists[T]] =
+    basisIso[DAG, T] composePrism _exists
   def _noopR[T: Basis[DAG, *]]: Prism[T, Noop[T]] =
     basisIso[DAG, T] composePrism _noop
 

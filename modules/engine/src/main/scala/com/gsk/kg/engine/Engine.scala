@@ -57,6 +57,7 @@ object Engine {
       case DAG.Group(vars, func, r)    => evaluateGroup(vars, func, r)
       case DAG.Order(conds, r)         => evaluateOrder(conds, r)
       case DAG.Table(vars, rows)       => evaluateTable(vars, rows)
+      case DAG.Exists(not, p, r)       => evaluateExists(not, p, r)
       case DAG.Noop(str)               => notImplemented("Noop")
     }
 
@@ -437,6 +438,26 @@ object Engine {
       dataframe = df
     )
   }.pure[M]
+
+  private def evaluateExists(
+      not: Boolean,
+      p: Multiset,
+      r: Multiset
+  ): M[Multiset] = {
+    val cols = p.dataframe.columns intersect r.dataframe.columns
+
+    val resultDf = if (!not) {
+      r.dataframe
+        .join(p.dataframe, cols, "leftsemi")
+    } else {
+      r.dataframe
+        .join(p.dataframe, cols, "leftanti")
+    }
+
+    r.copy(
+      dataframe = resultDf
+    ).pure[M]
+  }
 
   private def notImplemented(constructor: String): M[Multiset] =
     M.liftF[Result, Config, Log, DataFrame, Multiset](

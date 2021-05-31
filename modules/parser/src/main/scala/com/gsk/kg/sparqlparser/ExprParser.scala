@@ -27,6 +27,8 @@ object ExprParser {
   def table[_: P]: P[Unit]       = P("table")
   def row[_: P]: P[Unit]         = P("row")
   def vars[_: P]: P[Unit]        = P("vars")
+  def exists[_: P]: P[Unit]      = P("exists")
+  def not[_: P]: P[Unit]         = P("!")
 
   def opNull[_: P]: P[OpNil]      = P("(null)").map(_ => OpNil())
   def tableUnit[_: P]: P[TabUnit] = P("(table unit)").map(_ => TabUnit())
@@ -160,6 +162,18 @@ object ExprParser {
       ) ~ ")"
   ).map { case (vs, rs) => Table(vs, rs) }
 
+  def existsParen[_: P]: P[Exists] = {
+    P("(" ~ filter ~ "(" ~ exists ~ graphPattern ~ ")" ~ graphPattern ~ ")")
+      .map { p =>
+        Exists(not = false, p._1, p._2)
+      } |
+      P(
+        "(" ~ filter ~ "(" ~ not ~ "(" ~ exists ~ graphPattern ~ ")" ~ ")" ~ graphPattern
+      ).map { p =>
+        Exists(not = true, p._1, p._2)
+      }
+  }
+
   def graphPattern[_: P]: P[Expr] =
     P(
       selectParen
@@ -177,6 +191,7 @@ object ExprParser {
         | groupParen
         | orderParen
         | tableParen
+        | existsParen
         | opNull
         | tableUnit
     )

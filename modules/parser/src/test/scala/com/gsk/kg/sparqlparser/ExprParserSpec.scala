@@ -789,18 +789,15 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     p.get.value match {
       case Project(
             Seq(VARIABLE("?name"), VARIABLE("?age")),
-            Filter(
-              Seq(
-                EXISTS(
-                  BGP(
-                    Seq(
-                      Quad(
-                        VARIABLE("?s"),
-                        URIVAL("<http://xmlns.com/foaf/0.1/mail>"),
-                        VARIABLE("?mail"),
-                        List(GRAPH_VARIABLE)
-                      )
-                    )
+            Exists(
+              false,
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/mail>"),
+                    VARIABLE("?mail"),
+                    List(GRAPH_VARIABLE)
                   )
                 )
               ),
@@ -838,20 +835,15 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     p.get.value match {
       case Project(
             Seq(VARIABLE("?name"), VARIABLE("?age")),
-            Filter(
-              Seq(
-                NEGATE(
-                  EXISTS(
-                    BGP(
-                      Seq(
-                        Quad(
-                          VARIABLE("?s"),
-                          URIVAL("<http://xmlns.com/foaf/0.1/mail>"),
-                          VARIABLE("?mail"),
-                          List(GRAPH_VARIABLE)
-                        )
-                      )
-                    )
+            Exists(
+              true,
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/mail>"),
+                    VARIABLE("?mail"),
+                    List(GRAPH_VARIABLE)
                   )
                 )
               ),

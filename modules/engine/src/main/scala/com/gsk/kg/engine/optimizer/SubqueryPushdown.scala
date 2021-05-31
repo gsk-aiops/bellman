@@ -204,7 +204,9 @@ object SubqueryPushdown {
         case DAG.Order(variable, r) =>
           isFromSubquery => DAG.orderR(variable, r(isFromSubquery))
         case DAG.Table(vars, rows) => _ => DAG.tableR(vars, rows)
-        case DAG.Noop(s)           => _ => DAG.noopR(s)
+        case DAG.Exists(n, p, r) =>
+          isFromSubquery => DAG.existsR(n, p(isFromSubquery), r(isFromSubquery))
+        case DAG.Noop(s) => _ => DAG.noopR(s)
       }
 
     val eval = scheme.cata(alg)
