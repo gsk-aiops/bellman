@@ -157,6 +157,8 @@ object prelude {
       RefTree.Ref(dag, Seq(conds.refTree.toField, r.toField))
     case dag @ DAG.Table(vars, rows) =>
       RefTree.Ref(dag, vars.map(_.refTree.toField))
+    case dag @ DAG.Exists(not, p, r) =>
+      RefTree.Ref(dag, Seq(not.toString.refTree.toField, p.toField, r.toField))
     case dag @ DAG.Noop(str) => RefTree.Ref(dag, Seq())
   }
 }

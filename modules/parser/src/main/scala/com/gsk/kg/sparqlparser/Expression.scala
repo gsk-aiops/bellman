@@ -17,6 +17,7 @@ object Conditional {
   final case class OR(l: Expression, r: Expression)     extends Conditional
   final case class AND(l: Expression, r: Expression)    extends Conditional
   final case class NEGATE(s: Expression)                extends Conditional
+  final case class EXISTS(pattern: Expr)                extends Conditional
 }
 
 sealed trait StringLike extends Expression

@@ -166,7 +166,9 @@ object GraphsPushdown {
             graphsOrList => DAG.groupR(vars, func, r(graphsOrList))
           case DAG.Order(variable, r) =>
             graphsOrList => DAG.orderR(variable, r(graphsOrList))
-          case DAG.Table(vars, rows)  => _ => DAG.tableR(vars, rows)
+          case DAG.Table(vars, rows) => _ => DAG.tableR(vars, rows)
+          case DAG.Exists(not, p, r) =>
+            graphsOrList => DAG.existsR(not, p(graphsOrList), r(graphsOrList))
           case DAG.Noop(graphsOrList) => _ => DAG.noopR(graphsOrList)
         }
 

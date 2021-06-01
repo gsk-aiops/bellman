@@ -110,6 +110,7 @@ object Expr {
   final case class Distinct(r: Expr)                          extends Expr
   final case class Table(vars: Seq[VARIABLE], rows: Seq[Row]) extends Expr
   final case class Row(tuples: Seq[(VARIABLE, StringVal)])    extends Expr
+  final case class Exists(not: Boolean, p: Expr, r: Expr)     extends Expr
   final case class OpNil()                                    extends Expr
   final case class TabUnit()                                  extends Expr
 }
