@@ -28,6 +28,7 @@ object ExprParser {
   def row[_: P]: P[Unit]         = P("row")
   def vars[_: P]: P[Unit]        = P("vars")
   def exists[_: P]: P[Unit]      = P("exists")
+  def notExists[_: P]: P[Unit]   = P("notexists")
   def not[_: P]: P[Unit]         = P("!")
 
   def opNull[_: P]: P[OpNil]      = P("(null)").map(_ => OpNil())
@@ -168,7 +169,12 @@ object ExprParser {
         Exists(not = false, p._1, p._2)
       } |
       P(
-        "(" ~ filter ~ "(" ~ not ~ "(" ~ exists ~ graphPattern ~ ")" ~ ")" ~ graphPattern
+        "(" ~ filter ~ "(" ~ not ~ "(" ~ exists ~ graphPattern ~ ")" ~ ")" ~ graphPattern ~ ")"
+      ).map { p =>
+        Exists(not = true, p._1, p._2)
+      } |
+      P(
+        "(" ~ filter ~ "(" ~ notExists ~ graphPattern ~ ")" ~ graphPattern
       ).map { p =>
         Exists(not = true, p._1, p._2)
       }
