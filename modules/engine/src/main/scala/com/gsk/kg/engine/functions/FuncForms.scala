@@ -96,5 +96,4 @@ object FuncForms {
     */
   def negate(s: Column): Column =
     not(s)
-
 }
