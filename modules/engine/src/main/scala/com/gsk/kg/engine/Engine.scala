@@ -447,9 +447,14 @@ object Engine {
     val cols = p.dataframe.columns intersect r.dataframe.columns
 
     val resultDf = if (!not) {
+      // left semi join will return a copy of each row in the left dataframe for which a match is found in
+      // the right dataframe. This means that it will detect the presence of matches between the two dataframes.
       r.dataframe
         .join(p.dataframe, cols, "leftsemi")
     } else {
+      // left anti join can be defined as the complementary operation of the left semi join. It will return one copy
+      // of the left dataframe for which no match is found on the right dataframe. This means that it will
+      // detect the absence of a match between the two dataframes.
       r.dataframe
         .join(p.dataframe, cols, "leftanti")
     }
