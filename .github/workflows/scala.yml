@@ -15,7 +15,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
       - name: Setup Scala
-        uses: olafurpg/setup-scala@v10
+        uses: olafurpg/setup-scala@v12
       - uses: ts-graphviz/setup-graphviz@v1
       - uses: ruby/setup-ruby@v1
         with:
