@@ -1,8 +1,8 @@
 package com.gsk.kg.sparqlparser
 
+import com.gsk.kg.sparqlparser.BuiltInFunc.LANG
 import com.gsk.kg.sparqlparser.Conditional._
 import com.gsk.kg.sparqlparser.StringVal._
-
 import org.scalatest.flatspec.AnyFlatSpec
 
 class ConditionalParserSpec extends AnyFlatSpec {
@@ -60,6 +60,34 @@ class ConditionalParserSpec extends AnyFlatSpec {
     p.get.value match {
       case LTE(VARIABLE("?year"), STRING("2015")) => succeed
       case _                                      => fail
+    }
+  }
+
+  "In parser" should "return IN type" in {
+    val p =
+      fastparse.parse(
+        """(in (lang ?title) "en" "es")""",
+        ConditionalParser.inParen(_)
+      )
+    p.get.value match {
+      case IN(LANG(VARIABLE("?title")), List(STRING("en"), STRING("es"))) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "NotIn parser" should "return NEGATE(IN) type" in {
+    val p =
+      fastparse.parse(
+        """(notin (lang ?title) "en" "es")""",
+        ConditionalParser.parser(_)
+      )
+    p.get.value match {
+      case NEGATE(
+            IN(LANG(VARIABLE("?title")), List(STRING("en"), STRING("es")))
+          ) =>
+        succeed
+      case _ => fail
     }
   }
 }
