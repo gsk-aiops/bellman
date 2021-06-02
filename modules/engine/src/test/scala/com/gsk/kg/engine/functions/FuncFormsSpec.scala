@@ -1604,6 +1604,51 @@ class FuncFormsSpec
           Row(true)
         )
       }
+
+      "return true when exists and there are null expressions" in {
+
+        val e = lit(2)
+        val df = List(
+          (null, 2)
+        ).toDF("e1", "e2")
+
+        val result =
+          df.select(FuncForms.in(e, List(df("e1"), df("e2")))).collect
+
+        result shouldEqual Array(
+          Row(true)
+        )
+      }
+
+      "return true when exists and there are null expressions 2" in {
+
+        val e = lit(2)
+        val df = List(
+          (2, null)
+        ).toDF("e1", "e2")
+
+        val result =
+          df.select(FuncForms.in(e, List(df("e1"), df("e2")))).collect
+
+        result shouldEqual Array(
+          Row(true)
+        )
+      }
+
+      "return false when not exists and there are null expressions" in {
+
+        val e = lit(2)
+        val df = List(
+          (3, null)
+        ).toDF("e1", "e2")
+
+        val result =
+          df.select(FuncForms.in(e, List(df("e1"), df("e2")))).collect
+
+        result shouldEqual Array(
+          Row(null)
+        )
+      }
     }
   }
 
