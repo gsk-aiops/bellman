@@ -1,7 +1,7 @@
 package com.gsk.kg.engine
 
 import com.gsk.kg.config.Config
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import com.gsk.kg.engine.compiler.SparkSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.apache.jena.query.QueryFactory
@@ -23,7 +23,7 @@ import scala.util.Failure
 import scala.util.Success
 import com.gsk.kg.sparqlparser.EngineError
 
-class RdfTests extends AnyWordSpec with Matchers with DataFrameSuiteBase {
+class RdfTests extends AnyWordSpec with Matchers with SparkSpec {
 
   override implicit def reuseContextIfPossible: Boolean = true
 

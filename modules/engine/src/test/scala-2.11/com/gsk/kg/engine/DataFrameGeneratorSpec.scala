@@ -2,13 +2,13 @@ package com.gsk.kg.engine
 
 import org.apache.spark.sql.DataFrame
 
+import com.gsk.kg.engine.compiler.SparkSpec
 import com.gsk.kg.engine.scalacheck.DataFrameArbitraries
 
 import java.io.File
 
 import scala.reflect.io.Directory
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -17,7 +17,7 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 class DataFrameArbitrariesSpec
     extends AnyFlatSpec
     with Matchers
-    with DataFrameSuiteBase
+    with SparkSpec
     with ScalaCheckDrivenPropertyChecks
     with DataFrameArbitraries {
 
