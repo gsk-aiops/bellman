@@ -18,6 +18,7 @@ object Conditional {
   final case class AND(l: Expression, r: Expression)       extends Conditional
   final case class NEGATE(s: Expression)                   extends Conditional
   final case class IN(e: Expression, xs: List[Expression]) extends Conditional
+  final case class SAMETERM(l: Expression, r: Expression)  extends Conditional
 }
 
 sealed trait StringLike extends Expression
