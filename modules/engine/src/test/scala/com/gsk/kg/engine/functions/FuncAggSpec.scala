@@ -2,9 +2,9 @@ package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Row
 
+import com.gsk.kg.engine.compiler.SparkSpec
 import com.gsk.kg.engine.scalacheck.CommonGenerators
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -12,7 +12,7 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 class FuncAggSpec
     extends AnyWordSpec
     with Matchers
-    with DataFrameSuiteBase
+    with SparkSpec
     with ScalaCheckDrivenPropertyChecks
     with CommonGenerators {
 

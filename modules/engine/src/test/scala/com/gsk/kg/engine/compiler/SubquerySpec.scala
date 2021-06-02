@@ -7,14 +7,13 @@ import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.EngineError.ParsingError
 import com.gsk.kg.sparqlparser.TestConfig
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class SubquerySpec
     extends AnyWordSpec
     with Matchers
-    with DataFrameSuiteBase
+    with SparkSpec
     with TestConfig {
 
   import sqlContext.implicits._
@@ -99,7 +98,7 @@ class SubquerySpec
             |    CONSTRUCT {
             |      ?x foaf:friends ?name .
             |    } WHERE {
-            |      ?x foaf:name ?name . 
+            |      ?x foaf:name ?name .
             |    }
             |  }
             |}
@@ -286,7 +285,7 @@ class SubquerySpec
             |  {
             |    SELECT ?x ?name
             |    WHERE {
-            |      ?x foaf:name ?name . 
+            |      ?x foaf:name ?name .
             |    }
             |  }
             |}
@@ -548,7 +547,7 @@ class SubquerySpec
           """
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             |
-            |SELECT ?x ?name 
+            |SELECT ?x ?name
             |FROM NAMED <http://some-other.ttl>
             |WHERE {
             |  GRAPH <http://some-other.ttl> {

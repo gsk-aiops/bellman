@@ -154,6 +154,8 @@ object GraphsPushdown {
               DAG.leftJoinR(l(graphsOrList), r(graphsOrList), filters)
           case DAG.Union(l, r) =>
             graphsOrList => DAG.unionR(l(graphsOrList), r(graphsOrList))
+          case DAG.Minus(l, r) =>
+            graphsOrList => DAG.minusR(l(graphsOrList), r(graphsOrList))
           case DAG.Filter(funcs, expr) =>
             graphsOrList => DAG.filterR(funcs, expr(graphsOrList))
           case DAG.Join(l, r) =>

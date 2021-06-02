@@ -6,14 +6,13 @@ import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.EngineError.ParsingError
 import com.gsk.kg.sparqlparser.TestConfig
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class StrafterSpec
     extends AnyWordSpec
     with Matchers
-    with DataFrameSuiteBase
+    with SparkSpec
     with TestConfig {
 
   import sqlContext.implicits._

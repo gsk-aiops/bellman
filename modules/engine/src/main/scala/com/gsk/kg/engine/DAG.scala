@@ -51,6 +51,7 @@ object DAG {
   @Lenses final case class LeftJoin[A](l: A, r: A, filters: List[Expression])
       extends DAG[A]
   @Lenses final case class Union[A](l: A, r: A) extends DAG[A]
+  @Lenses final case class Minus[A](l: A, r: A) extends DAG[A]
   @Lenses final case class Filter[A](funcs: NonEmptyList[Expression], expr: A)
       extends DAG[A]
   @Lenses final case class Join[A](l: A, r: A)           extends DAG[A]
@@ -86,6 +87,7 @@ object DAG {
             f(r)
           ).mapN(leftJoin(_, _, filters))
         case DAG.Union(l, r) => (f(l), f(r)).mapN(union)
+        case DAG.Minus(l, r) => (f(l), f(r)).mapN(minus)
         case DAG.Filter(funcs, expr) =>
           f(expr).map(filter(funcs, _))
         case DAG.Join(l, r) => (f(l), f(r)).mapN(join)
@@ -115,6 +117,7 @@ object DAG {
   def leftJoin[A](l: A, r: A, filters: List[Expression]): DAG[A] =
     LeftJoin[A](l, r, filters)
   def union[A](l: A, r: A): DAG[A] = Union[A](l, r)
+  def minus[A](l: A, r: A): DAG[A] = Minus[A](l, r)
   def filter[A](funcs: NonEmptyList[Expression], expr: A): DAG[A] =
     Filter[A](funcs, expr)
   def join[A](l: A, r: A): DAG[A] = Join[A](l, r)
@@ -160,6 +163,7 @@ object DAG {
       filters: List[Expression]
   ): T                                        = leftJoin[T](l, r, filters).embed
   def unionR[T: Embed[DAG, *]](l: T, r: T): T = union[T](l, r).embed
+  def minusR[T: Embed[DAG, *]](l: T, r: T): T = minus[T](l, r).embed
   def filterR[T: Embed[DAG, *]](funcs: NonEmptyList[Expression], expr: T): T =
     filter[T](funcs, expr).embed
   def joinR[T: Embed[DAG, *]](l: T, r: T): T = join[T](l, r).embed
@@ -209,6 +213,7 @@ object DAG {
       case ExtendF(bindTo, bindFrom, r) => bind(bindTo, bindFrom, r)
       case FilteredLeftJoinF(l, r, f)   => leftJoin(l, r, f.toList)
       case UnionF(l, r)                 => union(l, r)
+      case MinusF(l, r)                 => minus(l, r)
       case BGPF(quads)                  => bgp(ChunkedList.fromList(quads.toList))
       case OpNilF()                     => noop("OpNilF not supported yet")
       case GraphF(g, e)                 => scan(g.s, e)
@@ -249,6 +254,7 @@ object DAG {
   implicit def eqBGP[A]: Eq[BGP[A]]             = Eq.fromUniversalEquals
   implicit def eqLeftJoin[A]: Eq[LeftJoin[A]]   = Eq.fromUniversalEquals
   implicit def eqUnion[A]: Eq[Union[A]]         = Eq.fromUniversalEquals
+  implicit def eqMinus[A]: Eq[Minus[A]]         = Eq.fromUniversalEquals
   implicit def eqFilter[A]: Eq[Filter[A]]       = Eq.fromUniversalEquals
   implicit def eqJoin[A]: Eq[Join[A]]           = Eq.fromUniversalEquals
   implicit def eqOffset[A]: Eq[Offset[A]]       = Eq.fromUniversalEquals
@@ -300,6 +306,8 @@ object optics {
     }(identity)
   def _union[T: Basis[DAG, *]]: Prism[DAG[T], Union[T]] =
     Prism.partial[DAG[T], Union[T]] { case dag @ Union(l, r) => dag }(identity)
+  def _minus[T: Basis[DAG, *]]: Prism[DAG[T], Minus[T]] =
+    Prism.partial[DAG[T], Minus[T]] { case dag @ Minus(l, r) => dag }(identity)
   def _filter[T: Basis[DAG, *]]: Prism[DAG[T], Filter[T]] =
     Prism.partial[DAG[T], Filter[T]] {
       case dag @ Filter(funcs: NonEmptyList[Expression], expr) => dag
@@ -345,6 +353,8 @@ object optics {
     basisIso[DAG, T] composePrism _bgp
   def _leftjoinR[T: Basis[DAG, *]]: Prism[T, LeftJoin[T]] =
     basisIso[DAG, T] composePrism _leftjoin
+  def _minusR[T: Basis[DAG, *]]: Prism[T, Minus[T]] =
+    basisIso[DAG, T] composePrism _minus
   def _unionR[T: Basis[DAG, *]]: Prism[T, Union[T]] =
     basisIso[DAG, T] composePrism _union
   def _filterR[T: Basis[DAG, *]]: Prism[T, Filter[T]] =

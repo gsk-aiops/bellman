@@ -6,14 +6,13 @@ import org.apache.spark.sql.Row
 import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class ExistsSpec
     extends AnyWordSpec
     with Matchers
-    with DataFrameSuiteBase
+    with SparkSpec
     with TestConfig {
 
   import sqlContext.implicits._
@@ -95,15 +94,15 @@ class ExistsSpec
 
         val query =
           """
-            |PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-            |PREFIX  foaf:   <http://xmlns.com/foaf/0.1/> 
+            |PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            |PREFIX  foaf:   <http://xmlns.com/foaf/0.1/>
             |
             |SELECT ?person
-            |WHERE 
+            |WHERE
             |{
             |    ?person rdf:type  foaf:Person .
             |    FILTER EXISTS { ?person foaf:name ?name }
-            |}  
+            |}
           |""".stripMargin
 
         val result = Compiler.compile(df, query, config)
@@ -194,15 +193,15 @@ class ExistsSpec
 
         val query =
           """
-            |PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-            |PREFIX  foaf:   <http://xmlns.com/foaf/0.1/> 
+            |PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            |PREFIX  foaf:   <http://xmlns.com/foaf/0.1/>
             |
             |SELECT ?person
-            |WHERE 
+            |WHERE
             |{
             |    ?person rdf:type  foaf:Person .
             |    FILTER NOT EXISTS { ?person foaf:name ?name }
-            |}     
+            |}
             |""".stripMargin
 
         val result = Compiler.compile(df, query, config)

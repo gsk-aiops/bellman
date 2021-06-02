@@ -5,15 +5,10 @@ import org.apache.spark.sql.Row
 import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class Md5Spec
-    extends AnyWordSpec
-    with Matchers
-    with DataFrameSuiteBase
-    with TestConfig {
+class Md5Spec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
 
   import sqlContext.implicits._
 

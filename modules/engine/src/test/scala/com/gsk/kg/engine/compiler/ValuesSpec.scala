@@ -6,14 +6,13 @@ import org.apache.spark.sql.Row
 import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class ValuesSpec
     extends AnyWordSpec
     with Matchers
-    with DataFrameSuiteBase
+    with SparkSpec
     with TestConfig {
 
   import sqlContext.implicits._
@@ -49,8 +48,8 @@ class ValuesSpec
 
         val query =
           """
-            |PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
-            |PREFIX :     <http://example.org/book/> 
+            |PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+            |PREFIX :     <http://example.org/book/>
             |PREFIX ns:   <http://example.org/ns#>
             |
             |SELECT ?book ?title
@@ -99,9 +98,9 @@ class ValuesSpec
 
         val query =
           """
-            |PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
-            |PREFIX :     <http://example.org/book/> 
-            |PREFIX ns:   <http://example.org/ns#> 
+            |PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+            |PREFIX :     <http://example.org/book/>
+            |PREFIX ns:   <http://example.org/ns#>
             |
             |SELECT ?book ?title ?price
             |{
@@ -147,9 +146,9 @@ class ValuesSpec
 
         val query =
           """
-            |PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
-            |PREFIX :     <http://example.org/book/> 
-            |PREFIX ns:   <http://example.org/ns#> 
+            |PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+            |PREFIX :     <http://example.org/book/>
+            |PREFIX ns:   <http://example.org/ns#>
             |
             |SELECT ?book ?title ?price
             |{
@@ -201,9 +200,9 @@ class ValuesSpec
 
         val query =
           """
-            |PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
-            |PREFIX :     <http://example.org/book/> 
-            |PREFIX ns:   <http://example.org/ns#> 
+            |PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+            |PREFIX :     <http://example.org/book/>
+            |PREFIX ns:   <http://example.org/ns#>
             |
             |SELECT ?book ?title ?price
             |{
@@ -253,9 +252,9 @@ class ValuesSpec
 
         val query =
           """
-            |PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
-            |PREFIX :     <http://example.org/book/> 
-            |PREFIX ns:   <http://example.org/ns#> 
+            |PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+            |PREFIX :     <http://example.org/book/>
+            |PREFIX ns:   <http://example.org/ns#>
             |
             |SELECT ?book ?title ?price
             |{
