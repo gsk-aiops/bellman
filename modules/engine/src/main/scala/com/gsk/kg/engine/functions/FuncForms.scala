@@ -96,4 +96,18 @@ object FuncForms {
     */
   def negate(s: Column): Column =
     not(s)
+
+  /** The IN operator tests whether the RDF term on the left-hand side is found in the values of list of expressions
+    * on the right-hand side. The test is done with "=" operator, which tests for the same value, as determined by
+    * the operator mapping.
+    *
+    * A list of zero terms on the right-hand side is legal.
+    *
+    * Errors in comparisons cause the IN expression to raise an error if the RDF term being tested is not found
+    * elsewhere in the list of terms.
+    * @param e
+    * @param xs
+    * @return
+    */
+  def in(e: Column, xs: List[Column]): Column = ???
 }
