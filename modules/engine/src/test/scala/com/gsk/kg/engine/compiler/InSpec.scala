@@ -56,7 +56,7 @@ class InSpec
         result shouldBe a[Right[_, _]]
         result.right.get.collect.length shouldEqual 2
         result.right.get.collect.toSet shouldEqual Set(
-          Row("\"Star wars\"@en"),
+          Row("\"Star Wars\"@en"),
           Row("\"La guerra de las galaxias\"@es")
         )
       }

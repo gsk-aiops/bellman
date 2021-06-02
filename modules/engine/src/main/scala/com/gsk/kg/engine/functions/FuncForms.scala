@@ -1,8 +1,8 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.functions.not
-
 import com.gsk.kg.engine.functions.Literals.DateLiteral
 import com.gsk.kg.engine.functions.Literals.promoteNumericBoolean
 
@@ -109,5 +109,6 @@ object FuncForms {
     * @param xs
     * @return
     */
-  def in(e: Column, xs: List[Column]): Column = ???
+  def in(e: Column, xs: List[Column]): Column =
+    xs.foldLeft(lit(false)) { case (acc, x) => acc || e.contains(x) }
 }
