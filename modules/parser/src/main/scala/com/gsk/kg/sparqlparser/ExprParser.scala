@@ -206,7 +206,6 @@ object ExprParser {
         | orderParen
         | tableParen
         | existsParen
-        | minusParen
         | opNull
         | tableUnit
     )
