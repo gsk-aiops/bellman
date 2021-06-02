@@ -1,8 +1,9 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.AnalysisException
+import org.apache.spark.sql.Column
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions._
 
 import com.gsk.kg.engine.compiler.SparkSpec
 import com.gsk.kg.engine.scalacheck.CommonGenerators
@@ -1555,6 +1556,98 @@ class FuncFormsSpec
 
         caught.getMessage should contain
         "cannot resolve '(NOT `boolean`)' due to data type mismatch"
+      }
+    }
+
+    "FuncForms.in" should {
+
+      "return true when exists" in {
+
+        val e = lit(2)
+        val df = List(
+          (1, 2, 3)
+        ).toDF("e1", "e2", "e3")
+
+        val result =
+          df.select(FuncForms.in(e, List(df("e1"), df("e2"), df("e3")))).collect
+
+        result shouldEqual Array(
+          Row(true)
+        )
+      }
+
+      "return false when empty" in {
+
+        val e = lit(2)
+        val df = List(
+          ""
+        ).toDF("e1")
+
+        val result = df.select(FuncForms.in(e, List.empty[Column])).collect
+
+        result shouldEqual Array(
+          Row(false)
+        )
+      }
+
+      "return true when exists with mixed types" in {
+
+        val e = lit(2)
+        val df = List(
+          ("<http://example/iri>", "str", 2.0)
+        ).toDF("e1", "e2", "e3")
+
+        val result =
+          df.select(FuncForms.in(e, List(df("e1"), df("e2"), df("e3")))).collect
+
+        result shouldEqual Array(
+          Row(true)
+        )
+      }
+
+      "return true when exists and there are null expressions" in {
+
+        val e = lit(2)
+        val df = List(
+          (null, 2)
+        ).toDF("e1", "e2")
+
+        val result =
+          df.select(FuncForms.in(e, List(df("e1"), df("e2")))).collect
+
+        result shouldEqual Array(
+          Row(true)
+        )
+      }
+
+      "return true when exists and there are null expressions 2" in {
+
+        val e = lit(2)
+        val df = List(
+          (2, null)
+        ).toDF("e1", "e2")
+
+        val result =
+          df.select(FuncForms.in(e, List(df("e1"), df("e2")))).collect
+
+        result shouldEqual Array(
+          Row(true)
+        )
+      }
+
+      "return false when not exists and there are null expressions" in {
+
+        val e = lit(2)
+        val df = List(
+          (3, null)
+        ).toDF("e1", "e2")
+
+        val result =
+          df.select(FuncForms.in(e, List(df("e1"), df("e2")))).collect
+
+        result shouldEqual Array(
+          Row(null)
+        )
       }
     }
   }

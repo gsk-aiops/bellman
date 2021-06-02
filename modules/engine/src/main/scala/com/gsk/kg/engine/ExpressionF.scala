@@ -47,6 +47,7 @@ object ExpressionF {
   final case class OR[A](l: A, r: A)                   extends ExpressionF[A]
   final case class AND[A](l: A, r: A)                  extends ExpressionF[A]
   final case class NEGATE[A](s: A)                     extends ExpressionF[A]
+  final case class IN[A](e: A, xs: List[A])            extends ExpressionF[A]
   final case class URI[A](s: A)                        extends ExpressionF[A]
   final case class LANG[A](s: A)                       extends ExpressionF[A]
   final case class LANGMATCHES[A](s: A, range: String) extends ExpressionF[A]
@@ -93,6 +94,7 @@ object ExpressionF {
       case Conditional.OR(l, r)     => OR(l, r)
       case Conditional.AND(l, r)    => AND(l, r)
       case Conditional.NEGATE(s)    => NEGATE(s)
+      case Conditional.IN(e, xs)    => IN(e, xs)
       case BuiltInFunc.URI(s)       => URI(s)
       case BuiltInFunc.LANG(s)      => LANG(s)
       case BuiltInFunc.LANGMATCHES(s, StringVal.STRING(range)) =>
@@ -183,6 +185,7 @@ object ExpressionF {
       case OR(l, r)     => Conditional.OR(l, r)
       case AND(l, r)    => Conditional.AND(l, r)
       case NEGATE(s)    => Conditional.NEGATE(s)
+      case IN(e, xs)    => Conditional.IN(e, xs)
       case UCASE(s) =>
         BuiltInFunc.UCASE(s.asInstanceOf[StringLike])
       case LANG(s) =>
@@ -317,6 +320,7 @@ object ExpressionF {
         case OR(l, r)                   => FuncForms.or(l, r).pure[M]
         case AND(l, r)                  => FuncForms.and(l, r).pure[M]
         case NEGATE(s)                  => FuncForms.negate(s).pure[M]
+        case IN(e, xs)                  => FuncForms.in(e, xs).pure[M]
         case STR(s)                     => FuncTerms.str(s).pure[M]
         case STRDT(e, uri)              => FuncTerms.strdt(e, uri).pure[M]
         case URI(s)                     => FuncTerms.iri(s).pure[M]

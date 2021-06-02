@@ -1,7 +1,7 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
-import org.apache.spark.sql.functions.not
+import org.apache.spark.sql.functions._
 
 import com.gsk.kg.engine.functions.Literals.DateLiteral
 import com.gsk.kg.engine.functions.Literals.promoteNumericBoolean
@@ -96,4 +96,37 @@ object FuncForms {
     */
   def negate(s: Column): Column =
     not(s)
+
+  /** The IN operator tests whether the RDF term on the left-hand side is found in the values of list of expressions
+    * on the right-hand side. The test is done with "=" operator, which tests for the same value, as determined by
+    * the operator mapping.
+    *
+    * A list of zero terms on the right-hand side is legal.
+    *
+    * Errors in comparisons cause the IN expression to raise an error if the RDF term being tested is not found
+    * elsewhere in the list of terms.
+    * @param e
+    * @param xs
+    * @return
+    */
+  def in(e: Column, xs: List[Column]): Column = {
+
+    val anyEqualsExpr = xs.foldLeft(lit(false)) { case (acc, x) =>
+      acc || (e === x)
+    }
+
+    val anyIsNull = xs.foldLeft(lit(false)) { case (acc, x) =>
+      acc || x.isNull
+    }
+
+    when(
+      anyEqualsExpr,
+      lit(true)
+    ).otherwise(
+      when(
+        anyIsNull,
+        Literals.nullLiteral
+      ).otherwise(lit(false))
+    )
+  }
 }
