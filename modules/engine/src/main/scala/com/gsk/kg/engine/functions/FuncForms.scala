@@ -2,9 +2,7 @@ package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions._
-
-import com.gsk.kg.engine.functions.Literals.DateLiteral
-import com.gsk.kg.engine.functions.Literals.promoteNumericBoolean
+import com.gsk.kg.engine.functions.Literals._
 
 object FuncForms {
 
