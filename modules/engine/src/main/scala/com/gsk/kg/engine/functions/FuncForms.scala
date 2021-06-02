@@ -3,6 +3,8 @@ package com.gsk.kg.engine.functions
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.functions.not
+import org.apache.spark.sql.functions.when
+
 import com.gsk.kg.engine.functions.Literals.DateLiteral
 import com.gsk.kg.engine.functions.Literals.promoteNumericBoolean
 
@@ -110,5 +112,14 @@ object FuncForms {
     * @return
     */
   def in(e: Column, xs: List[Column]): Column =
-    xs.foldLeft(lit(false)) { case (acc, x) => acc || e.contains(x) }
+    xs.foldLeft(lit(false)) { case (acc, x) =>
+      acc || {
+        val xType    = x.expr.dataType
+        val castExpr = e.cast(xType)
+        when(
+          castExpr.isNotNull,
+          castExpr.contains(x)
+        ).otherwise(false)
+      }
+    }
 }

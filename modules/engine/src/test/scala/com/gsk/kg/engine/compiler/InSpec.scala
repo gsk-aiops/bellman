@@ -1,10 +1,12 @@
 package com.gsk.kg.engine.compiler
 
-import com.gsk.kg.engine.Compiler
-import com.gsk.kg.sparqlparser.TestConfig
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
+
+import com.gsk.kg.engine.Compiler
+import com.gsk.kg.sparqlparser.TestConfig
+
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
