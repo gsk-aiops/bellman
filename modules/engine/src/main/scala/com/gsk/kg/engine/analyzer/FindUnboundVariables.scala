@@ -122,6 +122,7 @@ object FindVariablesOnExpression {
         case AND(l, r)                       => l ++ r
         case NEGATE(s)                       => s
         case IN(e, xs)                       => e ++ xs.flatten
+        case SAMETERM(l, r)                  => l ++ r
         case URI(s)                          => s
         case REGEX(s, pattern, flags)        => s
         case REPLACE(st, pattern, by, flags) => st

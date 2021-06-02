@@ -128,15 +128,16 @@ object ToTree extends LowPriorityToTreeInstances0 {
       def toTree(tree: T): TreeRep[String] = {
         import TreeRep._
         val alg = Algebra[ExpressionF, TreeRep[String]] {
-          case ExpressionF.EQUALS(l, r) => Node("EQUALS", Stream(l, r))
-          case ExpressionF.GT(l, r)     => Node("GT", Stream(l, r))
-          case ExpressionF.LT(l, r)     => Node("LT", Stream(l, r))
-          case ExpressionF.GTE(l, r)    => Node("GTE", Stream(l, r))
-          case ExpressionF.LTE(l, r)    => Node("LTE", Stream(l, r))
-          case ExpressionF.OR(l, r)     => Node("OR", Stream(l, r))
-          case ExpressionF.AND(l, r)    => Node("AND", Stream(l, r))
-          case ExpressionF.NEGATE(s)    => Node("NEGATE", Stream(s))
-          case ExpressionF.IN(e, xs)    => Node("IN", Stream(e) #::: xs.toStream)
+          case ExpressionF.EQUALS(l, r)   => Node("EQUALS", Stream(l, r))
+          case ExpressionF.GT(l, r)       => Node("GT", Stream(l, r))
+          case ExpressionF.LT(l, r)       => Node("LT", Stream(l, r))
+          case ExpressionF.GTE(l, r)      => Node("GTE", Stream(l, r))
+          case ExpressionF.LTE(l, r)      => Node("LTE", Stream(l, r))
+          case ExpressionF.OR(l, r)       => Node("OR", Stream(l, r))
+          case ExpressionF.AND(l, r)      => Node("AND", Stream(l, r))
+          case ExpressionF.NEGATE(s)      => Node("NEGATE", Stream(s))
+          case ExpressionF.IN(e, xs)      => Node("IN", Stream(e) #::: xs.toStream)
+          case ExpressionF.SAMETERM(l, r) => Node("SAMETERM", Stream(l, r))
           case ExpressionF.REGEX(s, pattern, flags) =>
             Node(
               "REGEX",

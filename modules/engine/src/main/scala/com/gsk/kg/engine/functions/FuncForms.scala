@@ -127,4 +127,6 @@ object FuncForms {
       ).otherwise(lit(false))
     )
   }
+
+  def sameTerm(l: Column, r: Column): Column = ???
 }
