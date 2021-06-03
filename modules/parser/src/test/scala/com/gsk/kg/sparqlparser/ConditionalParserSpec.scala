@@ -91,4 +91,16 @@ class ConditionalParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "SameTerm parser" should "return SAMETERM type" in {
+    val p =
+      fastparse.parse(
+        """(sameTerm ?mbox1 ?mbox2)""",
+        ConditionalParser.parser(_)
+      )
+    p.get.value match {
+      case SAMETERM(VARIABLE("?mbox1"), VARIABLE("?mbox2")) => succeed
+      case _                                                => fail
+    }
+  }
 }

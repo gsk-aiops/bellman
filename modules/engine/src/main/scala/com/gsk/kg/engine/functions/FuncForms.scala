@@ -3,8 +3,8 @@ package com.gsk.kg.engine.functions
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions._
 
-import com.gsk.kg.engine.functions.Literals.DateLiteral
-import com.gsk.kg.engine.functions.Literals.promoteNumericBoolean
+import com.gsk.kg.engine.RdfFormatter
+import com.gsk.kg.engine.functions.Literals._
 
 object FuncForms {
 
@@ -128,5 +128,71 @@ object FuncForms {
         Literals.nullLiteral
       ).otherwise(lit(false))
     )
+  }
+
+  /** Returns TRUE if term1 and term2 are the same RDF term
+    * @param l
+    * @param r
+    * @return
+    */
+  def sameTerm(l: Column, r: Column): Column = {
+
+    val leftAndRightLocalized = {
+      val lLocalized = LocalizedLiteral(l)
+      val rLocalized = LocalizedLiteral(r)
+      when(
+        lLocalized.tag === rLocalized.tag,
+        lLocalized.value === rLocalized.value
+      ).otherwise(lit(false))
+    }
+
+    val leftLocalized = {
+      val lLocalized = LocalizedLiteral(l)
+      lLocalized.value === r
+    }
+
+    val rightLocalized = {
+      val rLocalized = LocalizedLiteral(r)
+      l === rLocalized.value
+    }
+
+    val leftAndRightTyped = {
+      val lDataTyped = TypedLiteral(l)
+      val rDataTyped = TypedLiteral(r)
+      when(
+        lDataTyped.tag === rDataTyped.tag,
+        lDataTyped.value === rDataTyped.value
+      ).otherwise(lit(false))
+    }
+
+    val leftTyped = {
+      val lTyped = TypedLiteral(l)
+      lTyped.value === r
+    }
+
+    val rightTyped = {
+      val rTyped = TypedLiteral(r)
+      l === rTyped.value
+    }
+
+    when(
+      RdfFormatter.isLocalizedString(l) && RdfFormatter.isLocalizedString(r),
+      leftAndRightLocalized
+    ).when(
+      RdfFormatter.isLocalizedString(l),
+      leftLocalized
+    ).when(
+      RdfFormatter.isLocalizedString(r),
+      rightLocalized
+    ).when(
+      RdfFormatter.isDatatypeLiteral(l) && RdfFormatter.isDatatypeLiteral(r),
+      leftAndRightTyped
+    ).when(
+      RdfFormatter.isDatatypeLiteral(l),
+      leftTyped
+    ).when(
+      RdfFormatter.isDatatypeLiteral(r),
+      rightTyped
+    ).otherwise(l === r)
   }
 }

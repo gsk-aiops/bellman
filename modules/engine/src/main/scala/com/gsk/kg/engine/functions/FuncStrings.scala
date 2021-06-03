@@ -153,16 +153,16 @@ object FuncStrings {
     } else {
       when(
         isLocalizedLocalizedArgs(col, str),
-        strFuncArgsLocalizedLocalized(col, str, "%s\"@")(getLeftOrEmpty)
+        strFuncArgsLocalizedLocalized(col, str, "\"%s\"@")(getLeftOrEmpty)
       ).when(
         isLocalizedPlainArgs(col),
-        strFuncArgsLocalizedPlain(col, str, "%s\"@")(getLeftOrEmpty)
+        strFuncArgsLocalizedPlain(col, str, "\"%s\"@")(getLeftOrEmpty)
       ).when(
         isTypedTypedArgs(col, str),
-        strFuncArgsTypedTyped(col, str, "%s\"^^")(getLeftOrEmpty)
+        strFuncArgsTypedTyped(col, str, "\"%s\"^^")(getLeftOrEmpty)
       ).when(
         isTypedPlainArgs(col),
-        strFuncArgsTypedPlain(col, str, "%s\"^^")(getLeftOrEmpty)
+        strFuncArgsTypedPlain(col, str, "\"%s\"^^")(getLeftOrEmpty)
       ).otherwise(getLeftOrEmpty(col, str))
     }
   }
@@ -201,16 +201,16 @@ object FuncStrings {
     } else {
       when(
         isLocalizedLocalizedArgs(col, str),
-        strFuncArgsLocalizedLocalized(col, str, "\"%s@")(getLeftOrEmpty)
+        strFuncArgsLocalizedLocalized(col, str, "\"%s\"@")(getLeftOrEmpty)
       ).when(
         isLocalizedPlainArgs(col),
-        strFuncArgsLocalizedPlain(col, str, "\"%s@")(getLeftOrEmpty)
+        strFuncArgsLocalizedPlain(col, str, "\"%s\"@")(getLeftOrEmpty)
       ).when(
         isTypedTypedArgs(col, str),
-        strFuncArgsTypedTyped(col, str, "\"%s^^")(getLeftOrEmpty)
+        strFuncArgsTypedTyped(col, str, "\"%s\"^^")(getLeftOrEmpty)
       ).when(
         isTypedPlainArgs(col),
-        strFuncArgsTypedPlain(col, str, "\"%s^^")(getLeftOrEmpty)
+        strFuncArgsTypedPlain(col, str, "\"%s\"^^")(getLeftOrEmpty)
       ).otherwise(getLeftOrEmpty(col, str))
     }
   }

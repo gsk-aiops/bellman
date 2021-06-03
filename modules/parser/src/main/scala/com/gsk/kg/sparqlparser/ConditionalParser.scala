@@ -17,6 +17,7 @@ object ConditionalParser {
   def negate[_: P]: P[Unit]    = P("!")
   def in[_: P]: P[Unit]        = P("in")
   def notIn[_: P]: P[Unit]     = P("notin")
+  def sameTerm[_: P]: P[Unit]  = P("sameTerm")
 
   def equalsParen[_: P]: P[EQUALS] =
     P("(" ~ equals ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
@@ -71,6 +72,10 @@ object ConditionalParser {
     )
       .map(f => NEGATE(IN(f._1, f._2.toList)))
 
+  def sameTermParen[_: P]: P[SAMETERM] =
+    P("(" ~ sameTerm ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
+      .map(f => SAMETERM(f._1, f._2))
+
   def parser[_: P]: P[Conditional] =
     P(
       notEqualsParen
@@ -84,5 +89,6 @@ object ConditionalParser {
         | negateParen
         | inParen
         | notInParen
+        | sameTermParen
     )
 }
