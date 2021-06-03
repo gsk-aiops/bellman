@@ -1,11 +1,12 @@
 package com.gsk.kg.engine.functions
 
+import com.gsk.kg.engine.RdfFormatter
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
-
 import com.gsk.kg.engine.compiler.SparkSpec
+import com.gsk.kg.engine.functions.Literals.LocalizedLiteral
 import com.gsk.kg.engine.scalacheck.CommonGenerators
 
 import java.time.LocalDateTime
@@ -13,7 +14,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAccessor
-
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -1648,6 +1648,29 @@ class FuncFormsSpec
         result shouldEqual Array(
           Row(null)
         )
+      }
+    }
+
+    "FuncForms.sameTerm" should {
+
+      "return expected results" in {
+
+        val df = List(
+          ("\"hello\"@en", "\"hello\"@en", true),
+          ("\"hello\"@en", "hello", true),
+          ("\"hello\"@en", "\"hello\"@es", false),
+          ("\"hello\"@en", "\"hi\"@en", false),
+          ("\"1\"^^xsd:int", "\"1\"^^xsd:int", true),
+          ("\"1\"^^xsd:int", "1", true),
+          ("\"1\"^^xsd:int", "\"1\"^^xsd:integer", false),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:int", false)
+        ).toDF("expr1", "expr2", "expected")
+
+        val result =
+          df.select(FuncForms.sameTerm(df("expr1"), df("expr2"))).collect
+        val expected = df.select(df("expected")).collect()
+
+        result shouldEqual expected
       }
     }
   }

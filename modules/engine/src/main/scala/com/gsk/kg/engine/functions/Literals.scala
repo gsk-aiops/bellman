@@ -197,7 +197,7 @@ object Literals {
 
     def apply(c: Column): LocalizedLiteral = {
       new LocalizedLiteral(
-        substring_index(c, "@", 1),
+        trim(substring_index(c, "@", 1), "\""),
         substring_index(c, "@", -1)
       )
     }
@@ -232,7 +232,7 @@ object Literals {
 
     def apply(c: Column): TypedLiteral = {
       new TypedLiteral(
-        substring_index(c, "^^", 1),
+        trim(substring_index(c, "^^", 1), "\""),
         substring_index(c, "^^", -1)
       )
     }
