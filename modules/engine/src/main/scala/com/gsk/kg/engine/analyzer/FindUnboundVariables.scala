@@ -78,6 +78,8 @@ object FindUnboundVariables {
         (declaredL ++ declaredR, unboundL ++ unboundR)
       case Union((declaredL, unboundL), (declaredR, unboundR)) =>
         (declaredL ++ declaredR, unboundL ++ unboundR)
+      case Minus((declaredL, unboundL), (declaredR, unboundR)) =>
+        (declaredL ++ declaredR, unboundL ++ unboundR)
       case Filter(funcs, (declared, unbound)) =>
         val funcsVars = funcs.toList.toSet
           .foldLeft(Set.empty[VARIABLE]) { case (acc, func) =>
@@ -98,6 +100,7 @@ object FindUnboundVariables {
           }
 
         (declared, (condVars diff declared) ++ unbound)
+      case Exists(_, _, r) => r
       case Table(vars, rows) =>
         (vars.toSet, Set.empty)
       case Noop(trace) =>
@@ -118,6 +121,7 @@ object FindVariablesOnExpression {
         case OR(l, r)                        => l ++ r
         case AND(l, r)                       => l ++ r
         case NEGATE(s)                       => s
+        case IN(e, xs)                       => e ++ xs.flatten
         case URI(s)                          => s
         case REGEX(s, pattern, flags)        => s
         case REPLACE(st, pattern, by, flags) => st

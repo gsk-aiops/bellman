@@ -3,16 +3,16 @@ package com.gsk.kg.engine.syntax
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 
+import com.gsk.kg.engine.compiler.SparkSpec
 import com.gsk.kg.sparqlparser.TestConfig
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class SyntaxSpec
     extends AnyFlatSpec
     with Matchers
-    with DataFrameSuiteBase
+    with SparkSpec
     with TestConfig {
 
   override implicit def reuseContextIfPossible: Boolean = true

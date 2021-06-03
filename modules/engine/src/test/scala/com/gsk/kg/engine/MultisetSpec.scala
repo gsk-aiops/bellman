@@ -1,17 +1,14 @@
 package com.gsk.kg.engine
 
+import com.gsk.kg.engine.compiler.SparkSpec
 import com.gsk.kg.engine.utils.MultisetMatchers
 import com.gsk.kg.sparqlparser.EngineError
 import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.wordspec.AnyWordSpec
 
-class MultisetSpec
-    extends AnyWordSpec
-    with DataFrameSuiteBase
-    with MultisetMatchers {
+class MultisetSpec extends AnyWordSpec with SparkSpec with MultisetMatchers {
 
   override implicit def reuseContextIfPossible: Boolean = true
 

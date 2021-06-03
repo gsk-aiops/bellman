@@ -1,9 +1,9 @@
 package com.gsk.kg.engine
 
 import com.gsk.kg.config.Config
+import com.gsk.kg.engine.compiler.SparkSpec
 import com.gsk.kg.engine.scalacheck.CommonGenerators
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -13,7 +13,7 @@ class RdfFormatterSpec
     with ScalaCheckDrivenPropertyChecks
     with Matchers
     with CommonGenerators
-    with DataFrameSuiteBase {
+    with SparkSpec {
 
   override implicit def reuseContextIfPossible: Boolean = true
 

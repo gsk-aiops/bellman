@@ -51,6 +51,7 @@ object DAG {
   @Lenses final case class LeftJoin[A](l: A, r: A, filters: List[Expression])
       extends DAG[A]
   @Lenses final case class Union[A](l: A, r: A) extends DAG[A]
+  @Lenses final case class Minus[A](l: A, r: A) extends DAG[A]
   @Lenses final case class Filter[A](funcs: NonEmptyList[Expression], expr: A)
       extends DAG[A]
   @Lenses final case class Join[A](l: A, r: A)           extends DAG[A]
@@ -66,7 +67,8 @@ object DAG {
   @Lenses final case class Distinct[A](r: A) extends DAG[A]
   @Lenses final case class Table[A](vars: List[VARIABLE], rows: List[Expr.Row])
       extends DAG[A]
-  @Lenses final case class Noop[A](trace: String) extends DAG[A]
+  @Lenses final case class Exists[A](not: Boolean, p: A, r: A) extends DAG[A]
+  @Lenses final case class Noop[A](trace: String)              extends DAG[A]
 
   implicit val traverse: Traverse[DAG] = new DefaultTraverse[DAG] {
     def traverse[G[_]: Applicative, A, B](fa: DAG[A])(f: A => G[B]): G[DAG[B]] =
@@ -85,6 +87,7 @@ object DAG {
             f(r)
           ).mapN(leftJoin(_, _, filters))
         case DAG.Union(l, r) => (f(l), f(r)).mapN(union)
+        case DAG.Minus(l, r) => (f(l), f(r)).mapN(minus)
         case DAG.Filter(funcs, expr) =>
           f(expr).map(filter(funcs, _))
         case DAG.Join(l, r) => (f(l), f(r)).mapN(join)
@@ -96,6 +99,7 @@ object DAG {
         case DAG.Group(vars, func, r) => f(r).map(group(vars, func, _))
         case DAG.Order(conds, r)      => f(r).map(order(conds, _))
         case DAG.Table(vars, rows)    => table[B](vars, rows).pure[G]
+        case DAG.Exists(not, p, r)    => (f(p), f(r)).mapN(DAG.exists(not, _, _))
         case DAG.Noop(str)            => noop[B](str).pure[G]
       }
   }
@@ -113,6 +117,7 @@ object DAG {
   def leftJoin[A](l: A, r: A, filters: List[Expression]): DAG[A] =
     LeftJoin[A](l, r, filters)
   def union[A](l: A, r: A): DAG[A] = Union[A](l, r)
+  def minus[A](l: A, r: A): DAG[A] = Minus[A](l, r)
   def filter[A](funcs: NonEmptyList[Expression], expr: A): DAG[A] =
     Filter[A](funcs, expr)
   def join[A](l: A, r: A): DAG[A] = Join[A](l, r)
@@ -131,6 +136,8 @@ object DAG {
     Order[A](conds, r)
   def table[A](vars: List[VARIABLE], rows: List[Expr.Row]): DAG[A] =
     Table[A](vars, rows)
+  def exists[A](not: Boolean, p: A, r: A): DAG[A] =
+    Exists[A](not, p, r)
   def noop[A](trace: String): DAG[A] = Noop[A](trace)
 
   // Smart constructors for building the recursive version directly
@@ -156,6 +163,7 @@ object DAG {
       filters: List[Expression]
   ): T                                        = leftJoin[T](l, r, filters).embed
   def unionR[T: Embed[DAG, *]](l: T, r: T): T = union[T](l, r).embed
+  def minusR[T: Embed[DAG, *]](l: T, r: T): T = minus[T](l, r).embed
   def filterR[T: Embed[DAG, *]](funcs: NonEmptyList[Expression], expr: T): T =
     filter[T](funcs, expr).embed
   def joinR[T: Embed[DAG, *]](l: T, r: T): T = join[T](l, r).embed
@@ -179,6 +187,8 @@ object DAG {
   ): T = order[T](conds, r).embed
   def tableR[T: Embed[DAG, *]](vars: List[VARIABLE], rows: List[Expr.Row]): T =
     table[T](vars, rows).embed
+  def existsR[T: Embed[DAG, *]](not: Boolean, p: T, r: T): T =
+    exists[T](not, p, r).embed
   def noopR[T: Embed[DAG, *]](trace: String): T = noop[T](trace).embed
 
   /** Transform a [[Query]] into its [[Fix[DAG]]] representation
@@ -203,6 +213,7 @@ object DAG {
       case ExtendF(bindTo, bindFrom, r) => bind(bindTo, bindFrom, r)
       case FilteredLeftJoinF(l, r, f)   => leftJoin(l, r, f.toList)
       case UnionF(l, r)                 => union(l, r)
+      case MinusF(l, r)                 => minus(l, r)
       case BGPF(quads)                  => bgp(ChunkedList.fromList(quads.toList))
       case OpNilF()                     => noop("OpNilF not supported yet")
       case GraphF(g, e)                 => scan(g.s, e)
@@ -221,6 +232,7 @@ object DAG {
       case FilterF(funcs, expr) =>
         filter(NonEmptyList.fromListUnsafe(funcs.toList), expr)
       case TableF(vars, rows) => table(vars.toList, rows.toList)
+      case ExistsF(not, p, r) => exists(not, p, r)
       case RowF(tuples)       => noop("RowF not supported yet")
       case TabUnitF()         => noop("TabUnitF not supported yet")
     }
@@ -242,6 +254,7 @@ object DAG {
   implicit def eqBGP[A]: Eq[BGP[A]]             = Eq.fromUniversalEquals
   implicit def eqLeftJoin[A]: Eq[LeftJoin[A]]   = Eq.fromUniversalEquals
   implicit def eqUnion[A]: Eq[Union[A]]         = Eq.fromUniversalEquals
+  implicit def eqMinus[A]: Eq[Minus[A]]         = Eq.fromUniversalEquals
   implicit def eqFilter[A]: Eq[Filter[A]]       = Eq.fromUniversalEquals
   implicit def eqJoin[A]: Eq[Join[A]]           = Eq.fromUniversalEquals
   implicit def eqOffset[A]: Eq[Offset[A]]       = Eq.fromUniversalEquals
@@ -250,6 +263,7 @@ object DAG {
   implicit def eqOrder[A]: Eq[Order[A]]         = Eq.fromUniversalEquals
   implicit def eqDistinct[A]: Eq[Distinct[A]]   = Eq.fromUniversalEquals
   implicit def eqTable[A]: Eq[Table[A]]         = Eq.fromUniversalEquals
+  implicit def eqExists[A]: Eq[Exists[A]]       = Eq.fromUniversalEquals
   implicit def eqNoop[A]: Eq[Noop[A]]           = Eq.fromUniversalEquals
 }
 
@@ -292,6 +306,8 @@ object optics {
     }(identity)
   def _union[T: Basis[DAG, *]]: Prism[DAG[T], Union[T]] =
     Prism.partial[DAG[T], Union[T]] { case dag @ Union(l, r) => dag }(identity)
+  def _minus[T: Basis[DAG, *]]: Prism[DAG[T], Minus[T]] =
+    Prism.partial[DAG[T], Minus[T]] { case dag @ Minus(l, r) => dag }(identity)
   def _filter[T: Basis[DAG, *]]: Prism[DAG[T], Filter[T]] =
     Prism.partial[DAG[T], Filter[T]] {
       case dag @ Filter(funcs: NonEmptyList[Expression], expr) => dag
@@ -314,6 +330,8 @@ object optics {
     .partial[DAG[T], Order[T]] { case dag @ Order(_, _) => dag }(identity)
   def _table[T: Basis[DAG, *]]: Prism[DAG[T], Table[T]] = Prism
     .partial[DAG[T], Table[T]] { case dag @ Table(_, _) => dag }(identity)
+  def _exists[T: Basis[DAG, *]]: Prism[DAG[T], Exists[T]] = Prism
+    .partial[DAG[T], Exists[T]] { case dag @ Exists(_, _, _) => dag }(identity)
   def _noop[T: Basis[DAG, *]]: Prism[DAG[T], Noop[T]] =
     Prism.partial[DAG[T], Noop[T]] { case dag @ Noop(trace: String) => dag }(
       identity
@@ -335,6 +353,8 @@ object optics {
     basisIso[DAG, T] composePrism _bgp
   def _leftjoinR[T: Basis[DAG, *]]: Prism[T, LeftJoin[T]] =
     basisIso[DAG, T] composePrism _leftjoin
+  def _minusR[T: Basis[DAG, *]]: Prism[T, Minus[T]] =
+    basisIso[DAG, T] composePrism _minus
   def _unionR[T: Basis[DAG, *]]: Prism[T, Union[T]] =
     basisIso[DAG, T] composePrism _union
   def _filterR[T: Basis[DAG, *]]: Prism[T, Filter[T]] =
@@ -353,6 +373,8 @@ object optics {
     basisIso[DAG, T] composePrism _order
   def _tableR[T: Basis[DAG, *]]: Prism[T, Table[T]] =
     basisIso[DAG, T] composePrism _table
+  def _existsR[T: Basis[DAG, *]]: Prism[T, Exists[T]] =
+    basisIso[DAG, T] composePrism _exists
   def _noopR[T: Basis[DAG, *]]: Prism[T, Noop[T]] =
     basisIso[DAG, T] composePrism _noop
 

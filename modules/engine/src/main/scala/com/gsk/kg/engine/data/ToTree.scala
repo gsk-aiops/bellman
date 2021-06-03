@@ -82,6 +82,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case DAG.LeftJoin(l, r, filters) =>
             Node("LeftJoin", Stream(l, r) #::: filters.map(_.toTree).toStream)
           case DAG.Union(l, r) => Node("Union", Stream(l, r))
+          case DAG.Minus(l, r) => Node("Minus", Stream(l, r))
           case DAG.Filter(funcs, expr) =>
             Node(
               "Filter",
@@ -110,7 +111,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
             val rs: List[List[(Expression, Expression)]] =
               rows.map(_.tuples.toList)
             Node("Table", Stream(v.toTree, rs.toTree))
-          case DAG.Noop(str) => Leaf(s"Noop($str)")
+          case DAG.Exists(not, p, r) => Node("Exists", Stream(not.toTree, p, r))
+          case DAG.Noop(str)         => Leaf(s"Noop($str)")
         }
 
         val t = scheme.cata(alg)
@@ -134,6 +136,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.OR(l, r)     => Node("OR", Stream(l, r))
           case ExpressionF.AND(l, r)    => Node("AND", Stream(l, r))
           case ExpressionF.NEGATE(s)    => Node("NEGATE", Stream(s))
+          case ExpressionF.IN(e, xs)    => Node("IN", Stream(e) #::: xs.toStream)
           case ExpressionF.REGEX(s, pattern, flags) =>
             Node(
               "REGEX",

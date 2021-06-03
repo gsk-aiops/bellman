@@ -126,6 +126,16 @@ final case class Multiset(
       )
   }
 
+  def minus(other: Multiset): Multiset = (this, other) match {
+    case (a, b) if a.isEmpty => b
+    case (a, b) if b.isEmpty => a
+    case (a, b) =>
+      Multiset(
+        a.bindings.union(b.bindings),
+        a.dataframe.exceptAll(b.dataframe)
+      )
+  }
+
   /** Return wether both the dataframe & bindings are empty
     *
     * @return

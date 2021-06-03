@@ -499,6 +499,47 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     }
   }
 
+  "Minus" should "parse correctly" in {
+    val query = """(minus
+          (bgp (triple ?s ?p ?o))
+          (bgp (triple ?x ?y ?z)))
+        """
+
+    val p = fastparse
+      .parse(
+        query,
+        x => ExprParser.minusParen(x)
+      )
+
+    p.get.value match {
+      case Minus(
+            BGP(
+              Seq(
+                Quad(
+                  VARIABLE("?s"),
+                  VARIABLE("?p"),
+                  VARIABLE("?o"),
+                  List(GRAPH_VARIABLE)
+                )
+              )
+            ),
+            BGP(
+              Seq(
+                Quad(
+                  VARIABLE("?x"),
+                  VARIABLE("?y"),
+                  VARIABLE("?z"),
+                  List(GRAPH_VARIABLE)
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ =>
+        fail("this query should parse to Minus")
+    }
+  }
+
   "Order By" should "return proper type when simple variable" in {
     val p = fastparse.parse(
       sparql2Algebra(
@@ -768,6 +809,98 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
                         URIVAL("<http://example.org/book/book2>")
                       )
                     )
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "Exists" should "return proper type when simple query" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q47-exists-simple-query.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?name"), VARIABLE("?age")),
+            Exists(
+              false,
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/mail>"),
+                    VARIABLE("?mail"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              ),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/name>"),
+                    VARIABLE("?name"),
+                    List(GRAPH_VARIABLE)
+                  ),
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/age>"),
+                    VARIABLE("?age"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "Not exists" should "return property when simple query" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q48-not-exists-simple-query.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Project(
+            Seq(VARIABLE("?name"), VARIABLE("?age")),
+            Exists(
+              true,
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/mail>"),
+                    VARIABLE("?mail"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              ),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/name>"),
+                    VARIABLE("?name"),
+                    List(GRAPH_VARIABLE)
+                  ),
+                  Quad(
+                    VARIABLE("?s"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/age>"),
+                    VARIABLE("?age"),
+                    List(GRAPH_VARIABLE)
                   )
                 )
               )

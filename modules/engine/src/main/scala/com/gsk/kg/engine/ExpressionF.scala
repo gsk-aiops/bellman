@@ -11,6 +11,10 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
 import com.gsk.kg.config.Config
+import com.gsk.kg.engine.functions.FuncForms
+import com.gsk.kg.engine.functions.FuncHash
+import com.gsk.kg.engine.functions.FuncStrings
+import com.gsk.kg.engine.functions.FuncTerms
 import com.gsk.kg.sparqlparser._
 
 /** [[ExpressionF]] is a pattern functor for the recursive
@@ -43,6 +47,7 @@ object ExpressionF {
   final case class OR[A](l: A, r: A)                   extends ExpressionF[A]
   final case class AND[A](l: A, r: A)                  extends ExpressionF[A]
   final case class NEGATE[A](s: A)                     extends ExpressionF[A]
+  final case class IN[A](e: A, xs: List[A])            extends ExpressionF[A]
   final case class URI[A](s: A)                        extends ExpressionF[A]
   final case class LANG[A](s: A)                       extends ExpressionF[A]
   final case class LANGMATCHES[A](s: A, range: String) extends ExpressionF[A]
@@ -89,6 +94,7 @@ object ExpressionF {
       case Conditional.OR(l, r)     => OR(l, r)
       case Conditional.AND(l, r)    => AND(l, r)
       case Conditional.NEGATE(s)    => NEGATE(s)
+      case Conditional.IN(e, xs)    => IN(e, xs)
       case BuiltInFunc.URI(s)       => URI(s)
       case BuiltInFunc.LANG(s)      => LANG(s)
       case BuiltInFunc.LANGMATCHES(s, StringVal.STRING(range)) =>
@@ -179,6 +185,7 @@ object ExpressionF {
       case OR(l, r)     => Conditional.OR(l, r)
       case AND(l, r)    => Conditional.AND(l, r)
       case NEGATE(s)    => Conditional.NEGATE(s)
+      case IN(e, xs)    => Conditional.IN(e, xs)
       case UCASE(s) =>
         BuiltInFunc.UCASE(s.asInstanceOf[StringLike])
       case LANG(s) =>
@@ -289,40 +296,43 @@ object ExpressionF {
   )(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
     val algebraM: AlgebraM[M, ExpressionF, Column] =
       AlgebraM.apply[M, ExpressionF, Column] {
-        case REGEX(s, pattern, flags) => Func.regex(s, pattern, flags).pure[M]
+        case REGEX(s, pattern, flags) =>
+          FuncStrings.regex(s, pattern, flags).pure[M]
         case REPLACE(st, pattern, by, flags) =>
-          Func.replace(st, pattern, by, flags).pure[M]
-        case STRENDS(s, f)              => Func.strends(s, f).pure[M]
-        case STRSTARTS(s, f)            => Func.strstarts(s, f).pure[M]
-        case STRAFTER(s, f)             => Func.strafter(s, f).pure[M]
-        case STRBEFORE(s, f)            => Func.strbefore(s, f).pure[M]
-        case STRDT(e, uri)              => Func.strdt(e, uri).pure[M]
-        case SUBSTR(s, pos, len)        => Func.substr(s, pos, len).pure[M]
-        case STRLEN(s)                  => Func.strlen(s).pure[M]
-        case CONCAT(appendTo, append)   => Func.concat(appendTo, append).pure[M]
-        case EQUALS(l, r)               => Func.equals(l, r).pure[M]
-        case GT(l, r)                   => Func.gt(l, r).pure[M]
-        case LT(l, r)                   => Func.lt(l, r).pure[M]
-        case GTE(l, r)                  => Func.gte(l, r).pure[M]
-        case LTE(l, r)                  => Func.lte(l, r).pure[M]
-        case OR(l, r)                   => Func.or(l, r).pure[M]
-        case AND(l, r)                  => Func.and(l, r).pure[M]
-        case NEGATE(s)                  => Func.negate(s).pure[M]
-        case URI(s)                     => Func.iri(s).pure[M]
-        case LANG(s)                    => Func.lang(s).pure[M]
-        case LANGMATCHES(s, range)      => Func.langMatches(s, range).pure[M]
-        case LCASE(s)                   => Func.lcase(s).pure[M]
-        case UCASE(s)                   => Func.ucase(s).pure[M]
-        case ISLITERAL(s)               => Func.isLiteral(s).pure[M]
-        case STR(s)                     => Func.str(s).pure[M]
-        case ISBLANK(s)                 => Func.isBlank(s).pure[M]
-        case ISNUMERIC(s)               => Func.isNumeric(s).pure[M]
-        case ENCODE_FOR_URI(s)          => Func.encodeForURI(s).pure[M]
-        case MD5(s)                     => Func.md5(s).pure[M]
-        case SHA1(s)                    => Func.sha1(s).pure[M]
-        case SHA256(s)                  => Func.sha256(s).pure[M]
-        case SHA384(s)                  => Func.sha384(s).pure[M]
-        case SHA512(s)                  => Func.sha512(s).pure[M]
+          FuncStrings.replace(st, pattern, by, flags).pure[M]
+        case STRENDS(s, f)       => FuncStrings.strends(s, f).pure[M]
+        case STRSTARTS(s, f)     => FuncStrings.strstarts(s, f).pure[M]
+        case STRAFTER(s, f)      => FuncStrings.strafter(s, f).pure[M]
+        case STRBEFORE(s, f)     => FuncStrings.strbefore(s, f).pure[M]
+        case SUBSTR(s, pos, len) => FuncStrings.substr(s, pos, len).pure[M]
+        case STRLEN(s)           => FuncStrings.strlen(s).pure[M]
+        case CONCAT(appendTo, append) =>
+          FuncStrings.concat(appendTo, append).pure[M]
+        case LANGMATCHES(s, range)      => FuncStrings.langMatches(s, range).pure[M]
+        case LCASE(s)                   => FuncStrings.lcase(s).pure[M]
+        case UCASE(s)                   => FuncStrings.ucase(s).pure[M]
+        case ENCODE_FOR_URI(s)          => FuncStrings.encodeForURI(s).pure[M]
+        case EQUALS(l, r)               => FuncForms.equals(l, r).pure[M]
+        case GT(l, r)                   => FuncForms.gt(l, r).pure[M]
+        case LT(l, r)                   => FuncForms.lt(l, r).pure[M]
+        case GTE(l, r)                  => FuncForms.gte(l, r).pure[M]
+        case LTE(l, r)                  => FuncForms.lte(l, r).pure[M]
+        case OR(l, r)                   => FuncForms.or(l, r).pure[M]
+        case AND(l, r)                  => FuncForms.and(l, r).pure[M]
+        case NEGATE(s)                  => FuncForms.negate(s).pure[M]
+        case IN(e, xs)                  => FuncForms.in(e, xs).pure[M]
+        case STR(s)                     => FuncTerms.str(s).pure[M]
+        case STRDT(e, uri)              => FuncTerms.strdt(e, uri).pure[M]
+        case URI(s)                     => FuncTerms.iri(s).pure[M]
+        case LANG(s)                    => FuncTerms.lang(s).pure[M]
+        case ISLITERAL(s)               => FuncTerms.isLiteral(s).pure[M]
+        case ISBLANK(s)                 => FuncTerms.isBlank(s).pure[M]
+        case ISNUMERIC(s)               => FuncTerms.isNumeric(s).pure[M]
+        case MD5(s)                     => FuncHash.md5(s).pure[M]
+        case SHA1(s)                    => FuncHash.sha1(s).pure[M]
+        case SHA256(s)                  => FuncHash.sha256(s).pure[M]
+        case SHA384(s)                  => FuncHash.sha384(s).pure[M]
+        case SHA512(s)                  => FuncHash.sha512(s).pure[M]
         case COUNT(e)                   => unknownFunction("COUNT")
         case SUM(e)                     => unknownFunction("SUM")
         case MIN(e)                     => unknownFunction("MIN")

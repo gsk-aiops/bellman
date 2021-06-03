@@ -2,6 +2,7 @@ package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.{concat => cc, _}
+import org.apache.spark.sql.types.StringType
 
 object Literals {
 
@@ -193,6 +194,7 @@ object Literals {
   // scalastyle:on
 
   object LocalizedLiteral {
+
     def apply(c: Column): LocalizedLiteral = {
       new LocalizedLiteral(
         substring_index(c, "@", 1),
@@ -227,6 +229,7 @@ object Literals {
   }
 
   object TypedLiteral {
+
     def apply(c: Column): TypedLiteral = {
       new TypedLiteral(
         substring_index(c, "^^", 1),
@@ -242,6 +245,9 @@ object Literals {
       )
     }
 
+    def isTypedLiteral(col: Column): Column =
+      col.startsWith("\"") && col.contains("\"^^")
+
     def formatTyped(t: TypedLiteral, s: String, typedFormat: String)(
         f: (Column, String) => Column
     ): Column = when(
@@ -254,4 +260,52 @@ object Literals {
       )
     )
   }
+
+  object DateLiteral {
+
+    /** This helper method tries to parse a datetime expressed as a RDF
+      * datetime string `"0193-07-03T20:50:09.000+04:00"^^xsd:dateTime`
+      * to a column with underlying type datetime.
+      *
+      * @param col
+      * @return
+      */
+    def parseDateFromRDFDateTime(col: Column): Column =
+      when(
+        regexp_extract(col, ExtractDateTime, 1) =!= lit(""),
+        to_timestamp(regexp_extract(col, ExtractDateTime, 1))
+      ).otherwise(nullLiteral)
+
+    def applyDateTimeLiteral(l: Column, r: Column)(
+        operator: (Column, Column) => Column
+    ): Column =
+      when(
+        regexp_extract(l.cast(StringType), ExtractDateTime, 1) =!= lit("") &&
+          regexp_extract(r.cast(StringType), ExtractDateTime, 1) =!= lit(""),
+        operator(
+          parseDateFromRDFDateTime(l.cast(StringType)),
+          parseDateFromRDFDateTime(r.cast(StringType))
+        )
+      )
+
+    private val ExtractDateTime = """^"(.*)"\^\^(.*)dateTime(.*)$"""
+  }
+
+  def extractStringLiteral(str: String): String =
+    str match {
+      case s if str.contains("\"@") || str.contains("\"^^") =>
+        s.stripPrefix("\"").split("\"").head
+      case s => s.stripPrefix("\"").stripSuffix("\"")
+    }
+
+  def extractStringLiteral(col: Column): Column =
+    when(
+      col.startsWith("\"") && col.contains("\"@"),
+      trim(substring_index(col, "\"@", 1), "\"")
+    )
+      .when(
+        col.startsWith("\"") && col.contains("\"^^"),
+        trim(substring_index(col, "\"^^", 1), "\"")
+      )
+      .otherwise(trim(col, "\""))
 }

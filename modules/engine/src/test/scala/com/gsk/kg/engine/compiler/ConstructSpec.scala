@@ -6,14 +6,13 @@ import org.apache.spark.sql.Row
 import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class ConstructSpec
     extends AnyWordSpec
     with Matchers
-    with DataFrameSuiteBase
+    with SparkSpec
     with TestConfig {
 
   import sqlContext.implicits._
@@ -511,7 +510,7 @@ class ConstructSpec
           |PREFIX litn: <http://lit-search-api/node/>
           |PREFIX litp: <http://lit-search-api/property/>
           |
-          |CONSTRUCT { 
+          |CONSTRUCT {
           | ?Document a litn:Document .
           | ?Document litp:docID ?docid .
           |}

@@ -9,14 +9,15 @@ sealed trait Expression
 sealed trait Conditional extends Expression
 
 object Conditional {
-  final case class EQUALS(l: Expression, r: Expression) extends Conditional
-  final case class GT(l: Expression, r: Expression)     extends Conditional
-  final case class GTE(l: Expression, r: Expression)    extends Conditional
-  final case class LT(l: Expression, r: Expression)     extends Conditional
-  final case class LTE(l: Expression, r: Expression)    extends Conditional
-  final case class OR(l: Expression, r: Expression)     extends Conditional
-  final case class AND(l: Expression, r: Expression)    extends Conditional
-  final case class NEGATE(s: Expression)                extends Conditional
+  final case class EQUALS(l: Expression, r: Expression)    extends Conditional
+  final case class GT(l: Expression, r: Expression)        extends Conditional
+  final case class GTE(l: Expression, r: Expression)       extends Conditional
+  final case class LT(l: Expression, r: Expression)        extends Conditional
+  final case class LTE(l: Expression, r: Expression)       extends Conditional
+  final case class OR(l: Expression, r: Expression)        extends Conditional
+  final case class AND(l: Expression, r: Expression)       extends Conditional
+  final case class NEGATE(s: Expression)                   extends Conditional
+  final case class IN(e: Expression, xs: List[Expression]) extends Conditional
 }
 
 sealed trait StringLike extends Expression

@@ -94,6 +94,7 @@ object Expr {
       extends Expr
   final case class Filter(funcs: Seq[Expression], expr: Expr) extends Expr
   final case class Join(l: Expr, r: Expr)                     extends Expr
+  final case class Minus(l: Expr, r: Expr)                    extends Expr
   final case class Graph(g: StringVal, e: Expr)               extends Expr
   final case class Project(vars: Seq[VARIABLE], r: Expr)      extends Expr
   final case class OffsetLimit(
@@ -110,6 +111,7 @@ object Expr {
   final case class Distinct(r: Expr)                          extends Expr
   final case class Table(vars: Seq[VARIABLE], rows: Seq[Row]) extends Expr
   final case class Row(tuples: Seq[(VARIABLE, StringVal)])    extends Expr
+  final case class Exists(not: Boolean, p: Expr, r: Expr)     extends Expr
   final case class OpNil()                                    extends Expr
   final case class TabUnit()                                  extends Expr
 }

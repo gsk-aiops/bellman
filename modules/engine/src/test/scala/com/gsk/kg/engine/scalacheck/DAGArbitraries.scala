@@ -65,6 +65,8 @@ trait DAGArbitraries
       Gen.lzy(A.arbitrary),
       smallListOf(expressionGenerator)
     ).mapN(LeftJoin(_, _, _))
+  def minusGenerator[A](implicit A: Arbitrary[A]): Gen[Minus[A]] =
+    (Gen.lzy(A.arbitrary), Gen.lzy(A.arbitrary)).mapN(Minus(_, _))
   def unionGenerator[A](implicit A: Arbitrary[A]): Gen[Union[A]] =
     (Gen.lzy(A.arbitrary), Gen.lzy(A.arbitrary)).mapN(Union(_, _))
   def filterGenerator[A](implicit A: Arbitrary[A]): Gen[Filter[A]] =
@@ -102,6 +104,7 @@ trait DAGArbitraries
           bindGenerator(arbA),
           leftJoinGenerator(arbA),
           unionGenerator(arbA),
+          minusGenerator(arbA),
           filterGenerator(arbA),
           joinGenerator(arbA),
           offsetGenerator(arbA),
@@ -131,6 +134,8 @@ trait DAGArbitraries
     Arbitrary(leftJoinGenerator[T])
   implicit def arbitraryUnion[T: Arbitrary]: Arbitrary[DAG.Union[T]] =
     Arbitrary(unionGenerator[T])
+  implicit def arbitraryMinus[T: Arbitrary]: Arbitrary[DAG.Minus[T]] =
+    Arbitrary(minusGenerator[T])
   implicit def arbitraryFilter[T: Arbitrary]: Arbitrary[DAG.Filter[T]] =
     Arbitrary(filterGenerator[T])
   implicit def arbitraryJoin[T: Arbitrary]: Arbitrary[DAG.Join[T]] = Arbitrary(
