@@ -1,14 +1,11 @@
 package com.gsk.kg.engine.functions
 
-import com.gsk.kg.engine.RdfFormatter
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
 import com.gsk.kg.engine.compiler.SparkSpec
-import com.gsk.kg.engine.functions.Literals.LocalizedLiteral
 import com.gsk.kg.engine.scalacheck.CommonGenerators
-
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset

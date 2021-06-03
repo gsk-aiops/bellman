@@ -44,14 +44,14 @@ final case class Multiset(
     * @param other
     * @return the join result of both multisets
     */
-  def join(other: Multiset)(implicit sc: SQLContext): Multiset =
+  def join(other: Multiset)(implicit sc: SQLContext): Multiset = {
     (this, other) match {
       case (l, r) if l.isEmpty => r
       case (l, r) if r.isEmpty => l
       case (l, r) if noCommonBindings(l, r) =>
         Multiset(
           l.bindings union r.bindings,
-          l.dataframe.crossJoin(r.dataframe)
+          l.dataframe.crossJoin(r.dataframe.drop(GRAPH_VARIABLE.s))
         )
       case (l, r) =>
         Multiset(
@@ -59,6 +59,7 @@ final case class Multiset(
           innerJoinWithGraphsColumn(l.dataframe, r.dataframe)
         )
     }
+  }
 
   /** A left join returns all values from the left relation and the matched values from the right relation,
     * or appends NULL if there is no match. It is also referred to as a left outer join.
