@@ -1,8 +1,9 @@
 package com.gsk.kg.engine.functions
 
-import com.gsk.kg.engine.RdfFormatter
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions._
+
+import com.gsk.kg.engine.RdfFormatter
 import com.gsk.kg.engine.functions.Literals._
 
 object FuncForms {

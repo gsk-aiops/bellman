@@ -3,14 +3,18 @@ package com.gsk.kg.engine.functions
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.lit
+
 import com.gsk.kg.engine.compiler.SparkSpec
 import com.gsk.kg.engine.scalacheck.CommonGenerators
+
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAccessor
+
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
