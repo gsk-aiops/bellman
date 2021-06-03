@@ -538,4 +538,57 @@ class ConstructSpec
       )
     }
   }
+
+  "construct on numeric literals" in {
+
+    val df: DataFrame = List(
+      (
+        "<http://example.org/alice>",
+        "<http://xmlns.com/foaf/0.1/age>",
+        "\"28\"^^<http://www.w3.org/2001/XMLSchema#int>"
+      ),
+      (
+        "<http://example.org/bob>",
+        "<http://xmlns.com/foaf/0.1/age>",
+        "\"17\"^^xsd:decimal"
+      ),
+      (
+        "<http://example.org/charlie>",
+        "<http://xmlns.com/foaf/0.1/age>",
+        "35"
+      )
+    ).toDF("s", "p", "o")
+
+    df.show(false)
+
+    val query =
+      """
+        |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        |
+        |CONSTRUCT {
+        |  ?s foaf:age2 ?n .
+        |} WHERE {
+        |  ?s foaf:age ?n .
+        |}
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query, config)
+
+    result.right.get.show(false)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 2
+    result.right.get.collect.toSet shouldEqual Set(
+      Row(
+        "<http://example.org/charlie>",
+        "<http://xmlns.com/foaf/0.1/age2>",
+        "35"
+      ),
+      Row(
+        "<http://example.org/alice>",
+        "<http://xmlns.com/foaf/0.1/age2>",
+        "\"28\"^^<http://www.w3.org/2001/XMLSchema#int>"
+      )
+    )
+  }
 }
