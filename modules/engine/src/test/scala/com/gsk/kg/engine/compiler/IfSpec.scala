@@ -52,12 +52,8 @@ class IfSpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
       val result = Compiler.compile(df, query, config).right.get
 
       result.collect.toSet shouldEqual Set(
-        Row(
-          "\"Alice\"",
-          "adult",
-          "\"Bob\"",
-          "child"
-        )
+        Row("\"Alice\"", "\"adult\""),
+        Row("\"Bob\"", "\"child\"")
       )
     }
 
