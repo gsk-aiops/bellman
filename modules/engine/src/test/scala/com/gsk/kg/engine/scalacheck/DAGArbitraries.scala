@@ -24,7 +24,7 @@ trait DAGArbitraries
   import DAG._
 
   val variableGenerator: Gen[VARIABLE] =
-    nonEmptyStringGenerator.map(VARIABLE(_))
+    nonEmptyStringGenerator.map(VARIABLE)
 
   val quadGenerator: Gen[Expr.Quad] =
     (
