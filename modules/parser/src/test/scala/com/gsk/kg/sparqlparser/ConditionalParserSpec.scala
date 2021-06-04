@@ -103,4 +103,24 @@ class ConditionalParserSpec extends AnyFlatSpec {
       case _                                                => fail
     }
   }
+
+  "If parser" should "return IF type" in {
+    val p =
+      fastparse.parse(
+        """(if (< ?age 18) "child" "adult")""",
+        ConditionalParser.parser(_)
+      )
+    p.get.value match {
+      case IF(
+            LT(
+              VARIABLE("?age"),
+              NUM("18")
+            ),
+            STRING("child"),
+            STRING("adult")
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
 }
