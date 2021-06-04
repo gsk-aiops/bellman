@@ -20,9 +20,9 @@ object Conditional {
   final case class IN(e: Expression, xs: List[Expression]) extends Conditional
   final case class SAMETERM(l: Expression, r: Expression)  extends Conditional
   final case class IF(
-      cond: Expression,
-      exprIfTrue: Expression,
-      exprIfFalse: Expression
+      cnd: Expression,
+      ifTrue: Expression,
+      ifFalse: Expression
   ) extends Conditional
 }
 

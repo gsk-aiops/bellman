@@ -195,4 +195,15 @@ object FuncForms {
       rightTyped
     ).otherwise(l === r)
   }
+
+  /** The IF function form evaluates the first argument, interprets it as a effective boolean value,
+    * then returns the value of expression2 if the EBV is true, otherwise it returns the value of expression3.
+    * Only one of expression2 and expression3 is evaluated. If evaluating the first argument raises an error,
+    * then an error is raised for the evaluation of the IF expression.
+    * @param cnd
+    * @param ifTrue
+    * @param ifFalse
+    * @return
+    */
+  def `if`(cnd: Column, ifTrue: Column, ifFalse: Column): Column = ???
 }
