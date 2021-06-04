@@ -68,7 +68,12 @@ object RdfFormatter {
       isNull(col),
       col.cast(DataTypes.StringType)
     ).otherwise(
-      format_string("\"%s\"", col)
+      when(
+        isQuoted(col),
+        col.cast(DataTypes.StringType)
+      ).otherwise(
+        format_string("\"%s\"", col)
+      )
     )
   }
 
@@ -100,4 +105,6 @@ object RdfFormatter {
   def isLocalizedString(column: Column): Column =
     column.contains("\"@")
 
+  def isQuoted(column: Column): Column =
+    column.startsWith("\"") && column.endsWith("\"")
 }

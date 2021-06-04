@@ -27,6 +27,7 @@ class RdfFormatterSpec
       ("\"string\"@en", "_:blanknode", "<http://uri.com>"),
       ("\"string\"@en", "_:blanknode", "<http://uri.com>"),
       ("false", "true", "another string"),
+      ("un-quoted string", "\"quoted string\"", ""),
       ("\"false\"^^xsd:boolean", "\"true\"^^xsd:boolean", "1")
     ).toDF("s", "p", "o")
 
@@ -35,6 +36,7 @@ class RdfFormatterSpec
       ("\"string\"@en", "_:blanknode", "<http://uri.com>"),
       ("\"string\"@en", "_:blanknode", "<http://uri.com>"),
       ("false", "true", "\"another string\""),
+      ("\"un-quoted string\"", "\"quoted string\"", "\"\""),
       ("\"false\"^^xsd:boolean", "\"true\"^^xsd:boolean", "1")
     ).toDF("s", "p", "o")
 
