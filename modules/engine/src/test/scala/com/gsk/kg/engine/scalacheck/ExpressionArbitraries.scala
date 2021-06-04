@@ -3,6 +3,7 @@ package scalacheck
 
 import cats.implicits._
 
+import com.gsk.kg.engine.scalacheck.all.expressionNelGenerator
 import com.gsk.kg.sparqlparser._
 
 import org.scalacheck.Arbitrary
@@ -106,7 +107,14 @@ trait ExpressionArbitraries extends CommonGenerators {
       .mapN(Conditional.OR(_, _)),
     (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
       .mapN(Conditional.AND(_, _)),
-    Gen.lzy(expressionGenerator).map(Conditional.NEGATE(_))
+    (Gen.lzy(expressionGenerator).map(Conditional.NEGATE(_))),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionNelGenerator).map(_.toList)
+    )
+      .mapN(Conditional.IN(_, _)),
+    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
+      .mapN(Conditional.SAMETERM(_, _))
   )
 
   implicit val arbitraryExpression: Arbitrary[Expression] = Arbitrary(

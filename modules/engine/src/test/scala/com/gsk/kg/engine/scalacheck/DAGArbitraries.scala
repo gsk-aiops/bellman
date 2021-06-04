@@ -34,6 +34,11 @@ trait DAGArbitraries
       stringValGenerator
     ).mapN((s, p, o, g) => Expr.Quad(s, p, o, g :: Nil))
 
+  val rowGenerator: Gen[Expr.Row] = (
+    Gen.nonEmptyListOf(variableGenerator),
+    Gen.nonEmptyListOf(stringValGenerator)
+  ).mapN { case (vs, ss) => Expr.Row(vs zip ss) }
+
   implicit val quadArbitrary: Arbitrary[Expr.Quad] = Arbitrary(
     quadGenerator
   )
@@ -89,6 +94,17 @@ trait DAGArbitraries
     Gen.lzy(A.arbitrary).map(Distinct(_))
   def bgpGenerator[A](implicit A: Arbitrary[A]): Gen[BGP[A]] =
     chunkedListGenerator[Expr.Quad].map(BGP(_))
+  def tableGenerator[A](implicit A: Arbitrary[A]): Gen[Table[A]] =
+    (
+      Gen.nonEmptyListOf(variableGenerator).map(_.toList),
+      Gen.nonEmptyListOf(rowGenerator).map(_.toList)
+    ).mapN(Table(_, _))
+  def existsGenerator[A](implicit A: Arbitrary[A]): Gen[Exists[A]] =
+    (
+      Gen.oneOf(Seq(true, false)),
+      Gen.lzy(A.arbitrary),
+      Gen.lzy(A.arbitrary)
+    ).mapN(Exists(_, _, _))
   def noopGenerator[A]: Gen[Noop[A]] =
     Arbitrary.arbString.arbitrary.map(Noop[A](_))
 
@@ -110,7 +126,9 @@ trait DAGArbitraries
           offsetGenerator(arbA),
           limitGenerator(arbA),
           distinctGenerator(arbA),
-          bgpGenerator(arbA)
+          bgpGenerator(arbA),
+          tableGenerator(arbA),
+          existsGenerator(arbA)
         )
       )
     }
@@ -152,6 +170,10 @@ trait DAGArbitraries
   implicit def arbitraryBgp[T: Arbitrary]: Arbitrary[DAG.BGP[T]] = Arbitrary(
     bgpGenerator[T]
   )
+  implicit def arbitraryTable[T: Arbitrary]: Arbitrary[DAG.Table[T]] =
+    Arbitrary(tableGenerator[T])
+  implicit def arbitraryExists[T: Arbitrary]: Arbitrary[DAG.Exists[T]] =
+    Arbitrary(existsGenerator[T])
   implicit def arbitraryNoop[T: Arbitrary]: Arbitrary[DAG.Noop[T]] = Arbitrary(
     noopGenerator[T]
   )
@@ -188,6 +210,10 @@ trait DAGArbitraries
   implicit def cogenGroup[A]: Cogen[Group[A]] =
     Cogen.cogenString.contramap(_.toString)
   implicit def cogenDistinct[A]: Cogen[Distinct[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenTable[A]: Cogen[Table[A]] =
+    Cogen.cogenString.contramap(_.toString)
+  implicit def cogenExists[A]: Cogen[Exists[A]] =
     Cogen.cogenString.contramap(_.toString)
   implicit def cogenNoop[A]: Cogen[Noop[A]] =
     Cogen.cogenString.contramap(_.toString)
