@@ -6,55 +6,10 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class QueryExtractorSpec extends AnyWordSpec with Matchers {
-  
+
   "QueryExtractor" must {
 
-    "extract info from the query" in {
-      val query = """
-        PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
-        
-        CONSTRUCT {
-           ?te dm:contains ?docid .
-        }
-        FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/kg?type=snapshot&t=20200109>
-        WHERE { 
-            ?d a dm:Document .
-            ?d dm:contains ?ds .
-            ?ds dm:contains ?te .
-            BIND(STRAFTER(str(?d), "#") as ?docid) .
-        }
-        """
-
-      QueryExtractor.extractInfo(query)._2 shouldEqual Map(
-        "http://gsk-kg.rdip.gsk.com/dm/1.0/kg" -> List(
-          QueryParam("type","snapshot"),
-          QueryParam("t","20200109")
-        )
-      )
-    }
-
-    "clean query from metadata in URIs" in {
-      val query = """
-        PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
-        
-        CONSTRUCT {
-           ?te dm:contains ?docid .
-        }
-        FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/kg?type=snapshot&t=20200109>
-        WHERE { 
-            ?d a dm:Document .
-            ?d dm:contains ?ds .
-            ?ds dm:contains ?te .
-            BIND(STRAFTER(str(?d), "#") as ?docid) .
-        }
-        """
-
-      QueryExtractor.extractInfo(query)._1 shouldEqual """CONSTRUCT { ?te <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?docid . }
-FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/kg>
- WHERE { ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://gsk-kg.rdip.gsk.com/dm/1.0/Document> . ?d <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?ds . ?ds <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?te . BIND(STRAFTER(STR(?d), "#") as ?docid) }"""
-    }
-
-    "clean query with GRAPH statements" in {
+    "get info and clean query with GRAPH statements" in {
       val query = """
         PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
         CONSTRUCT {
@@ -77,15 +32,10 @@ FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/kg>
 
       result._2 shouldEqual Map(
         "http://gsk-kg.rdip.gsk.com/dm/1.0/Elsevier" ->
-        List(
-          QueryParam("type","incremental"),
-          QueryParam("t","20200109")),
+          List(QueryParam("type", "incremental"), QueryParam("t", "20200109")),
         "http://gsk-kg.rdip.gsk.com/dm/1.0/Semmed" ->
-        List(
-          QueryParam("type","snapshot"),
-          QueryParam("t","20200309"))
+          List(QueryParam("type", "snapshot"), QueryParam("t", "20200309"))
       )
-
 
       result._1 shouldEqual """CONSTRUCT { ?te <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?docid . }
 
@@ -93,7 +43,7 @@ FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/kg>
     }
 
     "extract info from FROM statement" in {
-    val query = """
+      val query  = """
 PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
 CONSTRUCT {
   ?te dm:contains ?docid .
@@ -110,8 +60,8 @@ WHERE {
 
       result._2 shouldEqual Map(
         "http://gsk-kg.rdip.gsk.com/dm/1.0/ccc" -> List(
-          QueryParam("type","snapshot"), 
-          QueryParam("t","20200109")
+          QueryParam("type", "snapshot"),
+          QueryParam("t", "20200109")
         )
       )
 
@@ -119,6 +69,33 @@ WHERE {
 FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/ccc>
  WHERE { ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://gsk-kg.rdip.gsk.com/dm/1.0/Document> . ?d <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?ds . ?ds <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?te . BIND(STRAFTER(STR(?d), "#") as ?docid) }"""
     }
+
+    "format knowledge graph URI correctly" in {
+      val query  = """
+PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+CONSTRUCT {
+  ?te dm:contains ?docid .
+}
+FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/kg?type=snapshot&t=20200109>
+WHERE {
+   ?d a dm:Document .
+   ?d dm:contains ?ds .
+   ?ds dm:contains ?te .
+   BIND(STRAFTER(str(?d), "#") as ?docid) .
+}
+    """
+      val result = QueryExtractor.extractInfo(query)
+
+      result._2 shouldEqual Map(
+        "" -> List(
+          QueryParam("type", "snapshot"),
+          QueryParam("t", "20200109")
+        )
+      )
+
+      result._1 shouldEqual """CONSTRUCT { ?te <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?docid . }
+
+ WHERE { ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://gsk-kg.rdip.gsk.com/dm/1.0/Document> . ?d <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?ds . ?ds <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?te . BIND(STRAFTER(STR(?d), "#") as ?docid) }"""
+    }
   }
 }
-
