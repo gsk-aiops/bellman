@@ -27,7 +27,7 @@ object QueryExtractor {
 
     (
       queryToString(query, graphs),
-      (graphs.default ++ graphs.named)
+      (graphs.default ++ graphs.named ++ getGraphs(query.r))
         .filterNot(_.s.isEmpty)
         .map { uriVal =>
           val uriString = uriVal.s.stripPrefix("<").stripSuffix(">")
@@ -38,6 +38,38 @@ object QueryExtractor {
         }
         .toMap
     )
+  }
+
+  private def getGraphs(expr: Expr): List[StringVal] = {
+    val extractGraphs: Algebra[ExprF, List[StringVal]] = Algebra {
+      case ExtendF(bindTo, bindFrom, r)      => r
+      case FilteredLeftJoinF(l, r, f)        => l ++ r
+      case UnionF(l, r)                      => l ++ r
+      case BGPF(quads)                       => Nil
+      case GraphF(g, e)                      => g :: e
+      case JoinF(l, r)                       => l ++ r
+      case LeftJoinF(l, r)                   => l ++ r
+      case ProjectF(vars, r)                 => r
+      case QuadF(s, p, o, g)                 => Nil
+      case DistinctF(r)                      => r
+      case GroupF(vars, func, r)             => r
+      case OrderF(conds, r)                  => r
+      case OffsetLimitF(None, None, r)       => r
+      case OffsetLimitF(None, Some(l), r)    => r
+      case OffsetLimitF(Some(o), None, r)    => r
+      case OffsetLimitF(Some(o), Some(l), r) => r
+      case FilterF(funcs, expr)              => expr
+      case TableF(vars, rows)                => Nil
+      case RowF(tuples)                      => Nil
+      case TabUnitF()                        => Nil
+      case MinusF(l, r)                      => l ++ r
+      case OpNilF()                          => Nil
+      case ExistsF(not, p, r)                => r
+    }
+
+    val fn = scheme.cata(extractGraphs)
+
+    fn(expr)
   }
 
   private def getCleanUri(uriVal: StringVal): String = {

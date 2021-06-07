@@ -60,8 +60,6 @@ FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/kg>
         CONSTRUCT {
           ?te dm:contains ?docid .
         }
-        FROM NAMED <http://gsk-kg.rdip.gsk.com/dm/1.0/Elsevier?type=incremental&t=20200109>
-        FROM NAMED <http://gsk-kg.rdip.gsk.com/dm/1.0/Semmed?type=snapshot&t=20200309>
         WHERE {
            GRAPH <http://gsk-kg.rdip.gsk.com/dm/1.0/Semmed?type=snapshot&t=20200309>
            {
@@ -90,8 +88,7 @@ FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/kg>
 
 
       result._1 shouldEqual """CONSTRUCT { ?te <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?docid . }
-FROM NAMED <http://gsk-kg.rdip.gsk.com/dm/1.0/Elsevier>
-FROM NAMED <http://gsk-kg.rdip.gsk.com/dm/1.0/Semmed>
+
  WHERE { { GRAPH <http://gsk-kg.rdip.gsk.com/dm/1.0/Semmed> { ?ds <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?te . } } JOIN { GRAPH <http://gsk-kg.rdip.gsk.com/dm/1.0/Elsevier> { ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://gsk-kg.rdip.gsk.com/dm/1.0/Document> . ?d <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?ds . BIND(STRAFTER(STR(?d), "#") as ?docid) } } }"""
     }
   }
