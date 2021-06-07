@@ -20,7 +20,10 @@ object QueryExtractor {
   final case class QueryParam(param: String, value: String)
 
   def extractInfo(q: String): (String, Map[String, List[QueryParam]]) = {
-    val (query, graphs) = QueryConstruct.parse(q, Config.default).right.get
+    val (query, graphs) = QueryConstruct.parse(q, Config.default) match {
+      case Left(a) => throw new Exception(a.toString)
+      case Right(b) => b
+    }
 
     (
       queryToString(query, graphs),
@@ -73,7 +76,7 @@ object QueryExtractor {
       case Query.Construct(vars, bgp, r) =>
         s"CONSTRUCT { ${bgp.quads.map(printQuad).mkString(" ")} }$g WHERE { ${toString(r)} }"
       case Query.Select(vars, r) =>
-        s"SELECT ${printVars(vars)} $g WHERE { ${toString(r)} }"
+        s"SELECT ${printVars(vars)}$g WHERE { ${toString(r)} }"
     }
   }
 
