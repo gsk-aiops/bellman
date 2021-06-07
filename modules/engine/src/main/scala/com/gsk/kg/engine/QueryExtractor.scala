@@ -2,6 +2,7 @@ package com.gsk.kg.engine
 
 import higherkindness.droste._
 
+import com.gsk.kg.Graphs
 import com.gsk.kg.config.Config
 import com.gsk.kg.engine.ExpressionF.{VARIABLE => _, _}
 import com.gsk.kg.sparqlparser.Expr
@@ -13,7 +14,6 @@ import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringVal._
 
 import java.net.URI
-import com.gsk.kg.Graphs
 
 object QueryExtractor {
 
@@ -88,8 +88,8 @@ object QueryExtractor {
         uri.getHost,
         uri.getPort,
         uri.getPath,
-        null,
-        null
+        null, // scalastyle:off
+        null  // scalastyle:off
       ).toString
     }
   }
@@ -231,8 +231,8 @@ object QueryExtractor {
     uri.getQuery
       .split("&")
       .map { qp =>
-        val Array(param, value) = qp.split("=")
-        QueryParam(param, value)
+        val arr = qp.split("=")
+        QueryParam(arr(0), arr(1))
       }
       .toList
 
