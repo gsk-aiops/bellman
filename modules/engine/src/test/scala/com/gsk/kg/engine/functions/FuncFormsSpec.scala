@@ -1674,6 +1674,112 @@ class FuncFormsSpec
         result shouldEqual expected
       }
     }
+
+    "FuncForms.if" should {
+
+      "return expected results with plain booleans" in {
+
+        val df = List(
+          (true, "yes", "no", "yes"),
+          (false, "yes", "no", "no")
+        ).toDF("cnd", "ifTrue", "ifFalse", "expected")
+
+        val result =
+          df.select(FuncForms.`if`(df("cnd"), df("ifTrue"), df("ifFalse")))
+            .collect
+        val expected = df.select(df("expected")).collect()
+
+        result shouldEqual expected
+      }
+
+      "return if true when other types evaluate to true" in {
+
+        val df = List(
+          ("\"true\"^^xsd:boolean", "yes", "no", "yes"),
+          ("\"1\"^^xsd:integer", "yes", "no", "yes"),
+          ("true", "yes", "no", "yes"),
+          ("\"abc\"^^xsd:string", "yes", "no", "yes"),
+          ("abc", "yes", "no", "yes"),
+          ("\"1.2\"^^xsd:double", "yes", "no", "yes"),
+          ("1.2", "yes", "no", "yes")
+        ).toDF("cnd", "ifTrue", "ifFalse", "expected")
+
+        val result =
+          df.select(FuncForms.`if`(df("cnd"), df("ifTrue"), df("ifFalse")))
+            .collect
+        val expected = df.select(df("expected")).collect()
+
+        result shouldEqual expected
+      }
+
+      "return if false when other types evaluate to false" in {
+
+        val df = List(
+          ("\"abc\"^^xsd:boolean", "yes", "no", "no"),
+          ("\"false\"^^xsd:boolean", "yes", "no", "no"),
+          ("\"abc\"^^xsd:integer", "yes", "no", "no"),
+          ("false", "yes", "no", "no"),
+          ("\"\"^^xsd:string", "yes", "no", "no"),
+          ("", "yes", "no", "no"),
+          ("\"0\"^^xsd:integer", "yes", "no", "no"),
+          ("0", "yes", "no", "no"),
+          ("NaN", "yes", "no", "no"),
+          ("\"NaN\"^^xsd:double", "yes", "no", "no")
+        ).toDF("cnd", "ifTrue", "ifFalse", "expected")
+
+        val result =
+          df.select(FuncForms.`if`(df("cnd"), df("ifTrue"), df("ifFalse")))
+            .collect
+        val expected = df.select(df("expected")).collect()
+
+        result shouldEqual expected
+      }
+
+      "return null when other types evaluate to null" in {
+
+        val df = List(
+          (null, "yes", "no", null)
+        ).toDF("cnd", "ifTrue", "ifFalse", "expected")
+
+        val result =
+          df.select(FuncForms.`if`(df("cnd"), df("ifTrue"), df("ifFalse")))
+            .collect
+        val expected = df.select(df("expected")).collect()
+
+        result shouldEqual expected
+      }
+    }
+
+    "FuncForms.effectiveBooleanValue" should {
+
+      "return expected values" in {
+        val df = List(
+          ("\"abc\"^^xsd:boolean", false),
+          ("\"false\"^^xsd:boolean", false),
+          ("\"true\"^^xsd:boolean", true),
+          ("\"abc\"^^xsd:integer", false),
+          ("\"1\"^^xsd:integer", true),
+          ("true", true),
+          ("false", false),
+          ("\"\"^^xsd:string", false),
+          ("", false),
+          ("\"abc\"^^xsd:string", true),
+          ("abc", true),
+          ("\"0\"^^xsd:integer", false),
+          ("0", false),
+          ("NaN", false),
+          ("\"NaN\"^^xsd:double", false),
+          ("\"1.2\"^^xsd:double", true),
+          ("1.2", true)
+        ).toDF("elem", "expected")
+
+        val result =
+          df.select(FuncForms.effectiveBooleanValue(df("elem"))).collect()
+        val expected = df.select(df("expected")).collect()
+
+        result shouldEqual expected
+      }
+    }
   }
 
   def toRDFDateTime(datetime: TemporalAccessor): String =

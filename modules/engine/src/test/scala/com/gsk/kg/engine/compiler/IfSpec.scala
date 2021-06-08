@@ -58,8 +58,5 @@ class IfSpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
         Row("\"Bob\"", "\"child\"")
       )
     }
-
-    "nested IF" in {}
   }
-
 }

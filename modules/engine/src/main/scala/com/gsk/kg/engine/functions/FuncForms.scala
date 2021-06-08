@@ -205,11 +205,16 @@ object FuncForms {
     * @param ifFalse
     * @return
     */
-  def `if`(cnd: Column, ifTrue: Column, ifFalse: Column): Column =
+  def `if`(cnd: Column, ifTrue: Column, ifFalse: Column): Column = {
+    val ebv = effectiveBooleanValue(cnd)
     when(
-      isEBV(cnd),
-      when(cnd, ifTrue).otherwise(ifFalse)
+      ebv.isNotNull,
+      when(
+        ebv,
+        ifTrue
+      ).otherwise(ifFalse)
     ).otherwise(nullLiteral)
+  }
 
   /** Effective boolean value is used to calculate the arguments to the logical functions logical-and, logical-or,
     * and fn:not, as well as evaluate the result of a FILTER expression.
@@ -217,7 +222,7 @@ object FuncForms {
     * The XQuery Effective Boolean Value rules rely on the definition of XPath's fn:boolean.
     * The following rules reflect the rules for fn:boolean applied to the argument types present in SPARQL queries:
     *
-    * The EBV of any literal whose type is xsd:boolean or numeric is false if the lexical form is not valid for
+    * - The EBV of any literal whose type is xsd:boolean or numeric is false if the lexical form is not valid for
     * that datatype (e.g. "abc"^^xsd:integer).
     * - If the argument is a typed literal with a datatype of xsd:boolean, and it has a valid lexical form,
     * the EBV is the value of that argument.
@@ -233,5 +238,61 @@ object FuncForms {
     * @param column
     * @return
     */
-  private def isEBV(column: Column): Column = lit(true)
+  def effectiveBooleanValue(col: Column): Column = {
+    val typed = TypedLiteral(col)
+
+    lazy val ifBooleanLit = when(
+      typed.value =!= lit("true") && typed.value =!= "false",
+      lit(false)
+    ).otherwise(
+      typed.value.cast("boolean")
+    )
+
+    lazy val ifNumericLit = when(
+      typed.value.cast("double").isNull,
+      lit(false)
+    ).otherwise {
+      val double = typed.value.cast("double")
+      when(
+        isnan(double) || double === lit(0.0),
+        lit(false)
+      ).otherwise(lit(true))
+    }
+
+    lazy val ifPlainLit = when(
+      typed.value === lit(""),
+      lit(false)
+    ).when(
+      typed.value.cast("boolean").isNotNull,
+      typed.value.cast("boolean")
+    ).when(
+      typed.value.cast("double").isNull,
+      lit(true)
+    ).otherwise {
+      val double = typed.value.cast("double")
+      when(
+        isnan(double) || double === lit(0.0),
+        lit(false)
+      ).otherwise(lit(true))
+    }
+
+    lazy val ifStringLit = when(
+      typed.value === lit(""),
+      lit(false)
+    ).otherwise(lit(true))
+
+    when(
+      isBooleanLiteral(col),
+      ifBooleanLit
+    ).when(
+      isNumericLiteral(col),
+      ifNumericLit
+    ).when(
+      typed.tag === lit(""),
+      ifPlainLit
+    ).when(
+      isStringLiteral(col),
+      ifStringLit
+    ).otherwise(nullLiteral)
+  }
 }

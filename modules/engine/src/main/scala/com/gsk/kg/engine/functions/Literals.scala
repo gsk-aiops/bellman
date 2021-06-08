@@ -21,10 +21,22 @@ object Literals {
   object NumericLiteral {
     def apply(col: Column): NumericLiteral = {
       new NumericLiteral(
-        regexp_replace(substring_index(col, "^^", 1), "\"", ""),
+        trim(substring_index(col, "^^", 1), "\""),
         substring_index(col, "^^", -1)
       )
     }
+  }
+
+  def isStringLiteral(col: Column): Column = {
+    val typed = TypedLiteral(col)
+    typed.tag === lit("xsd:string") ||
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#string>")
+  }
+
+  def isBooleanLiteral(col: Column): Column = {
+    val typed = TypedLiteral(col)
+    typed.tag === lit("xsd:boolean") ||
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#boolean>")
   }
 
   def isNumericLiteral(col: Column): Column =
@@ -196,9 +208,14 @@ object Literals {
   object LocalizedLiteral {
 
     def apply(c: Column): LocalizedLiteral = {
+      val value = trim(substring_index(c, "@", 1), "\"")
+      val tag   = substring_index(c, "@", -1)
       new LocalizedLiteral(
-        trim(substring_index(c, "@", 1), "\""),
-        substring_index(c, "@", -1)
+        value,
+        when(
+          value === tag,
+          lit("")
+        ).otherwise(tag)
       )
     }
 
@@ -231,9 +248,16 @@ object Literals {
   object TypedLiteral {
 
     def apply(c: Column): TypedLiteral = {
+      val value = trim(substring_index(c, "^^", 1), "\"")
+      val tag   = substring_index(c, "^^", -1)
       new TypedLiteral(
-        trim(substring_index(c, "^^", 1), "\""),
-        substring_index(c, "^^", -1)
+        value,
+        when(
+          value === tag,
+          lit("")
+        ).otherwise(
+          tag
+        )
       )
     }
 
