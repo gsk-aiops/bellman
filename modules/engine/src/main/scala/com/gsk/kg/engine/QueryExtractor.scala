@@ -211,10 +211,10 @@ object QueryExtractor {
       case GroupF(vars, func, r) => s"$r GROUP BY ${printVars(vars)}"
       case OrderF(conds, r) =>
         s"$r ORDER BY ${conds.asInstanceOf[Seq[Expression]].map(printExpression).mkString(" ")}"
-      case OffsetLimitF(None, None, r)       => s"OffsetLimitF(None, None, r)"
-      case OffsetLimitF(None, Some(l), r)    => s"OffsetLimitF(None, Some(l)"
-      case OffsetLimitF(Some(o), None, r)    => s"OffsetLimitF(Some(o)"
-      case OffsetLimitF(Some(o), Some(l), r) => s"OffsetLimitF(Some(o)"
+      case OffsetLimitF(None, None, r)       => r
+      case OffsetLimitF(None, Some(l), r)    => s"$r LIMIT $l"
+      case OffsetLimitF(Some(o), None, r)    => s"$r OFFSET $o"
+      case OffsetLimitF(Some(o), Some(l), r) => s"$r OFFSET $o LIMIT $l"
       case FilterF(funcs, expr) =>
         s"$expr FILTER(${funcs.map(printExpression).mkString(" ")})"
       case TableF(vars, rows) => s"TableF(vars, rows)"
