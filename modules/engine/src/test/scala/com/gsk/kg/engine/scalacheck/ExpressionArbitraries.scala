@@ -3,7 +3,7 @@ package scalacheck
 
 import cats.implicits._
 
-import com.gsk.kg.engine.scalacheck.all.expressionNelGenerator
+import com.gsk.kg.sparqlparser.StringVal.URIVAL
 import com.gsk.kg.sparqlparser._
 
 import org.scalacheck.Arbitrary
@@ -17,104 +17,185 @@ trait ExpressionArbitraries extends CommonGenerators {
       Gen.frequency(
         7 -> stringValGenerator,
         1 -> builtinFuncGenerator,
-        1 -> conditionalGenerator
+        1 -> funcFormsGenerator
       )
     )
 
+  val uriValGenerator: Gen[URIVAL] =
+    nonEmptyStringGenerator.map(StringVal.URIVAL)
+
   val stringValGenerator: Gen[StringVal] = Gen.oneOf(
-    nonEmptyStringGenerator.map(StringVal.STRING(_)),
-    (nonEmptyStringGenerator, sparqlDataTypesGen)
-      .mapN(StringVal.DT_STRING(_, _)),
-    (nonEmptyStringGenerator, nonEmptyStringGenerator.map(x => s"@$x"))
-      .mapN(StringVal.LANG_STRING(_, _)),
-    Gen.numStr.map(StringVal.NUM(_)),
-    nonEmptyStringGenerator.map(str => StringVal.VARIABLE(s"?$str")),
-    nonEmptyStringGenerator.map(uri => StringVal.URIVAL(uri)),
-    nonEmptyStringGenerator.map(StringVal.BLANK(_)),
-    Gen.oneOf(true, false).map(bool => StringVal.BOOL(bool.toString))
+    nonEmptyStringGenerator
+      .map(StringVal.STRING),
+    (
+      nonEmptyStringGenerator,
+      sparqlDataTypesGen
+    ).mapN(StringVal.DT_STRING(_, _)),
+    (
+      nonEmptyStringGenerator,
+      nonEmptyStringGenerator.map(x => s"@$x")
+    ).mapN(StringVal.LANG_STRING(_, _)),
+    Gen.numStr.map(StringVal.NUM),
+    nonEmptyStringGenerator
+      .map(str => StringVal.VARIABLE(s"?$str")),
+    uriValGenerator,
+    nonEmptyStringGenerator
+      .map(StringVal.BLANK),
+    Gen
+      .oneOf(true, false)
+      .map(bool => StringVal.BOOL(bool.toString))
   )
 
-  val builtinFuncGenerator: Gen[Expression] = Gen.oneOf(
-    Gen.lzy(expressionGenerator).map(BuiltInFunc.URI(_)),
+  val funcHashGenerator: Gen[Expression] = Gen.oneOf(
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.MD5),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.SHA1),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.SHA256),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.SHA384),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.SHA512)
+  )
+
+  val funcTermsGenerator: Gen[Expression] = Gen.oneOf(
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.STR),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(uriValGenerator)
+    ).mapN(BuiltInFunc.STRDT),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.URI),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.LANG),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.ISBLANK),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.ISNUMERIC),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.ISLITERAL)
+  )
+
+  val funcStringsGenerator: Gen[Expression] = Gen.oneOf(
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.STRLEN),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(Gen.option(expressionGenerator))
+    ).mapN(BuiltInFunc.SUBSTR),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.UCASE),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.LCASE),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(BuiltInFunc.STRSTARTS),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(BuiltInFunc.STRENDS),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(BuiltInFunc.STRBEFORE),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(BuiltInFunc.STRAFTER),
+    Gen
+      .lzy(expressionGenerator)
+      .map(BuiltInFunc.ENCODE_FOR_URI),
     (
       Gen.lzy(expressionGenerator),
       smallNonEmptyListOf(expressionGenerator)
-    )
-      .mapN(BuiltInFunc.CONCAT(_, _)),
-    Gen.lzy(expressionGenerator).map(BuiltInFunc.STR(_)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(BuiltInFunc.STRENDS(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(BuiltInFunc.STRAFTER(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(BuiltInFunc.STRBEFORE(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(BuiltInFunc.SUBSTR(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(BuiltInFunc.STRSTARTS(_, _)),
-    (Gen
-      .lzy(expressionGenerator))
-      .map(BuiltInFunc.LANG(_)),
+    ).mapN(BuiltInFunc.CONCAT),
     (
       Gen.lzy(expressionGenerator),
       Gen.lzy(expressionGenerator)
-    ).mapN(BuiltInFunc.LANGMATCHES(_, _)),
-    (Gen
-      .lzy(expressionGenerator))
-      .map(BuiltInFunc.LCASE(_)),
-    (Gen
-      .lzy(expressionGenerator))
-      .map(BuiltInFunc.UCASE(_)),
-    Gen.lzy(expressionGenerator).map(BuiltInFunc.ISBLANK(_)),
-    Gen.lzy(expressionGenerator).map(BuiltInFunc.ISNUMERIC(_)),
-    Gen.lzy(expressionGenerator).map(BuiltInFunc.ENCODE_FOR_URI(_)),
+    ).mapN(BuiltInFunc.LANGMATCHES),
     (
       Gen.lzy(expressionGenerator),
       Gen.lzy(expressionGenerator),
       Gen.lzy(expressionGenerator)
-    ).mapN(BuiltInFunc.REPLACE(_, _, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(BuiltInFunc.REGEX(_, _)),
-    (Gen
-      .lzy(expressionGenerator))
-      .map(BuiltInFunc.MD5(_)),
-    (Gen
-      .lzy(expressionGenerator))
-      .map(BuiltInFunc.SHA1(_)),
-    (Gen
-      .lzy(expressionGenerator))
-      .map(BuiltInFunc.SHA256(_)),
-    (Gen
-      .lzy(expressionGenerator))
-      .map(BuiltInFunc.SHA384(_)),
-    (Gen
-      .lzy(expressionGenerator))
-      .map(BuiltInFunc.SHA512(_))
+    ).mapN(BuiltInFunc.REGEX),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(BuiltInFunc.REPLACE)
   )
 
-  val conditionalGenerator: Gen[Expression] = Gen.oneOf(
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(Conditional.EQUALS(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(Conditional.GT(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(Conditional.GTE(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(Conditional.LT(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(Conditional.LTE(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(Conditional.OR(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(Conditional.AND(_, _)),
-    (Gen.lzy(expressionGenerator).map(Conditional.NEGATE(_))),
+  val funcFormsGenerator: Gen[Expression] = Gen.oneOf(
     (
       Gen.lzy(expressionGenerator),
-      Gen.lzy(expressionNelGenerator).map(_.toList)
-    )
-      .mapN(Conditional.IN(_, _)),
-    (Gen.lzy(expressionGenerator), Gen.lzy(expressionGenerator))
-      .mapN(Conditional.SAMETERM(_, _))
+      Gen.lzy(expressionGenerator)
+    ).mapN(Conditional.EQUALS),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(Conditional.GT),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(Conditional.GTE),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(Conditional.LT),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(Conditional.LTE),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(Conditional.OR),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(Conditional.AND),
+    Gen
+      .lzy(expressionGenerator)
+      .map(Conditional.NEGATE),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(smallListOf(expressionGenerator))
+    ).mapN(Conditional.IN),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(Conditional.SAMETERM),
+    (
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator),
+      Gen.lzy(expressionGenerator)
+    ).mapN(Conditional.IF)
+  )
+
+  val builtinFuncGenerator: Gen[Expression] = Gen.oneOf(
+    funcHashGenerator,
+    funcTermsGenerator,
+    funcStringsGenerator,
+    funcFormsGenerator
   )
 
   implicit val arbitraryExpression: Arbitrary[Expression] = Arbitrary(
