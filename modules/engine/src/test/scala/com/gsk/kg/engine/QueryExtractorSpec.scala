@@ -97,5 +97,39 @@ WHERE {
 
  WHERE { ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://gsk-kg.rdip.gsk.com/dm/1.0/Document> . ?d <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?ds . ?ds <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?te . BIND(STRAFTER(STR(?d), "#") as ?docid) }"""
     }
+
+    "work correctly when more than one FROM statement appears" in {
+      val query  = """
+PREFIX  dm:   <http://gsk-kg.rdip.gsk.com/dm/1.0/>
+CONSTRUCT {
+  ?te dm:contains ?docid .
+}
+FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/ccc?type=snapshot&t=20200109>
+FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/semmed?type=snapshot&t=20200109>
+WHERE {
+   ?d a dm:Document .
+   ?d dm:contains ?ds .
+   ?ds dm:contains ?te .
+   BIND(STRAFTER(str(?d), "#") as ?docid) .
+}
+    """
+      val result = QueryExtractor.extractInfo(query)
+
+      result._2 shouldEqual Map(
+        "http://gsk-kg.rdip.gsk.com/dm/1.0/semmed" -> List(
+          QueryParam("type", "snapshot"),
+          QueryParam("t", "20200109")
+        ),
+        "http://gsk-kg.rdip.gsk.com/dm/1.0/ccc" -> List(
+          QueryParam("type", "snapshot"),
+          QueryParam("t", "20200109")
+        )
+      )
+
+      result._1 shouldEqual """CONSTRUCT { ?te <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?docid . }
+FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/ccc>
+FROM <http://gsk-kg.rdip.gsk.com/dm/1.0/semmed>
+ WHERE { ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://gsk-kg.rdip.gsk.com/dm/1.0/Document> . ?d <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?ds . ?ds <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?te . BIND(STRAFTER(STR(?d), "#") as ?docid) }"""
+    }
   }
 }
