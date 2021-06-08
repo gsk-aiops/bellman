@@ -234,15 +234,15 @@ object Engine {
       func: (VARIABLE, Expression)
   ): M[Column] = func match {
     case (VARIABLE(name), Aggregate.COUNT(VARIABLE(v))) =>
-      FuncAgg.countAgg(col(v)).as(name).pure[M]
+      FuncAgg.countAgg(col(v)).cast("string").as(name).pure[M]
     case (VARIABLE(name), Aggregate.SUM(VARIABLE(v))) =>
-      FuncAgg.sumAgg(col(v)).as(name).pure[M]
+      FuncAgg.sumAgg(col(v)).cast("string").as(name).pure[M]
     case (VARIABLE(name), Aggregate.MIN(VARIABLE(v))) =>
-      FuncAgg.minAgg(col(v)).as(name).pure[M]
+      FuncAgg.minAgg(col(v)).cast("string").as(name).pure[M]
     case (VARIABLE(name), Aggregate.MAX(VARIABLE(v))) =>
-      FuncAgg.maxAgg(col(v)).as(name).pure[M]
+      FuncAgg.maxAgg(col(v)).cast("string").as(name).pure[M]
     case (VARIABLE(name), Aggregate.AVG(VARIABLE(v))) =>
-      FuncAgg.avgAgg(col(v)).as(name).pure[M]
+      FuncAgg.avgAgg(col(v)).cast("string").as(name).pure[M]
     case (VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v))) =>
       FuncAgg.sample(col(v)).as(name).pure[M]
     case (VARIABLE(name), Aggregate.GROUP_CONCAT(VARIABLE(v), separator)) =>
