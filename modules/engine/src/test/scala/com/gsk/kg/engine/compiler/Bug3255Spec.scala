@@ -44,7 +44,7 @@ class Bug3255Spec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
 
         val response = df.sparql(query)
 
-        response.collect should have length(1)
+        response.collect should have length 1
       }
 
       "not crash with a bigger query when compaction happens" in {
