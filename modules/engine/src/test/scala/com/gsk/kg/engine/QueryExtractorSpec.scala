@@ -24,8 +24,8 @@ class QueryExtractorSpec extends AnyWordSpec with Matchers {
            {
              ?d a dm:Document .
              ?d dm:contains ?ds .
-             BIND(STRAFTER(str(?d), "#") as ?docid) .
            }
+           BIND(STRAFTER(str(?d), "#") as ?docid) .
         }"""
 
       val result = QueryExtractor.extractInfo(query)
@@ -39,7 +39,7 @@ class QueryExtractorSpec extends AnyWordSpec with Matchers {
 
       result._1 shouldEqual """CONSTRUCT { ?te <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?docid . }
 
- WHERE { { GRAPH <http://gsk-kg.rdip.gsk.com/dm/1.0/Semmed> { ?ds <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?te . } } JOIN { GRAPH <http://gsk-kg.rdip.gsk.com/dm/1.0/Elsevier> { ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://gsk-kg.rdip.gsk.com/dm/1.0/Document> . ?d <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?ds . BIND(STRAFTER(STR(?d), "#") as ?docid) } } }"""
+ WHERE { { GRAPH <http://gsk-kg.rdip.gsk.com/dm/1.0/Semmed> { ?ds <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?te . } } JOIN { GRAPH <http://gsk-kg.rdip.gsk.com/dm/1.0/Elsevier> { ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://gsk-kg.rdip.gsk.com/dm/1.0/Document> . ?d <http://gsk-kg.rdip.gsk.com/dm/1.0/contains> ?ds . } } BIND(STRAFTER(STR(?d), "#") as ?docid) }"""
     }
 
     "extract info from FROM statement" in {
