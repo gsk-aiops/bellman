@@ -18,7 +18,10 @@ object FuncForms {
       .applyDateTimeLiteral(l, r)(_ === _)
       .otherwise(
         promoteNumericBoolean(l, r)(_ === _)
-          .otherwise(l === r)
+          .otherwise(
+            promoteStringBoolean(l, r)(_ === _)
+              .otherwise(l === r)
+          )
       )
   }
 
@@ -32,7 +35,10 @@ object FuncForms {
       .applyDateTimeLiteral(l, r)(_ > _)
       .otherwise(
         promoteNumericBoolean(l, r)(_ > _)
-          .otherwise(l > r)
+          otherwise (
+            promoteStringBoolean(l, r)(_ > _)
+              .otherwise(l > r)
+          )
       )
 
   /** Performs logical binary operation '<' over two columns
@@ -45,7 +51,10 @@ object FuncForms {
       .applyDateTimeLiteral(l, r)(_ < _)
       .otherwise(
         promoteNumericBoolean(l, r)(_ < _)
-          .otherwise(l < r)
+          .otherwise(
+            promoteStringBoolean(l, r)(_ < _)
+              .otherwise(l < r)
+          )
       )
 
   /** Performs logical binary operation '<=' over two columns
@@ -58,7 +67,10 @@ object FuncForms {
       .applyDateTimeLiteral(l, r)(_ >= _)
       .otherwise(
         promoteNumericBoolean(l, r)(_ >= _)
-          .otherwise(l >= r)
+          .otherwise(
+            promoteStringBoolean(l, r)(_ >= _)
+              .otherwise(l >= r)
+          )
       )
 
   /** Performs logical binary operation '>=' over two columns
@@ -71,7 +83,10 @@ object FuncForms {
       .applyDateTimeLiteral(l, r)(_ <= _)
       .otherwise(
         promoteNumericBoolean(l, r)(_ <= _)
-          .otherwise(l <= r)
+          .otherwise(
+            promoteStringBoolean(l, r)(_ <= _)
+              .otherwise(l <= r)
+          )
       )
 
   /** Performs logical binary operation 'or' over two columns

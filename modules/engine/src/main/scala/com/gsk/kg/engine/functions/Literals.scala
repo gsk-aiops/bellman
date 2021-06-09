@@ -19,12 +19,111 @@ object Literals {
   final case class TypedLiteral(value: Column, tag: Column)     extends Literal
   final case class NumericLiteral(value: Column, tag: Column)   extends Literal
   object NumericLiteral {
+
     def apply(col: Column): NumericLiteral = {
       new NumericLiteral(
         trim(substring_index(col, "^^", 1), "\""),
         substring_index(col, "^^", -1)
       )
     }
+
+    def applyNotPromote(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value, r.value)
+    }
+
+    def applyPromoteLeftInt(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("int"), r.value)
+    }
+
+    def applyPromoteLeftDecimal(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("decimal"), r.value)
+    }
+
+    def applyPromoteLeftFloat(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("float"), r.value)
+    }
+
+    def applyPromoteLeftDouble(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("double"), r.value)
+    }
+
+    def applyPromoteRightInt(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("int"), r.value)
+    }
+
+    def applyPromoteRightDecimal(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("decimal"), r.value)
+    }
+
+    def applyPromoteRightFloat(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("float"), r.value)
+    }
+
+    def applyPromoteRightDouble(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("double"), r.value)
+    }
+  }
+
+  object StringLiteral {
+    def applyPromoteRightTyped(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = TypedLiteral(col1)
+      op(l.value, col2)
+    }
+
+    def applyPromoteLeftTyped(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val r = TypedLiteral(col2)
+      op(col1, r.value)
+    }
+
+    def applyNotPromote(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column =
+      op(col1, col2)
+  }
+
+  def isPlainLiteral(col: Column): Column = {
+    val typed = TypedLiteral(col)
+    typed.tag === lit("")
   }
 
   def isStringLiteral(col: Column): Column = {
@@ -77,82 +176,32 @@ object Literals {
     (typed.value.cast("double").isNotNull && typed.value.contains("."))
   }
 
-  def applyNotPromote(col1: Column, col2: Column)(
+  def promoteStringBoolean(col1: Column, col2: Column)(
       op: (Column, Column) => Column
   ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value, r.value)
-  }
+    import StringLiteral._
 
-  def applyPromoteLeftInt(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("int"), r.value)
-  }
-
-  def applyPromoteLeftDecimal(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("decimal"), r.value)
-  }
-
-  def applyPromoteLeftFloat(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("float"), r.value)
-  }
-
-  def applyPromoteLeftDouble(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("double"), r.value)
-  }
-
-  def applyPromoteRightInt(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("int"), r.value)
-  }
-
-  def applyPromoteRightDecimal(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("decimal"), r.value)
-  }
-
-  def applyPromoteRightFloat(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("float"), r.value)
-  }
-
-  def applyPromoteRightDouble(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("double"), r.value)
+    when(
+      isPlainLiteral(col1) && isPlainLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    ).when(
+      isPlainLiteral(col1) && isStringLiteral(col2),
+      applyPromoteLeftTyped(col1, col2)(op)
+    ).when(
+      isStringLiteral(col1) && isPlainLiteral(col2),
+      applyPromoteRightTyped(col1, col2)(op)
+    ).when(
+      isStringLiteral(col1) && isStringLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    )
   }
 
   // scalastyle:off
   def promoteNumericBoolean(col1: Column, col2: Column)(
       op: (Column, Column) => Column
   ): Column = {
+    import NumericLiteral._
+
     when( // Int, Int -> Int
       isIntNumericLiteral(col1) && isIntNumericLiteral(col2),
       applyNotPromote(col1, col2)(op)

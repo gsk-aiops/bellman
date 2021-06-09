@@ -6,9 +6,7 @@ import cats.implicits.toTraverseOps
 import cats.instances.all._
 import cats.syntax.applicative._
 import cats.syntax.either._
-
 import higherkindness.droste._
-
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Encoder
@@ -18,11 +16,11 @@ import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row => SparkRow}
-
 import com.gsk.kg.config.Config
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.data.ChunkedList.Chunk
 import com.gsk.kg.engine.functions.FuncAgg
+import com.gsk.kg.engine.functions.FuncForms
 import com.gsk.kg.sparqlparser.ConditionOrder.ASC
 import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr.Quad
@@ -198,7 +196,11 @@ object Engine {
           .groupBy(_._2)
           .map { case (_, vs) =>
             vs.map { case (pred, position) =>
-              df(position) === pred.s
+              val col = df(position)
+              when(
+                col.startsWith("\"") && col.endsWith("\""),
+                FuncForms.equals(trim(col, "\""), lit(pred.s))
+              ).otherwise(FuncForms.equals(col, lit(pred.s)))
             }.foldLeft(lit(false))(_ || _)
           }
           .foldLeft(lit(true))(_ && _)
