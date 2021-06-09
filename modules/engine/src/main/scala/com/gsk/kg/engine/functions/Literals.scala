@@ -121,6 +121,28 @@ object Literals {
       op(col1, col2)
   }
 
+  object BooleanLiteral {
+
+    def applyPromoteRightTyped(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = TypedLiteral(col1)
+      op(l.value, col2)
+    }
+
+    def applyPromoteLeftTyped(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val r = TypedLiteral(col2)
+      op(col1, r.value)
+    }
+
+    def applyNotPromote(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column =
+      op(col1, col2)
+  }
+
   def isPlainLiteral(col: Column): Column = {
     val typed = TypedLiteral(col)
     typed.tag === lit("")
@@ -174,6 +196,26 @@ object Literals {
     typed.tag === lit("xsd:numeric") ||
     typed.tag === lit("<http://www.w3.org/2001/XMLSchema#numeric>") ||
     (typed.value.cast("double").isNotNull && typed.value.contains("."))
+  }
+
+  def promoteBooleanBoolean(col1: Column, col2: Column)(
+      op: (Column, Column) => Column
+  ): Column = {
+    import BooleanLiteral._
+
+    when(
+      isPlainLiteral(col1) && isPlainLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    ).when(
+      isPlainLiteral(col1) && isBooleanLiteral(col2),
+      applyPromoteLeftTyped(col1, col2)(op)
+    ).when(
+      isBooleanLiteral(col1) && isPlainLiteral(col2),
+      applyPromoteRightTyped(col1, col2)(op)
+    ).when(
+      isBooleanLiteral(col1) && isBooleanLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    )
   }
 
   def promoteStringBoolean(col1: Column, col2: Column)(

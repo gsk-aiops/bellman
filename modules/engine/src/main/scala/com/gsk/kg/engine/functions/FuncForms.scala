@@ -20,7 +20,10 @@ object FuncForms {
         promoteNumericBoolean(l, r)(_ === _)
           .otherwise(
             promoteStringBoolean(l, r)(_ === _)
-              .otherwise(l === r)
+              .otherwise(
+                promoteBooleanBoolean(l, r)(_ === _)
+                  .otherwise(l === r)
+              )
           )
       )
   }
@@ -37,7 +40,10 @@ object FuncForms {
         promoteNumericBoolean(l, r)(_ > _)
           otherwise (
             promoteStringBoolean(l, r)(_ > _)
-              .otherwise(l > r)
+              .otherwise(
+                promoteBooleanBoolean(l, r)(_ > _)
+                  .otherwise(l > r)
+              )
           )
       )
 
@@ -53,7 +59,10 @@ object FuncForms {
         promoteNumericBoolean(l, r)(_ < _)
           .otherwise(
             promoteStringBoolean(l, r)(_ < _)
-              .otherwise(l < r)
+              .otherwise(
+                promoteBooleanBoolean(l, r)(_ < _)
+                  .otherwise(l < r)
+              )
           )
       )
 
@@ -69,7 +78,10 @@ object FuncForms {
         promoteNumericBoolean(l, r)(_ >= _)
           .otherwise(
             promoteStringBoolean(l, r)(_ >= _)
-              .otherwise(l >= r)
+              .otherwise(
+                promoteBooleanBoolean(l, r)(_ >= _)
+                  .otherwise(l >= r)
+              )
           )
       )
 
@@ -85,7 +97,10 @@ object FuncForms {
         promoteNumericBoolean(l, r)(_ <= _)
           .otherwise(
             promoteStringBoolean(l, r)(_ <= _)
-              .otherwise(l <= r)
+              .otherwise(
+                promoteBooleanBoolean(l, r)(_ <= _)
+                  .otherwise(l <= r)
+              )
           )
       )
 
