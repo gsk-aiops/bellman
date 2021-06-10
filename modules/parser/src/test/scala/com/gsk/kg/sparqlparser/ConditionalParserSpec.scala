@@ -136,4 +136,17 @@ class ConditionalParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "Coalesce parser" should "return COALESCE type" in {
+    val p =
+      fastparse.parse(
+        """(coalesce ?title "Not available")""",
+        ConditionalParser.parser(_)
+      )
+    p.get.value match {
+      case COALESCE(List(VARIABLE("?title"), STRING("Not available"))) =>
+        succeed
+      case _ => fail
+    }
+  }
 }
