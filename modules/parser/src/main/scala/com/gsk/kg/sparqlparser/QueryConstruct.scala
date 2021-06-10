@@ -56,7 +56,8 @@ object QueryConstruct {
         val vars = getVars(query)
         (Select(vars, algebra), graphs).asRight
       case q if q.isDescribeType =>
-        (Describe(getVars(query), algebra), graphs).asRight
+        val vars = getVars(query)
+        (Describe(vars, algebra), graphs).asRight
       case q if q.isAskType =>
         (Ask(algebra), graphs).asRight
       case _ =>

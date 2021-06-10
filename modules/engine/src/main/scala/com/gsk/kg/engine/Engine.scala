@@ -39,7 +39,7 @@ object Engine {
 
   def evaluateAlgebraM(implicit sc: SQLContext): AlgebraM[M, DAG, Multiset] =
     AlgebraM[M, DAG, Multiset] {
-      case DAG.Describe(vars, r) => notImplemented("Describe")
+      case DAG.Describe(vars, r) => evaluateDescribe(vars, r)
       case DAG.Ask(r)            => evaluateAsk(r)
       case DAG.Construct(bgp, r) => evaluateConstruct(bgp, r)
       case DAG.Scan(graph, expr) =>
@@ -109,6 +109,48 @@ object Engine {
     )
   )
 
+  private val createDescribeTriple: (VARIABLE, Int) => Quad = { (variable, i) =>
+    def createVar(letter: String): VARIABLE = VARIABLE(s"?$letter$i")
+    Quad(variable, createVar("p"), createVar("o"), Nil)
+  }
+
+  private def evaluateDescribe(vars: Seq[VARIABLE], r: Multiset)(implicit sc: SQLContext): M[Multiset] = {
+    val quads: ChunkedList[Quad] = ChunkedList
+      .fromList(
+        vars.toList.zipWithIndex.map(createDescribeTriple.tupled)
+      )
+
+    M.get[Result, Config, Log, DataFrame].map { df =>
+      quads
+        .mapChunks(applyChunkToDf(_, df))
+        .foldLeft(Multiset.empty)((acc, other) => acc.union(other))
+    }
+  }
+
+  private def applyChunkToDf(chunk: ChunkedList.Chunk[Quad], df: DataFrame)(implicit sc: SQLContext): Multiset = {
+    import sc.implicits._
+          val condition = composedConditionFromChunk(df, chunk)
+          val current   = df.filter(condition)
+          val vars =
+            chunk
+              .map(_.getNamesAndPositions :+ (GRAPH_VARIABLE, "g"))
+              .toChain
+              .toList
+              .flatten
+          val selected =
+            current.select(vars.map(v => $"${v._2}".as(v._1.s)): _*)
+
+          Multiset(
+            vars.map {
+              case (GRAPH_VARIABLE, _) =>
+                VARIABLE(GRAPH_VARIABLE.s)
+              case (other, _) =>
+                other.asInstanceOf[VARIABLE]
+            }.toSet,
+            selected
+          )
+        }
+
   private def evaluateAsk(r: Multiset)(implicit sc: SQLContext): M[Multiset] = {
     val askVariable = VARIABLE("?_askResult")
     val isEmpty     = !r.dataframe.isEmpty
@@ -146,36 +188,12 @@ object Engine {
 
   private def evaluateBGP(
       quads: ChunkedList[Expr.Quad]
-  )(implicit sc: SQLContext): M[Multiset] = {
-    import sc.implicits._
-
+  )(implicit sc: SQLContext): M[Multiset] =
     M.get[Result, Config, Log, DataFrame].map { df =>
       Foldable[ChunkedList].fold(
-        quads.mapChunks { chunk =>
-          val condition = composedConditionFromChunk(df, chunk)
-          val current   = df.filter(condition)
-          val vars =
-            chunk
-              .map(_.getNamesAndPositions :+ (GRAPH_VARIABLE, "g"))
-              .toChain
-              .toList
-              .flatten
-          val selected =
-            current.select(vars.map(v => $"${v._2}".as(v._1.s)): _*)
-
-          Multiset(
-            vars.map {
-              case (GRAPH_VARIABLE, _) =>
-                VARIABLE(GRAPH_VARIABLE.s)
-              case (other, _) =>
-                other.asInstanceOf[VARIABLE]
-            }.toSet,
-            selected
-          )
-        }
+        quads.mapChunks(applyChunkToDf(_, df))
       )
     }
-  }
 
   /** This method takes all the predicates from a chunk of Quads and generates a Spark condition as
     * a Column with the next constraints:

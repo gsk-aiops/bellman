@@ -18,7 +18,7 @@ sealed trait Query {
 object Query {
   import com.gsk.kg.sparqlparser.Expr.BGP
   final case class Describe(
-      vars: Seq[VARIABLE],
+      vars: Seq[StringVal],
       r: Expr
   ) extends Query
   final case class Ask(
