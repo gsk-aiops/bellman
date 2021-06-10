@@ -333,4 +333,6 @@ object FuncForms {
     */
   def bound(c: Column): Column =
     c.isNotNull
+
+  def coalesce(cols: List[Column]): Column = ???
 }

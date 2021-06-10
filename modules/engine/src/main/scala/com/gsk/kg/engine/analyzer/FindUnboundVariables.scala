@@ -125,6 +125,7 @@ object FindVariablesOnExpression {
         case SAMETERM(l, r)                  => l ++ r
         case IF(cnd, ifTrue, ifFalse)        => cnd ++ ifTrue ++ ifFalse
         case BOUND(e)                        => e
+        case COALESCE(xs)                    => xs.toSet.flatten
         case URI(s)                          => s
         case REGEX(s, pattern, flags)        => s
         case REPLACE(st, pattern, by, flags) => st
