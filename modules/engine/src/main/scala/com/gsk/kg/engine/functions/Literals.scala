@@ -19,12 +19,145 @@ object Literals {
   final case class TypedLiteral(value: Column, tag: Column)     extends Literal
   final case class NumericLiteral(value: Column, tag: Column)   extends Literal
   object NumericLiteral {
+
     def apply(col: Column): NumericLiteral = {
       new NumericLiteral(
-        regexp_replace(substring_index(col, "^^", 1), "\"", ""),
+        trim(substring_index(col, "^^", 1), "\""),
         substring_index(col, "^^", -1)
       )
     }
+
+    def applyNotPromote(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value, r.value)
+    }
+
+    def applyPromoteLeftInt(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("int"), r.value)
+    }
+
+    def applyPromoteLeftDecimal(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("decimal"), r.value)
+    }
+
+    def applyPromoteLeftFloat(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("float"), r.value)
+    }
+
+    def applyPromoteLeftDouble(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("double"), r.value)
+    }
+
+    def applyPromoteRightInt(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("int"), r.value)
+    }
+
+    def applyPromoteRightDecimal(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("decimal"), r.value)
+    }
+
+    def applyPromoteRightFloat(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("float"), r.value)
+    }
+
+    def applyPromoteRightDouble(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = NumericLiteral(col1)
+      val r = NumericLiteral(col2)
+      op(l.value.cast("double"), r.value)
+    }
+  }
+
+  object StringLiteral {
+    def applyPromoteRightTyped(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = TypedLiteral(col1)
+      op(l.value, col2)
+    }
+
+    def applyPromoteLeftTyped(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val r = TypedLiteral(col2)
+      op(col1, r.value)
+    }
+
+    def applyNotPromote(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column =
+      op(col1, col2)
+  }
+
+  object BooleanLiteral {
+
+    def applyPromoteRightTyped(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val l = TypedLiteral(col1)
+      op(l.value, col2)
+    }
+
+    def applyPromoteLeftTyped(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column = {
+      val r = TypedLiteral(col2)
+      op(col1, r.value)
+    }
+
+    def applyNotPromote(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column =
+      op(col1, col2)
+  }
+
+  def isPlainLiteral(col: Column): Column = {
+    val typed = TypedLiteral(col)
+    typed.tag === lit("")
+  }
+
+  def isStringLiteral(col: Column): Column = {
+    val typed = TypedLiteral(col)
+    typed.tag === lit("xsd:string") ||
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#string>")
+  }
+
+  def isBooleanLiteral(col: Column): Column = {
+    val typed = TypedLiteral(col)
+    typed.tag === lit("xsd:boolean") ||
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#boolean>")
   }
 
   def isNumericLiteral(col: Column): Column =
@@ -65,82 +198,52 @@ object Literals {
     (typed.value.cast("double").isNotNull && typed.value.contains("."))
   }
 
-  def applyNotPromote(col1: Column, col2: Column)(
+  def promoteBooleanBoolean(col1: Column, col2: Column)(
       op: (Column, Column) => Column
   ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value, r.value)
+    import BooleanLiteral._
+
+    when(
+      isPlainLiteral(col1) && isPlainLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    ).when(
+      isPlainLiteral(col1) && isBooleanLiteral(col2),
+      applyPromoteLeftTyped(col1, col2)(op)
+    ).when(
+      isBooleanLiteral(col1) && isPlainLiteral(col2),
+      applyPromoteRightTyped(col1, col2)(op)
+    ).when(
+      isBooleanLiteral(col1) && isBooleanLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    )
   }
 
-  def applyPromoteLeftInt(col1: Column, col2: Column)(
+  def promoteStringBoolean(col1: Column, col2: Column)(
       op: (Column, Column) => Column
   ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("int"), r.value)
-  }
+    import StringLiteral._
 
-  def applyPromoteLeftDecimal(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("decimal"), r.value)
-  }
-
-  def applyPromoteLeftFloat(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("float"), r.value)
-  }
-
-  def applyPromoteLeftDouble(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("double"), r.value)
-  }
-
-  def applyPromoteRightInt(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("int"), r.value)
-  }
-
-  def applyPromoteRightDecimal(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("decimal"), r.value)
-  }
-
-  def applyPromoteRightFloat(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("float"), r.value)
-  }
-
-  def applyPromoteRightDouble(col1: Column, col2: Column)(
-      op: (Column, Column) => Column
-  ): Column = {
-    val l = NumericLiteral(col1)
-    val r = NumericLiteral(col2)
-    op(l.value.cast("double"), r.value)
+    when(
+      isPlainLiteral(col1) && isPlainLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    ).when(
+      isPlainLiteral(col1) && isStringLiteral(col2),
+      applyPromoteLeftTyped(col1, col2)(op)
+    ).when(
+      isStringLiteral(col1) && isPlainLiteral(col2),
+      applyPromoteRightTyped(col1, col2)(op)
+    ).when(
+      isStringLiteral(col1) && isStringLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    )
   }
 
   // scalastyle:off
   def promoteNumericBoolean(col1: Column, col2: Column)(
       op: (Column, Column) => Column
   ): Column = {
+    import NumericLiteral._
+
     when( // Int, Int -> Int
       isIntNumericLiteral(col1) && isIntNumericLiteral(col2),
       applyNotPromote(col1, col2)(op)
@@ -196,9 +299,14 @@ object Literals {
   object LocalizedLiteral {
 
     def apply(c: Column): LocalizedLiteral = {
+      val value = trim(substring_index(c, "@", 1), "\"")
+      val tag   = substring_index(c, "@", -1)
       new LocalizedLiteral(
-        trim(substring_index(c, "@", 1), "\""),
-        substring_index(c, "@", -1)
+        value,
+        when(
+          value === tag,
+          lit("")
+        ).otherwise(tag)
       )
     }
 
@@ -231,9 +339,16 @@ object Literals {
   object TypedLiteral {
 
     def apply(c: Column): TypedLiteral = {
+      val value = trim(substring_index(c, "^^", 1), "\"")
+      val tag   = substring_index(c, "^^", -1)
       new TypedLiteral(
-        trim(substring_index(c, "^^", 1), "\""),
-        substring_index(c, "^^", -1)
+        value,
+        when(
+          value === tag,
+          lit("")
+        ).otherwise(
+          tag
+        )
       )
     }
 

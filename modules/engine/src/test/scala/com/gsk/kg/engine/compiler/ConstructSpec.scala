@@ -538,4 +538,85 @@ class ConstructSpec
       )
     }
   }
+
+  "execute construct with sub-query with numeric aggregate functions" in {
+
+    val df: DataFrame = List(
+      (
+        "<http://example.org/alice>",
+        "<http://xmlns.com/foaf/0.1/knows>",
+        "<http://example.org/marcus>"
+      ),
+      (
+        "<http://example.org/alice>",
+        "<http://xmlns.com/foaf/0.1/knows>",
+        "<http://example.org/susan>"
+      ),
+      (
+        "<http://example.org/alice>",
+        "<http://xmlns.com/foaf/0.1/age>",
+        "21"
+      ),
+      (
+        "<http://example.org/alice>",
+        "<http://xmlns.com/foaf/0.1/age>",
+        "25"
+      ),
+      (
+        "<http://example.org/bob>",
+        "<http://xmlns.com/foaf/0.1/knows>",
+        "<http://example.org/rachel>"
+      ),
+      (
+        "<http://example.org/bob>",
+        "<http://xmlns.com/foaf/0.1/age>",
+        "30"
+      )
+    ).toDF("s", "p", "o")
+
+    val query =
+      """
+        |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        |
+        |CONSTRUCT {
+        |  ?s foaf:knowsN ?nPeople .
+        |  ?s foaf:minAge ?minAge
+        |} WHERE {
+        |   SELECT ?s (COUNT(?people) AS ?nPeople) (MIN(?age) AS ?minAge)
+        |   WHERE {
+        |     { ?s foaf:knows ?people }
+        |     UNION
+        |     { ?s foaf:age ?age }
+        |   }
+        |   GROUP BY ?s
+        |}
+        |""".stripMargin
+
+    val result = Compiler.compile(df, query, config)
+
+    result shouldBe a[Right[_, _]]
+    result.right.get.collect.length shouldEqual 4
+    result.right.get.collect.toSet shouldEqual Set(
+      Row(
+        "<http://example.org/bob>",
+        "<http://xmlns.com/foaf/0.1/knowsN>",
+        "1"
+      ),
+      Row(
+        "<http://example.org/bob>",
+        "<http://xmlns.com/foaf/0.1/minAge>",
+        "30"
+      ),
+      Row(
+        "<http://example.org/alice>",
+        "<http://xmlns.com/foaf/0.1/knowsN>",
+        "2"
+      ),
+      Row(
+        "<http://example.org/alice>",
+        "<http://xmlns.com/foaf/0.1/minAge>",
+        "21"
+      )
+    )
+  }
 }

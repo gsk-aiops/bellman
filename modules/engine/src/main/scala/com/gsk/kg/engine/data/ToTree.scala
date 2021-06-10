@@ -138,6 +138,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.NEGATE(s)      => Node("NEGATE", Stream(s))
           case ExpressionF.IN(e, xs)      => Node("IN", Stream(e) #::: xs.toStream)
           case ExpressionF.SAMETERM(l, r) => Node("SAMETERM", Stream(l, r))
+          case ExpressionF.IF(cnd, ifTrue, ifFalse) =>
+            Node("IF", Stream(cnd, ifTrue, ifFalse))
           case ExpressionF.REGEX(s, pattern, flags) =>
             Node(
               "REGEX",

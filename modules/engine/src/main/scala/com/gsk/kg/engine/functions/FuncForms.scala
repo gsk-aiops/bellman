@@ -18,7 +18,13 @@ object FuncForms {
       .applyDateTimeLiteral(l, r)(_ === _)
       .otherwise(
         promoteNumericBoolean(l, r)(_ === _)
-          .otherwise(l === r)
+          .otherwise(
+            promoteStringBoolean(l, r)(_ === _)
+              .otherwise(
+                promoteBooleanBoolean(l, r)(_ === _)
+                  .otherwise(l === r)
+              )
+          )
       )
   }
 
@@ -32,7 +38,13 @@ object FuncForms {
       .applyDateTimeLiteral(l, r)(_ > _)
       .otherwise(
         promoteNumericBoolean(l, r)(_ > _)
-          .otherwise(l > r)
+          otherwise (
+            promoteStringBoolean(l, r)(_ > _)
+              .otherwise(
+                promoteBooleanBoolean(l, r)(_ > _)
+                  .otherwise(l > r)
+              )
+          )
       )
 
   /** Performs logical binary operation '<' over two columns
@@ -45,7 +57,13 @@ object FuncForms {
       .applyDateTimeLiteral(l, r)(_ < _)
       .otherwise(
         promoteNumericBoolean(l, r)(_ < _)
-          .otherwise(l < r)
+          .otherwise(
+            promoteStringBoolean(l, r)(_ < _)
+              .otherwise(
+                promoteBooleanBoolean(l, r)(_ < _)
+                  .otherwise(l < r)
+              )
+          )
       )
 
   /** Performs logical binary operation '<=' over two columns
@@ -58,7 +76,13 @@ object FuncForms {
       .applyDateTimeLiteral(l, r)(_ >= _)
       .otherwise(
         promoteNumericBoolean(l, r)(_ >= _)
-          .otherwise(l >= r)
+          .otherwise(
+            promoteStringBoolean(l, r)(_ >= _)
+              .otherwise(
+                promoteBooleanBoolean(l, r)(_ >= _)
+                  .otherwise(l >= r)
+              )
+          )
       )
 
   /** Performs logical binary operation '>=' over two columns
@@ -71,7 +95,13 @@ object FuncForms {
       .applyDateTimeLiteral(l, r)(_ <= _)
       .otherwise(
         promoteNumericBoolean(l, r)(_ <= _)
-          .otherwise(l <= r)
+          .otherwise(
+            promoteStringBoolean(l, r)(_ <= _)
+              .otherwise(
+                promoteBooleanBoolean(l, r)(_ <= _)
+                  .otherwise(l <= r)
+              )
+          )
       )
 
   /** Performs logical binary operation 'or' over two columns
@@ -194,5 +224,105 @@ object FuncForms {
       RdfFormatter.isDatatypeLiteral(r),
       rightTyped
     ).otherwise(l === r)
+  }
+
+  /** The IF function form evaluates the first argument, interprets it as a effective boolean value,
+    * then returns the value of expression2 if the EBV is true, otherwise it returns the value of expression3.
+    * Only one of expression2 and expression3 is evaluated. If evaluating the first argument raises an error,
+    * then an error is raised for the evaluation of the IF expression.
+    * @param cnd
+    * @param ifTrue
+    * @param ifFalse
+    * @return
+    */
+  def `if`(cnd: Column, ifTrue: Column, ifFalse: Column): Column = {
+    val ebv = effectiveBooleanValue(cnd)
+    when(
+      ebv.isNotNull,
+      when(
+        ebv,
+        ifTrue
+      ).otherwise(ifFalse)
+    ).otherwise(nullLiteral)
+  }
+
+  /** Effective boolean value is used to calculate the arguments to the logical functions logical-and, logical-or,
+    * and fn:not, as well as evaluate the result of a FILTER expression.
+    *
+    * The XQuery Effective Boolean Value rules rely on the definition of XPath's fn:boolean.
+    * The following rules reflect the rules for fn:boolean applied to the argument types present in SPARQL queries:
+    *
+    * - The EBV of any literal whose type is xsd:boolean or numeric is false if the lexical form is not valid for
+    * that datatype (e.g. "abc"^^xsd:integer).
+    * - If the argument is a typed literal with a datatype of xsd:boolean, and it has a valid lexical form,
+    * the EBV is the value of that argument.
+    * - If the argument is a plain literal or a typed literal with a datatype of xsd:string,
+    * the EBV is false if the operand value has zero length; otherwise the EBV is true.
+    * - If the argument is a numeric type or a typed literal with a datatype derived from a numeric type,
+    * and it has a valid lexical form, the EBV is false if the operand value is NaN or is numerically equal to zero;
+    * otherwise the EBV is true.
+    * - All other arguments, including unbound arguments, produce a type error.
+    *
+    * An EBV of true is represented as a typed literal with a datatype of xsd:boolean and a lexical value of "true";
+    * an EBV of false is represented as a typed literal with a datatype of xsd:boolean and a lexical value of "false".
+    * @param column
+    * @return
+    */
+  def effectiveBooleanValue(col: Column): Column = {
+    val typed = TypedLiteral(col)
+
+    lazy val ifBooleanLit = when(
+      typed.value =!= lit("true") && typed.value =!= "false",
+      lit(false)
+    ).otherwise(
+      typed.value.cast("boolean")
+    )
+
+    lazy val ifNumericLit = when(
+      typed.value.cast("double").isNull,
+      lit(false)
+    ).otherwise {
+      val double = typed.value.cast("double")
+      when(
+        isnan(double) || double === lit(0.0),
+        lit(false)
+      ).otherwise(lit(true))
+    }
+
+    lazy val ifPlainLit = when(
+      typed.value === lit(""),
+      lit(false)
+    ).when(
+      typed.value.cast("boolean").isNotNull,
+      typed.value.cast("boolean")
+    ).when(
+      typed.value.cast("double").isNull,
+      lit(true)
+    ).otherwise {
+      val double = typed.value.cast("double")
+      when(
+        isnan(double) || double === lit(0.0),
+        lit(false)
+      ).otherwise(lit(true))
+    }
+
+    lazy val ifStringLit = when(
+      typed.value === lit(""),
+      lit(false)
+    ).otherwise(lit(true))
+
+    when(
+      isBooleanLiteral(col),
+      ifBooleanLit
+    ).when(
+      isNumericLiteral(col),
+      ifNumericLit
+    ).when(
+      typed.tag === lit(""),
+      ifPlainLit
+    ).when(
+      isStringLiteral(col),
+      ifStringLit
+    ).otherwise(nullLiteral)
   }
 }

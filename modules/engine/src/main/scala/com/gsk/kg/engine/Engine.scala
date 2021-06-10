@@ -23,6 +23,7 @@ import com.gsk.kg.config.Config
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.engine.data.ChunkedList.Chunk
 import com.gsk.kg.engine.functions.FuncAgg
+import com.gsk.kg.engine.functions.FuncForms
 import com.gsk.kg.sparqlparser.ConditionOrder.ASC
 import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr.Quad
@@ -198,7 +199,11 @@ object Engine {
           .groupBy(_._2)
           .map { case (_, vs) =>
             vs.map { case (pred, position) =>
-              df(position) === pred.s
+              val col = df(position)
+              when(
+                col.startsWith("\"") && col.endsWith("\""),
+                FuncForms.equals(trim(col, "\""), lit(pred.s))
+              ).otherwise(FuncForms.equals(col, lit(pred.s)))
             }.foldLeft(lit(false))(_ || _)
           }
           .foldLeft(lit(true))(_ && _)
@@ -234,15 +239,15 @@ object Engine {
       func: (VARIABLE, Expression)
   ): M[Column] = func match {
     case (VARIABLE(name), Aggregate.COUNT(VARIABLE(v))) =>
-      FuncAgg.countAgg(col(v)).as(name).pure[M]
+      FuncAgg.countAgg(col(v)).cast("string").as(name).pure[M]
     case (VARIABLE(name), Aggregate.SUM(VARIABLE(v))) =>
-      FuncAgg.sumAgg(col(v)).as(name).pure[M]
+      FuncAgg.sumAgg(col(v)).cast("string").as(name).pure[M]
     case (VARIABLE(name), Aggregate.MIN(VARIABLE(v))) =>
-      FuncAgg.minAgg(col(v)).as(name).pure[M]
+      FuncAgg.minAgg(col(v)).cast("string").as(name).pure[M]
     case (VARIABLE(name), Aggregate.MAX(VARIABLE(v))) =>
-      FuncAgg.maxAgg(col(v)).as(name).pure[M]
+      FuncAgg.maxAgg(col(v)).cast("string").as(name).pure[M]
     case (VARIABLE(name), Aggregate.AVG(VARIABLE(v))) =>
-      FuncAgg.avgAgg(col(v)).as(name).pure[M]
+      FuncAgg.avgAgg(col(v)).cast("string").as(name).pure[M]
     case (VARIABLE(name), Aggregate.SAMPLE(VARIABLE(v))) =>
       FuncAgg.sample(col(v)).as(name).pure[M]
     case (VARIABLE(name), Aggregate.GROUP_CONCAT(VARIABLE(v), separator)) =>

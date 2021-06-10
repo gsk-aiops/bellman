@@ -38,23 +38,24 @@ object ExpressionF {
   final case class STRBEFORE[A](s: A, f: String) extends ExpressionF[A]
   final case class SUBSTR[A](s: A, pos: Int, len: Option[Int])
       extends ExpressionF[A]
-  final case class STRLEN[A](s: A)                     extends ExpressionF[A]
-  final case class EQUALS[A](l: A, r: A)               extends ExpressionF[A]
-  final case class GT[A](l: A, r: A)                   extends ExpressionF[A]
-  final case class LT[A](l: A, r: A)                   extends ExpressionF[A]
-  final case class GTE[A](l: A, r: A)                  extends ExpressionF[A]
-  final case class LTE[A](l: A, r: A)                  extends ExpressionF[A]
-  final case class OR[A](l: A, r: A)                   extends ExpressionF[A]
-  final case class AND[A](l: A, r: A)                  extends ExpressionF[A]
-  final case class NEGATE[A](s: A)                     extends ExpressionF[A]
-  final case class IN[A](e: A, xs: List[A])            extends ExpressionF[A]
-  final case class SAMETERM[A](l: A, r: A)             extends ExpressionF[A]
-  final case class URI[A](s: A)                        extends ExpressionF[A]
-  final case class LANG[A](s: A)                       extends ExpressionF[A]
-  final case class LANGMATCHES[A](s: A, range: String) extends ExpressionF[A]
-  final case class LCASE[A](s: A)                      extends ExpressionF[A]
-  final case class UCASE[A](s: A)                      extends ExpressionF[A]
-  final case class ISLITERAL[A](s: A)                  extends ExpressionF[A]
+  final case class STRLEN[A](s: A)                      extends ExpressionF[A]
+  final case class EQUALS[A](l: A, r: A)                extends ExpressionF[A]
+  final case class GT[A](l: A, r: A)                    extends ExpressionF[A]
+  final case class LT[A](l: A, r: A)                    extends ExpressionF[A]
+  final case class GTE[A](l: A, r: A)                   extends ExpressionF[A]
+  final case class LTE[A](l: A, r: A)                   extends ExpressionF[A]
+  final case class OR[A](l: A, r: A)                    extends ExpressionF[A]
+  final case class AND[A](l: A, r: A)                   extends ExpressionF[A]
+  final case class NEGATE[A](s: A)                      extends ExpressionF[A]
+  final case class IN[A](e: A, xs: List[A])             extends ExpressionF[A]
+  final case class SAMETERM[A](l: A, r: A)              extends ExpressionF[A]
+  final case class IF[A](cnd: A, ifTrue: A, ifFalse: A) extends ExpressionF[A]
+  final case class URI[A](s: A)                         extends ExpressionF[A]
+  final case class LANG[A](s: A)                        extends ExpressionF[A]
+  final case class LANGMATCHES[A](s: A, range: String)  extends ExpressionF[A]
+  final case class LCASE[A](s: A)                       extends ExpressionF[A]
+  final case class UCASE[A](s: A)                       extends ExpressionF[A]
+  final case class ISLITERAL[A](s: A)                   extends ExpressionF[A]
   final case class CONCAT[A](appendTo: A, append: NonEmptyList[A])
       extends ExpressionF[A]
   final case class STR[A](s: A)       extends ExpressionF[A]
@@ -87,18 +88,19 @@ object ExpressionF {
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
-      case Conditional.EQUALS(l, r)   => EQUALS(l, r)
-      case Conditional.GT(l, r)       => GT(l, r)
-      case Conditional.LT(l, r)       => LT(l, r)
-      case Conditional.GTE(l, r)      => GTE(l, r)
-      case Conditional.LTE(l, r)      => LTE(l, r)
-      case Conditional.OR(l, r)       => OR(l, r)
-      case Conditional.AND(l, r)      => AND(l, r)
-      case Conditional.NEGATE(s)      => NEGATE(s)
-      case Conditional.IN(e, xs)      => IN(e, xs)
-      case Conditional.SAMETERM(l, r) => SAMETERM(l, r)
-      case BuiltInFunc.URI(s)         => URI(s)
-      case BuiltInFunc.LANG(s)        => LANG(s)
+      case Conditional.EQUALS(l, r)             => EQUALS(l, r)
+      case Conditional.GT(l, r)                 => GT(l, r)
+      case Conditional.LT(l, r)                 => LT(l, r)
+      case Conditional.GTE(l, r)                => GTE(l, r)
+      case Conditional.LTE(l, r)                => LTE(l, r)
+      case Conditional.OR(l, r)                 => OR(l, r)
+      case Conditional.AND(l, r)                => AND(l, r)
+      case Conditional.NEGATE(s)                => NEGATE(s)
+      case Conditional.IN(e, xs)                => IN(e, xs)
+      case Conditional.SAMETERM(l, r)           => SAMETERM(l, r)
+      case Conditional.IF(cnd, ifTrue, ifFalse) => IF(cnd, ifTrue, ifFalse)
+      case BuiltInFunc.URI(s)                   => URI(s)
+      case BuiltInFunc.LANG(s)                  => LANG(s)
       case BuiltInFunc.LANGMATCHES(s, StringVal.STRING(range)) =>
         LANGMATCHES(s, range)
       case BuiltInFunc.LCASE(s)     => LCASE(s)
@@ -179,16 +181,17 @@ object ExpressionF {
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
     Algebra {
-      case EQUALS(l, r)   => Conditional.EQUALS(l, r)
-      case GT(l, r)       => Conditional.GT(l, r)
-      case LT(l, r)       => Conditional.LT(l, r)
-      case GTE(l, r)      => Conditional.GTE(l, r)
-      case LTE(l, r)      => Conditional.LTE(l, r)
-      case OR(l, r)       => Conditional.OR(l, r)
-      case AND(l, r)      => Conditional.AND(l, r)
-      case NEGATE(s)      => Conditional.NEGATE(s)
-      case IN(e, xs)      => Conditional.IN(e, xs)
-      case SAMETERM(l, r) => Conditional.SAMETERM(l, r)
+      case EQUALS(l, r)             => Conditional.EQUALS(l, r)
+      case GT(l, r)                 => Conditional.GT(l, r)
+      case LT(l, r)                 => Conditional.LT(l, r)
+      case GTE(l, r)                => Conditional.GTE(l, r)
+      case LTE(l, r)                => Conditional.LTE(l, r)
+      case OR(l, r)                 => Conditional.OR(l, r)
+      case AND(l, r)                => Conditional.AND(l, r)
+      case NEGATE(s)                => Conditional.NEGATE(s)
+      case IN(e, xs)                => Conditional.IN(e, xs)
+      case SAMETERM(l, r)           => Conditional.SAMETERM(l, r)
+      case IF(cnd, ifTrue, ifFalse) => Conditional.IF(cnd, ifTrue, ifFalse)
       case UCASE(s) =>
         BuiltInFunc.UCASE(s.asInstanceOf[StringLike])
       case LANG(s) =>
@@ -311,20 +314,22 @@ object ExpressionF {
         case STRLEN(s)           => FuncStrings.strlen(s).pure[M]
         case CONCAT(appendTo, append) =>
           FuncStrings.concat(appendTo, append).pure[M]
-        case LANGMATCHES(s, range)      => FuncStrings.langMatches(s, range).pure[M]
-        case LCASE(s)                   => FuncStrings.lcase(s).pure[M]
-        case UCASE(s)                   => FuncStrings.ucase(s).pure[M]
-        case ENCODE_FOR_URI(s)          => FuncStrings.encodeForURI(s).pure[M]
-        case EQUALS(l, r)               => FuncForms.equals(l, r).pure[M]
-        case GT(l, r)                   => FuncForms.gt(l, r).pure[M]
-        case LT(l, r)                   => FuncForms.lt(l, r).pure[M]
-        case GTE(l, r)                  => FuncForms.gte(l, r).pure[M]
-        case LTE(l, r)                  => FuncForms.lte(l, r).pure[M]
-        case OR(l, r)                   => FuncForms.or(l, r).pure[M]
-        case AND(l, r)                  => FuncForms.and(l, r).pure[M]
-        case NEGATE(s)                  => FuncForms.negate(s).pure[M]
-        case IN(e, xs)                  => FuncForms.in(e, xs).pure[M]
-        case SAMETERM(l, r)             => FuncForms.sameTerm(l, r).pure[M]
+        case LANGMATCHES(s, range) => FuncStrings.langMatches(s, range).pure[M]
+        case LCASE(s)              => FuncStrings.lcase(s).pure[M]
+        case UCASE(s)              => FuncStrings.ucase(s).pure[M]
+        case ENCODE_FOR_URI(s)     => FuncStrings.encodeForURI(s).pure[M]
+        case EQUALS(l, r)          => FuncForms.equals(l, r).pure[M]
+        case GT(l, r)              => FuncForms.gt(l, r).pure[M]
+        case LT(l, r)              => FuncForms.lt(l, r).pure[M]
+        case GTE(l, r)             => FuncForms.gte(l, r).pure[M]
+        case LTE(l, r)             => FuncForms.lte(l, r).pure[M]
+        case OR(l, r)              => FuncForms.or(l, r).pure[M]
+        case AND(l, r)             => FuncForms.and(l, r).pure[M]
+        case NEGATE(s)             => FuncForms.negate(s).pure[M]
+        case IN(e, xs)             => FuncForms.in(e, xs).pure[M]
+        case SAMETERM(l, r)        => FuncForms.sameTerm(l, r).pure[M]
+        case IF(cnd, ifTrue, ifFalse) =>
+          FuncForms.`if`(cnd, ifTrue, ifFalse).pure[M]
         case STR(s)                     => FuncTerms.str(s).pure[M]
         case STRDT(e, uri)              => FuncTerms.strdt(e, uri).pure[M]
         case URI(s)                     => FuncTerms.iri(s).pure[M]
