@@ -1799,6 +1799,77 @@ class FuncFormsSpec
         result shouldEqual expected
       }
     }
+
+    "FuncForms.coalesce" should {
+
+      "return expected value" when {
+
+        "first elem bound and second null" in {
+          val df = List(
+            ("2", null, "2")
+          ).toDF("?x", "?y", "expected")
+
+          val cols = List(df("?x"), lit(null))
+
+          val result   = df.select(FuncForms.coalesce(cols)).collect()
+          val expected = df.select(df("expected")).collect()
+
+          result shouldEqual expected
+        }
+
+        "first elem null and second bound" in {
+          val df = List(
+            ("2", null, "2")
+          ).toDF("?x", "?y", "expected")
+
+          val cols = List(lit(null), df("?x"))
+
+          val result   = df.select(FuncForms.coalesce(cols)).collect()
+          val expected = df.select(df("expected")).collect()
+
+          result shouldEqual expected
+        }
+
+        "first elem literal and second bound" in {
+          val df = List(
+            ("2", null, "5")
+          ).toDF("?x", "?y", "expected")
+
+          val cols = List(lit("5"), df("?x"))
+
+          val result   = df.select(FuncForms.coalesce(cols)).collect()
+          val expected = df.select(df("expected")).collect()
+
+          result shouldEqual expected
+        }
+
+        "first elem not bound and second literal" in {
+          val df = List(
+            ("2", null, "3")
+          ).toDF("?x", "?y", "expected")
+
+          val cols = List(df("?y"), lit("3"))
+
+          val result   = df.select(FuncForms.coalesce(cols)).collect()
+          val expected = df.select(df("expected")).collect()
+
+          result shouldEqual expected
+        }
+
+        "one elem not bound" in {
+          val df = List(
+            ("2", null, null)
+          ).toDF("?x", "?y", "expected")
+
+          val cols = List(df("?y"))
+
+          val result   = df.select(FuncForms.coalesce(cols)).collect()
+          val expected = df.select(df("expected")).collect()
+
+          result shouldEqual expected
+        }
+      }
+    }
   }
 
   def toRDFDateTime(datetime: TemporalAccessor): String =
