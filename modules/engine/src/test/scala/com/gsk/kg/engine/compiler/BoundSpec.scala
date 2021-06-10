@@ -1,9 +1,11 @@
 package com.gsk.kg.engine.compiler
 
-import com.gsk.kg.engine.Compiler
-import com.gsk.kg.sparqlparser.TestConfig
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
+
+import com.gsk.kg.engine.Compiler
+import com.gsk.kg.sparqlparser.TestConfig
+
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -44,10 +46,13 @@ class BoundSpec
             |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             |PREFIX dc:   <http://purl.org/dc/elements/1.1/>
             |PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+            |
             |SELECT ?givenName
-            | WHERE { ?x foaf:givenName  ?givenName .
-            |         OPTIONAL { ?x dc:date ?date } .
-            |         FILTER ( bound(?date) ) }
+            |WHERE {
+            | ?x foaf:givenName ?givenName .
+            | OPTIONAL { ?x dc:date ?date } .
+            | FILTER ( bound(?date) )
+            |}
             |""".stripMargin
 
         val result = Compiler.compile(df, query, config)
@@ -81,13 +86,16 @@ class BoundSpec
 
         val query =
           """
-            |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             |PREFIX dc:   <http://purl.org/dc/elements/1.1/>
             |PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>
+            |
             |SELECT ?givenName
-            | WHERE { ?x foaf:givenName  ?givenName .
-            |         OPTIONAL { ?x dc:date ?date } .
-            |         FILTER ( !bound(?date) ) }
+            |WHERE {
+            | ?x foaf:givenName ?givenName .
+            | OPTIONAL { ?x dc:date ?date } .
+            | FILTER ( !bound(?date) )
+            |}
             |""".stripMargin
 
         val result = Compiler.compile(df, query, config)

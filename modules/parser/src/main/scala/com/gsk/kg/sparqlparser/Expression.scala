@@ -23,7 +23,8 @@ object Conditional {
       cnd: Expression,
       ifTrue: Expression,
       ifFalse: Expression
-  ) extends Conditional
+  )                                     extends Conditional
+  final case class BOUND(e: Expression) extends Conditional
 }
 
 sealed trait StringLike extends Expression

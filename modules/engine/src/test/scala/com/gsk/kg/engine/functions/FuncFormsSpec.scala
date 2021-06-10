@@ -1780,6 +1780,25 @@ class FuncFormsSpec
         result shouldEqual expected
       }
     }
+
+    "FuncForms.bound" should {
+
+      "return expected value" in {
+
+        val df = List(
+          ("\"abc\"^^xsd:boolean", true),
+          ("NaN", true),
+          ("INF", true),
+          (null, false)
+        ).toDF("elem", "expected")
+
+        val result =
+          df.select(FuncForms.bound(df("elem"))).collect()
+        val expected = df.select(df("expected")).collect()
+
+        result shouldEqual expected
+      }
+    }
   }
 
   def toRDFDateTime(datetime: TemporalAccessor): String =

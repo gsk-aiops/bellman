@@ -50,6 +50,7 @@ object ExpressionF {
   final case class IN[A](e: A, xs: List[A])             extends ExpressionF[A]
   final case class SAMETERM[A](l: A, r: A)              extends ExpressionF[A]
   final case class IF[A](cnd: A, ifTrue: A, ifFalse: A) extends ExpressionF[A]
+  final case class BOUND[A](e: A)                       extends ExpressionF[A]
   final case class URI[A](s: A)                         extends ExpressionF[A]
   final case class LANG[A](s: A)                        extends ExpressionF[A]
   final case class LANGMATCHES[A](s: A, range: String)  extends ExpressionF[A]
@@ -99,6 +100,7 @@ object ExpressionF {
       case Conditional.IN(e, xs)                => IN(e, xs)
       case Conditional.SAMETERM(l, r)           => SAMETERM(l, r)
       case Conditional.IF(cnd, ifTrue, ifFalse) => IF(cnd, ifTrue, ifFalse)
+      case Conditional.BOUND(e)                 => BOUND(e)
       case BuiltInFunc.URI(s)                   => URI(s)
       case BuiltInFunc.LANG(s)                  => LANG(s)
       case BuiltInFunc.LANGMATCHES(s, StringVal.STRING(range)) =>
@@ -192,6 +194,7 @@ object ExpressionF {
       case IN(e, xs)                => Conditional.IN(e, xs)
       case SAMETERM(l, r)           => Conditional.SAMETERM(l, r)
       case IF(cnd, ifTrue, ifFalse) => Conditional.IF(cnd, ifTrue, ifFalse)
+      case BOUND(e)                 => Conditional.BOUND(e)
       case UCASE(s) =>
         BuiltInFunc.UCASE(s.asInstanceOf[StringLike])
       case LANG(s) =>
@@ -330,6 +333,7 @@ object ExpressionF {
         case SAMETERM(l, r)        => FuncForms.sameTerm(l, r).pure[M]
         case IF(cnd, ifTrue, ifFalse) =>
           FuncForms.`if`(cnd, ifTrue, ifFalse).pure[M]
+        case BOUND(e)                   => FuncForms.bound(e).pure[M]
         case STR(s)                     => FuncTerms.str(s).pure[M]
         case STRDT(e, uri)              => FuncTerms.strdt(e, uri).pure[M]
         case URI(s)                     => FuncTerms.iri(s).pure[M]

@@ -19,6 +19,7 @@ object ConditionalParser {
   def notIn[_: P]: P[Unit]     = P("notin")
   def sameTerm[_: P]: P[Unit]  = P("sameTerm")
   def `if`[_: P]: P[Unit]      = P("if")
+  def bound[_: P]: P[Unit]     = P("bound")
 
   def equalsParen[_: P]: P[EQUALS] =
     P("(" ~ equals ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
@@ -83,6 +84,11 @@ object ConditionalParser {
     )
       .map(f => IF(f._1, f._2, f._3))
 
+  def boundParen[_: P]: P[BOUND] =
+    P(
+      "(" ~ bound ~ StringValParser.variable ~ ")"
+    ).map(BOUND)
+
   def parser[_: P]: P[Conditional] =
     P(
       notEqualsParen
@@ -98,5 +104,6 @@ object ConditionalParser {
         | notInParen
         | sameTermParen
         | ifParen
+        | boundParen
     )
 }

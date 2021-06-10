@@ -325,4 +325,12 @@ object FuncForms {
       ifStringLit
     ).otherwise(nullLiteral)
   }
+
+  /** Returns true if var is bound to a value. Returns false otherwise. Variables with the value NaN or INF
+    * are considered bound.
+    * @param c
+    * @return
+    */
+  def bound(c: Column): Column =
+    c.isNotNull
 }

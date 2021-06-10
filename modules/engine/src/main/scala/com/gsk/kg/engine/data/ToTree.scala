@@ -140,6 +140,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.SAMETERM(l, r) => Node("SAMETERM", Stream(l, r))
           case ExpressionF.IF(cnd, ifTrue, ifFalse) =>
             Node("IF", Stream(cnd, ifTrue, ifFalse))
+          case ExpressionF.BOUND(e) => Node("BOUND", Stream(e))
           case ExpressionF.REGEX(s, pattern, flags) =>
             Node(
               "REGEX",

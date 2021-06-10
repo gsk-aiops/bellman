@@ -123,4 +123,17 @@ class ConditionalParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "Bound parser" should "return BOUND type" in {
+    val p =
+      fastparse.parse(
+        """(bound ?date)""",
+        ConditionalParser.parser(_)
+      )
+    p.get.value match {
+      case BOUND(VARIABLE("?date")) =>
+        succeed
+      case _ => fail
+    }
+  }
 }
