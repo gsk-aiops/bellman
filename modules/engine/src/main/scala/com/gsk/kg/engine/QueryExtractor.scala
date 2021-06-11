@@ -197,6 +197,10 @@ object QueryExtractor {
 
   private val expressionToString: Algebra[ExpressionF, String] =
     Algebra {
+      case ADD(l, r)                => s"(add $l $r)"
+      case SUBTRACT(l, r)           => s"(subtract $l $r)"
+      case MULTIPLY(l, r)           => s"(multiply $l $r)"
+      case DIVIDE(l, r)             => s"(divide $l $r)"
       case REGEX(s, pattern, flags) => s"(regex $s $pattern $flags)"
       case REPLACE(st, pattern, by, flags) =>
         s"(replace $st $pattern $by $flags)"

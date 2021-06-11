@@ -1,5 +1,11 @@
 package com.gsk.kg.sparqlparser
 
+import com.gsk.kg.sparqlparser.Arithmetic.ADD
+import com.gsk.kg.sparqlparser.Arithmetic.DIVIDE
+import com.gsk.kg.sparqlparser.Arithmetic.MULTIPLY
+import com.gsk.kg.sparqlparser.Arithmetic.SUBTRACT
+import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+
 import org.scalatest.flatspec.AnyFlatSpec
 
 class ArithmeticParserSpec extends AnyFlatSpec {
@@ -8,8 +14,8 @@ class ArithmeticParserSpec extends AnyFlatSpec {
     val p =
       fastparse.parse("""(+ ?a ?b)""", ArithmeticParser.addParen(_))
     p.get.value match {
-      case _ => succeed
-      case _ => fail
+      case ADD(VARIABLE("?a"), VARIABLE("?b")) => succeed
+      case _                                   => fail
     }
   }
 
@@ -17,8 +23,8 @@ class ArithmeticParserSpec extends AnyFlatSpec {
     val p =
       fastparse.parse("""(- ?a ?b)""", ArithmeticParser.subtractParen(_))
     p.get.value match {
-      case _ => succeed
-      case _ => fail
+      case SUBTRACT(VARIABLE("?a"), VARIABLE("?b")) => succeed
+      case _                                        => fail
     }
   }
 
@@ -26,8 +32,8 @@ class ArithmeticParserSpec extends AnyFlatSpec {
     val p =
       fastparse.parse("""(* ?a ?b)""", ArithmeticParser.multiplyParen(_))
     p.get.value match {
-      case _ => succeed
-      case _ => fail
+      case MULTIPLY(VARIABLE("?a"), VARIABLE("?b")) => succeed
+      case _                                        => fail
     }
   }
 
@@ -35,8 +41,8 @@ class ArithmeticParserSpec extends AnyFlatSpec {
     val p =
       fastparse.parse("""(/ ?a ?b)""", ArithmeticParser.divideParen(_))
     p.get.value match {
-      case _ => succeed
-      case _ => fail
+      case DIVIDE(VARIABLE("?a"), VARIABLE("?b")) => succeed
+      case _                                      => fail
     }
   }
 }

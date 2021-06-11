@@ -123,6 +123,10 @@ object FindVariablesOnExpression {
   def apply[T](t: T)(implicit T: Basis[ExpressionF, T]): Set[VARIABLE] = {
     val algebra: Algebra[ExpressionF, Set[VARIABLE]] =
       Algebra[ExpressionF, Set[VARIABLE]] {
+        case ADD(l, r)                       => l ++ r
+        case SUBTRACT(l, r)                  => l ++ r
+        case MULTIPLY(l, r)                  => l ++ r
+        case DIVIDE(l, r)                    => l ++ r
         case EQUALS(l, r)                    => l ++ r
         case GT(l, r)                        => l ++ r
         case LT(l, r)                        => l ++ r
