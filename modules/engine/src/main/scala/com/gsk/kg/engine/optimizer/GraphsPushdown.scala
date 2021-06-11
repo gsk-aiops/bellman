@@ -164,6 +164,7 @@ object GraphsPushdown {
             graphsOrList => DAG.offsetR(o, r(graphsOrList))
           case DAG.Limit(l, r) => graphsOrList => DAG.limitR(l, r(graphsOrList))
           case DAG.Distinct(r) => graphsOrList => DAG.distinctR(r(graphsOrList))
+          case DAG.Reduced(r)  => graphsOrList => DAG.reducedR(r(graphsOrList))
           case DAG.Group(vars, func, r) =>
             graphsOrList => DAG.groupR(vars, func, r(graphsOrList))
           case DAG.Order(variable, r) =>

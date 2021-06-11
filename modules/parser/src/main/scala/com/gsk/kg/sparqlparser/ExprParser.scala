@@ -22,6 +22,7 @@ object ExprParser {
   def select[_: P]: P[Unit]      = P("project")
   def offsetLimit[_: P]: P[Unit] = P("slice")
   def distinct[_: P]: P[Unit]    = P("distinct")
+  def reduced[_: P]: P[Unit]     = P("reduced")
   def group[_: P]: P[Unit]       = P("group")
   def order[_: P]: P[Unit]       = P("order")
   def table[_: P]: P[Unit]       = P("table")
@@ -52,7 +53,10 @@ object ExprParser {
   }
 
   def distinctParen[_: P]: P[Distinct] =
-    P("(" ~ distinct ~ graphPattern).map(Distinct(_))
+    P("(" ~ distinct ~ graphPattern).map(Distinct)
+
+  def reducedParen[_: P]: P[Reduced] =
+    P("(" ~ reduced ~ graphPattern).map(Reduced)
 
   def triple[_: P]: P[Quad] =
     P(
@@ -62,7 +66,7 @@ object ExprParser {
         StringValParser.tripleValParser ~ ")"
     ).map(t => Quad(t._1, t._2, t._3, GRAPH_VARIABLE :: Nil))
 
-  def bgpParen[_: P]: P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP(_))
+  def bgpParen[_: P]: P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP)
 
   def exprFunc[_: P]: P[Expression] =
     ConditionalParser.parser | BuiltInFuncParser.parser | AggregateParser.parser
@@ -192,6 +196,7 @@ object ExprParser {
       selectParen
         | offsetLimitParen
         | distinctParen
+        | reducedParen
         | leftJoinParen
         | filteredLeftJoinParen
         | joinParen

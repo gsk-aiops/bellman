@@ -865,7 +865,7 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
     }
   }
 
-  "Not exists" should "return property when simple query" in {
+  "Not exists" should "return proper type when simple query" in {
     val p = fastparse.parse(
       sparql2Algebra(
         "/queries/q48-not-exists-simple-query.sparql"
@@ -900,6 +900,35 @@ class ExprParserSpec extends AnyFlatSpec with TestUtils {
                     VARIABLE("?s"),
                     URIVAL("<http://xmlns.com/foaf/0.1/age>"),
                     VARIABLE("?age"),
+                    List(GRAPH_VARIABLE)
+                  )
+                )
+              )
+            )
+          ) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "Reduced" should "return proper type when simple query" in {
+    val p = fastparse.parse(
+      sparql2Algebra(
+        "/queries/q49-reduced-simple-query.sparql"
+      ),
+      ExprParser.parser(_)
+    )
+
+    p.get.value match {
+      case Reduced(
+            Project(
+              Seq(VARIABLE("?name")),
+              BGP(
+                Seq(
+                  Quad(
+                    VARIABLE("?x"),
+                    URIVAL("<http://xmlns.com/foaf/0.1/name>"),
+                    VARIABLE("?name"),
                     List(GRAPH_VARIABLE)
                   )
                 )

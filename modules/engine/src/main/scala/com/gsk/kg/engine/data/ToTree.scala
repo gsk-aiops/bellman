@@ -106,6 +106,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case DAG.Order(conds, r) =>
             Node("Order", conds.map(_.toTree).toList.toStream #::: Stream(r))
           case DAG.Distinct(r) => Node("Distinct", Stream(r))
+          case DAG.Reduced(r)  => Node("Reduced", Stream(r))
           case DAG.Table(vars, rows) =>
             val v: List[Expression] = vars
             val rs: List[List[(Expression, Expression)]] =
