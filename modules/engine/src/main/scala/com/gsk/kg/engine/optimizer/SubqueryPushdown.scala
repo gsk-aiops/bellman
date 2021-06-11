@@ -201,6 +201,8 @@ object SubqueryPushdown {
           isFromSubquery => DAG.limitR(l, r(isFromSubquery))
         case DAG.Distinct(r) =>
           isFromSubquery => DAG.distinctR(r(isFromSubquery))
+        case DAG.Reduced(r) =>
+          isFromSubquery => DAG.reducedR(r(isFromSubquery))
         case DAG.Group(vars, func, r) =>
           isFromSubquery => DAG.groupR(vars, func, r(isFromSubquery))
         case DAG.Order(variable, r) =>

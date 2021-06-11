@@ -65,6 +65,7 @@ object DAG {
   @Lenses final case class Order[A](conds: NonEmptyList[ConditionOrder], r: A)
       extends DAG[A]
   @Lenses final case class Distinct[A](r: A) extends DAG[A]
+  @Lenses final case class Reduced[A](r: A)  extends DAG[A]
   @Lenses final case class Table[A](vars: List[VARIABLE], rows: List[Expr.Row])
       extends DAG[A]
   @Lenses final case class Exists[A](not: Boolean, p: A, r: A) extends DAG[A]
@@ -96,6 +97,7 @@ object DAG {
         case DAG.Limit(l, r) =>
           f(r).map(limit(l, _))
         case DAG.Distinct(r)          => f(r).map(distinct)
+        case DAG.Reduced(r)           => f(r).map(reduced)
         case DAG.Group(vars, func, r) => f(r).map(group(vars, func, _))
         case DAG.Order(conds, r)      => f(r).map(order(conds, _))
         case DAG.Table(vars, rows)    => table[B](vars, rows).pure[G]
@@ -126,6 +128,7 @@ object DAG {
   def limit[A](limit: Long, r: A): DAG[A] =
     Limit[A](limit, r)
   def distinct[A](r: A): DAG[A] = Distinct[A](r)
+  def reduced[A](r: A): DAG[A]  = Reduced[A](r)
   def group[A](
       vars: List[VARIABLE],
       func: List[(VARIABLE, Expression)],
@@ -176,6 +179,7 @@ object DAG {
       r: T
   ): T                                     = limit[T](l, r).embed
   def distinctR[T: Embed[DAG, *]](r: T): T = distinct[T](r).embed
+  def reducedR[T: Embed[DAG, *]](r: T): T  = reduced[T](r).embed
   def groupR[T: Embed[DAG, *]](
       vars: List[VARIABLE],
       func: List[(VARIABLE, Expression)],
@@ -222,6 +226,7 @@ object DAG {
       case ProjectF(vars, r)            => project(vars.toList, r)
       case QuadF(s, p, o, g)            => noop("QuadF not supported")
       case DistinctF(r)                 => distinct(r)
+      case ReducedF(r)                  => reduced(r)
       case GroupF(vars, func, r)        => group(vars.toList, func.toList, r)
       case OrderF(conds, r) =>
         order(NonEmptyList.fromListUnsafe(conds.toList), r)
@@ -262,6 +267,7 @@ object DAG {
   implicit def eqGroup[A]: Eq[Group[A]]         = Eq.fromUniversalEquals
   implicit def eqOrder[A]: Eq[Order[A]]         = Eq.fromUniversalEquals
   implicit def eqDistinct[A]: Eq[Distinct[A]]   = Eq.fromUniversalEquals
+  implicit def eqReduced[A]: Eq[Reduced[A]]     = Eq.fromUniversalEquals
   implicit def eqTable[A]: Eq[Table[A]]         = Eq.fromUniversalEquals
   implicit def eqExists[A]: Eq[Exists[A]]       = Eq.fromUniversalEquals
   implicit def eqNoop[A]: Eq[Noop[A]]           = Eq.fromUniversalEquals
@@ -324,6 +330,8 @@ object optics {
     )
   def _distinct[T: Basis[DAG, *]]: Prism[DAG[T], Distinct[T]] = Prism
     .partial[DAG[T], Distinct[T]] { case dag @ Distinct(r) => dag }(identity)
+  def _reduced[T: Basis[DAG, *]]: Prism[DAG[T], Reduced[T]] = Prism
+    .partial[DAG[T], Reduced[T]] { case dag @ Reduced(r) => dag }(identity)
   def _group[T: Basis[DAG, *]]: Prism[DAG[T], Group[T]] = Prism
     .partial[DAG[T], Group[T]] { case dag @ Group(_, _, _) => dag }(identity)
   def _order[T: Basis[DAG, *]]: Prism[DAG[T], Order[T]] = Prism
@@ -367,6 +375,8 @@ object optics {
     basisIso[DAG, T] composePrism _limit
   def _distinctR[T: Basis[DAG, *]]: Prism[T, Distinct[T]] =
     basisIso[DAG, T] composePrism _distinct
+  def _reducedR[T: Basis[DAG, *]]: Prism[T, Reduced[T]] =
+    basisIso[DAG, T] composePrism _reduced
   def _groupR[T: Basis[DAG, *]]: Prism[T, Group[T]] =
     basisIso[DAG, T] composePrism _group
   def _orderR[T: Basis[DAG, *]]: Prism[T, Order[T]] =

@@ -55,6 +55,7 @@ object QueryExtractor {
       case ProjectF(vars, r)                 => r
       case QuadF(s, p, o, g)                 => Nil
       case DistinctF(r)                      => r
+      case ReducedF(r)                       => r
       case GroupF(vars, func, r)             => r
       case OrderF(conds, r)                  => r
       case OffsetLimitF(None, None, r)       => r
@@ -213,6 +214,7 @@ object QueryExtractor {
       case ProjectF(vars, r)     => r
       case QuadF(s, p, o, g)     => s"QuadF(s, p, o, g)"
       case DistinctF(r)          => s"$r DISTINCT"
+      case ReducedF(r)           => s"$r REDUCED"
       case GroupF(vars, func, r) => s"$r GROUP BY ${printVars(vars)}"
       case OrderF(conds, r) =>
         s"$r ORDER BY ${conds.asInstanceOf[Seq[Expression]].map(printExpression).mkString(" ")}"

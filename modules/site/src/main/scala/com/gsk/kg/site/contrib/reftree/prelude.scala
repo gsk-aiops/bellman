@@ -151,6 +151,7 @@ object prelude {
     case dag @ DAG.Limit(l, r) =>
       RefTree.Ref(dag, Seq(l.refTree.toField, r.toField))
     case dag @ DAG.Distinct(r) => RefTree.Ref(dag, Seq(r.toField))
+    case dag @ DAG.Reduced(r)  => RefTree.Ref(dag, Seq(r.toField))
     case dag @ DAG.Group(vars, func, r) =>
       RefTree.Ref(dag, Seq(vars.refTree.toField, r.toField))
     case dag @ DAG.Order(conds, r) =>

@@ -1,9 +1,11 @@
 package com.gsk.kg.engine.compiler
 
-import com.gsk.kg.engine.Compiler
-import com.gsk.kg.sparqlparser.TestConfig
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
+
+import com.gsk.kg.engine.Compiler
+import com.gsk.kg.sparqlparser.TestConfig
+
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -50,9 +52,8 @@ class ReducedSpec
 
       val result = Compiler.compile(df, query, config).right.get
 
-      result.collect.length shouldEqual 2
+      result.collect.length shouldEqual 1
       result.collect.toSet shouldEqual Set(
-        Row("\"Alice\""),
         Row("\"Alice\"")
       )
     }

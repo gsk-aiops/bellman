@@ -91,6 +91,7 @@ object FindUnboundVariables {
       case Offset(offset, r) => r
       case Limit(limit, r)   => r
       case Distinct(r)       => r
+      case Reduced(r)        => r
       case Group(vars, func, (declared, unbound)) =>
         (declared, (vars.toSet diff declared) ++ unbound)
       case DAG.Order(conds, (declared, unbound)) =>

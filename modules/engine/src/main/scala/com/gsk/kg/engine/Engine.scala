@@ -56,6 +56,7 @@ object Engine {
       case DAG.Offset(offset, r)       => evaluateOffset(offset, r)
       case DAG.Limit(limit, r)         => evaluateLimit(limit, r)
       case DAG.Distinct(r)             => evaluateDistinct(r)
+      case DAG.Reduced(r)              => evaluateReduced(r)
       case DAG.Group(vars, func, r)    => evaluateGroup(vars, func, r)
       case DAG.Order(conds, r)         => evaluateOrder(conds, r)
       case DAG.Table(vars, rows)       => evaluateTable(vars, rows)
@@ -212,6 +213,11 @@ object Engine {
   }
 
   private def evaluateDistinct(r: Multiset): M[Multiset] =
+    M.liftF(r.distinct)
+
+  private def evaluateReduced(r: Multiset): M[Multiset] =
+    // It is up to the implementation to eliminate duplicates or not.
+    // See: https://www.w3.org/TR/sparql11-query/#modReduced
     M.liftF(r.distinct)
 
   private def evaluateGroup(
