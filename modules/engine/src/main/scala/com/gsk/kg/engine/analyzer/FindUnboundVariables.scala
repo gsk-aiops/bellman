@@ -1,5 +1,6 @@
 package com.gsk.kg.engine
 package analyzer
+
 import cats.implicits._
 import cats.{Group => _, _}
 
@@ -13,8 +14,7 @@ import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 /** This rule performs a bottom-up traverse of the DAG (with a
-  * [[higherkindness.droste.AlgebraM]]), accumulating bound variables
-  * in the [[cats.data.State]].
+  * [[higherkindness.droste.Algebra]]), carrying the bound and unbound vars
   *
   * When arriving to the nodes that may use unbound variables
   * ([[DAG.Project]] and [[DAG.Construct]]), it compares the variables
@@ -50,8 +50,17 @@ object FindUnboundVariables {
 
   val findUnboundVariables: Algebra[DAG, (DeclaredVars, UnboundVars)] =
     Algebra[DAG, (DeclaredVars, UnboundVars)] {
-      case Describe(vars, (declared, unbound)) =>
-        (declared, (vars.toSet diff unbound))
+      case Describe(values, (declared, unbound)) =>
+        val vars: Set[VARIABLE] =
+          values
+            .filter({
+              case VARIABLE(_) => true
+              case _ => false
+            })
+            .map(variable => variable.asInstanceOf[VARIABLE])
+            .toSet
+
+        (declared, (vars diff unbound))
       case Ask((declared, unbound)) => (declared, unbound)
       case Construct(bgp, (declared, unbound)) =>
         val used = bgp.quads

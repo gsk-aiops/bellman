@@ -61,7 +61,7 @@ object Engine {
       case DAG.Order(conds, r)         => evaluateOrder(conds, r)
       case DAG.Table(vars, rows)       => evaluateTable(vars, rows)
       case DAG.Exists(not, p, r)       => evaluateExists(not, p, r)
-      case DAG.Noop(str)               => notImplemented("Noop")
+      case DAG.Noop(str)               => evaluateNoop(str)
     }
 
   def evaluate[T: Basis[DAG, *]](
@@ -109,47 +109,60 @@ object Engine {
     )
   )
 
-  private val createDescribeTriple: (VARIABLE, Int) => Quad = { (variable, i) =>
+  private def evaluateNoop(str: String)(implicit sc: SQLContext): M[Multiset] =
+    for {
+      _ <- Log.info("Engine", str)
+    } yield Multiset.empty
+
+  private val createDescribeTriple: (StringVal, Int) => Quad = { (subject, i) =>
     def createVar(letter: String): VARIABLE = VARIABLE(s"?$letter$i")
-    Quad(variable, createVar("p"), createVar("o"), Nil)
+    Quad(subject, createVar("p"), createVar("o"), Nil)
   }
 
-  private def evaluateDescribe(vars: Seq[VARIABLE], r: Multiset)(implicit sc: SQLContext): M[Multiset] = {
+  private def evaluateDescribe(vars: Seq[StringVal], r: Multiset)(implicit
+      sc: SQLContext
+  ): M[Multiset] = {
     val quads: ChunkedList[Quad] = ChunkedList
       .fromList(
         vars.toList.zipWithIndex.map(createDescribeTriple.tupled)
       )
 
-    M.get[Result, Config, Log, DataFrame].map { df =>
-      quads
-        .mapChunks(applyChunkToDf(_, df))
-        .foldLeft(Multiset.empty)((acc, other) => acc.union(other))
-    }
+    M.get[Result, Config, Log, DataFrame]
+      .map { df =>
+        quads
+          .mapChunks(applyChunkToDf(_, df))
+          .foldLeft(Multiset.empty)((acc, other) => acc.union(other))
+      }
+      .flatMap(m =>
+        evaluateConstruct(Expr.BGP(Foldable[ChunkedList].toList(quads)), m)
+      )
   }
 
-  private def applyChunkToDf(chunk: ChunkedList.Chunk[Quad], df: DataFrame)(implicit sc: SQLContext): Multiset = {
+  private def applyChunkToDf(chunk: ChunkedList.Chunk[Quad], df: DataFrame)(
+      implicit sc: SQLContext
+  ): Multiset = {
     import sc.implicits._
-          val condition = composedConditionFromChunk(df, chunk)
-          val current   = df.filter(condition)
-          val vars =
-            chunk
-              .map(_.getNamesAndPositions :+ (GRAPH_VARIABLE, "g"))
-              .toChain
-              .toList
-              .flatten
-          val selected =
-            current.select(vars.map(v => $"${v._2}".as(v._1.s)): _*)
+    val condition = composedConditionFromChunk(df, chunk)
+    val current   = df.filter(condition)
+    val vars =
+      chunk
+        .map(_.getNamesAndPositions :+ (GRAPH_VARIABLE, "g"))
+        .toChain
+        .toList
+        .flatten
+    val selected =
+      current.select(vars.map(v => $"${v._2}".as(v._1.s)): _*)
 
-          Multiset(
-            vars.map {
-              case (GRAPH_VARIABLE, _) =>
-                VARIABLE(GRAPH_VARIABLE.s)
-              case (other, _) =>
-                other.asInstanceOf[VARIABLE]
-            }.toSet,
-            selected
-          )
-        }
+    Multiset(
+      vars.map {
+        case (GRAPH_VARIABLE, _) =>
+          VARIABLE(GRAPH_VARIABLE.s)
+        case (other, _) =>
+          other.asInstanceOf[VARIABLE]
+      }.toSet,
+      selected
+    )
+  }
 
   private def evaluateAsk(r: Multiset)(implicit sc: SQLContext): M[Multiset] = {
     val askVariable = VARIABLE("?_askResult")
@@ -496,10 +509,4 @@ object Engine {
       dataframe = resultDf
     ).pure[M]
   }
-
-  private def notImplemented(constructor: String): M[Multiset] =
-    M.liftF[Result, Config, Log, DataFrame, Multiset](
-      EngineError.General(s"$constructor not implemented").asLeft[Multiset]
-    )
-
 }

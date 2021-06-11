@@ -1,14 +1,12 @@
-package com.gsk.kg.engine.compiler
+package com.gsk.kg.engine
+package compiler
 
-import com.gsk.kg.sparql.syntax.all._
-
-import org.apache.spark.sql.Row
-
-import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+
+import org.apache.spark.sql.Row
 
 class DescribeSpec
     extends AnyWordSpec
@@ -20,7 +18,7 @@ class DescribeSpec
 
   "DESCRIBE" when {
 
-    "describing a single variable" should {
+    "describing a single value" should {
 
       "find all outgoing edges of the var" in {
 
@@ -47,37 +45,33 @@ class DescribeSpec
           )
         ).toDF("s", "p", "o")
 
-        val query = sparql"""
-          PREFIX : <http://example.org>
+        val query = """
+          PREFIX : <http://example.org/>
           
-          DESCRIBE :asdf {
-            ?q ?a ?p .
-          }"""
+          DESCRIBE :alice"""
 
-          println(query)
+        val result = Compiler.compile(df, query, config) match {
+          case Right(r) => r
+          case Left(err) => throw new Exception(err.toString)
+        }
 
-        //val result = Compiler.compile(df, query, config) match {
-          //case Right(r) => r
-          //case Left(err) => throw new Exception(err.toString)
-        //}
-
-        //result.collect.toSet shouldEqual Set(
-          //Row(
-            //"<http://example.org/alice>",
-            //"<http://xmlns.com/foaf/0.1/name>",
-            //"\"Alice\""
-          //),
-          //Row(
-            //"<http://example.org/alice>",
-            //"<http://xmlns.com/foaf/0.1/age>",
-            //"\"21\""
-          //),
-          //Row(
-            //"<http://example.org/alice>",
-            //"<http://xmlns.com/foaf/0.1/knows>",
-            //"\"Bob\""
-          //)
-        //)
+        result.collect.toSet shouldEqual Set(
+          Row(
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
+            "\"Alice\""
+          ),
+          Row(
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/age>",
+            "21"
+          ),
+          Row(
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "\"Bob\""
+          )
+        )
       }
     }
   }

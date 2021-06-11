@@ -56,34 +56,33 @@ object Expr {
         g.collect { case e if !e.isVariable => e -> "g" }
   }
   object Quad {
-    def apply(q: JenaQuad): Option[Quad] = {
-
-      def toStringVal(n: Node): Option[StringVal] =
-        if (n.isLiteral) {
-          Some(STRING(n.toString))
-        } else if (n == JenaQuad.defaultGraphNodeGenerated) {
-          Some(GRAPH_VARIABLE)
-        } else if (n.isURI) {
-          Some(URIVAL("<" + n.toString + ">"))
-        } else if (n.isVariable) {
-          Some(VARIABLE(n.toString))
-        } else if (n.isBlank) {
-          Some(BLANK(n.toString))
-        } else {
-          None
-        }
-
+    def apply(q: JenaQuad): Option[Quad] =
       (
-        toStringVal(q.getSubject),
-        toStringVal(q.getPredicate),
-        toStringVal(q.getObject),
-        toStringVal(q.getGraph)
+        jenaNodeToStringVal(q.getSubject),
+        jenaNodeToStringVal(q.getPredicate),
+        jenaNodeToStringVal(q.getObject),
+        jenaNodeToStringVal(q.getGraph)
       ) match {
         case (Some(s), Some(p), Some(o), Some(g)) =>
           Some(Quad(s, p, o, g :: Nil))
         case _ => None
       }
-    }
+
+    def jenaNodeToStringVal(n: Node): Option[StringVal] =
+      if (n.isLiteral) {
+        Some(STRING(n.toString))
+      } else if (n == JenaQuad.defaultGraphNodeGenerated) {
+        Some(GRAPH_VARIABLE)
+      } else if (n.isURI) {
+        Some(URIVAL("<" + n.toString + ">"))
+      } else if (n.isVariable) {
+        Some(VARIABLE(n.toString))
+      } else if (n.isBlank) {
+        Some(BLANK(n.toString))
+      } else {
+        None
+      }
+
     def toIter(q: JenaQuad): Iterable[Quad] = apply(q).toIterable
   }
   final case class LeftJoin(l: Expr, r: Expr) extends Expr
