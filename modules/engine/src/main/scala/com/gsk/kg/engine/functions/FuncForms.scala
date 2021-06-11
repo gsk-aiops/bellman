@@ -333,4 +333,25 @@ object FuncForms {
     */
   def bound(c: Column): Column =
     c.isNotNull
+
+  /** The COALESCE function form returns the RDF term value of the first expression that evaluates without error.
+    * In SPARQL, evaluating an unbound variable raises an error.
+    * If none of the arguments evaluates to an RDF term, an error is raised.
+    * If no expressions are evaluated without error, an error is raised.
+    * @param cols
+    * @return
+    */
+  def coalesce(cols: List[Column]): Column = {
+    cols.foldLeft(nullLiteral) { case (acc, elem) =>
+      when(
+        elem.isNull,
+        acc
+      ).otherwise(
+        when(
+          acc.isNull,
+          elem
+        ).otherwise(acc)
+      )
+    }
+  }
 }

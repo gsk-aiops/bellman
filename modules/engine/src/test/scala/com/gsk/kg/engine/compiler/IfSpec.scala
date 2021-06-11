@@ -12,7 +12,7 @@ class IfSpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
 
   import sqlContext.implicits._
 
-  "perform query with FILTER modifier" when {
+  "perform query with IF function" when {
 
     "simple IF" in {
 

@@ -20,6 +20,7 @@ object ConditionalParser {
   def sameTerm[_: P]: P[Unit]  = P("sameTerm")
   def `if`[_: P]: P[Unit]      = P("if")
   def bound[_: P]: P[Unit]     = P("bound")
+  def coalesce[_: P]: P[Unit]  = P("coalesce")
 
   def equalsParen[_: P]: P[EQUALS] =
     P("(" ~ equals ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
@@ -89,6 +90,10 @@ object ConditionalParser {
       "(" ~ bound ~ StringValParser.variable ~ ")"
     ).map(BOUND)
 
+  def coalesceParen[_: P]: P[COALESCE] =
+    P("(" ~ coalesce ~ ExpressionParser.parser.rep(1) ~ ")")
+      .map(f => COALESCE(f.toList))
+
   def parser[_: P]: P[Conditional] =
     P(
       notEqualsParen
@@ -105,5 +110,6 @@ object ConditionalParser {
         | sameTermParen
         | ifParen
         | boundParen
+        | coalesceParen
     )
 }
