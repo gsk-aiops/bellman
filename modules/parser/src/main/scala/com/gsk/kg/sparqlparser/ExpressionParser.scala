@@ -5,5 +5,8 @@ import fastparse._
 object ExpressionParser {
 
   def parser[_: P]: P[Expression] =
-    ConditionalParser.parser | BuiltInFuncParser.parser | StringValParser.tripleValParser
+    ConditionalParser.parser |
+      BuiltInFuncParser.parser |
+      ArithmeticParser.parser |
+      StringValParser.tripleValParser
 }
