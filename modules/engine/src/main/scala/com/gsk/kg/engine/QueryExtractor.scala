@@ -11,7 +11,6 @@ import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.QueryConstruct
 import com.gsk.kg.sparqlparser.StringVal
-import com.gsk.kg.sparqlparser.StringVal._
 
 import java.net.URI
 
