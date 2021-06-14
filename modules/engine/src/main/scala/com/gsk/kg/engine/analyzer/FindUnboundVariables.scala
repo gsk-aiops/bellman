@@ -60,7 +60,7 @@ object FindUnboundVariables {
             .map(variable => variable.asInstanceOf[VARIABLE])
             .toSet
 
-        (declared, (vars diff unbound))
+        (declared, (vars diff declared) ++ unbound)
       case Ask((declared, unbound)) => (declared, unbound)
       case Construct(bgp, (declared, unbound)) =>
         val used = bgp.quads

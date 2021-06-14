@@ -74,5 +74,64 @@ class DescribeSpec
         )
       }
     }
+
+    "describing non literals" should {
+
+      "apply the BGP first and then describe the solutions in variables" ignore {
+        val df = List(
+          (
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
+            "Alice"
+          ),
+          (
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/age>",
+            "21"
+          ),
+          (
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "Bob"
+          ),
+          (
+            "<http://example.org/bob>",
+            "<http://xmlns.com/foaf/0.1/thisnodedoesntappear>",
+            "potato"
+          )
+        ).toDF("s", "p", "o")
+
+        val query = """
+          PREFIX : <http://example.org/>
+          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+          
+          DESCRIBE ?s {
+            ?s foaf:knows "Bob" .
+          }"""
+
+        val result = Compiler.compile(df, query, config) match {
+          case Right(r) => r
+          case Left(err) => throw new Exception(err.toString)
+        }
+
+        result.collect.toSet shouldEqual Set(
+          Row(
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/name>",
+            "\"Alice\""
+          ),
+          Row(
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/age>",
+            "21"
+          ),
+          Row(
+            "<http://example.org/alice>",
+            "<http://xmlns.com/foaf/0.1/knows>",
+            "\"Bob\""
+          )
+        )
+      }
+    }
   }
 }
