@@ -1,12 +1,12 @@
 package com.gsk.kg.engine
 package compiler
 
+import org.apache.spark.sql.Row
+
 import com.gsk.kg.sparqlparser.TestConfig
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-
-import org.apache.spark.sql.Row
 
 class DescribeSpec
     extends AnyWordSpec
@@ -51,7 +51,7 @@ class DescribeSpec
           DESCRIBE :alice"""
 
         val result = Compiler.compile(df, query, config) match {
-          case Right(r) => r
+          case Right(r)  => r
           case Left(err) => throw new Exception(err.toString)
         }
 
@@ -110,7 +110,7 @@ class DescribeSpec
           }"""
 
         val result = Compiler.compile(df, query, config) match {
-          case Right(r) => r
+          case Right(r)  => r
           case Left(err) => throw new Exception(err.toString)
         }
 

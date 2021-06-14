@@ -133,7 +133,8 @@ object Engine {
         quads
           .mapChunks(applyChunkToDf(_, df))
           .foldLeft(Multiset.empty)((acc, other) => acc.union(other))
-      }.flatMap(m => evaluateConstruct(bgp, m))
+      }
+      .flatMap(m => evaluateConstruct(bgp, m))
   }
 
   private def applyChunkToDf(chunk: ChunkedList.Chunk[Quad], df: DataFrame)(

@@ -452,9 +452,7 @@ object Multiset {
     Multiset(Set.empty, sc.sparkSession.emptyDataFrame)
 
   def fromDF(df: DataFrame)(implicit sc: SQLContext): Multiset =
-    Multiset(
-      df.columns.map(VARIABLE).toSet,
-      df)
+    Multiset(df.columns.map(VARIABLE).toSet, df)
 
   implicit def semigroup(implicit sc: SQLContext): Semigroup[Multiset] =
     new Semigroup[Multiset] {

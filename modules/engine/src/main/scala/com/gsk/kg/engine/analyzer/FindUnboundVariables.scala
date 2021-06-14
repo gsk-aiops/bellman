@@ -55,7 +55,7 @@ object FindUnboundVariables {
           values
             .filter({
               case VARIABLE(_) => true
-              case _ => false
+              case _           => false
             })
             .map(variable => variable.asInstanceOf[VARIABLE])
             .toSet
