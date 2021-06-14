@@ -14,6 +14,7 @@ import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.Query
+import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
 import monocle._
@@ -35,7 +36,7 @@ sealed trait DAG[A] {
 
 // scalastyle:off
 object DAG {
-  @Lenses final case class Describe[A](vars: List[VARIABLE], r: A)
+  @Lenses final case class Describe[A](vars: List[StringVal], r: A)
       extends DAG[A]
   @Lenses final case class Ask[A](r: A)                      extends DAG[A]
   @Lenses final case class Construct[A](bgp: Expr.BGP, r: A) extends DAG[A]
@@ -107,10 +108,10 @@ object DAG {
   }
 
   // Smart constructors for better type inference (they return DAG[A] instead of the case class itself)
-  def describe[A](vars: List[VARIABLE], r: A): DAG[A] = Describe[A](vars, r)
-  def ask[A](r: A): DAG[A]                            = Ask[A](r)
-  def construct[A](bgp: Expr.BGP, r: A): DAG[A]       = Construct[A](bgp, r)
-  def scan[A](graph: String, expr: A): DAG[A]         = Scan[A](graph, expr)
+  def describe[A](vars: List[StringVal], r: A): DAG[A] = Describe[A](vars, r)
+  def ask[A](r: A): DAG[A]                             = Ask[A](r)
+  def construct[A](bgp: Expr.BGP, r: A): DAG[A]        = Construct[A](bgp, r)
+  def scan[A](graph: String, expr: A): DAG[A]          = Scan[A](graph, expr)
   def project[A](variables: List[VARIABLE], r: A): DAG[A] =
     Project[A](variables, r)
   def bind[A](variable: VARIABLE, expression: Expression, r: A): DAG[A] =
@@ -144,7 +145,7 @@ object DAG {
   def noop[A](trace: String): DAG[A] = Noop[A](trace)
 
   // Smart constructors for building the recursive version directly
-  def describeR[T: Embed[DAG, *]](vars: List[VARIABLE], r: T): T =
+  def describeR[T: Embed[DAG, *]](vars: List[StringVal], r: T): T =
     describe[T](vars, r).embed
   def askR[T: Embed[DAG, *]](r: T): T = ask[T](r).embed
   def constructR[T: Embed[DAG, *]](bgp: Expr.BGP, r: T): T =

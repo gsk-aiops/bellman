@@ -2,6 +2,7 @@ package com.gsk.kg.sparqlparser
 
 import cats.syntax.either._
 
+import org.apache.jena.graph.Node
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
 import org.apache.jena.sparql.core.{Quad => JenaQuad}
@@ -56,7 +57,14 @@ object QueryConstruct {
         val vars = getVars(query)
         (Select(vars, algebra), graphs).asRight
       case q if q.isDescribeType =>
-        (Describe(getVars(query), algebra), graphs).asRight
+        val queryVars: Seq[Node] = query.getProjectVars.asScala
+
+        val queryUris: Seq[Node] = query.getResultURIs.asScala
+
+        val vars = (queryVars ++ queryUris)
+          .map(node => Quad.jenaNodeToStringVal(node).get)
+
+        (Describe(vars, algebra), graphs).asRight
       case q if q.isAskType =>
         (Ask(algebra), graphs).asRight
       case _ =>

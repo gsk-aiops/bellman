@@ -209,3 +209,4 @@ $RECYCLE.BIN/
 sonatype.sbt
 .vscode
 .bloop
+metals.sbt

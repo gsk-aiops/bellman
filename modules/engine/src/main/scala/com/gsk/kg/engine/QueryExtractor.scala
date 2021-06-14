@@ -11,7 +11,6 @@ import com.gsk.kg.sparqlparser.Expression
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.QueryConstruct
 import com.gsk.kg.sparqlparser.StringVal
-import com.gsk.kg.sparqlparser.StringVal._
 
 import java.net.URI
 
@@ -98,7 +97,7 @@ object QueryExtractor {
   private def printQuad(quad: Expr.Quad): String =
     s"${quad.s.s} ${quad.p.s} ${quad.o.s} ."
 
-  private def printVars(vars: Seq[VARIABLE]) =
+  private def printStringVal(vars: Seq[StringVal]) =
     vars.map(_.s).mkString("", " ", ".")
 
   private def getFromStatement(uri: StringVal, isNamed: Boolean): String = {
@@ -124,13 +123,13 @@ object QueryExtractor {
 
     query match {
       case Query.Describe(vars, r) =>
-        s"DESCRIBE ${printVars(vars)} $g WHERE { ${toString(r)} }"
+        s"DESCRIBE ${printStringVal(vars)} $g WHERE { ${toString(r)} }"
       case Query.Ask(r) =>
         s"ASK $g { ${toString(r)} }"
       case Query.Construct(vars, bgp, r) =>
         s"CONSTRUCT { ${bgp.quads.map(printQuad).mkString(" ")} }$g WHERE { ${toString(r)} }"
       case Query.Select(vars, r) =>
-        s"SELECT ${printVars(vars)}$g WHERE { ${toString(r)} }"
+        s"SELECT ${printStringVal(vars)}$g WHERE { ${toString(r)} }"
     }
   }
 
@@ -215,7 +214,7 @@ object QueryExtractor {
       case QuadF(s, p, o, g)     => s"QuadF(s, p, o, g)"
       case DistinctF(r)          => s"$r DISTINCT"
       case ReducedF(r)           => s"$r REDUCED"
-      case GroupF(vars, func, r) => s"$r GROUP BY ${printVars(vars)}"
+      case GroupF(vars, func, r) => s"$r GROUP BY ${printStringVal(vars)}"
       case OrderF(conds, r) =>
         s"$r ORDER BY ${conds.asInstanceOf[Seq[Expression]].map(printExpression).mkString(" ")}"
       case OffsetLimitF(None, None, r)       => r
