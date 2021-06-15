@@ -74,6 +74,7 @@ object BuiltInFunc {
       pattern: Expression,
       flags: Expression = StringVal.STRING("")
   ) extends BuiltInFunc
+  final case class UUID() extends BuiltInFunc
 }
 
 sealed trait StringVal extends StringLike {

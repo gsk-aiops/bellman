@@ -9,6 +9,8 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
+import org.apache.spark.sql.functions.col
+
 class FuncTermsSpec
     extends AnyWordSpec
     with Matchers
@@ -187,6 +189,27 @@ class FuncTermsSpec
 
     "FuncTerms.isLiteral" should {
       // TODO: Add tests for isLiteral
+    }
+
+    "FuncTerms.uuid" should {
+
+      "return an uuid value from the column" in {
+
+        val elems = List(1, 2, 3)
+        val df    = elems.toDF("a")
+        val dfResult = df.withColumn("uuid", FuncTerms.uuid())
+          .select(
+            col("a"),
+            col("uuid")
+          )
+
+        dfResult.show(false)
+
+        dfResult
+          .select(
+            col("uuid").rlike("-").as("regexok")
+          ).select("regexok").collect().toSet shouldEqual(Set(Row(true)))
+      }
     }
   }
 }
