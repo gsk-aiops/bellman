@@ -87,6 +87,7 @@ object ExpressionF {
   final case class BOOL[A](s: String)                     extends ExpressionF[A]
   final case class ASC[A](e: A)                           extends ExpressionF[A]
   final case class DESC[A](e: A)                          extends ExpressionF[A]
+  final case class UUID[A]()                              extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
