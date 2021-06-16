@@ -2,7 +2,7 @@ package com.gsk.kg.engine.compiler
 
 import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Row}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -24,37 +24,38 @@ class UUIDSpec
       val str = "abc"
       val expected = Row("")
       val actual = act(str)
-      actual.show(false)
-//      actual.isRight shouldEqual(true)
-//      actual.show(false)
+      val df = actual match {
+        case Left(e) => throw new Exception(e.toString)
+        case Right(r) => r
+      }
+      df.show(false)
     }
   }
 
   private def act(str: String) = {
-    val df = List(
-      (
-        "<http://uri.com/subject/#a1>",
-        "<http://xmlns.com/foaf/0.1/title>",
-        str
-      )
-    ).toDF("s", "p", "o")
+
+    val df: DataFrame = List(
+      ("_:a", "<http://xmlns.com/foaf/0.1/name>", "Alice", ""),
+      ("_:b", "<http://xmlns.com/foaf/0.1/name>", "Bob", ""),
+      ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Alice", "")
+    ).toDF("s", "p", "o", "g")
+
 
     val query =
-      s"""
-          PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-          CONSTRUCT {
-            ?x foaf:titleUpper ?titleUpper .
-          }
-          WHERE{
-            ?x foaf:title ?title .
-            BIND(UCASE(?title) as ?titleUpper) .
-          }
-          """
+    """
+      |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+      |
+      |SELECT UUID()
+      |WHERE  {
+      |   ?x foaf:name ?name
+      |}
+      |""".stripMargin
+
       Compiler
       .compile(df, query, config)
-      .right
-      .get
-      .drop("s", "p")
+//      .right
+//      .get
+//      .drop("s", "p")
 //      .head()
   }
 

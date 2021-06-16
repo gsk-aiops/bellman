@@ -161,7 +161,7 @@ object BuiltInFuncParser {
       .map(f => SHA512(f))
 
   def uuidParen[_: P]: P[UUID] =
-    P(uuid ~ "()")
+    P("(" ~ uuid ~ ")")
       .map(f => UUID())
 
   def funcPatterns[_: P]: P[StringLike] =
