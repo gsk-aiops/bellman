@@ -26,7 +26,7 @@ class UUIDSpec
     ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Alice", "")
   ).toDF("s", "p", "o", "g")
 
-  val uuidRegex = "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+  val uuidRegex = "urn:uuid:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
   val uuidRegexColName = "uuidR"
 
   "perform uuid function correctly" when {
@@ -65,12 +65,13 @@ class UUIDSpec
     val result = Compiler.compile(df, query, config)
 
     val dfR: DataFrame = result match {
-      case Left(e) => throw new Exception(e.toString)
+      case Left(e)  => throw new Exception(e.toString)
       case Right(r) => r
     }
-    val expected = (1 to 3).map(_ => Row(true))
-    dfR
-      .withColumn(uuidRegexColName, dfR(dfR.columns.head).rlike(uuidRegex))
-      .select(uuidRegexColName).collect().toList shouldEqual expected
+    val expected = Set(Row(true))
+    dfR.select(
+      dfR(dfR.columns.head).rlike(uuidRegex).as(uuidRegexColName)
+    )
+      .collect().toSet shouldEqual expected
   }
 }

@@ -195,20 +195,24 @@ class FuncTermsSpec
 
       "return an uuid value from the column" in {
 
-        val elems = List(1, 2, 3)
-        val df    = elems.toDF("a")
-        val dfResult = df.withColumn("uuid", FuncTerms.uuid())
-          .select(
-            col("a"),
-            col("uuid")
-          )
+        val uuidRegex        = "urn:uuid:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+        val uuidColName      = "uuid"
+        val uuidRegexColName = "uuidR"
 
-        dfResult.show(false)
+        val elems      = List(1, 2, 3)
+        val df         = elems.toDF()
+        val projection = Seq(
+          FuncTerms.uuid().as(uuidColName)
+        )
+        val dfResult = df
+          .select(
+            projection: _*
+          )
 
         dfResult
           .select(
-            col("uuid").rlike("-").as("regexok")
-          ).select("regexok").collect().toSet shouldEqual(Set(Row(true)))
+            col(uuidColName).rlike(uuidRegex).as(uuidRegexColName)
+          ).collect().toSet shouldEqual Set(Row(true))
       }
     }
   }

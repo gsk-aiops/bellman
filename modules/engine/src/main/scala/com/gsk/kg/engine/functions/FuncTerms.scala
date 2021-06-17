@@ -169,7 +169,7 @@ object FuncTerms {
    * @return
    */
   def uuid: UserDefinedFunction = {
-    def uuidGen: () => String = () => java.util.UUID.randomUUID().toString
+    def uuidGen: () => String = () => "urn:uuid:" + java.util.UUID.randomUUID().toString
     udf(uuidGen)
   }
 }
