@@ -1,6 +1,7 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.functions.col
 
 import com.gsk.kg.engine.compiler.SparkSpec
 import com.gsk.kg.engine.scalacheck.CommonGenerators
@@ -8,8 +9,6 @@ import com.gsk.kg.engine.scalacheck.CommonGenerators
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-
-import org.apache.spark.sql.functions.col
 
 class FuncTermsSpec
     extends AnyWordSpec
@@ -195,12 +194,13 @@ class FuncTermsSpec
 
       "return an uuid value from the column" in {
 
-        val uuidRegex        = "urn:uuid:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+        val uuidRegex =
+          "urn:uuid:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
         val uuidColName      = "uuid"
         val uuidRegexColName = "uuidR"
 
-        val elems      = List(1, 2, 3)
-        val df         = elems.toDF()
+        val elems = List(1, 2, 3)
+        val df    = elems.toDF()
         val projection = Seq(
           FuncTerms.uuid().as(uuidColName)
         )
@@ -212,7 +212,9 @@ class FuncTermsSpec
         dfResult
           .select(
             col(uuidColName).rlike(uuidRegex).as(uuidRegexColName)
-          ).collect().toSet shouldEqual Set(Row(true))
+          )
+          .collect()
+          .toSet shouldEqual Set(Row(true))
       }
     }
   }

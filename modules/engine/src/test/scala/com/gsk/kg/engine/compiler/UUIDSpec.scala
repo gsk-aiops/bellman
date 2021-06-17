@@ -1,14 +1,17 @@
 package com.gsk.kg.engine.compiler
 
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Row
+
 import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
-import org.apache.spark.sql.{DataFrame, Row}
+
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class UUIDSpec
-  extends AnyWordSpec
+    extends AnyWordSpec
     with Matchers
     with SparkSpec
     with TestConfig {
@@ -26,7 +29,8 @@ class UUIDSpec
     ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Alice", "")
   ).toDF("s", "p", "o", "g")
 
-  val uuidRegex = "urn:uuid:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+  val uuidRegex =
+    "urn:uuid:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
   val uuidRegexColName = "uuidR"
 
   "perform uuid function correctly" when {
@@ -69,9 +73,11 @@ class UUIDSpec
       case Right(r) => r
     }
     val expected = Set(Row(true))
-    dfR.select(
-      dfR(dfR.columns.head).rlike(uuidRegex).as(uuidRegexColName)
-    )
-      .collect().toSet shouldEqual expected
+    dfR
+      .select(
+        dfR(dfR.columns.head).rlike(uuidRegex).as(uuidRegexColName)
+      )
+      .collect()
+      .toSet shouldEqual expected
   }
 }
