@@ -2,13 +2,16 @@ package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
-
 import com.gsk.kg.engine.compiler.SparkSpec
-
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class FuncNumericsSpec extends AnyWordSpec with Matchers with SparkSpec {
+class FuncNumericsSpec
+    extends AnyWordSpec
+    with Matchers
+    with SparkSpec
+    with ScalaCheckDrivenPropertyChecks {
 
   import sqlContext.implicits._
 
