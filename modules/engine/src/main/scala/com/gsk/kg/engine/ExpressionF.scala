@@ -87,6 +87,7 @@ object ExpressionF {
   final case class BOOL[A](s: String)                     extends ExpressionF[A]
   final case class ASC[A](e: A)                           extends ExpressionF[A]
   final case class DESC[A](e: A)                          extends ExpressionF[A]
+  final case class UUID[A]()                              extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
@@ -181,6 +182,7 @@ object ExpressionF {
       case StringVal.BOOL(s)                           => BOOL(s)
       case ConditionOrder.ASC(e)                       => ASC(e)
       case ConditionOrder.DESC(e)                      => DESC(e)
+      case BuiltInFunc.UUID()                          => UUID()
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -294,6 +296,7 @@ object ExpressionF {
       case BOOL(s)                    => StringVal.BOOL(s)
       case ASC(e)                     => ConditionOrder.ASC(e)
       case DESC(e)                    => ConditionOrder.DESC(e)
+      case UUID()                     => BuiltInFunc.UUID()
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -345,6 +348,7 @@ object ExpressionF {
         case ISLITERAL(s)               => FuncTerms.isLiteral(s).pure[M]
         case ISBLANK(s)                 => FuncTerms.isBlank(s).pure[M]
         case ISNUMERIC(s)               => FuncTerms.isNumeric(s).pure[M]
+        case UUID()                     => FuncTerms.uuid().pure[M]
         case MD5(s)                     => FuncHash.md5(s).pure[M]
         case SHA1(s)                    => FuncHash.sha1(s).pure[M]
         case SHA256(s)                  => FuncHash.sha256(s).pure[M]

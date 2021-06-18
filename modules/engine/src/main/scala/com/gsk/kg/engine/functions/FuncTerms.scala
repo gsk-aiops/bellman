@@ -1,6 +1,7 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
+import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{concat => cc, _}
 
 import com.gsk.kg.engine.functions.Literals.TypedLiteral
@@ -163,4 +164,13 @@ object FuncTerms {
       col.startsWith("\"") && col.endsWith("\""),
       lit(true)
     ).otherwise(lit(false))
+
+  /** Returns UUID
+    * @return
+    */
+  def uuid: UserDefinedFunction = {
+    def uuidGen: () => String = () =>
+      "urn:uuid:" + java.util.UUID.randomUUID().toString
+    udf(uuidGen)
+  }
 }

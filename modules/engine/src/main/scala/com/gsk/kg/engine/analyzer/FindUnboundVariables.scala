@@ -178,6 +178,7 @@ object FindVariablesOnExpression {
         case BOOL(s)                         => Set.empty[VARIABLE]
         case ASC(e)                          => e
         case DESC(e)                         => e
+        case UUID()                          => Set.empty[VARIABLE]
       }
 
     val eval =

@@ -1,6 +1,7 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.functions.col
 
 import com.gsk.kg.engine.compiler.SparkSpec
 import com.gsk.kg.engine.scalacheck.CommonGenerators
@@ -187,6 +188,34 @@ class FuncTermsSpec
 
     "FuncTerms.isLiteral" should {
       // TODO: Add tests for isLiteral
+    }
+
+    "FuncTerms.uuid" should {
+
+      "return an uuid value from the column" in {
+
+        val uuidRegex =
+          "urn:uuid:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+        val uuidColName      = "uuid"
+        val uuidRegexColName = "uuidR"
+
+        val elems = List(1, 2, 3)
+        val df    = elems.toDF()
+        val projection = Seq(
+          FuncTerms.uuid().as(uuidColName)
+        )
+        val dfResult = df
+          .select(
+            projection: _*
+          )
+
+        dfResult
+          .select(
+            col(uuidColName).rlike(uuidRegex).as(uuidRegexColName)
+          )
+          .collect()
+          .toSet shouldEqual Set(Row(true))
+      }
     }
   }
 }

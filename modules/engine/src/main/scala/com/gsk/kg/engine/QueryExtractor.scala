@@ -253,6 +253,7 @@ object QueryExtractor {
       case ExpressionF.BOOL(s)             => s
       case ASC(e)                          => s"(asc $e)"
       case DESC(e)                         => s"(desc $e)"
+      case UUID()                          => "(uuid)"
     }
 
   private val exprToString: Algebra[ExprF, String] =
