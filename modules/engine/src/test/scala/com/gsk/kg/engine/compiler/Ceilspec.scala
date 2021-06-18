@@ -1,11 +1,12 @@
 package com.gsk.kg.engine.compiler
 
-import com.gsk.kg.sparqlparser.TestConfig
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
+
 import com.gsk.kg.engine.Compiler
+import com.gsk.kg.sparqlparser.TestConfig
+
 import org.scalatest.Assertion
-import org.scalatest.compatible.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -28,6 +29,12 @@ class Ceilspec
     "term is a simple numeric" in {
       val term     = "10.5"
       val expected = Row("11")
+      eval(term, expected)
+    }
+
+    "term is not a numeric" in {
+      val term     = "NaN"
+      val expected = Row("0")
       eval(term, expected)
     }
   }
