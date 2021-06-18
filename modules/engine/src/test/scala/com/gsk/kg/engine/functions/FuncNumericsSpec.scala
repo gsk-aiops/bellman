@@ -31,5 +31,14 @@ class FuncNumericsSpec
 
       dfR.collect().toList shouldEqual expected
     }
+
+    "string representing numeric value" in {
+      val elems    = List("2.8")
+      val df       = elems.toDF()
+      val dfR      = df.select(FuncNumerics.ceil(col(df.columns.head)))
+      val expected = List(3).map(Row(_))
+
+      dfR.collect().toList shouldEqual expected
+    }
   }
 }
