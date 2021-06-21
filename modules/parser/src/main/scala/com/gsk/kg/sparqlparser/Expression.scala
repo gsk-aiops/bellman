@@ -6,6 +6,15 @@ import com.gsk.kg.sparqlparser.StringVal.URIVAL
   */
 sealed trait Expression
 
+sealed trait Arithmetic extends Expression
+
+object Arithmetic {
+  final case class ADD(l: Expression, r: Expression)      extends Arithmetic
+  final case class SUBTRACT(l: Expression, r: Expression) extends Arithmetic
+  final case class MULTIPLY(l: Expression, r: Expression) extends Arithmetic
+  final case class DIVIDE(l: Expression, r: Expression)   extends Arithmetic
+}
+
 sealed trait Conditional extends Expression
 
 object Conditional {
