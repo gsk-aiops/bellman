@@ -32,9 +32,15 @@ class Ceilspec
       eval(term, expected)
     }
 
-    "term is not a numeric" in {
+    "term is NaN" in {
       val term     = "NaN"
       val expected = Row("0")
+      eval(term, expected)
+    }
+
+    "term is not a numeric" in {
+      val term     = "Hello"
+      val expected = Row(null)
       eval(term, expected)
     }
   }
