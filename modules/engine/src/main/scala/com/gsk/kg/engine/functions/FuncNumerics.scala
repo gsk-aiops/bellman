@@ -1,6 +1,7 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
+import org.apache.spark.sql.functions.{round => sRodund}
 
 object FuncNumerics {
 
@@ -16,7 +17,7 @@ object FuncNumerics {
     * @param col
     * @return
     */
-  def round(col: Column): Column = ???
+  def round(col: Column): Column = sRodund(col)
 
   /** Returns the smallest (closest to negative infinity) number with no fractional part
     * that is not less than the value of arg. An error is raised if arg is not a numeric value.
