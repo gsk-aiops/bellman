@@ -468,4 +468,30 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "CEIL parser with string" should "return CEIL type" in {
+    val p =
+      fastparse.parse(
+        """(ceil "x")""",
+        BuiltInFuncParser.ceilParen(_)
+      )
+    p.get.value match {
+      case CEIL(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "CEIL parser with variable" should "return CEIL type" in {
+    val p =
+      fastparse.parse(
+        """(ceil ?d)""",
+        BuiltInFuncParser.ceilParen(_)
+      )
+    p.get.value match {
+      case CEIL(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
 }
