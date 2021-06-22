@@ -27,27 +27,19 @@ class FuncNumericsSpec
       val elems    = List(1, 1.4, -0.3, 1.8, 10.5, -10.5)
       val df       = elems.toDF()
       val dfR      = df.select(FuncNumerics.ceil(col(df.columns.head)))
-      val expected = List(1, 2, 0, 2, 11, -10).map(Row(_))
-
-      dfR.collect().toList shouldEqual expected
-    }
-
-    "string representing numeric value" in {
-      val elems    = List("2.8")
-      val df       = elems.toDF()
-      val dfR      = df.select(FuncNumerics.ceil(col(df.columns.head)))
-      val expected = List(3).map(Row(_))
+      val expected = List("1", "2", "0", "2", "11", "-10").map(Row(_))
 
       dfR.collect().toList shouldEqual expected
     }
 
     "multiple numeric types" in {
       val elems = List(
-        ("\"2\"^^xsd:int", 2),
-        ("\"1\"^^xsd:integer", 1),
-        ("\"-0.3\"^^xsd:decimal", 0),
-        ("\"10.5\"^^xsd:float", 11),
-        ("\"-10.5\"^^xsd:double", -10)
+        ("\"2\"^^xsd:int", "\"2\"^^xsd:int"),
+        ("\"1\"^^xsd:integer", "\"1\"^^xsd:integer"),
+        ("\"-0.3\"^^xsd:decimal", "\"0\"^^xsd:decimal"),
+        ("\"10.5\"^^xsd:float", "\"11\"^^xsd:float"),
+        ("\"-10.5\"^^xsd:double", "\"-10\"^^xsd:double"),
+        ("2.8", "3")
       )
       val df       = elems.toDF("in", "expected")
       val result   = df.select(FuncNumerics.ceil(df("in")))
