@@ -11,8 +11,10 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
 import com.gsk.kg.config.Config
+import com.gsk.kg.engine.functions.FuncArithmetics
 import com.gsk.kg.engine.functions.FuncForms
 import com.gsk.kg.engine.functions.FuncHash
+import com.gsk.kg.engine.functions.FuncNumerics
 import com.gsk.kg.engine.functions.FuncStrings
 import com.gsk.kg.engine.functions.FuncTerms
 import com.gsk.kg.sparqlparser._
@@ -27,6 +29,10 @@ import com.gsk.kg.sparqlparser._
 
 object ExpressionF {
 
+  final case class ADD[A](l: A, r: A)      extends ExpressionF[A]
+  final case class SUBTRACT[A](l: A, r: A) extends ExpressionF[A]
+  final case class MULTIPLY[A](l: A, r: A) extends ExpressionF[A]
+  final case class DIVIDE[A](l: A, r: A)   extends ExpressionF[A]
   final case class REGEX[A](s: A, pattern: String, flags: String)
       extends ExpressionF[A]
   final case class REPLACE[A](st: A, pattern: String, by: String, flags: String)
@@ -87,9 +93,15 @@ object ExpressionF {
   final case class BOOL[A](s: String)                     extends ExpressionF[A]
   final case class ASC[A](e: A)                           extends ExpressionF[A]
   final case class DESC[A](e: A)                          extends ExpressionF[A]
+  final case class UUID[A]()                              extends ExpressionF[A]
+  final case class CEIL[A](s: A)                          extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
+      case Arithmetic.ADD(l, r)                 => ADD(l, r)
+      case Arithmetic.SUBTRACT(l, r)            => SUBTRACT(l, r)
+      case Arithmetic.MULTIPLY(l, r)            => MULTIPLY(l, r)
+      case Arithmetic.DIVIDE(l, r)              => DIVIDE(l, r)
       case Conditional.EQUALS(l, r)             => EQUALS(l, r)
       case Conditional.GT(l, r)                 => GT(l, r)
       case Conditional.LT(l, r)                 => LT(l, r)
@@ -181,10 +193,16 @@ object ExpressionF {
       case StringVal.BOOL(s)                           => BOOL(s)
       case ConditionOrder.ASC(e)                       => ASC(e)
       case ConditionOrder.DESC(e)                      => DESC(e)
+      case BuiltInFunc.UUID()                          => UUID()
+      case BuiltInFunc.CEIL(s)                         => CEIL(s)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
     Algebra {
+      case ADD(l, r)                => Arithmetic.ADD(l, r)
+      case SUBTRACT(l, r)           => Arithmetic.SUBTRACT(l, r)
+      case MULTIPLY(l, r)           => Arithmetic.MULTIPLY(l, r)
+      case DIVIDE(l, r)             => Arithmetic.DIVIDE(l, r)
       case EQUALS(l, r)             => Conditional.EQUALS(l, r)
       case GT(l, r)                 => Conditional.GT(l, r)
       case LT(l, r)                 => Conditional.LT(l, r)
@@ -294,6 +312,8 @@ object ExpressionF {
       case BOOL(s)                    => StringVal.BOOL(s)
       case ASC(e)                     => ConditionOrder.ASC(e)
       case DESC(e)                    => ConditionOrder.DESC(e)
+      case UUID()                     => BuiltInFunc.UUID()
+      case CEIL(s)                    => BuiltInFunc.CEIL(s)
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -308,6 +328,10 @@ object ExpressionF {
   )(implicit T: Basis[ExpressionF, T]): DataFrame => Result[Column] = df => {
     val algebraM: AlgebraM[M, ExpressionF, Column] =
       AlgebraM.apply[M, ExpressionF, Column] {
+        case ADD(l, r)      => FuncArithmetics.add(l, r).pure[M]
+        case SUBTRACT(l, r) => FuncArithmetics.subtract(l, r).pure[M]
+        case MULTIPLY(l, r) => FuncArithmetics.multiply(l, r).pure[M]
+        case DIVIDE(l, r)   => FuncArithmetics.divide(l, r).pure[M]
         case REGEX(s, pattern, flags) =>
           FuncStrings.regex(s, pattern, flags).pure[M]
         case REPLACE(st, pattern, by, flags) =>
@@ -345,6 +369,7 @@ object ExpressionF {
         case ISLITERAL(s)               => FuncTerms.isLiteral(s).pure[M]
         case ISBLANK(s)                 => FuncTerms.isBlank(s).pure[M]
         case ISNUMERIC(s)               => FuncTerms.isNumeric(s).pure[M]
+        case UUID()                     => FuncTerms.uuid().pure[M]
         case MD5(s)                     => FuncHash.md5(s).pure[M]
         case SHA1(s)                    => FuncHash.sha1(s).pure[M]
         case SHA256(s)                  => FuncHash.sha256(s).pure[M]
@@ -368,6 +393,7 @@ object ExpressionF {
         case BOOL(s)   => lit(s).pure[M]
         case ASC(e)    => unknownFunction("ASC")
         case DESC(e)   => unknownFunction("DESC")
+        case CEIL(s)   => FuncNumerics.ceil(s).pure[M]
       }
 
     val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)

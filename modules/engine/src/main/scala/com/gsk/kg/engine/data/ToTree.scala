@@ -129,6 +129,10 @@ object ToTree extends LowPriorityToTreeInstances0 {
       def toTree(tree: T): TreeRep[String] = {
         import TreeRep._
         val alg = Algebra[ExpressionF, TreeRep[String]] {
+          case ExpressionF.ADD(l, r)      => Node("ADD", Stream(l, r))
+          case ExpressionF.SUBTRACT(l, r) => Node("SUBTRACT", Stream(l, r))
+          case ExpressionF.MULTIPLY(l, r) => Node("MULTIPLY", Stream(l, r))
+          case ExpressionF.DIVIDE(l, r)   => Node("DIVIDE", Stream(l, r))
           case ExpressionF.EQUALS(l, r)   => Node("EQUALS", Stream(l, r))
           case ExpressionF.GT(l, r)       => Node("GT", Stream(l, r))
           case ExpressionF.LT(l, r)       => Node("LT", Stream(l, r))
@@ -206,6 +210,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.BOOL(s)     => Leaf(s"BOOL($s)")
           case ExpressionF.ASC(e)      => Node(s"ASC", Stream(e))
           case ExpressionF.DESC(e)     => Node(s"DESC", Stream(e))
+          case ExpressionF.UUID()      => Leaf("UUID")
+          case ExpressionF.CEIL(e)     => Node(s"CEIL", Stream(e))
         }
 
         val t = scheme.cata(alg)

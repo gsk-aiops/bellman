@@ -1,6 +1,7 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
+import org.apache.spark.sql.functions.{ceil => sCeil}
 
 object FuncNumerics {
 
@@ -23,7 +24,7 @@ object FuncNumerics {
     * @param col
     * @return
     */
-  def ceil(col: Column): Column = ???
+  def ceil(col: Column): Column = sCeil(col)
 
   /** Returns the largest (closest to positive infinity) number with no fractional part that is not greater
     * than the value of arg. An error is raised if arg is not a numeric value.

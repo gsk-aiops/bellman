@@ -34,6 +34,8 @@ object BuiltInFuncParser {
   def sha256[_: P]: P[Unit]       = P("sha256" | "SHA256")
   def sha384[_: P]: P[Unit]       = P("sha384" | "SHA384")
   def sha512[_: P]: P[Unit]       = P("sha512" | "SHA512")
+  def uuid[_: P]: P[Unit]         = P("uuid")
+  def ceil[_: P]: P[Unit]         = P("ceil")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
@@ -159,6 +161,14 @@ object BuiltInFuncParser {
     P("(" ~ sha512 ~ ExpressionParser.parser ~ ")")
       .map(f => SHA512(f))
 
+  def uuidParen[_: P]: P[UUID] =
+    P("(" ~ uuid ~ ")")
+      .map(f => UUID())
+
+  def ceilParen[_: P]: P[CEIL] =
+    P("(" ~ ceil ~ ExpressionParser.parser ~ ")")
+      .map(f => CEIL(f))
+
   def funcPatterns[_: P]: P[StringLike] =
     P(
       uriParen
@@ -189,6 +199,8 @@ object BuiltInFuncParser {
         | sha256Paren
         | sha384Paren
         | sha512Paren
+        | uuidParen
+        | ceilParen
     )
 //      | StringValParser.string
 //      | StringValParser.variable)
