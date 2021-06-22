@@ -1,14 +1,14 @@
 package com.gsk.kg.engine.functions
 
-import com.gsk.kg.engine.functions.Literals.NumericLiteral
-import com.gsk.kg.engine.functions.Literals.isNumericLiteral
-import com.gsk.kg.engine.functions.Literals.isPlainLiteral
-import com.gsk.kg.engine.functions.Literals.nullLiteral
-
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.format_string
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{ceil => sCeil}
+
+import com.gsk.kg.engine.functions.Literals.NumericLiteral
+import com.gsk.kg.engine.functions.Literals.isNumericLiteral
+import com.gsk.kg.engine.functions.Literals.isPlainLiteral
+import com.gsk.kg.engine.functions.Literals.nullLiteral
 
 object FuncNumerics {
 
