@@ -17,6 +17,7 @@ categories:
     labels:
       - 'dependency-update'
       - 'scala-steward'
+      - 'dependencies'
 template: |
   ## What's changed
   $CHANGES
