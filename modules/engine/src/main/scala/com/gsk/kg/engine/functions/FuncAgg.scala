@@ -7,6 +7,7 @@ import com.gsk.kg.engine.RdfFormatter
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.TypedLiteral
 import com.gsk.kg.engine.functions.Literals.isNumericLiteral
+import com.gsk.kg.engine.functions.Literals.isPlainLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
 
 object FuncAgg {
@@ -40,6 +41,9 @@ object FuncAgg {
           val numeric = NumericLiteral(col)
           numeric.value
         }
+      ).when(
+        isPlainLiteral(col) && col.cast("double").isNotNull,
+        col
       ).otherwise(nullLiteral)
     )
   }
@@ -55,6 +59,9 @@ object FuncAgg {
           val numeric = NumericLiteral(col)
           numeric.value
         }
+      ).when(
+        isPlainLiteral(col) && col.cast("double").isNotNull,
+        col
       ).otherwise(nullLiteral)
     )
   }
