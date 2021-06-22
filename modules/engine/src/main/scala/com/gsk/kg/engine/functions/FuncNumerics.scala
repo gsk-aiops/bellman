@@ -1,6 +1,11 @@
 package com.gsk.kg.engine.functions
 
+import com.gsk.kg.engine.functions.Literals.NumericLiteral
+import com.gsk.kg.engine.functions.Literals.isNumericLiteral
+import com.gsk.kg.engine.functions.Literals.nullLiteral
+import com.gsk.kg.engine.functions.Literals.promoteBooleanBoolean
 import org.apache.spark.sql.Column
+import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{ceil => sCeil}
 
 object FuncNumerics {
@@ -24,7 +29,14 @@ object FuncNumerics {
     * @param col
     * @return
     */
-  def ceil(col: Column): Column = sCeil(col)
+  def ceil(col: Column): Column = {
+    when(
+      isNumericLiteral(col), {
+        val n = NumericLiteral(col).value
+        sCeil(n)
+      }
+    ).otherwise(nullLiteral)
+  }
 
   /** Returns the largest (closest to positive infinity) number with no fractional part that is not greater
     * than the value of arg. An error is raised if arg is not a numeric value.

@@ -40,5 +40,20 @@ class FuncNumericsSpec
 
       dfR.collect().toList shouldEqual expected
     }
+
+    "multiple numeric types" in {
+      val elems = List(
+        ("\"2\"^^xsd:int", 2),
+        ("\"1\"^^xsd:integer", 1),
+        ("\"-0.3\"^^xsd:decimal", 0),
+        ("\"10.5\"^^xsd:float", 11),
+        ("\"-10.5\"^^xsd:double", -10)
+      )
+      val df       = elems.toDF("in", "expected")
+      val result   = df.select(FuncNumerics.ceil(df("in")))
+      val expected = df.select(col("expected"))
+
+      result.collect() shouldEqual expected.collect()
+    }
   }
 }
