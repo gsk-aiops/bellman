@@ -22,7 +22,8 @@ lazy val Versions = Map(
   "discipline-scalatest" -> "2.0.1",
   "reftree"              -> "1.4.0",
   "shims"                -> "2.1.0",
-  "pureconfig"           -> "0.14.0"
+  "pureconfig"           -> "0.14.0",
+  "quiver"               -> "7.0.19"
 )
 
 inThisBuild(
@@ -128,6 +129,7 @@ lazy val `bellman-spark-engine` = project
   .settings(Test / fork := true)
   .settings(
     libraryDependencies ++= Seq(
+      "io.verizon.quiver"          %% "core"         % Versions("quiver"),
       "org.apache.spark"           %% "spark-sql"    % Versions("spark") % Provided,
       "com.github.julien-truffaut" %% "monocle-core" % Versions("monocle"),
       "com.github.julien-truffaut" %% "monocle-macro" % Versions("monocle"),
