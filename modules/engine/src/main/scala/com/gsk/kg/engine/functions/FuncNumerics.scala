@@ -32,16 +32,17 @@ object FuncNumerics {
     * @return
     */
   def ceil(col: Column): Column = {
-    when(isPlainLiteral(col), sCeil(col))
-      .when(
-        isNumericLiteral(col), {
-          val numericLiteral = NumericLiteral(col)
-          val n              = numericLiteral.value
-          val tag            = numericLiteral.tag
-          format_string("\"%s\"^^%s", sCeil(n), tag)
-        }
-      )
-      .otherwise(nullLiteral)
+    when(
+      isPlainLiteral(col) && col.cast("double").isNotNull,
+      sCeil(col)
+    ).when(
+      isNumericLiteral(col), {
+        val numericLiteral = NumericLiteral(col)
+        val n              = numericLiteral.value
+        val tag            = numericLiteral.tag
+        format_string("\"%s\"^^%s", sCeil(n), tag)
+      }
+    ).otherwise(nullLiteral)
   }
 
   /** Returns the largest (closest to positive infinity) number with no fractional part that is not greater
