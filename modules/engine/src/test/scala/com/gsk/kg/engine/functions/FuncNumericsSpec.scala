@@ -1,15 +1,14 @@
 package com.gsk.kg.engine.functions
 
-import com.gsk.kg.engine.compiler.SparkSpec
-
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.col
 
+import com.gsk.kg.engine.compiler.SparkSpec
+
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 class FuncNumericsSpec
