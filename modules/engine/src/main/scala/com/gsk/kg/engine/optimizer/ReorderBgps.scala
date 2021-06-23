@@ -5,7 +5,6 @@ import higherkindness.droste.Basis
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.sparqlparser.Expr
 
-import quiver._
 import com.gsk.kg.sparqlparser.StringVal
 
 object ReorderBgps {
@@ -16,19 +15,12 @@ object ReorderBgps {
     }
   }
 
-  /** This method performs a
-    */
   private def reorder(quads: ChunkedList[Expr.Quad]): ChunkedList[Expr.Quad] = {
-    val graph = quads.foldLeft(empty[Expr.Quad, Unit, Unit]) { (graph, quad) =>
-      graph & Context(
-        findAdjacent(quad, quads),
-        quad,
-        (),
-        findAdjacent(quad, quads)
-      )
+    val graph = quads.foldLeft(Graph.empty[Expr.Quad]) { (graph, from) =>
+      graph.addEdges(from, findAdjacent(from, quads).toSet)
     }
 
-    graph.dfs(Seq.empty)
+    println(graph)
 
     quads
   }
@@ -36,12 +28,12 @@ object ReorderBgps {
   def findAdjacent(
       first: Expr.Quad,
       list: ChunkedList[Expr.Quad]
-  ): Vector[(Unit, Expr.Quad)] = {
-    val x = list.foldLeft(Vector.empty[(Unit, Expr.Quad)]) { (vec, second) =>
+  ): Set[Expr.Quad] = {
+    val x = list.foldLeft(Set.empty[Expr.Quad]) { (set, second) =>
       if (first != second && shareVariables(first, second)) {
-        vec :+ (() -> second)
+        set + second
       } else {
-        vec
+        set
       }
     }
 
