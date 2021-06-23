@@ -5,11 +5,12 @@ import org.apache.spark.sql.functions.format_string
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{ceil => sCeil}
 import org.apache.spark.sql.functions.{round => sRodund}
+import org.apache.spark.sql.types.DoubleType
+
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isNumericLiteral
 import com.gsk.kg.engine.functions.Literals.isPlainLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
-import org.apache.spark.sql.types.DoubleType
 
 object FuncNumerics {
 
@@ -26,7 +27,10 @@ object FuncNumerics {
     * @return
     */
   def round(col: Column): Column = {
-    when(isPlainLiteral(col) && col.cast(DoubleType).isNotNull, sRodund(col))
+    when(
+      isPlainLiteral(col) && col.cast(DoubleType).isNotNull,
+      sRodund(col)
+    )
       .when(
         isNumericLiteral(col), {
           val numericLiteral = NumericLiteral(col)

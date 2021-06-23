@@ -43,7 +43,7 @@ class RoundSpec
         case Left(e)  => throw new Exception(e.toString)
         case Right(r) => r
       }
-      val expected = List("2", "2", "1").map(Row(_))
+      val expected = List("2.0", "2.0", "1.0").map(Row(_))
       dfR
         .collect()
         .toList shouldEqual expected
@@ -68,7 +68,7 @@ class RoundSpec
           |}
           |""".stripMargin
 
-      val expected = Row("10")
+      val expected = Row("10.0")
       val result   = Compiler.compile(df, query, config)
       val dfR: DataFrame = result match {
         case Left(e)  => throw new Exception(e.toString)
