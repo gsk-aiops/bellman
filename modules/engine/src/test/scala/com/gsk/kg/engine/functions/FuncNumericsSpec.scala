@@ -21,31 +21,36 @@ class FuncNumericsSpec
 
   override implicit def enableHiveSupport: Boolean = false
 
-  "FuncNumerics.sample" should {
+  "FuncNumerics" when {
 
-    "ceil function returns the smallest integer not smaller than" in {
-      val elems    = List(1, 1.4, -0.3, 1.8, 10.5, -10.5)
-      val df       = elems.toDF()
-      val dfR      = df.select(FuncNumerics.ceil(col(df.columns.head)))
-      val expected = List("1", "2", "0", "2", "11", "-10").map(Row(_))
+    "ceil function" should {
 
-      dfR.collect().toList shouldEqual expected
+      "ceil function returns the smallest integer not smaller than" in {
+        val elems    = List(1, 1.4, -0.3, 1.8, 10.5, -10.5)
+        val df       = elems.toDF()
+        val dfR      = df.select(FuncNumerics.ceil(col(df.columns.head)))
+        val expected = List("1", "2", "0", "2", "11", "-10").map(Row(_))
+
+        dfR.collect().toList shouldEqual expected
+      }
+
+      "multiple numeric types" in {
+        val elems = List(
+          ("\"2\"^^xsd:int", "\"2\"^^xsd:int"),
+          ("\"1\"^^xsd:integer", "\"1\"^^xsd:integer"),
+          ("\"-0.3\"^^xsd:decimal", "\"0\"^^xsd:decimal"),
+          ("\"10.5\"^^xsd:float", "\"11\"^^xsd:float"),
+          ("\"-10.5\"^^xsd:double", "\"-10\"^^xsd:double"),
+          ("2.8", "3")
+        )
+        val df       = elems.toDF("in", "expected")
+        val result   = df.select(FuncNumerics.ceil(df("in")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
     }
 
-    "multiple numeric types" in {
-      val elems = List(
-        ("\"2\"^^xsd:int", "\"2\"^^xsd:int"),
-        ("\"1\"^^xsd:integer", "\"1\"^^xsd:integer"),
-        ("\"-0.3\"^^xsd:decimal", "\"0\"^^xsd:decimal"),
-        ("\"10.5\"^^xsd:float", "\"11\"^^xsd:float"),
-        ("\"-10.5\"^^xsd:double", "\"-10\"^^xsd:double"),
-        ("2.8", "3")
-      )
-      val df       = elems.toDF("in", "expected")
-      val result   = df.select(FuncNumerics.ceil(df("in")))
-      val expected = df.select(col("expected"))
-
-      result.collect() shouldEqual expected.collect()
-    }
+    "round function" should {}
   }
 }

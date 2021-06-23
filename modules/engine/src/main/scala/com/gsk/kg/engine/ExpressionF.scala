@@ -397,6 +397,7 @@ object ExpressionF {
         case ASC(e)    => unknownFunction("ASC")
         case DESC(e)   => unknownFunction("DESC")
         case CEIL(s)   => FuncNumerics.ceil(s).pure[M]
+        case ROUND(s)  => FuncNumerics.round(s).pure[M]
       }
 
     val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)
