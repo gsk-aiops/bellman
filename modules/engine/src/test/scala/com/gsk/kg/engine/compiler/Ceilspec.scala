@@ -43,6 +43,12 @@ class Ceilspec
       val expected = Row(null)
       eval(term, expected)
     }
+
+    "term is xsd:double" in {
+      val term     = "\"10.5\"^^xsd:string"
+      val expected = Row("\"11\"^^xsd:string")
+      eval(term, expected)
+    }
   }
 
   private def eval(term: String, expected: Row): Assertion = {

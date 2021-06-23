@@ -1,7 +1,14 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
+import org.apache.spark.sql.functions.format_string
+import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{ceil => sCeil}
+
+import com.gsk.kg.engine.functions.Literals.NumericLiteral
+import com.gsk.kg.engine.functions.Literals.isNumericLiteral
+import com.gsk.kg.engine.functions.Literals.isPlainLiteral
+import com.gsk.kg.engine.functions.Literals.nullLiteral
 
 object FuncNumerics {
 
@@ -24,7 +31,18 @@ object FuncNumerics {
     * @param col
     * @return
     */
-  def ceil(col: Column): Column = sCeil(col)
+  def ceil(col: Column): Column = {
+    when(isPlainLiteral(col), sCeil(col))
+      .when(
+        isNumericLiteral(col), {
+          val numericLiteral = NumericLiteral(col)
+          val n              = numericLiteral.value
+          val tag            = numericLiteral.tag
+          format_string("\"%s\"^^%s", sCeil(n), tag)
+        }
+      )
+      .otherwise(nullLiteral)
+  }
 
   /** Returns the largest (closest to positive infinity) number with no fractional part that is not greater
     * than the value of arg. An error is raised if arg is not a numeric value.
