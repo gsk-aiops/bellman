@@ -5,11 +5,11 @@ import org.apache.spark.sql.functions.format_string
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{ceil => sCeil}
 import org.apache.spark.sql.functions.{round => sRodund}
-
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isNumericLiteral
 import com.gsk.kg.engine.functions.Literals.isPlainLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
+import org.apache.spark.sql.types.DoubleType
 
 object FuncNumerics {
 
@@ -25,7 +25,18 @@ object FuncNumerics {
     * @param col
     * @return
     */
-  def round(col: Column): Column = sRodund(col)
+  def round(col: Column): Column = {
+    when(isPlainLiteral(col) && col.cast(DoubleType).isNotNull, sRodund(col))
+      .when(
+        isNumericLiteral(col), {
+          val numericLiteral = NumericLiteral(col)
+          val n              = numericLiteral.value
+          val tag            = numericLiteral.tag
+          format_string("\"%s\"^^%s", sRodund(n), tag)
+        }
+      )
+      .otherwise(nullLiteral)
+  }
 
   /** Returns the smallest (closest to negative infinity) number with no fractional part
     * that is not less than the value of arg. An error is raised if arg is not a numeric value.
