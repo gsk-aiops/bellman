@@ -1,7 +1,7 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
-import org.apache.spark.sql.DataFrame
+import org.aphe.spark.sql.DataFrame
 import org.apache.spark.sql.functions.col
 
 import com.gsk.kg.engine.compiler.SparkSpec
@@ -38,9 +38,10 @@ class FuncNumericsSpec
   lazy val df =
     elems.toDF(inColName, ceilExpectedColName, roundExpectedColName)
 
-  lazy val typedElems = List(
-    ("\"2\"^^xsd:int", "\"2\"^^xsd:int", "\"2.0\"^^xsd:int"),
-    ("\"1\"^^xsd:integer", "\"1\"^^xsd:integer", "\"1.0\"^^xsd:integer"),
+  lazy val typedElems = List[(String, String, String)](
+    ("\"2\"^^xsd:int", "\"2\"^^xsd:int", "\"2\"^^xsd:int"),
+    ("\"2.3\"^^xsd:int", "\"2\"^^xsd:int", null),
+    ("\"1\"^^xsd:integer", "\"1\"^^xsd:integer", "\"1\"^^xsd:integer"),
     ("\"-0.3\"^^xsd:decimal", "\"0\"^^xsd:decimal", "\"0.0\"^^xsd:decimal"),
     ("\"10.5\"^^xsd:float", "\"11\"^^xsd:float", "\"11.0\"^^xsd:float"),
     ("\"-10.5\"^^xsd:double", "\"-10\"^^xsd:double", "\"-11.0\"^^xsd:double"),
@@ -81,9 +82,9 @@ class FuncNumericsSpec
   ): Assertion = {
     val dfR = df.select(f(col(inColName)))
     df.printSchema()
-    dfR.printSchema()
+    dfR.withColumnRenamed(dfR.columns.reverse.head, "result").printSchema()
     df.show()
-    dfR.show()
+    dfR.withColumnRenamed(dfR.columns.reverse.head, "result").show()
     val expected = df.select(expectedColName)
     dfR.collect().toList shouldEqual expected.collect().toList
   }

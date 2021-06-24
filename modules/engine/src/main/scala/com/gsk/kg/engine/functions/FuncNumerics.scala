@@ -6,8 +6,9 @@ import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{ceil => sCeil}
 import org.apache.spark.sql.functions.{round => sRodund}
 import org.apache.spark.sql.types.DoubleType
-
+import org.apache.spark.sql.types.IntegerType
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
+import com.gsk.kg.engine.functions.Literals.isIntNumericLiteral
 import com.gsk.kg.engine.functions.Literals.isNumericLiteral
 import com.gsk.kg.engine.functions.Literals.isPlainLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
@@ -36,7 +37,10 @@ object FuncNumerics {
           val numericLiteral = NumericLiteral(col)
           val n              = numericLiteral.value
           val tag            = numericLiteral.tag
-          format_string("\"%s\"^^%s", sRodund(n), tag)
+          when(
+            isIntNumericLiteral(col),
+            format_string("\"%s\"^^%s", sRodund(n).cast(IntegerType), tag)
+          ).otherwise(format_string("\"%s\"^^%s", sRodund(n), tag))
         }
       )
       .otherwise(nullLiteral)
