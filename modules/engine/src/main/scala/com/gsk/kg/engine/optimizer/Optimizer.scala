@@ -12,8 +12,7 @@ object Optimizer {
   def optimize[T: Basis[DAG, *]]: Phase[(T, Graphs), T] =
     GraphsPushdown.phase[T] >>>
       JoinBGPs.phase[T] >>>
-      // TODO: deactivate compaction due to AIPL-3255, causing some AnalysisErrors in Spark
-      // CompactBGPs.phase[T] >>>
+      ReorderBgps.phase[T] >>>
       RemoveNestedProject.phase[T] >>>
       SubqueryPushdown.phase[T]
 

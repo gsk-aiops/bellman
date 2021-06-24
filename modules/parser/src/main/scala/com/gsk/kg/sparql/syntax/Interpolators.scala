@@ -24,7 +24,7 @@ trait Interpolators {
         buf.append(strings.next())
       }
       QueryConstruct.parse(buf.toString(), Config.default).map(_._1) match {
-        case Left(a) => throw new Exception(a.toString)
+        case Left(a)  => throw new Exception(a.toString)
         case Right(b) => b
       }
     }
