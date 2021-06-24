@@ -45,8 +45,14 @@ class Ceilspec
     }
 
     "term is xsd:double" in {
+      val term     = "\"10.5\"^^xsd:double"
+      val expected = Row("\"11\"^^xsd:double")
+      eval(term, expected)
+    }
+
+    "error when literal is typed but not numeric" in {
       val term     = "\"10.5\"^^xsd:string"
-      val expected = Row("\"11\"^^xsd:string")
+      val expected = Row(null)
       eval(term, expected)
     }
   }

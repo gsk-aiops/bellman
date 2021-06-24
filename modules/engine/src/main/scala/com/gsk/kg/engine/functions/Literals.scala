@@ -27,80 +27,182 @@ object Literals {
       )
     }
 
-    def applyNotPromote(col1: Column, col2: Column)(
-        op: (Column, Column) => Column
-    ): Column = {
-      val l = NumericLiteral(col1)
-      val r = NumericLiteral(col2)
-      op(l.value, r.value)
+    object BooleanResult {
+
+      def applyNotPromote(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        op(l.value, r.value)
+      }
+
+      def applyPromoteLeftInt(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        op(l.value.cast("int"), r.value)
+      }
+
+      def applyPromoteLeftDecimal(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        op(l.value.cast("decimal"), r.value)
+      }
+
+      def applyPromoteLeftFloat(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        op(l.value.cast("float"), r.value)
+      }
+
+      def applyPromoteLeftDouble(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        op(l.value.cast("double"), r.value)
+      }
+
+      def applyPromoteRightInt(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        op(l.value.cast("int"), r.value)
+      }
+
+      def applyPromoteRightDecimal(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        op(l.value.cast("decimal"), r.value)
+      }
+
+      def applyPromoteRightFloat(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        op(l.value.cast("float"), r.value)
+      }
+
+      def applyPromoteRightDouble(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        op(l.value.cast("double"), r.value)
+      }
     }
 
-    def applyPromoteLeftInt(col1: Column, col2: Column)(
-        op: (Column, Column) => Column
-    ): Column = {
-      val l = NumericLiteral(col1)
-      val r = NumericLiteral(col2)
-      op(l.value.cast("int"), r.value)
-    }
+    object NumericResult {
 
-    def applyPromoteLeftDecimal(col1: Column, col2: Column)(
-        op: (Column, Column) => Column
-    ): Column = {
-      val l = NumericLiteral(col1)
-      val r = NumericLiteral(col2)
-      op(l.value.cast("decimal"), r.value)
-    }
+      def applyNotPromote(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l        = NumericLiteral(col1)
+        val r        = NumericLiteral(col2)
+        val opResult = op(l.value, r.value)
 
-    def applyPromoteLeftFloat(col1: Column, col2: Column)(
-        op: (Column, Column) => Column
-    ): Column = {
-      val l = NumericLiteral(col1)
-      val r = NumericLiteral(col2)
-      op(l.value.cast("float"), r.value)
-    }
+        when(
+          isPlainLiteral(col1) && isPlainLiteral(col2),
+          opResult
+        ).when(
+          (isIntNumericLiteral(col1) && isIntNumericLiteral(col1)) ||
+            (isDecimalNumericLiteral(col1) || isDecimalNumericLiteral(col2)),
+          format_string("\"%s\"^^%s", format_number(opResult, 0), r.tag)
+        ).otherwise(
+          format_string("\"%s\"^^%s", opResult, r.tag)
+        )
+      }
 
-    def applyPromoteLeftDouble(col1: Column, col2: Column)(
-        op: (Column, Column) => Column
-    ): Column = {
-      val l = NumericLiteral(col1)
-      val r = NumericLiteral(col2)
-      op(l.value.cast("double"), r.value)
-    }
+      def applyPromoteLeftInt(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        val opResult =
+          format_number(op(l.value.cast("int"), r.value.cast("int")), 0)
+        format_string("\"%s\"^^%s", opResult, r.tag)
+      }
 
-    def applyPromoteRightInt(col1: Column, col2: Column)(
-        op: (Column, Column) => Column
-    ): Column = {
-      val l = NumericLiteral(col1)
-      val r = NumericLiteral(col2)
-      op(l.value.cast("int"), r.value)
-    }
+      def applyPromoteLeftDecimal(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        val opResult =
+          format_number(op(l.value.cast("decimal"), r.value.cast("decimal")), 0)
+        format_string("\"%s\"^^%s", opResult, r.tag)
+      }
 
-    def applyPromoteRightDecimal(col1: Column, col2: Column)(
-        op: (Column, Column) => Column
-    ): Column = {
-      val l = NumericLiteral(col1)
-      val r = NumericLiteral(col2)
-      op(l.value.cast("decimal"), r.value)
-    }
+      def applyPromoteLeftFloat(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l        = NumericLiteral(col1)
+        val r        = NumericLiteral(col2)
+        val opResult = op(l.value.cast("float"), r.value.cast("float"))
+        format_string("\"%s\"^^%s", opResult, r.tag)
+      }
 
-    def applyPromoteRightFloat(col1: Column, col2: Column)(
-        op: (Column, Column) => Column
-    ): Column = {
-      val l = NumericLiteral(col1)
-      val r = NumericLiteral(col2)
-      op(l.value.cast("float"), r.value)
-    }
+      def applyPromoteLeftDouble(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l        = NumericLiteral(col1)
+        val r        = NumericLiteral(col2)
+        val opResult = op(l.value.cast("double"), r.value.cast("double"))
+        format_string("\"%s\"^^%s", opResult, r.tag)
+      }
 
-    def applyPromoteRightDouble(col1: Column, col2: Column)(
-        op: (Column, Column) => Column
-    ): Column = {
-      val l = NumericLiteral(col1)
-      val r = NumericLiteral(col2)
-      op(l.value.cast("double"), r.value)
+      def applyPromoteRightInt(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        val opResult =
+          format_number(op(l.value.cast("int"), r.value.cast("int")), 0)
+        format_string("\"%s\"^^%s", opResult, l.tag)
+      }
+
+      def applyPromoteRightDecimal(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l = NumericLiteral(col1)
+        val r = NumericLiteral(col2)
+        val opResult =
+          format_number(op(l.value.cast("decimal"), r.value.cast("decimal")), 0)
+        format_string("\"%s\"^^%s", opResult, l.tag)
+      }
+
+      def applyPromoteRightFloat(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l        = NumericLiteral(col1)
+        val r        = NumericLiteral(col2)
+        val opResult = op(l.value.cast("float"), r.value.cast("float"))
+        format_string("\"%s\"^^%s", opResult, l.tag)
+      }
+
+      def applyPromoteRightDouble(col1: Column, col2: Column)(
+          op: (Column, Column) => Column
+      ): Column = {
+        val l        = NumericLiteral(col1)
+        val r        = NumericLiteral(col2)
+        val opResult = op(l.value.cast("double"), r.value.cast("double"))
+        format_string("\"%s\"^^%s", opResult, l.tag)
+      }
     }
   }
 
   object StringLiteral {
+
     def applyPromoteRightTyped(col1: Column, col2: Column)(
         op: (Column, Column) => Column
     ): Column = {
@@ -148,6 +250,20 @@ object Literals {
     typed.tag === lit("")
   }
 
+  def isPlainNumericFloatingPoint(col: Column): Column = {
+    isPlainLiteral(col) && {
+      val typed = TypedLiteral(col)
+      typed.value.cast("double").isNotNull && typed.value.contains(".")
+    }
+  }
+
+  def isPlainNumericNotFloatingPoint(col: Column): Column = {
+    isPlainLiteral(col) && {
+      val typed = TypedLiteral(col)
+      typed.value.cast("int").isNotNull && !typed.value.contains(".")
+    }
+  }
+
   def isStringLiteral(col: Column): Column = {
     val typed = TypedLiteral(col)
     typed.tag === lit("xsd:string") ||
@@ -171,22 +287,19 @@ object Literals {
     typed.tag === lit("xsd:int") ||
     typed.tag === lit("<http://www.w3.org/2001/XMLSchema#int>") ||
     typed.tag === lit("xsd:integer") ||
-    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#integer>") ||
-    (typed.value.cast("int").isNotNull && !typed.value.contains("."))
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#integer>")
   }
 
   def isDecimalNumericLiteral(col: Column): Column = {
     val typed = TypedLiteral(col)
     typed.tag === lit("xsd:decimal") ||
-    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#decimal>") ||
-    (typed.value.cast("decimal").isNotNull && !typed.value.contains("."))
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#decimal>")
   }
 
   def isFloatNumericLiteral(col: Column): Column = {
     val typed = TypedLiteral(col)
     typed.tag === lit("xsd:float") ||
-    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#float>") ||
-    (typed.value.cast("float").isNotNull && typed.value.contains("."))
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#float>")
   }
 
   def isDoubleNumericLiteral(col: Column): Column = {
@@ -194,11 +307,10 @@ object Literals {
     typed.tag === lit("xsd:double") ||
     typed.tag === lit("<http://www.w3.org/2001/XMLSchema#double>") ||
     typed.tag === lit("xsd:numeric") ||
-    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#numeric>") ||
-    (typed.value.cast("double").isNotNull && typed.value.contains("."))
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#numeric>")
   }
 
-  def promoteBooleanBoolean(col1: Column, col2: Column)(
+  def promoteBooleanBooleanToBooleanResult(col1: Column, col2: Column)(
       op: (Column, Column) => Column
   ): Column = {
     import BooleanLiteral._
@@ -218,7 +330,7 @@ object Literals {
     )
   }
 
-  def promoteStringBoolean(col1: Column, col2: Column)(
+  def promoteStringArgsToBooleanResult(col1: Column, col2: Column)(
       op: (Column, Column) => Column
   ): Column = {
     import StringLiteral._
@@ -239,12 +351,118 @@ object Literals {
   }
 
   // scalastyle:off
-  def promoteNumericBoolean(col1: Column, col2: Column)(
+  def promoteNumericArgsToNumericResult(col1: Column, col2: Column)(
       op: (Column, Column) => Column
   ): Column = {
-    import NumericLiteral._
+    import NumericLiteral.NumericResult._
 
-    when( // Int, Int -> Int
+    when( // Plain, Plain => Plain
+      isPlainLiteral(col1) && isPlainLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    ).when( // Plain, Int => Int
+      isPlainLiteral(col1) && isIntNumericLiteral(col2),
+      applyPromoteLeftInt(col1, col2)(op)
+    ).when( // Plain, Decimal => Decimal
+      isPlainLiteral(col1) && isDecimalNumericLiteral(col2),
+      applyPromoteLeftDecimal(col1, col2)(op)
+    ).when( // Plain, Float => Float
+      isPlainLiteral(col1) && isFloatNumericLiteral(col2),
+      applyPromoteLeftFloat(col1, col2)(op)
+    ).when( // Plain, Double => Double
+      isPlainLiteral(col1) && isDoubleNumericLiteral(col2),
+      applyPromoteLeftDouble(col1, col2)(op)
+    ).when( // Int, Plain => Int
+      isIntNumericLiteral(col1) && isPlainLiteral(col2),
+      applyPromoteRightInt(col1, col2)(op)
+    ).when( // Int, Int => Int
+      isIntNumericLiteral(col1) && isIntNumericLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    ).when( // Int, Decimal => Decimal
+      isIntNumericLiteral(col1) && isDecimalNumericLiteral(col2),
+      applyPromoteLeftDecimal(col1, col2)(op)
+    ).when( // Int, Float => Float
+      isIntNumericLiteral(col1) && isFloatNumericLiteral(col2),
+      applyPromoteLeftFloat(col1, col2)(op)
+    ).when( // Int, Double => Double
+      isIntNumericLiteral(col1) && isDoubleNumericLiteral(col2),
+      applyPromoteLeftDouble(col1, col2)(op)
+    ).when( // Decimal, Plain => Decimal
+      isDecimalNumericLiteral(col1) && isPlainLiteral(col2),
+      applyPromoteRightDecimal(col1, col2)(op)
+    ).when( // Decimal, Int => Decimal
+      isDecimalNumericLiteral(col1) && isIntNumericLiteral(col2),
+      applyPromoteRightDecimal(col1, col2)(op)
+    ).when( // Decimal, Decimal => Decimal
+      isDecimalNumericLiteral(col1) && isDecimalNumericLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    ).when( // Decimal, Float => Float
+      isDecimalNumericLiteral(col1) && isFloatNumericLiteral(col2),
+      applyPromoteLeftFloat(col1, col2)(op)
+    ).when( // Decimal, Double => Double
+      isDecimalNumericLiteral(col1) && isDoubleNumericLiteral(col2),
+      applyPromoteLeftDouble(col1, col2)(op)
+    ).when( // Float, Plain => Float
+      isFloatNumericLiteral(col1) && isPlainLiteral(col2),
+      applyPromoteRightFloat(col1, col2)(op)
+    ).when( // Float, Int => Float
+      isFloatNumericLiteral(col1) && isIntNumericLiteral(col2),
+      applyPromoteRightFloat(col1, col2)(op)
+    ).when( // Float, Decimal => Float
+      isFloatNumericLiteral(col1) && isDecimalNumericLiteral(col2),
+      applyPromoteRightFloat(col1, col2)(op)
+    ).when( // Float, Float => Float
+      isFloatNumericLiteral(col1) && isFloatNumericLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    ).when( // Float, Double => Double
+      isFloatNumericLiteral(col1) && isDoubleNumericLiteral(col2),
+      applyPromoteLeftDouble(col1, col2)(op)
+    ).when( // Double, Plain => Double
+      isDoubleNumericLiteral(col1) && isPlainLiteral(col2),
+      applyPromoteRightDouble(col1, col2)(op)
+    ).when( // Double, Int => Double
+      isDoubleNumericLiteral(col1) && isIntNumericLiteral(col2),
+      applyPromoteRightDouble(col1, col2)(op)
+    ).when( // Double, Decimal => Double
+      isDoubleNumericLiteral(col1) && isDecimalNumericLiteral(col2),
+      applyPromoteRightDouble(col1, col2)(op)
+    ).when( // Double, Float => Double
+      isDoubleNumericLiteral(col1) && isFloatNumericLiteral(col2),
+      applyPromoteRightDouble(col1, col2)(op)
+    ).when( // Double, Double => Double
+      isDoubleNumericLiteral(col1) && isDoubleNumericLiteral(col2),
+      applyNotPromote(col1, col2)(op)
+    )
+  }
+  // scalastyle:on
+
+  // scalastyle:off
+  def promoteNumericArgsToBooleanResult(col1: Column, col2: Column)(
+      op: (Column, Column) => Column
+  ): Column = {
+    import NumericLiteral.BooleanResult._
+
+    when(
+      isPlainNumericFloatingPoint(col1) && isPlainNumericFloatingPoint(col2),
+      applyNotPromote(col1, col2)(op)
+    ).when(
+      isPlainNumericFloatingPoint(col1) && isPlainNumericNotFloatingPoint(col2),
+      applyPromoteRightDouble(col1, col2)(op)
+    ).when(
+      isPlainNumericNotFloatingPoint(col2) && isPlainNumericFloatingPoint(col2),
+      applyPromoteLeftDouble(col1, col2)(op)
+    ).when(
+      isPlainNumericFloatingPoint(col1) && !isPlainLiteral(col2),
+      applyPromoteLeftDouble(col1, col2)(op)
+    ).when(
+      isPlainNumericNotFloatingPoint(col1) && !isPlainLiteral(col2),
+      applyPromoteRightInt(col1, col2)(op)
+    ).when(
+      !isPlainLiteral(col1) && isPlainNumericFloatingPoint(col2),
+      applyPromoteLeftDouble(col1, col2)(op)
+    ).when(
+      !isPlainLiteral(col1) && isPlainNumericNotFloatingPoint(col2),
+      applyPromoteLeftInt(col1, col2)(op)
+    ).when( // Int, Int -> Int
       isIntNumericLiteral(col1) && isIntNumericLiteral(col2),
       applyNotPromote(col1, col2)(op)
     ).when( // Int, Decimal -> Decimal

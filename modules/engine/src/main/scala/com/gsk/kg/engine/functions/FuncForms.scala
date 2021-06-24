@@ -17,11 +17,11 @@ object FuncForms {
     DateLiteral
       .applyDateTimeLiteral(l, r)(_ === _)
       .otherwise(
-        promoteNumericBoolean(l, r)(_ === _)
+        promoteNumericArgsToBooleanResult(l, r)(_ === _)
           .otherwise(
-            promoteStringBoolean(l, r)(_ === _)
+            promoteStringArgsToBooleanResult(l, r)(_ === _)
               .otherwise(
-                promoteBooleanBoolean(l, r)(_ === _)
+                promoteBooleanBooleanToBooleanResult(l, r)(_ === _)
                   .otherwise(l === r)
               )
           )
@@ -37,11 +37,11 @@ object FuncForms {
     DateLiteral
       .applyDateTimeLiteral(l, r)(_ > _)
       .otherwise(
-        promoteNumericBoolean(l, r)(_ > _)
+        promoteNumericArgsToBooleanResult(l, r)(_ > _)
           otherwise (
-            promoteStringBoolean(l, r)(_ > _)
+            promoteStringArgsToBooleanResult(l, r)(_ > _)
               .otherwise(
-                promoteBooleanBoolean(l, r)(_ > _)
+                promoteBooleanBooleanToBooleanResult(l, r)(_ > _)
                   .otherwise(l > r)
               )
           )
@@ -56,11 +56,11 @@ object FuncForms {
     DateLiteral
       .applyDateTimeLiteral(l, r)(_ < _)
       .otherwise(
-        promoteNumericBoolean(l, r)(_ < _)
+        promoteNumericArgsToBooleanResult(l, r)(_ < _)
           .otherwise(
-            promoteStringBoolean(l, r)(_ < _)
+            promoteStringArgsToBooleanResult(l, r)(_ < _)
               .otherwise(
-                promoteBooleanBoolean(l, r)(_ < _)
+                promoteBooleanBooleanToBooleanResult(l, r)(_ < _)
                   .otherwise(l < r)
               )
           )
@@ -75,11 +75,11 @@ object FuncForms {
     DateLiteral
       .applyDateTimeLiteral(l, r)(_ >= _)
       .otherwise(
-        promoteNumericBoolean(l, r)(_ >= _)
+        promoteNumericArgsToBooleanResult(l, r)(_ >= _)
           .otherwise(
-            promoteStringBoolean(l, r)(_ >= _)
+            promoteStringArgsToBooleanResult(l, r)(_ >= _)
               .otherwise(
-                promoteBooleanBoolean(l, r)(_ >= _)
+                promoteBooleanBooleanToBooleanResult(l, r)(_ >= _)
                   .otherwise(l >= r)
               )
           )
@@ -94,11 +94,11 @@ object FuncForms {
     DateLiteral
       .applyDateTimeLiteral(l, r)(_ <= _)
       .otherwise(
-        promoteNumericBoolean(l, r)(_ <= _)
+        promoteNumericArgsToBooleanResult(l, r)(_ <= _)
           .otherwise(
-            promoteStringBoolean(l, r)(_ <= _)
+            promoteStringArgsToBooleanResult(l, r)(_ <= _)
               .otherwise(
-                promoteBooleanBoolean(l, r)(_ <= _)
+                promoteBooleanBooleanToBooleanResult(l, r)(_ <= _)
                   .otherwise(l <= r)
               )
           )
