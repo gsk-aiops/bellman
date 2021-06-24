@@ -1,7 +1,7 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
-import org.aphe.spark.sql.DataFrame
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.col
 
 import com.gsk.kg.engine.compiler.SparkSpec
@@ -26,6 +26,7 @@ class FuncNumericsSpec
   val inColName            = "in"
   val ceilExpectedColName  = "ceilExpected"
   val roundExpectedColName = "roundExpected"
+  val nullValue            = null
 
   lazy val elems = List(
     (1.1, "2", "1.0"),
@@ -40,12 +41,13 @@ class FuncNumericsSpec
 
   lazy val typedElems = List[(String, String, String)](
     ("\"2\"^^xsd:int", "\"2\"^^xsd:int", "\"2\"^^xsd:int"),
-    ("\"2.3\"^^xsd:int", "\"2\"^^xsd:int", null),
+    ("\"2.3\"^^xsd:int", nullValue, nullValue),
     ("\"1\"^^xsd:integer", "\"1\"^^xsd:integer", "\"1\"^^xsd:integer"),
     ("\"-0.3\"^^xsd:decimal", "\"0\"^^xsd:decimal", "\"0.0\"^^xsd:decimal"),
     ("\"10.5\"^^xsd:float", "\"11\"^^xsd:float", "\"11.0\"^^xsd:float"),
     ("\"-10.5\"^^xsd:double", "\"-10\"^^xsd:double", "\"-11.0\"^^xsd:double"),
-    ("2.8", "3", "3.0")
+    ("2.8", "3", "3.0"),
+    ("2", "2", "2.0")
   )
   lazy val typedDf =
     typedElems.toDF(inColName, ceilExpectedColName, roundExpectedColName)
