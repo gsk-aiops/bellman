@@ -28,43 +28,14 @@ object FuncNumerics {
     * @param col
     * @return
     */
-  def round(col: Column): Column = {
-    when(
-      isPlainLiteral(col) && col.cast(DoubleType).isNotNull,
-      sRodund(col)
-    )
-      .when(
-        isNumericLiteral(col), {
-          val numericLiteral = NumericLiteral(col)
-          val n              = numericLiteral.value
-          val tag            = numericLiteral.tag
-          when(
-            isIntNumericLiteral(col),
-            format_string("\"%s\"^^%s", sRodund(n).cast(IntegerType), tag)
-          ).otherwise(format_string("\"%s\"^^%s", sRodund(n), tag))
-        }
-      )
-      .otherwise(nullLiteral)
-  }
+  def round(col: Column): Column = apply(sRodund, col)
 
   /** Returns the smallest (closest to negative infinity) number with no fractional part
     * that is not less than the value of arg. An error is raised if arg is not a numeric value.
     * @param col
     * @return
     */
-  def ceil(col: Column): Column = {
-    when(
-      isPlainLiteral(col) && col.cast("double").isNotNull,
-      sCeil(col)
-    ).when(
-      isNumericLiteral(col), {
-        val numericLiteral = NumericLiteral(col)
-        val n              = numericLiteral.value
-        val tag            = numericLiteral.tag
-        format_string("\"%s\"^^%s", sCeil(n), tag)
-      }
-    ).otherwise(nullLiteral)
-  }
+  def ceil(col: Column): Column = apply(sCeil, col)
 
   /** Returns the largest (closest to positive infinity) number with no fractional part that is not greater
     * than the value of arg. An error is raised if arg is not a numeric value.
@@ -78,4 +49,25 @@ object FuncNumerics {
     * @return
     */
   def rand: Column = ???
+
+  private def apply(f: Column => Column, col: Column): Column =
+    when(
+      isPlainLiteral(col) && col.cast(DoubleType).isNotNull,
+      f(col)
+    ).when(
+      isNumericLiteral(col), {
+        val numericLiteral = NumericLiteral(col)
+        val n              = numericLiteral.value
+        val tag            = numericLiteral.tag
+        when(
+          isIntNumericLiteral(col) && n.cast(IntegerType).isNotNull && !n
+            .contains("."),
+          format_string("\"%s\"^^%s", f(n).cast(IntegerType), tag)
+        ).when(
+          isIntNumericLiteral(col) && n.cast(IntegerType).isNotNull && n
+            .contains("."),
+          nullLiteral
+        ).otherwise(format_string("\"%s\"^^%s", f(n), tag))
+      }
+    ).otherwise(nullLiteral)
 }

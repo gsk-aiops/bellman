@@ -284,34 +284,30 @@ object Literals {
 
   def isIntNumericLiteral(col: Column): Column = {
     val typed = TypedLiteral(col)
-    (typed.tag === lit("xsd:int") ||
-      typed.tag === lit("<http://www.w3.org/2001/XMLSchema#int>") ||
-      typed.tag === lit("xsd:integer") ||
-      typed.tag === lit("<http://www.w3.org/2001/XMLSchema#integer>")) &&
-    (typed.value.cast("int").isNotNull && !typed.value.contains("."))
+    typed.tag === lit("xsd:int") ||
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#int>") ||
+    typed.tag === lit("xsd:integer") ||
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#integer>")
   }
 
   def isDecimalNumericLiteral(col: Column): Column = {
     val typed = TypedLiteral(col)
-    (typed.tag === lit("xsd:decimal") ||
-      typed.tag === lit("<http://www.w3.org/2001/XMLSchema#decimal>")) &&
-    (typed.value.cast("decimal").isNotNull && typed.value.contains("."))
+    typed.tag === lit("xsd:decimal") ||
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#decimal>")
   }
 
   def isFloatNumericLiteral(col: Column): Column = {
     val typed = TypedLiteral(col)
-    (typed.tag === lit("xsd:float") ||
-      typed.tag === lit("<http://www.w3.org/2001/XMLSchema#float>")) &&
-    (typed.value.cast("float").isNotNull && typed.value.contains("."))
+    typed.tag === lit("xsd:float") ||
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#float>")
   }
 
   def isDoubleNumericLiteral(col: Column): Column = {
     val typed = TypedLiteral(col)
-    (typed.tag === lit("xsd:double") ||
-      typed.tag === lit("<http://www.w3.org/2001/XMLSchema#double>") ||
-      typed.tag === lit("xsd:numeric") ||
-      typed.tag === lit("<http://www.w3.org/2001/XMLSchema#numeric>")) &&
-    (typed.value.cast("double").isNotNull && typed.value.contains("."))
+    typed.tag === lit("xsd:double") ||
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#double>") ||
+    typed.tag === lit("xsd:numeric") ||
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#numeric>")
   }
 
   def promoteBooleanBooleanToBooleanResult(col1: Column, col2: Column)(

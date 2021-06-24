@@ -46,6 +46,7 @@ class FuncNumericsSpec
     ("\"-0.3\"^^xsd:decimal", "\"0\"^^xsd:decimal", "\"0.0\"^^xsd:decimal"),
     ("\"10.5\"^^xsd:float", "\"11\"^^xsd:float", "\"11.0\"^^xsd:float"),
     ("\"-10.5\"^^xsd:double", "\"-10\"^^xsd:double", "\"-11.0\"^^xsd:double"),
+    ("\"-10.5\"^^xsd:string", nullValue, nullValue),
     ("2.8", "3", "3.0"),
     ("2", "2", "2.0")
   )
@@ -82,11 +83,7 @@ class FuncNumericsSpec
       f: Column => Column,
       expectedColName: String
   ): Assertion = {
-    val dfR = df.select(f(col(inColName)))
-    df.printSchema()
-    dfR.withColumnRenamed(dfR.columns.reverse.head, "result").printSchema()
-    df.show()
-    dfR.withColumnRenamed(dfR.columns.reverse.head, "result").show()
+    val dfR      = df.select(f(col(inColName)))
     val expected = df.select(expectedColName)
     dfR.collect().toList shouldEqual expected.collect().toList
   }
