@@ -207,20 +207,25 @@ object Literals {
         op: (Column, Column) => Column
     ): Column = {
       val l = TypedLiteral(col1)
-      op(l.value, col2)
+      op(l.value, trim(col2, "\""))
     }
 
     def applyPromoteLeftTyped(col1: Column, col2: Column)(
         op: (Column, Column) => Column
     ): Column = {
       val r = TypedLiteral(col2)
-      op(col1, r.value)
+      op(trim(col1, "\""), r.value)
     }
 
-    def applyNotPromote(col1: Column, col2: Column)(
+    def applyNotPromoteTyped(col1: Column, col2: Column)(
         op: (Column, Column) => Column
     ): Column =
       op(col1, col2)
+
+    def applyNotPromotePlain(col1: Column, col2: Column)(
+        op: (Column, Column) => Column
+    ): Column =
+      op(trim(col1, "\""), trim(col2, "\""))
   }
 
   object BooleanLiteral {
@@ -337,7 +342,7 @@ object Literals {
 
     when(
       isPlainLiteral(col1) && isPlainLiteral(col2),
-      applyNotPromote(col1, col2)(op)
+      applyNotPromotePlain(col1, col2)(op)
     ).when(
       isPlainLiteral(col1) && isStringLiteral(col2),
       applyPromoteLeftTyped(col1, col2)(op)
@@ -346,7 +351,7 @@ object Literals {
       applyPromoteRightTyped(col1, col2)(op)
     ).when(
       isStringLiteral(col1) && isStringLiteral(col2),
-      applyNotPromote(col1, col2)(op)
+      applyNotPromoteTyped(col1, col2)(op)
     )
   }
 
@@ -558,7 +563,7 @@ object Literals {
 
     def apply(c: Column): TypedLiteral = {
       val value = trim(substring_index(c, "^^", 1), "\"")
-      val tag   = substring_index(c, "^^", -1)
+      val tag   = trim(substring_index(c, "^^", -1), "\"")
       new TypedLiteral(
         value,
         when(
