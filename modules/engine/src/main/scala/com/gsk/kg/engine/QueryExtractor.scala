@@ -259,6 +259,7 @@ object QueryExtractor {
       case DESC(e)                         => s"(desc $e)"
       case UUID()                          => "(uuid)"
       case CEIL(e)                         => s"(ceil $e)"
+      case ROUND(e)                        => s"(round $e)"
       case RAND()                          => "(rand)"
     }
 

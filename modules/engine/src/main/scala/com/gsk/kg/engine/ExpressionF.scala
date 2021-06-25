@@ -95,6 +95,7 @@ object ExpressionF {
   final case class DESC[A](e: A)                          extends ExpressionF[A]
   final case class UUID[A]()                              extends ExpressionF[A]
   final case class CEIL[A](s: A)                          extends ExpressionF[A]
+  final case class ROUND[A](s: A)                         extends ExpressionF[A]
   final case class RAND[A]()                              extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
@@ -196,6 +197,7 @@ object ExpressionF {
       case ConditionOrder.DESC(e)                      => DESC(e)
       case BuiltInFunc.UUID()                          => UUID()
       case BuiltInFunc.CEIL(s)                         => CEIL(s)
+      case BuiltInFunc.ROUND(s)                        => ROUND(s)
       case BuiltInFunc.RAND()                          => RAND()
     }
 
@@ -316,6 +318,7 @@ object ExpressionF {
       case DESC(e)                    => ConditionOrder.DESC(e)
       case UUID()                     => BuiltInFunc.UUID()
       case CEIL(s)                    => BuiltInFunc.CEIL(s)
+      case ROUND(s)                   => BuiltInFunc.ROUND(s)
       case RAND()                     => BuiltInFunc.RAND()
     }
 
@@ -397,6 +400,7 @@ object ExpressionF {
         case ASC(e)    => unknownFunction("ASC")
         case DESC(e)   => unknownFunction("DESC")
         case CEIL(s)   => FuncNumerics.ceil(s).pure[M]
+        case ROUND(s)  => FuncNumerics.round(s).pure[M]
         case RAND()    => FuncNumerics.rand().pure[M]
       }
 

@@ -495,6 +495,32 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     }
   }
 
+  "ROUND parser with string" should "return ROUND type" in {
+    val p =
+      fastparse.parse(
+        """(round "x")""",
+        BuiltInFuncParser.roundParen(_)
+      )
+    p.get.value match {
+      case ROUND(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "ROUND parser with variable" should "return ROUND type" in {
+    val p =
+      fastparse.parse(
+        """(round ?d)""",
+        BuiltInFuncParser.roundParen(_)
+      )
+    p.get.value match {
+      case ROUND(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
   "RAND parser" should "return RAND type" in {
     val p =
       fastparse.parse(
