@@ -212,6 +212,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.DESC(e)     => Node(s"DESC", Stream(e))
           case ExpressionF.UUID()      => Leaf("UUID")
           case ExpressionF.CEIL(e)     => Node(s"CEIL", Stream(e))
+          case ExpressionF.RAND()      => Leaf("RAND")
         }
 
         val t = scheme.cata(alg)

@@ -259,6 +259,7 @@ object QueryExtractor {
       case DESC(e)                         => s"(desc $e)"
       case UUID()                          => "(uuid)"
       case CEIL(e)                         => s"(ceil $e)"
+      case RAND()                          => "(rand)"
     }
 
   private val exprToString: Algebra[ExprF, String] =

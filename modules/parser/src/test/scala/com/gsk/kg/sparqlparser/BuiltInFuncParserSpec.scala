@@ -494,4 +494,17 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "RAND parser" should "return RAND type" in {
+    val p =
+      fastparse.parse(
+        """(rand)""",
+        BuiltInFuncParser.randParen(_)
+      )
+    p.get.value match {
+      case RAND() =>
+        succeed
+      case _ => fail
+    }
+  }
 }
