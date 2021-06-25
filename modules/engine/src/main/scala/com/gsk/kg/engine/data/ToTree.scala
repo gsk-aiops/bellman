@@ -213,6 +213,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.UUID()      => Leaf("UUID")
           case ExpressionF.CEIL(e)     => Node(s"CEIL", Stream(e))
           case ExpressionF.ROUND(e)    => Node(s"ROUND", Stream(e))
+          case ExpressionF.RAND()      => Leaf("RAND")
           case ExpressionF.ABS(e)      => Node(s"ABS", Stream(e))
         }
 

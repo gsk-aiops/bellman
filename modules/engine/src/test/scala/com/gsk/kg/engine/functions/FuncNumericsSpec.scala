@@ -2,9 +2,13 @@ package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.types.DoubleType
 
 import com.gsk.kg.engine.compiler.SparkSpec
+import com.gsk.kg.engine.functions.Literals.NumericLiteral
+import com.gsk.kg.engine.functions.Literals.isDoubleNumericLiteral
 
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
@@ -26,61 +30,74 @@ class FuncNumericsSpec
   val inColName            = "in"
   val ceilExpectedColName  = "ceilExpected"
   val roundExpectedColName = "roundExpected"
+  val randExpectedColName  = "randExpected"
   val absExpectedColName   = "absExpected"
   val nullValue            = null
 
   lazy val elems = List(
-    (1.1, "2", "1.0", "1.1"),
-    (1.4, "2", "1.0", "1.4"),
-    (-0.3, "0", "0.0", "0.3"),
-    (1.8, "2", "2.0", "1.8"),
-    (10.5, "11", "11.0", "10.5"),
-    (-10.5, "-10", "-11.0", "10.5")
+    (1.1, "2", "1.0", true, "1.1"),
+    (1.4, "2", "1.0", true, "1.4"),
+    (-0.3, "0", "0.0", true, "0.3"),
+    (1.8, "2", "2.0", true, "1.8"),
+    (10.5, "11", "11.0", true, "10.5"),
+    (-10.5, "-10", "-11.0", true, "10.5")
   )
   lazy val df =
     elems.toDF(
       inColName,
       ceilExpectedColName,
       roundExpectedColName,
+      randExpectedColName,
       absExpectedColName
     )
 
-  lazy val typedElems = List[(String, String, String, String)](
-    ("\"2\"^^xsd:int", "\"2\"^^xsd:int", "\"2\"^^xsd:int", "\"2\"^^xsd:int"),
-    ("\"2.3\"^^xsd:int", nullValue, nullValue, nullValue),
+  lazy val typedElems = List[(String, String, String, Boolean, String)](
+    (
+      "\"2\"^^xsd:int",
+      "\"2\"^^xsd:int",
+      "\"2\"^^xsd:int",
+      true,
+      "\"2\"^^xsd:int"
+    ),
+    ("\"2.3\"^^xsd:int", nullValue, nullValue, true, nullValue),
     (
       "\"1\"^^xsd:integer",
       "\"1\"^^xsd:integer",
       "\"1\"^^xsd:integer",
+      true,
       "\"1\"^^xsd:integer"
     ),
     (
       "\"-0.3\"^^xsd:decimal",
       "\"0\"^^xsd:decimal",
       "\"0.0\"^^xsd:decimal",
+      true,
       "\"0.3\"^^xsd:decimal"
     ),
     (
       "\"10.5\"^^xsd:float",
       "\"11\"^^xsd:float",
       "\"11.0\"^^xsd:float",
+      true,
       "\"10.5\"^^xsd:float"
     ),
     (
       "\"-10.5\"^^xsd:double",
       "\"-10\"^^xsd:double",
       "\"-11.0\"^^xsd:double",
+      true,
       "\"10.5\"^^xsd:double"
     ),
-    ("\"-10.5\"^^xsd:string", nullValue, nullValue, nullValue),
-    ("2.8", "3", "3.0", "2.8"),
-    ("2", "2", "2.0", "2")
+    ("\"-10.5\"^^xsd:string", nullValue, nullValue, true, nullValue),
+    ("2.8", "3", "3.0", true, "2.8"),
+    ("2", "2", "2.0", true, "2")
   )
   lazy val typedDf =
     typedElems.toDF(
       inColName,
       ceilExpectedColName,
       roundExpectedColName,
+      randExpectedColName,
       absExpectedColName
     )
 
@@ -108,6 +125,17 @@ class FuncNumericsSpec
       }
     }
 
+    "rand function" should {
+
+      "rand function" in {
+        eval(df, FuncNumerics.rand, randExpectedColName)
+      }
+
+      "rand with multiple numeric types" in {
+        eval(typedDf, FuncNumerics.rand, randExpectedColName)
+      }
+    }
+
     "abs function" should {
 
       "abs function" in {
@@ -125,10 +153,23 @@ class FuncNumericsSpec
       f: Column => Column,
       expectedColName: String
   ): Assertion = {
-    val dfR = df.select(f(col(inColName)))
-    df.show()
-    dfR.show()
+    val dfR      = df.select(f(col(inColName)))
     val expected = df.select(expectedColName)
     dfR.collect().toList shouldEqual expected.collect().toList
+  }
+
+  private def eval(
+      df: DataFrame,
+      f: Column,
+      expectedColName: String
+  ): Assertion = {
+    val dfR = df
+      .select(f.as("r"))
+      .select(
+        isDoubleNumericLiteral(col("r")) &&
+          NumericLiteral(col("r")).value.cast(DoubleType).isNotNull
+      )
+    val expected = Set(Row(true))
+    dfR.collect().toSet shouldEqual expected
   }
 }
