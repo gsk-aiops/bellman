@@ -30,14 +30,14 @@ object FuncNumerics {
     * @param col
     * @return
     */
-  def round(col: Column): Column = apply(sRodund, col)
+  def round: Column => Column = col => apply(sRodund, col)
 
   /** Returns the smallest (closest to negative infinity) number with no fractional part
     * that is not less than the value of arg. An error is raised if arg is not a numeric value.
     * @param col
     * @return
     */
-  def ceil(col: Column): Column = apply(sCeil, col)
+  def ceil: Column => Column = col => apply(sCeil, col)
 
   /** Returns the largest (closest to positive infinity) number with no fractional part that is not greater
     * than the value of arg. An error is raised if arg is not a numeric value.

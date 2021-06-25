@@ -74,8 +74,6 @@ class RandSpec
       case Right(r) => r
     }
     val expected = Set(Row(true))
-    df.show(false)
-    dfR.show(false)
     dfR
       .select(
         isDoubleNumericLiteral(col(dfR.columns.head)) &&
