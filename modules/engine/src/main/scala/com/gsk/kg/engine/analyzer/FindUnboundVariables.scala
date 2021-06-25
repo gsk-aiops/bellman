@@ -184,6 +184,7 @@ object FindVariablesOnExpression {
         case DESC(e)                         => e
         case UUID()                          => Set.empty[VARIABLE]
         case CEIL(e)                         => e
+        case ROUND(e)                        => e
       }
 
     val eval =
