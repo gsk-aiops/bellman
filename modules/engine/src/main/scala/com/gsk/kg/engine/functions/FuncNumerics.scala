@@ -2,12 +2,13 @@ package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.format_string
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{ceil => sCeil}
+import org.apache.spark.sql.functions.{rand => sRand}
 import org.apache.spark.sql.functions.{round => sRodund}
 import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.sql.types.IntegerType
-
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isIntNumericLiteral
 import com.gsk.kg.engine.functions.Literals.isNumericLiteral
@@ -48,7 +49,7 @@ object FuncNumerics {
     * produced every time this function is invoked. Numbers should be produced with approximately equal probability.
     * @return
     */
-  def rand: Column = ???
+  def rand: Column = format_string("\"%s\"^^%s", sRand(), lit("xsd:double"))
 
   private def apply(f: Column => Column, col: Column): Column =
     when(

@@ -401,7 +401,7 @@ object ExpressionF {
         case DESC(e)   => unknownFunction("DESC")
         case CEIL(s)   => FuncNumerics.ceil(s).pure[M]
         case ROUND(s)  => FuncNumerics.round(s).pure[M]
-        case RAND()    => FuncNumerics.rand().pure[M]
+        case RAND()    => FuncNumerics.rand.pure[M]
       }
 
     val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)
