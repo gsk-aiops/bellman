@@ -37,6 +37,7 @@ object BuiltInFuncParser {
   def uuid[_: P]: P[Unit]         = P("uuid")
   def ceil[_: P]: P[Unit]         = P("ceil")
   def round[_: P]: P[Unit]        = P("round")
+  def rand[_: P]: P[Unit]         = P("rand")
 
   def uriParen[_: P]: P[URI] =
     P("(" ~ uri ~ ExpressionParser.parser ~ ")").map(s => URI(s))
@@ -174,6 +175,10 @@ object BuiltInFuncParser {
     P("(" ~ round ~ ExpressionParser.parser ~ ")")
       .map(f => ROUND(f))
 
+  def randParen[_: P]: P[RAND] =
+    P("(" ~ rand ~ ")")
+      .map(f => RAND())
+
   def funcPatterns[_: P]: P[StringLike] =
     P(
       uriParen
@@ -207,6 +212,7 @@ object BuiltInFuncParser {
         | uuidParen
         | ceilParen
         | roundParen
+        | randParen
     )
 //      | StringValParser.string
 //      | StringValParser.variable)

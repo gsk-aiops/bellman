@@ -2,8 +2,10 @@ package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.format_string
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{ceil => sCeil}
+import org.apache.spark.sql.functions.{rand => sRand}
 import org.apache.spark.sql.functions.{round => sRodund}
 import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.sql.types.IntegerType
@@ -28,14 +30,14 @@ object FuncNumerics {
     * @param col
     * @return
     */
-  def round(col: Column): Column = apply(sRodund, col)
+  def round: Column => Column = col => apply(sRodund, col)
 
   /** Returns the smallest (closest to negative infinity) number with no fractional part
     * that is not less than the value of arg. An error is raised if arg is not a numeric value.
     * @param col
     * @return
     */
-  def ceil(col: Column): Column = apply(sCeil, col)
+  def ceil: Column => Column = col => apply(sCeil, col)
 
   /** Returns the largest (closest to positive infinity) number with no fractional part that is not greater
     * than the value of arg. An error is raised if arg is not a numeric value.
@@ -48,7 +50,7 @@ object FuncNumerics {
     * produced every time this function is invoked. Numbers should be produced with approximately equal probability.
     * @return
     */
-  def rand: Column = ???
+  def rand: Column = format_string("\"%s\"^^%s", sRand(), lit("xsd:double"))
 
   private def apply(f: Column => Column, col: Column): Column =
     when(
