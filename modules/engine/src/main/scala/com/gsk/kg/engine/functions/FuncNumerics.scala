@@ -5,6 +5,7 @@ import org.apache.spark.sql.functions.format_string
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{ceil => sCeil}
 import org.apache.spark.sql.functions.{round => sRodund}
+import org.apache.spark.sql.functions.{abs => sAbs}
 import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.sql.types.IntegerType
 
@@ -20,7 +21,7 @@ object FuncNumerics {
     * @param col
     * @return
     */
-  def abs(col: Column): Column = ???
+  def abs: Column => Column = col => sAbs(col)
 
   /** Returns the number with no fractional part that is closest to the argument.
     * If there are two such numbers, then the one that is closest to positive infinity

@@ -86,6 +86,7 @@ object BuiltInFunc {
   final case class UUID()               extends BuiltInFunc
   final case class CEIL(s: Expression)  extends BuiltInFunc
   final case class ROUND(s: Expression) extends BuiltInFunc
+  final case class ABS(s: Expression)   extends BuiltInFunc
 }
 
 sealed trait StringVal extends StringLike {
