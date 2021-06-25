@@ -90,7 +90,7 @@ class FuncNumericsSpec
     ),
     ("\"-10.5\"^^xsd:string", nullValue, nullValue, true, nullValue),
     ("2.8", "3", "3.0", true, "2.8"),
-    ("2", "2", "2.0", true, "2")
+    ("2", "2", "2.0", true, "2.0")
   )
   lazy val typedDf =
     typedElems.toDF(
