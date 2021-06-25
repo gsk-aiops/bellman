@@ -13,8 +13,8 @@ import com.gsk.kg.engine.scalacheck.ChunkedListArbitraries
 import com.gsk.kg.engine.scalacheck.DAGArbitraries
 import com.gsk.kg.engine.scalacheck.DrosteImplicits
 import com.gsk.kg.sparql.syntax.all._
-import com.gsk.kg.sparqlparser.StringVal
 import com.gsk.kg.sparqlparser.Expr
+import com.gsk.kg.sparqlparser.StringVal
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
