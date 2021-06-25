@@ -36,6 +36,27 @@ class FuncFormsSpec
 
     "FuncForms.equals" should {
 
+      "operates on string correctly" in {
+
+        val df = List(
+          ("alice", "alice", true),
+          ("alice", "\"alice\"", true),
+          ("alice", "\"alice\"^^xsd:string", true),
+          ("\"alice\"", "\"alice\"", true),
+          ("\"alice\"", "\"alice\"^^xsd:string", true),
+          ("\"alice\"^^xsd:string", "\"alice\"^^xsd:string", true)
+        ).toDF(
+          "arg1",
+          "arg2",
+          "expected"
+        )
+
+        val result   = df.select(FuncForms.equals(df("arg1"), df("arg2")))
+        val expected = df.select(col("expected"))
+
+        result.collect() shouldEqual expected.collect()
+      }
+
       "operates on numbers correctly" when {
 
         "first argument is not typed number and second is other number type" in {
