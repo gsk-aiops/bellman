@@ -4,11 +4,12 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.types.DoubleType
+
 import com.gsk.kg.engine.compiler.SparkSpec
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isDoubleNumericLiteral
-import org.apache.spark.sql.types.DoubleType
+
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
