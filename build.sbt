@@ -310,7 +310,9 @@ lazy val `bellman-rdf-tests` = project
       )
     )
   )
-  .dependsOn(`bellman-spark-engine`, `bellman-algebra-parser`)
+  .dependsOn(`bellman-algebra-parser` % "compile->compile;test->test")
+  .dependsOn(`bellman-spark-engine` % "compile->compile;test->test")
+
 
 addCommandAlias(
   "build-microsite",
