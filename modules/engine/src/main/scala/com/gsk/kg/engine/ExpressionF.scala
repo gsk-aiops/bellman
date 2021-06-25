@@ -200,7 +200,7 @@ object ExpressionF {
       case BuiltInFunc.CEIL(s)                         => CEIL(s)
       case BuiltInFunc.ROUND(s)                        => ROUND(s)
       case BuiltInFunc.RAND()                          => RAND()
-      case BuiltInFunc.ABS(s)                          => ROUND(s)
+      case BuiltInFunc.ABS(s)                          => ABS(s)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
