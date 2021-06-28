@@ -47,7 +47,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v3.10.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ADMIN_GITHUB_TOKEN }}
           commit-message: Update report
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
@@ -60,3 +60,10 @@ jobs:
       - name: Show Pull Request URL
         if: env.PULL_REQUEST_NUMBER != null
         run: 'echo "Pull-request created: https://github.com/gsk-aiops/bellman/pull/${{ env.PULL_REQUEST_NUMBER }}"'
+      - name: Enable Pull Request Automerge
+        if: steps.cpr.outputs.pull-request-operation == 'created'
+        uses: peter-evans/enable-pull-request-automerge@v1
+        with:
+          token: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash
