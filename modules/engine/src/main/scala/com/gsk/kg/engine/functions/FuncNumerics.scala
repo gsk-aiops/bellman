@@ -4,6 +4,7 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.format_string
 import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.functions.when
+import org.apache.spark.sql.functions.{abs => sAbs}
 import org.apache.spark.sql.functions.{ceil => sCeil}
 import org.apache.spark.sql.functions.{rand => sRand}
 import org.apache.spark.sql.functions.{round => sRodund}
@@ -22,7 +23,7 @@ object FuncNumerics {
     * @param col
     * @return
     */
-  def abs(col: Column): Column = ???
+  def abs: Column => Column = col => apply(sAbs, col)
 
   /** Returns the number with no fractional part that is closest to the argument.
     * If there are two such numbers, then the one that is closest to positive infinity
@@ -52,6 +53,17 @@ object FuncNumerics {
     */
   def rand: Column = format_string("\"%s\"^^%s", sRand(), lit("xsd:double"))
 
+  /** Apply function f over column col detecting malformed data
+    * e.g.
+    * case col = 10                      ==> f(10)
+    * case col = "\"2\"^^xsd:int"        ==> f(2)
+    * case col = "\"-0.3\"^^xsd:decimal" ==> f(-0.3)
+    * case col = "\"-10.5\"^^xsd:string" ==> null, this value is incorrect
+    * case col = "\"2.3\"^^xsd:int"      ==> null, this value is incorrect
+    * @param f
+    * @param col
+    * @return
+    */
   private def apply(f: Column => Column, col: Column): Column =
     when(
       isPlainLiteral(col) && col.cast(DoubleType).isNotNull,

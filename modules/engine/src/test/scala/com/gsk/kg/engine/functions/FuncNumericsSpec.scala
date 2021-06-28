@@ -31,51 +31,74 @@ class FuncNumericsSpec
   val ceilExpectedColName  = "ceilExpected"
   val roundExpectedColName = "roundExpected"
   val randExpectedColName  = "randExpected"
+  val absExpectedColName   = "absExpected"
   val nullValue            = null
 
   lazy val elems = List(
-    (1.1, "2", "1.0", true),
-    (1.4, "2", "1.0", true),
-    (-0.3, "0", "0.0", true),
-    (1.8, "2", "2.0", true),
-    (10.5, "11", "11.0", true),
-    (-10.5, "-10", "-11.0", true)
+    (1.1, "2", "1.0", true, "1.1"),
+    (1.4, "2", "1.0", true, "1.4"),
+    (-0.3, "0", "0.0", true, "0.3"),
+    (1.8, "2", "2.0", true, "1.8"),
+    (10.5, "11", "11.0", true, "10.5"),
+    (-10.5, "-10", "-11.0", true, "10.5")
   )
   lazy val df =
     elems.toDF(
       inColName,
       ceilExpectedColName,
       roundExpectedColName,
-      randExpectedColName
+      randExpectedColName,
+      absExpectedColName
     )
 
-  lazy val typedElems = List[(String, String, String, Boolean)](
-    ("\"2\"^^xsd:int", "\"2\"^^xsd:int", "\"2\"^^xsd:int", true),
-    ("\"2.3\"^^xsd:int", nullValue, nullValue, true),
-    ("\"1\"^^xsd:integer", "\"1\"^^xsd:integer", "\"1\"^^xsd:integer", true),
+  lazy val typedElems = List[(String, String, String, Boolean, String)](
+    (
+      "\"2\"^^xsd:int",
+      "\"2\"^^xsd:int",
+      "\"2\"^^xsd:int",
+      true,
+      "\"2\"^^xsd:int"
+    ),
+    ("\"2.3\"^^xsd:int", nullValue, nullValue, true, nullValue),
+    (
+      "\"1\"^^xsd:integer",
+      "\"1\"^^xsd:integer",
+      "\"1\"^^xsd:integer",
+      true,
+      "\"1\"^^xsd:integer"
+    ),
     (
       "\"-0.3\"^^xsd:decimal",
       "\"0\"^^xsd:decimal",
       "\"0.0\"^^xsd:decimal",
-      true
+      true,
+      "\"0.3\"^^xsd:decimal"
     ),
-    ("\"10.5\"^^xsd:float", "\"11\"^^xsd:float", "\"11.0\"^^xsd:float", true),
+    (
+      "\"10.5\"^^xsd:float",
+      "\"11\"^^xsd:float",
+      "\"11.0\"^^xsd:float",
+      true,
+      "\"10.5\"^^xsd:float"
+    ),
     (
       "\"-10.5\"^^xsd:double",
       "\"-10\"^^xsd:double",
       "\"-11.0\"^^xsd:double",
-      true
+      true,
+      "\"10.5\"^^xsd:double"
     ),
-    ("\"-10.5\"^^xsd:string", nullValue, nullValue, true),
-    ("2.8", "3", "3.0", true),
-    ("2", "2", "2.0", true)
+    ("\"-10.5\"^^xsd:string", nullValue, nullValue, true, nullValue),
+    ("2.8", "3", "3.0", true, "2.8"),
+    ("2", "2", "2.0", true, "2.0")
   )
   lazy val typedDf =
     typedElems.toDF(
       inColName,
       ceilExpectedColName,
       roundExpectedColName,
-      randExpectedColName
+      randExpectedColName,
+      absExpectedColName
     )
 
   "FuncNumerics" when {
@@ -110,6 +133,17 @@ class FuncNumericsSpec
 
       "rand with multiple numeric types" in {
         eval(typedDf, FuncNumerics.rand, randExpectedColName)
+      }
+    }
+
+    "abs function" should {
+
+      "abs function" in {
+        eval(df, FuncNumerics.abs, absExpectedColName)
+      }
+
+      "abs with multiple numeric types" in {
+        eval(typedDf, FuncNumerics.abs, absExpectedColName)
       }
     }
   }

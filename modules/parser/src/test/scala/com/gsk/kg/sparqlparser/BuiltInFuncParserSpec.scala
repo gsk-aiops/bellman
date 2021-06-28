@@ -533,4 +533,30 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "ABS parser with string" should "return ABS type" in {
+    val p =
+      fastparse.parse(
+        """(abs "x")""",
+        BuiltInFuncParser.absParen(_)
+      )
+    p.get.value match {
+      case ABS(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "ABS parser with variable" should "return ABS type" in {
+    val p =
+      fastparse.parse(
+        """(abs ?d)""",
+        BuiltInFuncParser.absParen(_)
+      )
+    p.get.value match {
+      case ABS(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
 }
