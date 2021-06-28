@@ -43,8 +43,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4.1.3
         with:
           commit_message: Update rdf-test-results [skip ci]
-          repository: main
-          branch: 'main'
       - name: Create Pull Request
         if: env.NEEDS_PR == 'true' && env.NO_CHANGES == null
         uses: peter-evans/create-pull-request@v2
