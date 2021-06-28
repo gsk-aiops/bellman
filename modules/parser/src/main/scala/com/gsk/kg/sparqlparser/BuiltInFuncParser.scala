@@ -38,6 +38,7 @@ object BuiltInFuncParser {
   def ceil[_: P]: P[Unit]         = P("ceil")
   def round[_: P]: P[Unit]        = P("round")
   def rand[_: P]: P[Unit]         = P("rand")
+  def abs[_: P]: P[Unit]          = P("abs")
   def floor[_: P]: P[Unit]        = P("floor")
 
   def uriParen[_: P]: P[URI] =
@@ -180,6 +181,10 @@ object BuiltInFuncParser {
     P("(" ~ rand ~ ")")
       .map(f => RAND())
 
+  def absParen[_: P]: P[ABS] =
+    P("(" ~ abs ~ ExpressionParser.parser ~ ")")
+      .map(f => ABS(f))
+
   def floorParen[_: P]: P[FLOOR] =
     P("(" ~ floor ~ ExpressionParser.parser ~ ")")
       .map(f => FLOOR(f))
@@ -218,6 +223,7 @@ object BuiltInFuncParser {
         | ceilParen
         | roundParen
         | randParen
+        | absParen
         | floorParen
     )
 //      | StringValParser.string

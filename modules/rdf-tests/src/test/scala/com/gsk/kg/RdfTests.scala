@@ -66,7 +66,7 @@ class RdfTests extends AnyWordSpec with Matchers with SparkSpec {
   )
 
   suites foreach { suite =>
-    suite should {
+    suite.replace("/manifest.ttl", "").capitalize should {
       val results = queryModel(findAllSuitesQuery, suite)
 
       results foreach { result =>
@@ -80,7 +80,7 @@ class RdfTests extends AnyWordSpec with Matchers with SparkSpec {
               expected <- Try(readResults(result.get("?result").toString()))
               r <- Try(df.sparql(query)) match {
                 case Failure(EngineException(err)) =>
-                  Try(cancel(makeCancelMessage(result, err)))
+                  Try(fail(makeCancelMessage(result, err)))
                 case Failure(ex) =>
                   Try(fail(ex))
                 case Success(s) =>
