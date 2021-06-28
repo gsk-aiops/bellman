@@ -1,4 +1,5 @@
 # This workflow will launch at 00:00 every day
+name: RDF Tests
 on:
   schedule:
     - cron: "0 0 * * *"
@@ -34,7 +35,7 @@ jobs:
           key: ${{ runner.os }}-sbt-${{ hashFiles('build.sbt') }}-${{ hashFiles('project/*.scala') }}
           restore-keys: ${{ runner.os }}-sbt-
       - name: Run RDF tests
-        run: sbt "bellman-rdf-tests/test" 2> /dev/null
+        run: sbt "bellman-rdf-tests/test" || true
       - name: Convert Junit XML to Markdown
         run: ~/.cargo/bin/junit2md modules/rdf-tests/target/test-reports/TEST-com.gsk.kg.engine.RdfTests.xml > rdf-test-results.md
       - name: Push changes
