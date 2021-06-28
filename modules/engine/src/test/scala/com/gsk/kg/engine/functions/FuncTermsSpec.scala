@@ -217,5 +217,33 @@ class FuncTermsSpec
           .toSet shouldEqual Set(Row(true))
       }
     }
+
+    "FuncTerms.strUuid" should {
+
+      "return an uuid value from the column" in {
+
+        val uuidRegex =
+          "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+        val uuidColName      = "uuid"
+        val uuidRegexColName = "uuidR"
+
+        val elems = List(1, 2, 3)
+        val df    = elems.toDF()
+        val projection = Seq(
+          FuncTerms.strUuid.as(uuidColName)
+        )
+        val dfResult = df
+          .select(
+            projection: _*
+          )
+
+        dfResult
+          .select(
+            col(uuidColName).rlike(uuidRegex).as(uuidRegexColName)
+          )
+          .collect()
+          .toSet shouldEqual Set(Row(true))
+      }
+    }
   }
 }

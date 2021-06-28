@@ -173,4 +173,14 @@ object FuncTerms {
       "urn:uuid:" + java.util.UUID.randomUUID().toString
     udf(uuidGen)
   }
+
+  /** Return uuid
+    * @return
+    */
+  def strUuid: Column = {
+    val u        = uuid()
+    val startPos = lit(10)
+    val endPos   = length(u)
+    u.substr(startPos, endPos)
+  }
 }
