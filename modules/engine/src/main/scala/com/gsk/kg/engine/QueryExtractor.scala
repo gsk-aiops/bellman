@@ -261,6 +261,7 @@ object QueryExtractor {
       case CEIL(e)                         => s"(ceil $e)"
       case ROUND(e)                        => s"(round $e)"
       case RAND()                          => "(rand)"
+      case FLOOR(e)                        => s"(floor $e)"
     }
 
   private val exprToString: Algebra[ExprF, String] =
