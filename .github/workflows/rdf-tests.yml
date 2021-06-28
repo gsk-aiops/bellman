@@ -55,6 +55,7 @@ jobs:
           branch: update-rdf-report
           delete-branch: true
           title: 'Update RDF Tests report'
+          labels: documentation
           body: |
             Update report
       - name: Show Pull Request URL
