@@ -38,13 +38,8 @@ jobs:
         run: sbt "bellman-rdf-tests/test" || true
       - name: Convert Junit XML to Markdown
         run: ~/.cargo/bin/junit2md modules/rdf-tests/target/test-reports/TEST-com.gsk.kg.engine.RdfTests.xml > rdf-test-results.md
-      - name: Push changes
-        if: env.NEEDS_PR == null && env.NO_CHANGES == null
-        uses: stefanzweifel/git-auto-commit-action@v4.1.3
-        with:
-          commit_message: Update rdf-test-results [skip ci]
       - name: Create Pull Request
-        if: env.NEEDS_PR == 'true' && env.NO_CHANGES == null
+        if: env.NO_CHANGES == null
         uses: peter-evans/create-pull-request@v2
         with:
           token: ${{ secrets.ADMIN_GITHUB_TOKEN }}
