@@ -34,9 +34,8 @@ jobs:
           key: ${{ runner.os }}-sbt-${{ hashFiles('build.sbt') }}-${{ hashFiles('project/*.scala') }}
           restore-keys: ${{ runner.os }}-sbt-
       - name: Run RDF tests
-        run: sbt "bellman-rdf-tests/test"
+        run: sbt "bellman-rdf-tests/test" 2> /dev/null
       - name: Convert Junit XML to Markdown
-        if: always()
         run: ~/.cargo/bin/junit2md modules/rdf-tests/target/test-reports/TEST-com.gsk.kg.engine.RdfTests.xml > rdf-test-results.md
       - name: Push changes
         if: env.NEEDS_PR == null && env.NO_CHANGES == null
