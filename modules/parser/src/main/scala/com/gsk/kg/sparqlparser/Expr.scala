@@ -11,6 +11,8 @@ import com.gsk.kg.sparqlparser.StringVal.STRING
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
+import cats.implicits._
+
 sealed trait Query {
   def r: Expr
 }
@@ -37,7 +39,14 @@ object Query {
 
 @deriveFixedPoint sealed trait Expr
 object Expr {
-  final case class BGP(quads: Seq[Quad]) extends Expr
+  final case class Sequence(seq: List[Expr]) extends Expr
+  final case class BGP(quads: Seq[Quad])     extends Expr
+  final case class PathQuad(
+      s: StringVal,
+      p: PropertyExpression,
+      o: StringVal,
+      g: List[StringVal]
+  ) extends Expr
   final case class Quad(
       s: StringVal,
       p: StringVal,

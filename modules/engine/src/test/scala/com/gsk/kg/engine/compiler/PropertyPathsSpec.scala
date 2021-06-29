@@ -49,6 +49,37 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
+      "alternative | property path 2" in {
+
+        val df = List(
+          (
+            "<http://example.org/book1>",
+            "<http://purl.org/dc/elements/1.1/title>",
+            "SPARQL Tutorial"
+          ),
+          (
+            "<http://example.org/book2>",
+            "<http://www.w3.org/2000/01/rdf-schema#label>",
+            "From Earth To The Moon"
+          )
+        ).toDF("s", "p", "o")
+
+        val query =
+          """
+            |PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            |PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            |
+            |SELECT ?book ?displayString
+            |WHERE {
+            | ?book ^!^dc:title*/rdfs:label?|dc:author+ ?displayString .
+            |}
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query, config)
+
+        result.right.get.collect.toSet shouldEqual Set()
+      }
+
       "sequence / property path" in {
 
         val df = List(
@@ -223,6 +254,36 @@ class PropertyPathsSpec
             |SELECT ?s ?o
             |WHERE {
             | ?s foaf:knows{1, 2} ?o .
+            |}
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query, config)
+
+        result.right.get.collect.toSet shouldEqual Set()
+      }
+
+      "fixed length {n,m} property path 2" in {
+
+        val df = List(
+          (
+            "<http://example.org/alice>",
+            "<http://xmlns.org/foaf/0.1/knows>",
+            "<http://example.org/bob>"
+          ),
+          (
+            "<http://example.org/bob>",
+            "<http://xmlns.org/foaf/0.1/knows>",
+            "<http://example.org/charles>"
+          )
+        ).toDF("s", "p", "o")
+
+        val query =
+          """
+            |PREFIX foaf: <http://xmlns.org/foaf/0.1/>
+            |
+            |SELECT ?s ?o
+            |WHERE {
+            | ?s foaf:knows{2,} ?o .
             |}
             |""".stripMargin
 

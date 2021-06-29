@@ -48,6 +48,7 @@ object DAG {
       expression: Expression,
       r: A
   )                                                              extends DAG[A]
+  @Lenses final case class Sequence[A](bps: List[A])             extends DAG[A]
   @Lenses final case class BGP[A](quads: ChunkedList[Expr.Quad]) extends DAG[A]
   @Lenses final case class LeftJoin[A](l: A, r: A, filters: List[Expression])
       extends DAG[A]
@@ -82,6 +83,8 @@ object DAG {
         case DAG.Project(variables, r) => f(r).map(project(variables, _))
         case DAG.Bind(variable, expression, r) =>
           f(r).map(bind(variable, expression, _))
+        case DAG.Sequence(bps) =>
+          bps.map(f).sequence.map(DAG.sequence)
         case DAG.BGP(quads) => bgp[B](quads).pure[G]
         case DAG.LeftJoin(l, r, filters) =>
           (
@@ -116,6 +119,7 @@ object DAG {
     Project[A](variables, r)
   def bind[A](variable: VARIABLE, expression: Expression, r: A): DAG[A] =
     Bind[A](variable, expression, r)
+  def sequence[A](bps: List[A]): DAG[A]             = Sequence[A](bps)
   def bgp[A](quads: ChunkedList[Expr.Quad]): DAG[A] = BGP[A](quads)
   def leftJoin[A](l: A, r: A, filters: List[Expression]): DAG[A] =
     LeftJoin[A](l, r, filters)
@@ -159,6 +163,8 @@ object DAG {
       expression: Expression,
       r: T
   ): T = bind[T](variable, expression, r).embed
+  def sequenceR[T: Embed[DAG, *]](bps: List[T]): T =
+    sequence[T](bps).embed
   def bgpR[T: Embed[DAG, *]](triples: ChunkedList[Expr.Quad]): T =
     bgp[T](triples).embed
   def leftJoinR[T: Embed[DAG, *]](
@@ -215,6 +221,7 @@ object DAG {
 
   def transExpr[T](implicit T: Basis[DAG, T]): Trans[ExprF, DAG, T] =
     Trans {
+      case SequenceF(bps)               => sequence(bps)
       case ExtendF(bindTo, bindFrom, r) => bind(bindTo, bindFrom, r)
       case FilteredLeftJoinF(l, r, f)   => leftJoin(l, r, f.toList)
       case UnionF(l, r)                 => union(l, r)
@@ -257,6 +264,7 @@ object DAG {
   implicit def eqScan[A]: Eq[Scan[A]]           = Eq.fromUniversalEquals
   implicit def eqProject[A]: Eq[Project[A]]     = Eq.fromUniversalEquals
   implicit def eqBind[A]: Eq[Bind[A]]           = Eq.fromUniversalEquals
+  implicit def eqSequence[A]: Eq[Sequence[A]]   = Eq.fromUniversalEquals
   implicit def eqBGP[A]: Eq[BGP[A]]             = Eq.fromUniversalEquals
   implicit def eqLeftJoin[A]: Eq[LeftJoin[A]]   = Eq.fromUniversalEquals
   implicit def eqUnion[A]: Eq[Union[A]]         = Eq.fromUniversalEquals
@@ -302,6 +310,10 @@ object optics {
   def _bind[T: Basis[DAG, *]]: Prism[DAG[T], Bind[T]] =
     Prism.partial[DAG[T], Bind[T]] {
       case dag @ Bind(variable: VARIABLE, expression: Expression, r) => dag
+    }(identity)
+  def _sequence[T: Basis[DAG, *]]: Prism[DAG[T], Sequence[T]] =
+    Prism.partial[DAG[T], Sequence[T]] { case dag @ Sequence(bps) =>
+      dag
     }(identity)
   def _bgp[T: Basis[DAG, *]]: Prism[DAG[T], BGP[T]] =
     Prism.partial[DAG[T], BGP[T]] {
@@ -358,6 +370,8 @@ object optics {
     basisIso[DAG, T] composePrism _project
   def _bindR[T: Basis[DAG, *]]: Prism[T, Bind[T]] =
     basisIso[DAG, T] composePrism _bind
+  def _sequenceR[T: Basis[DAG, *]]: Prism[T, Sequence[T]] =
+    basisIso[DAG, T] composePrism _sequence
   def _bgpR[T: Basis[DAG, *]]: Prism[T, BGP[T]] =
     basisIso[DAG, T] composePrism _bgp
   def _leftjoinR[T: Basis[DAG, *]]: Prism[T, LeftJoin[T]] =
