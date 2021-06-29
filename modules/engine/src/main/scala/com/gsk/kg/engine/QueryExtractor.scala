@@ -262,6 +262,7 @@ object QueryExtractor {
       case ROUND(e)                        => s"(round $e)"
       case RAND()                          => "(rand)"
       case ABS(e)                          => s"(abs $e)"
+      case FLOOR(e)                        => s"(floor $e)"
       case STRUUID()                       => "(struuid)"
     }
 
