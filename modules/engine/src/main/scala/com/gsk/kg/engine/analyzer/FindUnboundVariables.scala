@@ -186,6 +186,7 @@ object FindVariablesOnExpression {
         case CEIL(e)                         => e
         case ROUND(e)                        => e
         case RAND()                          => Set.empty[VARIABLE]
+        case ABS(e)                          => e
         case STRUUID()                       => Set.empty[VARIABLE]
       }
 

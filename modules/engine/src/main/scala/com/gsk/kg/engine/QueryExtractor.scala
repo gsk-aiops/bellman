@@ -261,6 +261,7 @@ object QueryExtractor {
       case CEIL(e)                         => s"(ceil $e)"
       case ROUND(e)                        => s"(round $e)"
       case RAND()                          => "(rand)"
+      case ABS(e)                          => s"(abs $e)"
       case STRUUID()                       => "(struuid)"
     }
 
