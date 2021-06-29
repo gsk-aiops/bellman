@@ -334,6 +334,7 @@ object ExpressionF {
       coalgebra = fromExpressionCoalg
     )
 
+  // scalastyle:off
   def compile[T](
       t: T,
       config: Config
@@ -411,6 +412,7 @@ object ExpressionF {
         case ABS(s)    => FuncNumerics.abs(s).pure[M]
         case FLOOR(s)  => FuncNumerics.floor(s).pure[M]
       }
+    // scalastyle:on
 
     val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)
 
