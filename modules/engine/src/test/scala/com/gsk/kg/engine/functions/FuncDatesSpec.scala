@@ -1,13 +1,14 @@
 package com.gsk.kg.engine.functions
 
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.to_timestamp
+
 import com.gsk.kg.engine.compiler.SparkSpec
+
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.functions.to_timestamp
-import org.apache.spark.sql.functions.unix_timestamp
-import org.apache.spark.sql.types.TimestampType
 
 class FuncDatesSpec
     extends AnyWordSpec
@@ -24,27 +25,19 @@ class FuncDatesSpec
 
     "now function" should {
 
+      val nowColName = "now"
+      val startPos   = 2
+      val len        = 29
+
       "now function returns current date" in {
-        val now = FuncDates.now
-        val df  = List(1, 2, 3).toDF()
-        df.select(FuncDates.now.as("now")).show(false)
+        val now           = FuncDates.now
+        val df            = List(1, 2, 3).toDF()
+        val dfCurrentTime = df.select(FuncDates.now.as(nowColName))
 
-        val data = Seq(
-          "07-01-2019 12 01 19 406",
-          "06-24-2019 12 01 19 406",
-          "11-16-2019 16 44 55 406",
-          "11-16-2019 16 50 59 406"
-        ).toDF("input_timestamp")
-        data
-          .withColumn(
-            "datetype_timestamp",
-            unix_timestamp(
-              col("input_timestamp"),
-              "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-            ).cast(TimestampType)
-          )
-          .show(false)
-
+        dfCurrentTime
+          .select(to_timestamp(col(nowColName).substr(startPos, len)).isNotNull)
+          .collect()
+          .toSet shouldEqual Set(Row(true))
       }
     }
   }

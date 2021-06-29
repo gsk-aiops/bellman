@@ -2,20 +2,21 @@ package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.current_timestamp
-import org.apache.spark.sql.functions.to_timestamp
-import org.apache.spark.sql.functions.unix_timestamp
-import org.apache.spark.sql.functions.from_unixtime
-import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.functions.date_format
+import org.apache.spark.sql.functions.format_string
 
 object FuncDates {
 
   /** Returns an XSD dateTime value for the current query execution. All calls to this function in any one query
     * execution must return the same value. The exact moment returned is not specified.
     * e.g. "2011-01-10T14:45:13.815-05:00"^^xsd:dateTime
-    * "yyyy/MM/dd HH:mm:ss.SSS"
     * @return
     */
-  def now: Column = current_timestamp
+  def now: Column =
+    format_string(
+      "\"%s\"^^xsd:dateTime",
+      date_format(current_timestamp, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    )
 
   /** Returns the year part of arg as an integer.
     * @param col
