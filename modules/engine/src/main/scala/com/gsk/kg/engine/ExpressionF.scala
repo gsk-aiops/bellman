@@ -98,6 +98,7 @@ object ExpressionF {
   final case class ROUND[A](s: A)                         extends ExpressionF[A]
   final case class RAND[A]()                              extends ExpressionF[A]
   final case class ABS[A](s: A)                           extends ExpressionF[A]
+  final case class FLOOR[A](s: A)                         extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
@@ -201,6 +202,7 @@ object ExpressionF {
       case BuiltInFunc.ROUND(s)                        => ROUND(s)
       case BuiltInFunc.RAND()                          => RAND()
       case BuiltInFunc.ABS(s)                          => ABS(s)
+      case BuiltInFunc.FLOOR(s)                        => FLOOR(s)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -323,6 +325,7 @@ object ExpressionF {
       case ROUND(s)                   => BuiltInFunc.ROUND(s)
       case RAND()                     => BuiltInFunc.RAND()
       case ABS(s)                     => BuiltInFunc.ABS(s)
+      case FLOOR(s)                   => BuiltInFunc.FLOOR(s)
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -331,6 +334,7 @@ object ExpressionF {
       coalgebra = fromExpressionCoalg
     )
 
+  // scalastyle:off
   def compile[T](
       t: T,
       config: Config
@@ -406,7 +410,9 @@ object ExpressionF {
         case ROUND(s)  => FuncNumerics.round(s).pure[M]
         case RAND()    => FuncNumerics.rand.pure[M]
         case ABS(s)    => FuncNumerics.abs(s).pure[M]
+        case FLOOR(s)  => FuncNumerics.floor(s).pure[M]
       }
+    // scalastyle:on
 
     val eval = scheme.cataM[M, ExpressionF, T, Column](algebraM)
 

@@ -215,6 +215,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.ROUND(e)    => Node(s"ROUND", Stream(e))
           case ExpressionF.RAND()      => Leaf("RAND")
           case ExpressionF.ABS(e)      => Node(s"ABS", Stream(e))
+          case ExpressionF.FLOOR(e)    => Node(s"FLOOR", Stream(e))
         }
 
         val t = scheme.cata(alg)

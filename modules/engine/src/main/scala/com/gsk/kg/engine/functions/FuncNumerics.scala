@@ -6,6 +6,7 @@ import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{abs => sAbs}
 import org.apache.spark.sql.functions.{ceil => sCeil}
+import org.apache.spark.sql.functions.{floor => sFloor}
 import org.apache.spark.sql.functions.{rand => sRand}
 import org.apache.spark.sql.functions.{round => sRodund}
 import org.apache.spark.sql.types.DoubleType
@@ -45,7 +46,7 @@ object FuncNumerics {
     * @param col
     * @return
     */
-  def floor(col: Column): Column = ???
+  def floor: Column => Column = col => apply(sFloor, col)
 
   /** Returns a pseudo-random number between 0 (inclusive) and 1.0e0 (exclusive). Different numbers can be
     * produced every time this function is invoked. Numbers should be produced with approximately equal probability.
