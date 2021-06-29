@@ -5,8 +5,10 @@ sealed trait PropertyExpression
 final case class Alternative(pel: PropertyExpression, per: PropertyExpression)
     extends PropertyExpression
 final case class Reverse(e: PropertyExpression) extends PropertyExpression
-final case class SeqExpression(pel: PropertyExpression, per: PropertyExpression)
-    extends PropertyExpression
+final case class SeqExpression(
+    pel: PropertyExpression,
+    per: PropertyExpression
+)                                                  extends PropertyExpression
 final case class OneOrMore(e: PropertyExpression)  extends PropertyExpression
 final case class ZeroOrMore(e: PropertyExpression) extends PropertyExpression
 final case class ZeroOrOne(e: PropertyExpression)  extends PropertyExpression

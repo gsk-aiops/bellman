@@ -6,7 +6,7 @@ import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Conditional._
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.StringVal._
-import org.scalatest.flatspec.AnyFlatSpec
+
 import org.scalatest.wordspec.AnyWordSpec
 
 class ExprParserSpec extends AnyWordSpec with TestUtils {

@@ -1,8 +1,10 @@
 package com.gsk.kg.engine.compiler
 
+import org.apache.spark.sql.Row
+
 import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
-import org.apache.spark.sql.Row
+
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -18,7 +20,9 @@ class PropertyPathsSpec
 
     "perform on simple queries" when {
 
-      "alternative | property path" in {
+      // TODO: Un-ignore test when implemented support on property paths
+
+      "alternative | property path" ignore {
 
         val df = List(
           (
@@ -49,7 +53,7 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
-      "sequence / property path" in {
+      "sequence / property path" ignore {
 
         val df = List(
           (
@@ -86,7 +90,7 @@ class PropertyPathsSpec
         )
       }
 
-      "inverse ^ property path" in {
+      "inverse ^ property path" ignore {
 
         val df = List(
           (
@@ -111,7 +115,7 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
-      "reverse ^ property path" in {
+      "reverse ^ property path" ignore {
 
         val df = List(
           (
@@ -136,7 +140,7 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
-      "arbitrary length + property path" in {
+      "arbitrary length + property path" ignore {
 
         val df = List(
           (
@@ -166,7 +170,7 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
-      "arbitrary length * property path" in {
+      "arbitrary length * property path" ignore {
 
         val df = List(
           (
@@ -196,7 +200,7 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
-      "optional ? property path" in {
+      "optional ? property path" ignore {
 
         val df = List(
           (
@@ -226,7 +230,7 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
-      "negated ! property path" in {
+      "negated ! property path" ignore {
 
         val df = List(
           (
@@ -251,7 +255,7 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
-      "fixed length {n,m} property path" in {
+      "fixed length {n,m} property path" ignore {
 
         val df = List(
           (
@@ -281,7 +285,7 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
-      "fixed length {n,} property path" in {
+      "fixed length {n,} property path" ignore {
 
         val df = List(
           (
@@ -311,7 +315,7 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
-      "fixed length {,n} property path" in {
+      "fixed length {,n} property path" ignore {
 
         val df = List(
           (
@@ -341,7 +345,7 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
-      "fixed length {n} property path" in {
+      "fixed length {n} property path" ignore {
 
         val df = List(
           (
@@ -374,7 +378,7 @@ class PropertyPathsSpec
 
     "perform on complex queries" when {
 
-      "complex query 1" in {
+      "complex query 1" ignore {
 
         val df = List(
           (
@@ -409,7 +413,7 @@ class PropertyPathsSpec
         result.right.get.collect.toSet shouldEqual Set()
       }
 
-      "complex query 2" in {
+      "complex query 2" ignore {
 
         val df = List(
           (

@@ -75,6 +75,11 @@ object FindUnboundVariables {
         (variables.toSet, (variables.toSet diff declared) ++ unbound)
       case Bind(variable, expression, (declared, unbound)) =>
         (declared + variable, unbound)
+      case Sequence(bps) =>
+        bps.foldLeft((Set.empty[VARIABLE], Set.empty[VARIABLE])) {
+          case ((declaredAcc, unboundAcc), (declaredElem, unboundElem)) =>
+            (declaredAcc ++ declaredElem, unboundAcc ++ unboundElem)
+        }
       case BGP(triples) =>
         val vars = Traverse[ChunkedList]
           .toList(triples)

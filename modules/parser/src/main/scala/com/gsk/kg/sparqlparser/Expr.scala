@@ -1,5 +1,7 @@
 package com.gsk.kg.sparqlparser
 
+import cats.implicits._
+
 import higherkindness.droste.macros.deriveFixedPoint
 
 import org.apache.jena.graph.Node
@@ -10,8 +12,6 @@ import com.gsk.kg.sparqlparser.StringVal.GRAPH_VARIABLE
 import com.gsk.kg.sparqlparser.StringVal.STRING
 import com.gsk.kg.sparqlparser.StringVal.URIVAL
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-
-import cats.implicits._
 
 sealed trait Query {
   def r: Expr

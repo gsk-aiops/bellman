@@ -232,6 +232,7 @@ object DAG {
       case JoinF(l, r)                  => join(l, r)
       case LeftJoinF(l, r)              => leftJoin(l, r, Nil)
       case ProjectF(vars, r)            => project(vars.toList, r)
+      case PathQuadF(s, p, o, g)        => noop("PathQuadF not supported")
       case QuadF(s, p, o, g)            => noop("QuadF not supported")
       case DistinctF(r)                 => distinct(r)
       case ReducedF(r)                  => reduced(r)
