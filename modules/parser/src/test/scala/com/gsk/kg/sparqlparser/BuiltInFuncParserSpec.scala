@@ -533,4 +533,17 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "STRUUID parser" should "return STRUUID type" in {
+    val p =
+      fastparse.parse(
+        """(struuid)""",
+        BuiltInFuncParser.strUuidParen(_)
+      )
+    p.get.value match {
+      case STRUUID() =>
+        succeed
+      case _ => fail
+    }
+  }
 }
