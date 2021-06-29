@@ -1,7 +1,5 @@
 package com.gsk.kg.sparqlparser
 
-import fastparse.CharIn
-import fastparse.P
 import org.scalatest.wordspec.AnyWordSpec
 
 class PropertyExpressionParserSpec extends AnyWordSpec {
@@ -44,6 +42,20 @@ class PropertyExpressionParserSpec extends AnyWordSpec {
 
         val p = fastparse.parse(
           """(rev <http://www.w3.org/2000/01/rdf-schema#label>)""",
+          PropertyPathParser.revParen(_)
+        )
+
+        p.get.value match {
+          case Reverse(Uri("<http://www.w3.org/2000/01/rdf-schema#label>")) =>
+            succeed
+          case _ => fail
+        }
+      }
+
+      "return Reverse type 2" in {
+
+        val p = fastparse.parse(
+          """(reverse <http://www.w3.org/2000/01/rdf-schema#label>)""",
           PropertyPathParser.reverseParen(_)
         )
 
@@ -207,32 +219,53 @@ class PropertyExpressionParserSpec extends AnyWordSpec {
           case _ => fail
         }
       }
-
-//      "test" in {
-//        import fastparse._
-//        import fastparse.MultiLineWhitespace._
-//
-//        val s1 = "55"
-//        val s2 = "15 2 10 38"
-//
-//        def number[_: P]: P[Int] = {
-//          import fastparse.NoWhitespace._
-//          P(CharIn("0-9").rep(1).!.map(_.toInt))
-//        }
-//
-//        def numbers[_: P]: P[Seq[Int]] =
-//          P(number.rep(4, " "))
-//
-//        val a = fastparse.parse(s1, number(_))
-//        a
-//        val p = fastparse.parse(s2, numbers(_), verboseFailures = true)
-//        p
-//      }
     }
 
     "complex property paths expressions" should {
 
-      "complex query 1" in {}
+      "complex query 1" in {
+
+        val p = fastparse.parse(
+          """(alt (seq (reverse (path* (notoneof (rev <http://example.org/a>)))) (path? <http://example.org/b>)) (path+ <http://example.org/c>))""",
+          PropertyPathParser.parser(_)
+        )
+
+        p.get.value match {
+          case Alternative(
+                SeqExpression(
+                  Reverse(
+                    ZeroOrMore(
+                      NotOneOf(List(Reverse(Uri("<http://example.org/a>"))))
+                    )
+                  ),
+                  ZeroOrOne(Uri("<http://example.org/b>"))
+                ),
+                OneOrMore(Uri("<http://example.org/c>"))
+              ) =>
+            succeed
+          case _ => fail
+        }
+      }
+
+      "complex query 2" in {
+
+        val p = fastparse.parse(
+          """(alt (alt (pathN 1 <http://example.org/a>) (mod 1 3 <http://example.org/b>)) (mod 2 _ <http://example.org/c>))""",
+          PropertyPathParser.parser(_)
+        )
+
+        p.get.value match {
+          case Alternative(
+                Alternative(
+                  ExactlyN(1, Uri("<http://example.org/a>")),
+                  BetweenNAndM(1, 3, Uri("<http://example.org/b>"))
+                ),
+                NOrMore(2, Uri("<http://example.org/c>"))
+              ) =>
+            succeed
+          case _ => fail
+        }
+      }
     }
   }
 }

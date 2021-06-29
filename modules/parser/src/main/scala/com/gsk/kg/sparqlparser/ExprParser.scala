@@ -38,7 +38,7 @@ object ExprParser {
   def opNull[_: P]: P[OpNil]      = P("(null)").map(_ => OpNil())
   def tableUnit[_: P]: P[TabUnit] = P("(table unit)").map(_ => TabUnit())
 
-  def bgpOrPathParen[_: P]: P[Expr] = bgpParen | pathParen
+  def bgpOrPathParen[_: P]: P[Expr] = bgpParen | pathQuadParen
 
   def sequenceParen[_: P]: P[Sequence] = P(
     "(" ~ sequence ~ bgpOrPathParen.rep(1) ~ ")"
@@ -76,7 +76,7 @@ object ExprParser {
 
   def bgpParen[_: P]: P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP)
 
-  def pathParen[_: P]: P[PathQuad] = P(
+  def pathQuadParen[_: P]: P[PathQuad] = P(
     "(" ~ path ~ StringValParser.tripleValParser ~ PropertyPathParser.parser ~ StringValParser.tripleValParser ~ ")"
   ).map(p => PathQuad(p._1, p._2, p._3, GRAPH_VARIABLE :: Nil))
 
@@ -210,7 +210,7 @@ object ExprParser {
     P(
       selectParen
         | sequenceParen
-        | pathParen
+        | pathQuadParen
         | offsetLimitParen
         | distinctParen
         | reducedParen

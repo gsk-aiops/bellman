@@ -1,0 +1,6 @@
+PREFIX foaf: <http://xmlns.org/foaf/0.1/>
+
+SELECT ?s ?o
+WHERE {
+ ?s !(foaf:name) ?o .
+}

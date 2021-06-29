@@ -7,6 +7,7 @@ object PropertyPathParser {
 
   def alt[_: P]: P[Unit]         = P("alt")
   def rev[_: P]: P[Unit]         = P("rev")
+  def reverse[_: P]: P[Unit]     = P("reverse")
   def seq[_: P]: P[Unit]         = P("seq")
   def pathPlus[_: P]: P[Unit]    = P("path+")
   def pathStar[_: P]: P[Unit]    = P("path*")
@@ -28,8 +29,12 @@ object PropertyPathParser {
     "(" ~ alt ~ parser ~ parser ~ ")"
   ).map(p => Alternative(p._1, p._2))
 
-  def reverseParen[_: P]: P[Reverse] = P(
+  def revParen[_: P]: P[Reverse] = P(
     "(" ~ rev ~ parser ~ ")"
+  ).map(Reverse)
+
+  def reverseParen[_: P]: P[Reverse] = P(
+    "(" ~ reverse ~ parser ~ ")"
   ).map(Reverse)
 
   def sequenceParen[_: P]: P[SeqExpression] = P(
@@ -72,6 +77,7 @@ object PropertyPathParser {
     uri
       | alternativeParen
       | reverseParen
+      | revParen
       | sequenceParen
       | oneOrMoreParen
       | zeroOrMoreParen
