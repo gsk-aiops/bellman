@@ -179,7 +179,7 @@ object FuncTerms {
     */
   def strUuid: Column = {
     val u        = uuid()
-    val startPos = lit(10)
+    val startPos = lit("urn:uuid:".length + 1)
     val endPos   = length(u)
     u.substr(startPos, endPos)
   }
