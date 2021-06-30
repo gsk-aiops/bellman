@@ -70,6 +70,12 @@ class NowSpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
       case Left(e)  => throw new Exception(e.toString)
       case Right(r) => r
     }
+    dfR.select(col(dfR.columns.head).as("now")).show(false)
+    dfR
+      .select(
+        to_timestamp(col(dfR.columns.head).substr(startPos, len))
+      )
+      .show(false)
     val expected = Set(Row(true))
     dfR
       .select(
