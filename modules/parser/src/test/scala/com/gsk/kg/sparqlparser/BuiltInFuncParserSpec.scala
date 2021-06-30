@@ -559,4 +559,43 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       case _ => fail
     }
   }
+
+  "FLOOR parser with string" should "return FLOOR type" in {
+    val p =
+      fastparse.parse(
+        """(floor "x")""",
+        BuiltInFuncParser.floorParen(_)
+      )
+    p.get.value match {
+      case FLOOR(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "FLOOR parser with variable" should "return FLOOR type" in {
+    val p =
+      fastparse.parse(
+        """(floor ?d)""",
+        BuiltInFuncParser.floorParen(_)
+      )
+    p.get.value match {
+      case FLOOR(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "STRUUID parser" should "return STRUUID type" in {
+    val p =
+      fastparse.parse(
+        """(struuid)""",
+        BuiltInFuncParser.strUuidParen(_)
+      )
+    p.get.value match {
+      case STRUUID() =>
+        succeed
+      case _ => fail
+    }
+  }
 }
