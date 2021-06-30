@@ -99,6 +99,7 @@ object ExpressionF {
   final case class RAND[A]()                              extends ExpressionF[A]
   final case class ABS[A](s: A)                           extends ExpressionF[A]
   final case class FLOOR[A](s: A)                         extends ExpressionF[A]
+  final case class STRUUID[A]()                           extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
@@ -203,6 +204,7 @@ object ExpressionF {
       case BuiltInFunc.RAND()                          => RAND()
       case BuiltInFunc.ABS(s)                          => ABS(s)
       case BuiltInFunc.FLOOR(s)                        => FLOOR(s)
+      case BuiltInFunc.STRUUID()                       => STRUUID()
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -326,6 +328,7 @@ object ExpressionF {
       case RAND()                     => BuiltInFunc.RAND()
       case ABS(s)                     => BuiltInFunc.ABS(s)
       case FLOOR(s)                   => BuiltInFunc.FLOOR(s)
+      case STRUUID()                  => BuiltInFunc.STRUUID()
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -411,6 +414,7 @@ object ExpressionF {
         case RAND()    => FuncNumerics.rand.pure[M]
         case ABS(s)    => FuncNumerics.abs(s).pure[M]
         case FLOOR(s)  => FuncNumerics.floor(s).pure[M]
+        case STRUUID() => FuncTerms.strUuid.pure[M]
       }
     // scalastyle:on
 

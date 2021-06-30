@@ -188,6 +188,7 @@ object FindVariablesOnExpression {
         case RAND()                          => Set.empty[VARIABLE]
         case ABS(e)                          => e
         case FLOOR(e)                        => e
+        case STRUUID()                       => Set.empty[VARIABLE]
       }
 
     val eval =
