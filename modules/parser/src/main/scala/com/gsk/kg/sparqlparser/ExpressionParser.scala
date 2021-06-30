@@ -8,5 +8,6 @@ object ExpressionParser {
     ConditionalParser.parser |
       BuiltInFuncParser.parser |
       ArithmeticParser.parser |
-      StringValParser.tripleValParser
+      StringValParser.tripleValParser |
+      DateParser.parser
 }
