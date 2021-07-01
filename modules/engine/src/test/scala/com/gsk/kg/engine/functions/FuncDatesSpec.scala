@@ -30,9 +30,14 @@ class FuncDatesSpec
       val len        = 29
 
       "now function returns current date" in {
-        val now           = FuncDates.now
-        val df            = List(1, 2, 3).toDF()
-        val dfCurrentTime = df.select(FuncDates.now.as(nowColName))
+        val df             = List(1, 2, 3).toDF()
+        val dfCurrentTime  = df.select(FuncDates.now.as(nowColName))
+        val dfCurrentTime2 = df.select(FuncDates.now1.as(nowColName))
+        val dfCurrentTime3 = df.select(FuncDates.now2.as(nowColName))
+
+        dfCurrentTime.show(false)
+        dfCurrentTime2.show(false)
+        dfCurrentTime3.show(false)
 
         dfCurrentTime
           .select(to_timestamp(col(nowColName).substr(startPos, len)).isNotNull)

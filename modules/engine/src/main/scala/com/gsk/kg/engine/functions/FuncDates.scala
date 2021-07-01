@@ -12,7 +12,10 @@ object FuncDates {
     * e.g. "2011-01-10T14:45:13.815-05:00"^^xsd:dateTime
     * @return
     */
-  def now: Column =
+  def now: Column = current_timestamp
+  def now1: Column =
+    date_format(current_timestamp, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+  def now2: Column =
     format_string(
       "\"%s\"^^xsd:dateTime",
       date_format(current_timestamp, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
