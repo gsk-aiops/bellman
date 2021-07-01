@@ -1,7 +1,5 @@
 package com.gsk.kg.engine
 
-import com.gsk.kg.sparqlparser.TestConfig
-
 import org.apache.jena.riot.RDFParser
 import org.apache.jena.riot.lang.CollectorStreamTriples
 
@@ -9,6 +7,8 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SQLContext
+
+import com.gsk.kg.sparqlparser.TestConfig
 
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
