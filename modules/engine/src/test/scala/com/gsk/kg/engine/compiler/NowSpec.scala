@@ -1,14 +1,15 @@
 package com.gsk.kg.engine.compiler
 
+import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.substring
+import org.apache.spark.sql.functions.substring_index
 import org.apache.spark.sql.functions.to_timestamp
 
-import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
 
-import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -27,6 +28,19 @@ class NowSpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
     ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Alice", "")
   ).toDF("s", "p", "o", "g")
 
+  val startPos            = 2
+  val expected: List[Row] = (1 to 3).map(_ => Row(true)).toList
+
+  val projection: Option[Column] = Some(
+    to_timestamp(
+      substring(
+        substring_index(col(Evaluation.renamedColumn), "\"^^xsd:dateTime", 1),
+        startPos,
+        Int.MaxValue
+      )
+    ).isNotNull
+  )
+
   "perform now function correctly" when {
     "select now response with an xsd:dateTime valid" in {
 
@@ -40,7 +54,12 @@ class NowSpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
           |}
           |""".stripMargin
 
-      evaluate(df, query)
+      Evaluation.eval(
+        df,
+        projection,
+        query,
+        expected
+      )
     }
 
     "bind now response with an xsd:dateTime valid" in {
@@ -56,32 +75,12 @@ class NowSpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
           |}
           |""".stripMargin
 
-      evaluate(df, query)
-    }
-  }
-  private def evaluate(df: DataFrame, query: String): Assertion = {
-
-    val startPos = 2
-    val len      = 29
-
-    val result = Compiler.compile(df, query, config)
-
-    val dfR: DataFrame = result match {
-      case Left(e)  => throw new Exception(e.toString)
-      case Right(r) => r
-    }
-    dfR.select(col(dfR.columns.head).as("now")).show(false)
-    dfR
-      .select(
-        to_timestamp(col(dfR.columns.head).substr(startPos, len))
+      Evaluation.eval(
+        df,
+        projection,
+        query,
+        expected
       )
-      .show(false)
-    val expected = Set(Row(true))
-    dfR
-      .select(
-        to_timestamp(col(dfR.columns.head).substr(startPos, len)).isNotNull
-      )
-      .collect()
-      .toSet shouldEqual expected
+    }
   }
 }
