@@ -56,7 +56,7 @@ package object compiler {
       val result = Compiler.compile(df, query, config)
 
       val dfR: DataFrame = result match {
-        case Left(e)  => throw new Exception(e.toString)
+        case Left(e)  => fail(s"test failed: $e")
         case Right(r) => r
       }
 
