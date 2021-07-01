@@ -1,16 +1,15 @@
 package com.gsk.kg.engine.compiler
 
+import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.DoubleType
 
-import com.gsk.kg.engine.Compiler
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isDoubleNumericLiteral
 import com.gsk.kg.sparqlparser.TestConfig
 
-import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -33,6 +32,14 @@ class RandSpec
     ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Alice", "")
   ).toDF("s", "p", "o", "g")
 
+  val projection: Option[Column] = Some(
+    isDoubleNumericLiteral(col(Evaluation.renamedColumn)) &&
+      NumericLiteral(col(Evaluation.renamedColumn)).value
+        .cast(DoubleType)
+        .isNotNull
+  )
+  val expected: List[Row] = (1 to 3).map(_ => Row(true)).toList
+
   "perform rand function correctly" when {
     "select rand response with an RAND valid" in {
 
@@ -46,7 +53,7 @@ class RandSpec
           |}
           |""".stripMargin
 
-      evaluate(df, query)
+      Evaluation.eval(df, projection, query, expected)
     }
 
     "bind rand response with an RAND valid" in {
@@ -62,25 +69,7 @@ class RandSpec
           |}
           |""".stripMargin
 
-      evaluate(df, query)
+      Evaluation.eval(df, projection, query, expected)
     }
   }
-
-  private def evaluate(df: DataFrame, query: String): Assertion = {
-    val result = Compiler.compile(df, query, config)
-
-    val dfR: DataFrame = result match {
-      case Left(e)  => throw new Exception(e.toString)
-      case Right(r) => r
-    }
-    val expected = Set(Row(true))
-    dfR
-      .select(
-        isDoubleNumericLiteral(col(dfR.columns.head)) &&
-          NumericLiteral(col(dfR.columns.head)).value.cast(DoubleType).isNotNull
-      )
-      .collect()
-      .toSet shouldEqual expected
-  }
-
 }

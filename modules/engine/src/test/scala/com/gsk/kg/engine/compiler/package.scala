@@ -59,7 +59,6 @@ package object compiler {
         case Left(e)  => throw new Exception(e.toString)
         case Right(r) => r
       }
-      dfR.show(false)
 
       projection
         .map(p =>

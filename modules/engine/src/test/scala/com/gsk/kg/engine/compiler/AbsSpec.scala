@@ -3,7 +3,6 @@ package com.gsk.kg.engine.compiler
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 
-import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
 
 import org.scalatest.matchers.should.Matchers
@@ -33,16 +32,14 @@ class AbsSpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
           |}
           |""".stripMargin
 
-      val result = Compiler.compile(df, query, config)
-
-      val dfR: DataFrame = result match {
-        case Left(e)  => throw new Exception(e.toString)
-        case Right(r) => r
-      }
       val expected = List("1.65", "1.71", "1.4").map(Row(_))
-      dfR
-        .collect()
-        .toList shouldEqual expected
+
+      Evaluation.eval(
+        df,
+        None,
+        query,
+        expected
+      )
     }
 
     "term is a simple number" in {
@@ -64,16 +61,14 @@ class AbsSpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
           |}
           |""".stripMargin
 
-      val expected = Row("10.4")
-      val result   = Compiler.compile(df, query, config)
-      val dfR: DataFrame = result match {
-        case Left(e)  => throw new Exception(e.toString)
-        case Right(r) => r
-      }
+      val expected = List(Row("10.4"))
 
-      dfR
-        .collect()
-        .head shouldEqual expected
+      Evaluation.eval(
+        df,
+        None,
+        query,
+        expected
+      )
     }
   }
 
