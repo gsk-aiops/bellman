@@ -140,6 +140,8 @@ object GraphsPushdown {
             graphsOrList => DAG.projectR(variables, r(graphsOrList))
           case DAG.Bind(variable, expression, r) =>
             graphsOrList => DAG.bindR(variable, expression, r(graphsOrList))
+          case DAG.Sequence(bps) =>
+            graphsOrList => DAG.sequenceR(bps.map(_(graphsOrList)))
           case DAG.BGP(quads) =>
             graphsOrList =>
               graphsOrList.fold(

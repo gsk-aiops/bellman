@@ -11,7 +11,9 @@ object ExprParser {
   /*
   Graph patterns
    */
+  def sequence[_: P]: P[Unit]    = P("sequence")
   def bgp[_: P]: P[Unit]         = P("bgp")
+  def path[_: P]: P[Unit]        = P("path")
   def leftJoin[_: P]: P[Unit]    = P("leftjoin")
   def union[_: P]: P[Unit]       = P("union")
   def extend[_: P]: P[Unit]      = P("extend")
@@ -35,6 +37,12 @@ object ExprParser {
 
   def opNull[_: P]: P[OpNil]      = P("(null)").map(_ => OpNil())
   def tableUnit[_: P]: P[TabUnit] = P("(table unit)").map(_ => TabUnit())
+
+  def bgpOrPathParen[_: P]: P[Expr] = bgpParen | pathQuadParen
+
+  def sequenceParen[_: P]: P[Sequence] = P(
+    "(" ~ sequence ~ bgpOrPathParen.rep(1) ~ ")"
+  ).map(s => Sequence(s.toList))
 
   def selectParen[_: P]: P[Project] = P(
     "(" ~ select ~ "(" ~ (StringValParser.variable).rep(
@@ -67,6 +75,10 @@ object ExprParser {
     ).map(t => Quad(t._1, t._2, t._3, GRAPH_VARIABLE :: Nil))
 
   def bgpParen[_: P]: P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP)
+
+  def pathQuadParen[_: P]: P[PathQuad] = P(
+    "(" ~ path ~ StringValParser.tripleValParser ~ PropertyPathParser.parser ~ StringValParser.tripleValParser ~ ")"
+  ).map(p => PathQuad(p._1, p._2, p._3, GRAPH_VARIABLE :: Nil))
 
   def exprFunc[_: P]: P[Expression] =
     ConditionalParser.parser |
@@ -198,6 +210,8 @@ object ExprParser {
   def graphPattern[_: P]: P[Expr] =
     P(
       selectParen
+        | sequenceParen
+        | pathQuadParen
         | offsetLimitParen
         | distinctParen
         | reducedParen

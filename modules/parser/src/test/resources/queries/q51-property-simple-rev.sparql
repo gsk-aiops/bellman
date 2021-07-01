@@ -1,0 +1,6 @@
+PREFIX foaf: <http://xmlns.org/foaf/0.1/>
+
+SELECT ?o ?s
+WHERE {
+ ?o ^foaf:mbox ?s .
+}
