@@ -17,6 +17,7 @@ import com.gsk.kg.engine.ExpressionF.{VARIABLE => _, _}
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import com.gsk.kg.sparqlparser.Expression
+import com.gsk.kg.sparqlparser.PropertyExpression
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.QueryConstruct
 import com.gsk.kg.sparqlparser.StringVal
@@ -59,11 +60,13 @@ object QueryExtractor {
       case ExtendF(bindTo, bindFrom, r)      => r
       case FilteredLeftJoinF(l, r, f)        => l ++ r
       case UnionF(l, r)                      => l ++ r
+      case SequenceF(xs)                     => xs.flatten
       case BGPF(quads)                       => Nil
       case GraphF(g, e)                      => g :: e
       case JoinF(l, r)                       => l ++ r
       case LeftJoinF(l, r)                   => l ++ r
       case ProjectF(vars, r)                 => r
+      case PathQuadF(s, p, o, g)             => Nil
       case QuadF(s, p, o, g)                 => Nil
       case DistinctF(r)                      => r
       case ReducedF(r)                       => r
@@ -108,6 +111,18 @@ object QueryExtractor {
 
   private def printQuad(quad: Expr.Quad): String =
     s"(triple ${quad.s.s} ${quad.p.s} ${quad.o.s})"
+
+  private def printPathQuad(
+      s: StringVal,
+      p: PropertyExpression,
+      o: StringVal,
+      g: List[StringVal]
+  ): String =
+    // TODO: Implement PropertyExpressionToString algebra
+//    val propertyPathAlgebra: Algebra[PropertyPathF, String] = ???
+//    val propertyPathString = scheme.cata(propertyPathAlgebra)
+//    s"(path ${s.s} ${propertyPathString(p)} ${o.s})"
+    s"(path s p o g)"
 
   private def printStringVal(vars: Seq[StringVal]) =
     vars.map(_.s).mkString(" ")
@@ -273,11 +288,13 @@ object QueryExtractor {
       case FilteredLeftJoinF(l, r, f) =>
         s"(optional $l $r (filter ${f.map(printExpression).mkString(", ")}))"
       case UnionF(l, r)          => s"(union $l $r)"
+      case SequenceF(bps)        => s"(sequence ${bps.mkString("\n")})"
       case BGPF(quads)           => "(bgp " ++ quads.map(printQuad).mkString("\n") ++ ")"
       case GraphF(g, e)          => s"(graph <${getCleanUri(g)}> $e)"
       case JoinF(l, r)           => s"(join $l $r)"
       case LeftJoinF(l, r)       => s"(leftjoin $l $r)"
       case ProjectF(vars, r)     => r
+      case PathQuadF(s, p, o, g) => printPathQuad(s, p, o, g)
       case QuadF(s, p, o, g)     => s"(quadf s p o g)"
       case DistinctF(r)          => s"(distinct $r)"
       case ReducedF(r)           => s"(reduced $r)"

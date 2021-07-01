@@ -47,6 +47,7 @@ object Engine {
       case DAG.Project(variables, r) => r.select(variables: _*).pure[M]
       case DAG.Bind(variable, expression, r) =>
         evaluateBind(variable, expression, r)
+      case DAG.Sequence(bps)           => notImplemented("sequence")
       case DAG.BGP(quads)              => evaluateBGP(quads)
       case DAG.LeftJoin(l, r, filters) => evaluateLeftJoin(l, r, filters)
       case DAG.Union(l, r)             => evaluateUnion(l, r)
@@ -63,6 +64,11 @@ object Engine {
       case DAG.Exists(not, p, r)       => evaluateExists(not, p, r)
       case DAG.Noop(str)               => evaluateNoop(str)
     }
+
+  private def notImplemented(constructor: String): M[Multiset] =
+    M.liftF[Result, Config, Log, DataFrame, Multiset](
+      EngineError.General(s"$constructor not implemented").asLeft[Multiset]
+    )
 
   def evaluate[T: Basis[DAG, *]](
       dataframe: DataFrame,

@@ -1,5 +1,7 @@
 package com.gsk.kg.sparqlparser
 
+import cats.implicits._
+
 import higherkindness.droste.macros.deriveFixedPoint
 
 import org.apache.jena.graph.Node
@@ -37,7 +39,14 @@ object Query {
 
 @deriveFixedPoint sealed trait Expr
 object Expr {
-  final case class BGP(quads: Seq[Quad]) extends Expr
+  final case class Sequence(seq: List[Expr]) extends Expr
+  final case class BGP(quads: Seq[Quad])     extends Expr
+  final case class PathQuad(
+      s: StringVal,
+      p: PropertyExpression,
+      o: StringVal,
+      g: List[StringVal]
+  ) extends Expr
   final case class Quad(
       s: StringVal,
       p: StringVal,

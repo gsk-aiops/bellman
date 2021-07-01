@@ -138,6 +138,8 @@ object prelude {
           r.toField
         )
       )
+    case dag @ DAG.Sequence(bps) =>
+      RefTree.Ref(dag, bps.map(_.refTree.toField))
     case dag @ DAG.BGP(quads) =>
       RefTree.Ref(dag, Seq(quads.refTree.toField))
     case dag @ DAG.LeftJoin(l, r, filters) =>
