@@ -152,3 +152,8 @@ object ConditionOrder {
   final case class ASC(e: Expression)  extends ConditionOrder
   final case class DESC(e: Expression) extends ConditionOrder
 }
+
+sealed trait DateTimeFunc extends Expression
+object DateTimeFunc {
+  final case class NOW() extends DateTimeFunc
+}

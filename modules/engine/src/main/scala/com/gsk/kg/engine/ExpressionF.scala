@@ -12,6 +12,7 @@ import org.apache.spark.sql.functions._
 
 import com.gsk.kg.config.Config
 import com.gsk.kg.engine.functions.FuncArithmetics
+import com.gsk.kg.engine.functions.FuncDates
 import com.gsk.kg.engine.functions.FuncForms
 import com.gsk.kg.engine.functions.FuncHash
 import com.gsk.kg.engine.functions.FuncNumerics
@@ -100,6 +101,7 @@ object ExpressionF {
   final case class ABS[A](s: A)                           extends ExpressionF[A]
   final case class FLOOR[A](s: A)                         extends ExpressionF[A]
   final case class STRUUID[A]()                           extends ExpressionF[A]
+  final case class NOW[A]()                               extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
@@ -205,6 +207,7 @@ object ExpressionF {
       case BuiltInFunc.ABS(s)                          => ABS(s)
       case BuiltInFunc.FLOOR(s)                        => FLOOR(s)
       case BuiltInFunc.STRUUID()                       => STRUUID()
+      case DateTimeFunc.NOW()                          => NOW()
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -329,6 +332,7 @@ object ExpressionF {
       case ABS(s)                     => BuiltInFunc.ABS(s)
       case FLOOR(s)                   => BuiltInFunc.FLOOR(s)
       case STRUUID()                  => BuiltInFunc.STRUUID()
+      case NOW()                      => DateTimeFunc.NOW()
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -415,6 +419,7 @@ object ExpressionF {
         case ABS(s)    => FuncNumerics.abs(s).pure[M]
         case FLOOR(s)  => FuncNumerics.floor(s).pure[M]
         case STRUUID() => FuncTerms.strUuid.pure[M]
+        case NOW()     => FuncDates.now.pure[M]
       }
     // scalastyle:on
 
