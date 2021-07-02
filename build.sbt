@@ -323,7 +323,7 @@ addCommandAlias(
 
 addCommandAlias(
   "ci-test",
-  ";scalafixAll --check ;scalafmtCheckAll ;scalastyle ;+test ;build-microsite"
+  ";scalafixAll --check ;scalafmtCheckAll ;scalastyle ;clean ;coverage ;+test ;build-microsite"
 )
 
 addCommandAlias(
