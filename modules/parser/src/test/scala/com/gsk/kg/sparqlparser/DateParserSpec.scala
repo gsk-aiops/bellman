@@ -1,6 +1,6 @@
 package com.gsk.kg.sparqlparser
 
-import com.gsk.kg.sparqlparser.Date.NOW
+import com.gsk.kg.sparqlparser.DateTimeFunc.NOW
 
 import org.scalatest.flatspec.AnyFlatSpec
 

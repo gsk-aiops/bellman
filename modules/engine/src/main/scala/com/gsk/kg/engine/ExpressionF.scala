@@ -207,7 +207,7 @@ object ExpressionF {
       case BuiltInFunc.ABS(s)                          => ABS(s)
       case BuiltInFunc.FLOOR(s)                        => FLOOR(s)
       case BuiltInFunc.STRUUID()                       => STRUUID()
-      case Date.NOW()                                  => NOW()
+      case DateTimeFunc.NOW()                          => NOW()
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -332,7 +332,7 @@ object ExpressionF {
       case ABS(s)                     => BuiltInFunc.ABS(s)
       case FLOOR(s)                   => BuiltInFunc.FLOOR(s)
       case STRUUID()                  => BuiltInFunc.STRUUID()
-      case NOW()                      => Date.NOW()
+      case NOW()                      => DateTimeFunc.NOW()
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =

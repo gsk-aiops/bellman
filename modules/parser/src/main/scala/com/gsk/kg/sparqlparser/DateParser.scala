@@ -1,6 +1,6 @@
 package com.gsk.kg.sparqlparser
 
-import com.gsk.kg.sparqlparser.Date._
+import com.gsk.kg.sparqlparser.DateTimeFunc._
 
 import fastparse.MultiLineWhitespace._
 import fastparse._
@@ -16,7 +16,7 @@ object DateParser {
     P("(" ~ now ~ ")")
       .map(f => NOW())
 
-  def parser[_: P]: P[Date] =
+  def parser[_: P]: P[DateTimeFunc] =
     P(
       nowParen
     )
