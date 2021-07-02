@@ -8,7 +8,7 @@ import fastparse._
 /** Functions on Functions on Dates and Times:
   * https://www.w3.org/TR/sparql11-query/#func-date-time
   */
-object DateParser {
+object DateTimeFuncsParser {
 
   def now[_: P]: P[Unit] = P("now")
 

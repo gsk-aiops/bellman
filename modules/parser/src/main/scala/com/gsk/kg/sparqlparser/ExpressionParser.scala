@@ -9,5 +9,5 @@ object ExpressionParser {
       BuiltInFuncParser.parser |
       ArithmeticParser.parser |
       StringValParser.tripleValParser |
-      DateParser.parser
+      DateTimeFuncsParser.parser
 }

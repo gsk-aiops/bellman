@@ -4,13 +4,13 @@ import com.gsk.kg.sparqlparser.DateTimeFunc.NOW
 
 import org.scalatest.flatspec.AnyFlatSpec
 
-class DateParserSpec extends AnyFlatSpec {
+class DateTimeFuncsParserSpec extends AnyFlatSpec {
 
   "NOW parser" should "return NOW type" in {
     val p =
       fastparse.parse(
         """(now)""",
-        DateParser.nowParen(_)
+        DateTimeFuncsParser.nowParen(_)
       )
     p.get.value match {
       case NOW() =>
