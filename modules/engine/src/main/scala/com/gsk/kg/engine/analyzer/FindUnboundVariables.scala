@@ -194,6 +194,7 @@ object FindVariablesOnExpression {
         case ABS(e)                          => e
         case FLOOR(e)                        => e
         case STRUUID()                       => Set.empty[VARIABLE]
+        case NOW()                           => Set.empty[VARIABLE]
       }
 
     val eval =

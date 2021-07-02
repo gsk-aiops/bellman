@@ -4,26 +4,22 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.types.DoubleType
+import org.apache.spark.sql.functions.substring
+import org.apache.spark.sql.functions.substring_index
+import org.apache.spark.sql.functions.to_timestamp
 
-import com.gsk.kg.engine.functions.Literals.NumericLiteral
-import com.gsk.kg.engine.functions.Literals.isDoubleNumericLiteral
 import com.gsk.kg.sparqlparser.TestConfig
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class RandSpec
-    extends AnyWordSpec
-    with Matchers
-    with SparkSpec
-    with TestConfig {
+class NowSpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
 
   import sqlContext.implicits._
 
   /*
-  https://www.w3.org/TR/sparql11-query/#idp2130040
-  RAND() -> "0.31221030831984886"^^xsd:double
+  https://www.w3.org/TR/sparql11-query/#func-now
+  NOW() -> "2011-01-10T14:45:13.815-05:00"^^xsd:dateTime
    */
 
   lazy val df: DataFrame = List(
@@ -32,44 +28,59 @@ class RandSpec
     ("_:c", "<http://xmlns.com/foaf/0.1/name>", "Alice", "")
   ).toDF("s", "p", "o", "g")
 
-  val projection: Option[Column] = Some(
-    isDoubleNumericLiteral(col(Evaluation.renamedColumn)) &&
-      NumericLiteral(col(Evaluation.renamedColumn)).value
-        .cast(DoubleType)
-        .isNotNull
-  )
+  val startPos            = 2
   val expected: List[Row] = (1 to 3).map(_ => Row(true)).toList
 
-  "perform rand function correctly" when {
-    "select rand response with an RAND valid" in {
+  val projection: Option[Column] = Some(
+    to_timestamp(
+      substring(
+        substring_index(col(Evaluation.renamedColumn), "\"^^xsd:dateTime", 1),
+        startPos,
+        Int.MaxValue
+      )
+    ).isNotNull
+  )
+
+  "perform now function correctly" when {
+    "select now response with an xsd:dateTime valid" in {
 
       val query =
         """
           |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
           |
-          |SELECT RAND()
+          |SELECT NOW()
           |WHERE  {
           |   ?x foaf:name ?name
           |}
           |""".stripMargin
 
-      Evaluation.eval(df, projection, query, expected)
+      Evaluation.eval(
+        df,
+        projection,
+        query,
+        expected
+      )
     }
 
-    "bind rand response with an RAND valid" in {
+    "bind now response with an xsd:dateTime valid" in {
 
       val query =
         """
           |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
           |
-          |SELECT ?r
+          |SELECT ?d
           |WHERE  {
           |   ?x foaf:name ?name .
-          |   bind(rand() as ?r)
+          |   bind(now() as ?d)
           |}
           |""".stripMargin
 
-      Evaluation.eval(df, projection, query, expected)
+      Evaluation.eval(
+        df,
+        projection,
+        query,
+        expected
+      )
     }
   }
 }

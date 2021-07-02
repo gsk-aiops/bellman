@@ -3,10 +3,8 @@ package com.gsk.kg.engine.compiler
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 
-import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
 
-import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -24,67 +22,54 @@ class Ceilspec
   CEIL(-10.5) -> -11
    */
 
+  def df(term: String): DataFrame = List(
+    (
+      "<http://uri.com/subject/#a1>",
+      "<http://xmlns.com/foaf/0.1/num>",
+      term
+    )
+  ).toDF("s", "p", "o")
+
+  val query: String =
+    """
+      |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+      |
+      |SELECT ceil(?num)
+      |WHERE  {
+      |   ?x foaf:num ?num
+      |}
+      |""".stripMargin
+
+  val nullExpected: List[Row] = List(Row(null))
+
   "perform ceil function correctly" when {
 
     "term is a simple numeric" in {
       val term     = "10.5"
-      val expected = Row("11")
-      eval(term, expected)
+      val expected = List(Row("11"))
+      Evaluation.eval(df(term), None, query, expected)
     }
 
     "term is NaN" in {
       val term     = "NaN"
-      val expected = Row("0")
-      eval(term, expected)
+      val expected = List(Row("0"))
+      Evaluation.eval(df(term), None, query, expected)
     }
 
     "term is not a numeric" in {
-      val term     = "Hello"
-      val expected = Row(null)
-      eval(term, expected)
+      val term = "Hello"
+      Evaluation.eval(df(term), None, query, nullExpected)
     }
 
     "term is xsd:double" in {
       val term     = "\"10.5\"^^xsd:double"
-      val expected = Row("\"11\"^^xsd:double")
-      eval(term, expected)
+      val expected = List(Row("\"11\"^^xsd:double"))
+      Evaluation.eval(df(term), None, query, expected)
     }
 
     "error when literal is typed but not numeric" in {
-      val term     = "\"10.5\"^^xsd:string"
-      val expected = Row(null)
-      eval(term, expected)
+      val term = "\"10.5\"^^xsd:string"
+      Evaluation.eval(df(term), None, query, nullExpected)
     }
   }
-
-  private def eval(term: String, expected: Row): Assertion = {
-    val df = List(
-      (
-        "<http://uri.com/subject/#a1>",
-        "<http://xmlns.com/foaf/0.1/num>",
-        term
-      )
-    ).toDF("s", "p", "o")
-
-    val query =
-      """
-        |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-        |
-        |SELECT ceil(?num)
-        |WHERE  {
-        |   ?x foaf:num ?num
-        |}
-        |""".stripMargin
-
-    val result = Compiler.compile(df, query, config)
-    val dfR: DataFrame = result match {
-      case Left(e)  => throw new Exception(e.toString)
-      case Right(r) => r
-    }
-
-    dfR
-      .collect()
-      .head shouldEqual expected
-  }
-
 }

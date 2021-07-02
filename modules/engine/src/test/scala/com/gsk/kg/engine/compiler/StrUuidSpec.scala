@@ -1,12 +1,12 @@
 package com.gsk.kg.engine.compiler
 
+import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.functions.col
 
-import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
 
-import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -31,7 +31,12 @@ class StrUuidSpec
 
   val strUuidRegex =
     "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-  val strUuidRegexColName = "uuidR"
+
+  val projection: Option[Column] = Some(
+    col(Evaluation.renamedColumn).rlike(strUuidRegex)
+  )
+
+  val expected: List[Row] = (1 to 3).map(_ => Row(true)).toList
 
   "perform struuid function correctly" when {
     "select struuid response with an UUID valid" in {
@@ -46,7 +51,7 @@ class StrUuidSpec
           |}
           |""".stripMargin
 
-      evaluate(df, query)
+      Evaluation.eval(df, projection, query, expected)
     }
 
     "bind struuid response with an UUID valid" in {
@@ -62,23 +67,7 @@ class StrUuidSpec
           |}
           |""".stripMargin
 
-      evaluate(df, query)
+      Evaluation.eval(df, projection, query, expected)
     }
   }
-  private def evaluate(df: DataFrame, query: String): Assertion = {
-    val result = Compiler.compile(df, query, config)
-
-    val dfR: DataFrame = result match {
-      case Left(e)  => throw new Exception(e.toString)
-      case Right(r) => r
-    }
-    val expected = Set(Row(true))
-    dfR
-      .select(
-        dfR(dfR.columns.head).rlike(strUuidRegex).as(strUuidRegexColName)
-      )
-      .collect()
-      .toSet shouldEqual expected
-  }
-
 }
