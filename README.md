@@ -1,3 +1,6 @@
+[![Scala CI](https://github.com/gsk-aiops/bellman/actions/workflows/scala.yml/badge.svg)](https://github.com/gsk-aiops/bellman/actions/workflows/scala.yml)
+[![codecov](https://codecov.io/gh/gsk-aiops/bellman/branch/master/graph/badge.svg?token=chImTVd85b)](https://codecov.io/gh/gsk-aiops/bellman)
+
 # Bellman
 
 Bellman executes SparQL queries in Spark.
