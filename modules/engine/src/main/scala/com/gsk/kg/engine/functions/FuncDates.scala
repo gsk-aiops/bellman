@@ -1,9 +1,15 @@
 package com.gsk.kg.engine.functions
 
+import com.gsk.kg.engine.functions.Literals.NumericLiteral
+import com.gsk.kg.engine.functions.Literals.isDateTimeLiteral
+import com.gsk.kg.engine.functions.Literals.nullLiteral
+
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.format_string
+import org.apache.spark.sql.functions.when
+import org.apache.spark.sql.functions.{year => sYear}
 
 object FuncDates {
 
@@ -23,7 +29,13 @@ object FuncDates {
     * @param col
     * @return
     */
-  def year(col: Column): Column = ???
+  def year(col: Column): Column =
+    when(
+      isDateTimeLiteral(col),
+      sYear(
+        NumericLiteral(col).value
+      )
+    ).otherwise(nullLiteral)
 
   /** Returns the month part of arg as an integer.
     * @param col
