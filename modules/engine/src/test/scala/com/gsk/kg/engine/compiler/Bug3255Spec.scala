@@ -3,7 +3,6 @@ package compiler
 
 import com.gsk.kg.engine.syntax._
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
