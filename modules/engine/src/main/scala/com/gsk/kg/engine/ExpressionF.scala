@@ -102,6 +102,7 @@ object ExpressionF {
   final case class FLOOR[A](s: A)                         extends ExpressionF[A]
   final case class STRUUID[A]()                           extends ExpressionF[A]
   final case class NOW[A]()                               extends ExpressionF[A]
+  final case class YEAR[A](e: A)                          extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
@@ -208,6 +209,7 @@ object ExpressionF {
       case BuiltInFunc.FLOOR(s)                        => FLOOR(s)
       case BuiltInFunc.STRUUID()                       => STRUUID()
       case DateTimeFunc.NOW()                          => NOW()
+      case DateTimeFunc.YEAR(s)                        => YEAR(s)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -333,6 +335,7 @@ object ExpressionF {
       case FLOOR(s)                   => BuiltInFunc.FLOOR(s)
       case STRUUID()                  => BuiltInFunc.STRUUID()
       case NOW()                      => DateTimeFunc.NOW()
+      case YEAR(s)                    => DateTimeFunc.YEAR(s)
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -420,6 +423,7 @@ object ExpressionF {
         case FLOOR(s)  => FuncNumerics.floor(s).pure[M]
         case STRUUID() => FuncTerms.strUuid.pure[M]
         case NOW()     => FuncDates.now.pure[M]
+        case YEAR(s)   => FuncDates.year(s).pure[M]
       }
     // scalastyle:on
 
