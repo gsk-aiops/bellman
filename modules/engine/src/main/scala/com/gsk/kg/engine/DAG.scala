@@ -3,20 +3,18 @@ package com.gsk.kg.engine
 import cats._
 import cats.data.NonEmptyList
 import cats.implicits._
-
 import higherkindness.droste._
 import higherkindness.droste.syntax.all._
 import higherkindness.droste.util.DefaultTraverse
-
 import com.gsk.kg.engine.data.ChunkedList
 import com.gsk.kg.sparqlparser.ConditionOrder
 import com.gsk.kg.sparqlparser.Expr
-import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import com.gsk.kg.sparqlparser.Expression
+import com.gsk.kg.sparqlparser.PropertyExpression
 import com.gsk.kg.sparqlparser.Query
 import com.gsk.kg.sparqlparser.StringVal
+import com.gsk.kg.sparqlparser.Expr.fixedpoint._
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-
 import monocle._
 import monocle.macros.Lenses
 
@@ -47,8 +45,14 @@ object DAG {
       variable: VARIABLE,
       expression: Expression,
       r: A
+  )                                                  extends DAG[A]
+  @Lenses final case class Sequence[A](bps: List[A]) extends DAG[A]
+  @Lenses final case class Path[A](
+      s: StringVal,
+      p: PropertyExpression,
+      o: StringVal,
+      g: List[StringVal]
   )                                                              extends DAG[A]
-  @Lenses final case class Sequence[A](bps: List[A])             extends DAG[A]
   @Lenses final case class BGP[A](quads: ChunkedList[Expr.Quad]) extends DAG[A]
   @Lenses final case class LeftJoin[A](l: A, r: A, filters: List[Expression])
       extends DAG[A]
@@ -85,7 +89,8 @@ object DAG {
           f(r).map(bind(variable, expression, _))
         case DAG.Sequence(bps) =>
           bps.map(f).sequence.map(DAG.sequence)
-        case DAG.BGP(quads) => bgp[B](quads).pure[G]
+        case DAG.Path(s, p, o, g) => path[B](s, p, o, g).pure[G]
+        case DAG.BGP(quads)       => bgp[B](quads).pure[G]
         case DAG.LeftJoin(l, r, filters) =>
           (
             f(l),
@@ -119,7 +124,14 @@ object DAG {
     Project[A](variables, r)
   def bind[A](variable: VARIABLE, expression: Expression, r: A): DAG[A] =
     Bind[A](variable, expression, r)
-  def sequence[A](bps: List[A]): DAG[A]             = Sequence[A](bps)
+  def sequence[A](bps: List[A]): DAG[A] = Sequence[A](bps)
+  def path[A](
+      s: StringVal,
+      p: PropertyExpression,
+      o: StringVal,
+      g: List[StringVal]
+  ): DAG[A] =
+    Path(s, p, o, g)
   def bgp[A](quads: ChunkedList[Expr.Quad]): DAG[A] = BGP[A](quads)
   def leftJoin[A](l: A, r: A, filters: List[Expression]): DAG[A] =
     LeftJoin[A](l, r, filters)
@@ -165,6 +177,13 @@ object DAG {
   ): T = bind[T](variable, expression, r).embed
   def sequenceR[T: Embed[DAG, *]](bps: List[T]): T =
     sequence[T](bps).embed
+  def pathR[T: Embed[DAG, *]](
+      s: StringVal,
+      p: PropertyExpression,
+      o: StringVal,
+      g: List[StringVal]
+  ): T =
+    path[T](s, p, o, g).embed
   def bgpR[T: Embed[DAG, *]](triples: ChunkedList[Expr.Quad]): T =
     bgp[T](triples).embed
   def leftJoinR[T: Embed[DAG, *]](
@@ -232,7 +251,7 @@ object DAG {
       case JoinF(l, r)                  => join(l, r)
       case LeftJoinF(l, r)              => leftJoin(l, r, Nil)
       case ProjectF(vars, r)            => project(vars.toList, r)
-      case PathQuadF(s, p, o, g)        => noop("PathQuadF not supported")
+      case PathF(s, p, o, g)            => path(s, p, o, g)
       case QuadF(s, p, o, g)            => noop("QuadF not supported")
       case DistinctF(r)                 => distinct(r)
       case ReducedF(r)                  => reduced(r)
@@ -266,6 +285,7 @@ object DAG {
   implicit def eqProject[A]: Eq[Project[A]]     = Eq.fromUniversalEquals
   implicit def eqBind[A]: Eq[Bind[A]]           = Eq.fromUniversalEquals
   implicit def eqSequence[A]: Eq[Sequence[A]]   = Eq.fromUniversalEquals
+  implicit def eqPathQuad[A]: Eq[Path[A]]       = Eq.fromUniversalEquals
   implicit def eqBGP[A]: Eq[BGP[A]]             = Eq.fromUniversalEquals
   implicit def eqLeftJoin[A]: Eq[LeftJoin[A]]   = Eq.fromUniversalEquals
   implicit def eqUnion[A]: Eq[Union[A]]         = Eq.fromUniversalEquals
@@ -314,6 +334,10 @@ object optics {
     }(identity)
   def _sequence[T: Basis[DAG, *]]: Prism[DAG[T], Sequence[T]] =
     Prism.partial[DAG[T], Sequence[T]] { case dag @ Sequence(bps) =>
+      dag
+    }(identity)
+  def _path[T: Basis[DAG, *]]: Prism[DAG[T], Path[T]] =
+    Prism.partial[DAG[T], Path[T]] { case dag @ Path(s, p, o, g) =>
       dag
     }(identity)
   def _bgp[T: Basis[DAG, *]]: Prism[DAG[T], BGP[T]] =
@@ -373,6 +397,8 @@ object optics {
     basisIso[DAG, T] composePrism _bind
   def _sequenceR[T: Basis[DAG, *]]: Prism[T, Sequence[T]] =
     basisIso[DAG, T] composePrism _sequence
+  def _pathR[T: Basis[DAG, *]]: Prism[T, Path[T]] =
+    basisIso[DAG, T] composePrism _path
   def _bgpR[T: Basis[DAG, *]]: Prism[T, BGP[T]] =
     basisIso[DAG, T] composePrism _bgp
   def _leftjoinR[T: Basis[DAG, *]]: Prism[T, LeftJoin[T]] =

@@ -41,12 +41,19 @@ object Query {
 object Expr {
   final case class Sequence(seq: List[Expr]) extends Expr
   final case class BGP(quads: Seq[Quad])     extends Expr
-  final case class PathQuad(
+  final case class Path(
       s: StringVal,
       p: PropertyExpression,
       o: StringVal,
       g: List[StringVal]
-  ) extends Expr
+  ) extends Expr {
+    def getVariables: List[(StringVal, String)] =
+      getNamesAndPositions.filterNot(_._1 == GRAPH_VARIABLE)
+
+    def getNamesAndPositions: List[(StringVal, String)] =
+      List((s, "s"), (o, "o")).filter(_._1.isVariable) ++
+        g.collect { case e if e.isVariable => e -> "g" }
+  }
   final case class Quad(
       s: StringVal,
       p: StringVal,

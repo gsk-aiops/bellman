@@ -47,7 +47,8 @@ object Engine {
       case DAG.Project(variables, r) => r.select(variables: _*).pure[M]
       case DAG.Bind(variable, expression, r) =>
         evaluateBind(variable, expression, r)
-      case DAG.Sequence(bps)           => notImplemented("sequence")
+      case DAG.Sequence(bps)           => evaluateSequence(bps)
+      case DAG.Path(s, p, o, g)        => evaluatePath(s, p, o, g)
       case DAG.BGP(quads)              => evaluateBGP(quads)
       case DAG.LeftJoin(l, r, filters) => evaluateLeftJoin(l, r, filters)
       case DAG.Union(l, r)             => evaluateUnion(l, r)
@@ -203,6 +204,34 @@ object Engine {
       df
     )
   }.pure[M]
+
+  private def evaluateSequence(bps: List[Multiset])(implicit
+      sc: SQLContext
+  ): M[Multiset] =
+    Foldable[List].fold(bps).pure[M]
+
+  private def evaluatePath(
+      s: StringVal,
+      p: PropertyExpression,
+      o: StringVal,
+      g: List[StringVal]
+  ): M[Multiset] = {
+    val vars = Set.empty[VARIABLE]
+
+    M.get[Result, Config, Log, DataFrame].flatMap { df =>
+      M.ask[Result, Config, Log, DataFrame].flatMapF { config =>
+        PropertyExpressionF
+          .compile[PropertyExpression](p, config)
+          .apply(df)
+          .map { resultDf =>
+            Multiset(
+              vars,
+              resultDf
+            )
+          }
+      }
+    }
+  }
 
   private def evaluateBGP(
       quads: ChunkedList[Expr.Quad]
