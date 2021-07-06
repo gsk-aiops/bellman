@@ -125,6 +125,7 @@ object FindUnboundVariables {
 
 object FindVariablesOnExpression {
 
+  // scalastyle:off
   def apply[T](t: T)(implicit T: Basis[ExpressionF, T]): Set[VARIABLE] = {
     val algebra: Algebra[ExpressionF, Set[VARIABLE]] =
       Algebra[ExpressionF, Set[VARIABLE]] {
@@ -205,4 +206,5 @@ object FindVariablesOnExpression {
 
     eval(t)
   }
+  // scalastyle:on
 }
