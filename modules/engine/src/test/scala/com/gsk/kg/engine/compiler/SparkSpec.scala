@@ -18,6 +18,7 @@ trait SparkSpec extends DataFrameSuiteBase { self: Suite =>
       .set("spark.app.id", appID)
       .set("spark.driver.host", "localhost")
       .set("spark.sql.codegen.wholeStage", "false")
+      .set("spark.sql.shuffle.partitions", "1")
   }
 
 }

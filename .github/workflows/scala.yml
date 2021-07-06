@@ -40,8 +40,12 @@ jobs:
           path: ~/.sbt
           key: ${{ runner.os }}-sbt-${{ hashFiles('build.sbt') }}-${{ hashFiles('project/*.scala') }}
           restore-keys: ${{ runner.os }}-sbt-
-      - name: Run checks
-        run: sbt ci-test
+      - name: Lint code
+        run: sbt ";scalafixAll --check ;scalafmtCheckAll ;scalastyle"
+      - name: Run tests
+        run: sbt ";clean ;coverage ;+test"
+      - name: Build microsite
+        run: sbt ";build-microsite"
       - name: Coverage Report
         run: sbt coverageReport
       - name: "Upload coverage to Codecov"

@@ -3,11 +3,10 @@ package compiler
 
 import com.gsk.kg.engine.syntax._
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class Bug3255Spec extends AnyWordSpec with Matchers with DataFrameSuiteBase {
+class Bug3255Spec extends AnyWordSpec with Matchers with SparkSpec {
 
   override implicit def reuseContextIfPossible: Boolean = true
 
