@@ -44,8 +44,8 @@ class MonthSpec
 
   val projection: Option[Column] = None
 
-  "perform year function correctly" when {
-    "select year response with a year of dateTime value" in {
+  "perform month function correctly" when {
+    "select month response with a month of dateTime value" in {
 
       val query =
         """
@@ -65,7 +65,7 @@ class MonthSpec
       )
     }
 
-    "bind year response with a year value" in {
+    "bind month response with a month value" in {
 
       val query =
         """
