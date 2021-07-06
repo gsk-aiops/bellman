@@ -78,6 +78,11 @@ object FuncDates {
     */
   def tz(col: Column): Column = ???
 
+  /** Check if col is a xsd:dateTime type and apply function in case true
+    * @param f
+    * @param col
+    * @return f(col) or lit(null) if col isn't xsd:dateTime type
+    */
   private def apply(f: Column => Column, col: Column): Column =
     when(
       isDateTimeLiteral(col),
