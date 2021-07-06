@@ -282,6 +282,7 @@ object QueryExtractor {
       case NOW()                           => "(now)"
       case YEAR(e)                         => s"(year $e)"
       case MONTH(e)                        => s"(month $e)"
+      case DAY(e)                          => s"(day $e)"
     }
 
   private val exprToString: Algebra[ExprF, String] =

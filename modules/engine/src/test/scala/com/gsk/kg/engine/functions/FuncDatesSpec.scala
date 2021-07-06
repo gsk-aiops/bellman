@@ -58,9 +58,7 @@ class FuncDatesSpec
     }
 
     "year function" should {
-
-      val yearColName = "year"
-      val expected    = Array(Row(2011))
+      val expected = Array(Row(2011))
 
       "year function returns year of datetime" in {
         eval(FuncDates.year, expected)
@@ -68,12 +66,18 @@ class FuncDatesSpec
     }
 
     "month function" should {
-
-      val monthColName = "month"
-      val expected     = Array(Row(1))
+      val expected = Array(Row(1))
 
       "month function returns month of datetime" in {
         eval(FuncDates.month, expected)
+      }
+    }
+
+    "day function" should {
+      val expected = Array(Row(10))
+
+      "day function returns day of datetime" in {
+        eval(FuncDates.day, expected)
       }
     }
   }
