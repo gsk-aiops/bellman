@@ -7,6 +7,7 @@ import com.gsk.kg.sparqlparser.Conditional._
 import com.gsk.kg.sparqlparser.Expr._
 import com.gsk.kg.sparqlparser.PropertyExpression._
 import com.gsk.kg.sparqlparser.StringVal._
+
 import org.scalatest.wordspec.AnyWordSpec
 
 class ExprParserSpec extends AnyWordSpec with TestUtils {

@@ -5,9 +5,11 @@ import cats.Show
 import cats.data.NonEmptyChain
 import cats.data.NonEmptyList
 import cats.implicits._
+
 import higherkindness.droste.Algebra
 import higherkindness.droste.Basis
 import higherkindness.droste.scheme
+
 import com.gsk.kg.sparqlparser.ConditionOrder
 import com.gsk.kg.sparqlparser.ConditionOrder.ASC
 import com.gsk.kg.sparqlparser.ConditionOrder.DESC

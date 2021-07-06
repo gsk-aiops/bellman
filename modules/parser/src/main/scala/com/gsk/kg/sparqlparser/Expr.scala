@@ -46,14 +46,7 @@ object Expr {
       p: PropertyExpression,
       o: StringVal,
       g: List[StringVal]
-  ) extends Expr {
-    def getVariables: List[(StringVal, String)] =
-      getNamesAndPositions.filterNot(_._1 == GRAPH_VARIABLE)
-
-    def getNamesAndPositions: List[(StringVal, String)] =
-      List((s, "s"), (o, "o")).filter(_._1.isVariable) ++
-        g.collect { case e if e.isVariable => e -> "g" }
-  }
+  ) extends Expr
   final case class Quad(
       s: StringVal,
       p: StringVal,

@@ -5,9 +5,11 @@ import cats.implicits._
 import higherkindness.droste._
 import higherkindness.droste.macros.deriveTraverse
 
+import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 
 import com.gsk.kg.config.Config
+import com.gsk.kg.engine.properties.FuncProperty
 import com.gsk.kg.sparqlparser.EngineError
 import com.gsk.kg.sparqlparser.PropertyExpression
 import com.gsk.kg.sparqlparser.Result
@@ -73,11 +75,12 @@ object PropertyExpressionF {
   def compile[T](
       t: T,
       config: Config
-  )(implicit T: Basis[PropertyExpressionF, T]): DataFrame => Result[DataFrame] =
+  )(implicit T: Basis[PropertyExpressionF, T]): DataFrame => Result[Column] =
     df => {
-      val algebraM: AlgebraM[M, PropertyExpressionF, DataFrame] =
-        AlgebraM.apply[M, PropertyExpressionF, DataFrame] {
-          case Alternative(pel, per)   => unknownPropertyPath("alternative")
+      val algebraM: AlgebraM[M, PropertyExpressionF, Column] =
+        AlgebraM.apply[M, PropertyExpressionF, Column] {
+          case Alternative(pel, per) =>
+            FuncProperty.alternative(df, pel, per).pure[M]
           case Reverse(e)              => unknownPropertyPath("reverse")
           case SeqExpression(pel, per) => unknownPropertyPath("seqExpression")
           case OneOrMore(e)            => unknownPropertyPath("oneOrMore")
@@ -88,16 +91,16 @@ object PropertyExpressionF {
           case ExactlyN(n, e)          => unknownPropertyPath("exactlyN")
           case NOrMore(n, e)           => unknownPropertyPath("nOrMore")
           case BetweenZeroAndN(n, e)   => unknownPropertyPath("betweenZeroAndN")
-          case Uri(s)                  => unknownPropertyPath("uri")
+          case Uri(s)                  => FuncProperty.uri(s).pure[M]
         }
 
-      val eval = scheme.cataM[M, PropertyExpressionF, T, DataFrame](algebraM)
+      val eval = scheme.cataM[M, PropertyExpressionF, T, Column](algebraM)
 
       eval(t).runA(config, df)
     }
 
-  private def unknownPropertyPath(name: String): M[DataFrame] =
-    M.liftF[Result, Config, Log, DataFrame, DataFrame](
-      EngineError.UnknownPropertyPath(name).asLeft[DataFrame]
+  private def unknownPropertyPath(name: String): M[Column] =
+    M.liftF[Result, Config, Log, DataFrame, Column](
+      EngineError.UnknownPropertyPath(name).asLeft[Column]
     )
 }

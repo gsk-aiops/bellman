@@ -1,8 +1,8 @@
 package com.gsk.kg.sparqlparser
 
-import higherkindness.droste.macros.deriveFixedPoint
-
 import cats.implicits._
+
+import higherkindness.droste.macros.deriveFixedPoint
 
 @deriveFixedPoint trait PropertyExpression
 

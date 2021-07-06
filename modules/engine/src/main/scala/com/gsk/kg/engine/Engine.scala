@@ -66,11 +66,6 @@ object Engine {
       case DAG.Noop(str)               => evaluateNoop(str)
     }
 
-  private def notImplemented(constructor: String): M[Multiset] =
-    M.liftF[Result, Config, Log, DataFrame, Multiset](
-      EngineError.General(s"$constructor not implemented").asLeft[Multiset]
-    )
-
   def evaluate[T: Basis[DAG, *]](
       dataframe: DataFrame,
       dag: T,
@@ -138,18 +133,24 @@ object Engine {
     M.get[Result, Config, Log, DataFrame]
       .map { df =>
         quads
-          .mapChunks(applyChunkToDf(_, df))
+          .mapChunks { chunk =>
+            val condition = composedConditionFromChunk(df, chunk)
+            applyChunkToDf(chunk, condition, df)
+          }
           .foldLeft(Multiset.empty)((acc, other) => acc.union(other))
       }
       .flatMap(m => evaluateConstruct(bgp, m))
   }
 
-  private def applyChunkToDf(chunk: ChunkedList.Chunk[Quad], df: DataFrame)(
-      implicit sc: SQLContext
+  private def applyChunkToDf(
+      chunk: ChunkedList.Chunk[Quad],
+      condition: Column,
+      df: DataFrame
+  )(implicit
+      sc: SQLContext
   ): Multiset = {
     import sc.implicits._
-    val condition = composedConditionFromChunk(df, chunk)
-    val current   = df.filter(condition)
+    val current = df.filter(condition)
     val vars =
       chunk
         .map(_.getNamesAndPositions :+ (GRAPH_VARIABLE, "g"))
@@ -215,19 +216,15 @@ object Engine {
       p: PropertyExpression,
       o: StringVal,
       g: List[StringVal]
-  ): M[Multiset] = {
-    val vars = Set.empty[VARIABLE]
-
+  )(implicit sc: SQLContext): M[Multiset] = {
     M.get[Result, Config, Log, DataFrame].flatMap { df =>
       M.ask[Result, Config, Log, DataFrame].flatMapF { config =>
         PropertyExpressionF
           .compile[PropertyExpression](p, config)
           .apply(df)
-          .map { resultDf =>
-            Multiset(
-              vars,
-              resultDf
-            )
+          .map { condition =>
+            val chunk = Chunk(Quad(s, StringVal.STRING(""), o, g))
+            applyChunkToDf(chunk, condition, df)
           }
       }
     }
@@ -238,7 +235,10 @@ object Engine {
   )(implicit sc: SQLContext): M[Multiset] =
     M.get[Result, Config, Log, DataFrame].map { df =>
       Foldable[ChunkedList].fold(
-        quads.mapChunks(applyChunkToDf(_, df))
+        quads.mapChunks { chunk =>
+          val condition = composedConditionFromChunk(df, chunk)
+          applyChunkToDf(chunk, condition, df)
+        }
       )
     }
 
