@@ -1,5 +1,6 @@
 package com.gsk.kg.sparqlparser
 
+import com.gsk.kg.sparqlparser.DateTimeFunc.MONTH
 import com.gsk.kg.sparqlparser.DateTimeFunc.NOW
 import com.gsk.kg.sparqlparser.DateTimeFunc.YEAR
 import com.gsk.kg.sparqlparser.StringVal.STRING
@@ -43,6 +44,32 @@ class DateTimeFuncsParserSpec extends AnyFlatSpec {
       )
     p.get.value match {
       case YEAR(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "MONTH parser with string" should "return MONTH type" in {
+    val p =
+      fastparse.parse(
+        """(month "x")""",
+        DateTimeFuncsParser.monthParen(_)
+      )
+    p.get.value match {
+      case MONTH(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "MONTH parser with variable" should "return MONTH type" in {
+    val p =
+      fastparse.parse(
+        """(month ?d)""",
+        DateTimeFuncsParser.monthParen(_)
+      )
+    p.get.value match {
+      case MONTH(VARIABLE("?d")) =>
         succeed
       case _ => fail
     }
