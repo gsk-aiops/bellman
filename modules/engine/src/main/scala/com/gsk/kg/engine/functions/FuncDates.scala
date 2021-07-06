@@ -5,12 +5,12 @@ import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.format_string
 import org.apache.spark.sql.functions.when
-import org.apache.spark.sql.functions.{year => sYear}
 import org.apache.spark.sql.functions.{month => sMonth}
+import org.apache.spark.sql.functions.{year => sYear}
+
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isDateTimeLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
-import org.apache.spark.sql.types.IntegerType
 
 object FuncDates {
 
