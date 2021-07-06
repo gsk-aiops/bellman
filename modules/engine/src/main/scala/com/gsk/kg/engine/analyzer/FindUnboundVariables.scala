@@ -195,6 +195,7 @@ object FindVariablesOnExpression {
         case FLOOR(e)                        => e
         case STRUUID()                       => Set.empty[VARIABLE]
         case NOW()                           => Set.empty[VARIABLE]
+        case YEAR(s)                         => s
       }
 
     val eval =

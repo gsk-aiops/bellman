@@ -315,6 +315,12 @@ object Literals {
     typed.tag === lit("<http://www.w3.org/2001/XMLSchema#numeric>")
   }
 
+  def isDateTimeLiteral(col: Column): Column = {
+    val typed = TypedLiteral(col)
+    typed.tag === lit("xsd:dateTime") ||
+    typed.tag === lit("<http://www.w3.org/2001/XMLSchema#dateTime>")
+  }
+
   def promoteBooleanBooleanToBooleanResult(col1: Column, col2: Column)(
       op: (Column, Column) => Column
   ): Column = {

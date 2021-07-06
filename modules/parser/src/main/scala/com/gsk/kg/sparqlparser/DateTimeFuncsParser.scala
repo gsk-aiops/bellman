@@ -10,14 +10,20 @@ import fastparse._
   */
 object DateTimeFuncsParser {
 
-  def now[_: P]: P[Unit] = P("now")
+  def now[_: P]: P[Unit]  = P("now")
+  def year[_: P]: P[Unit] = P("year")
 
   def nowParen[_: P]: P[NOW] =
     P("(" ~ now ~ ")")
       .map(f => NOW())
 
+  def yearParen[_: P]: P[YEAR] =
+    P("(" ~ year ~ ExpressionParser.parser ~ ")")
+      .map(f => YEAR(f))
+
   def parser[_: P]: P[DateTimeFunc] =
     P(
       nowParen
+        | yearParen
     )
 }

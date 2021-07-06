@@ -48,6 +48,25 @@ class FuncDatesSpec
           .toSet shouldEqual Set(Row(true))
       }
     }
+
+    "year function" should {
+
+      val yearColName = "year"
+      val expected    = Array(Row(2011))
+
+      "year function returns year of datetime" in {
+        val df =
+          List(
+            "\"2011-01-10T14:45:13.815-05:00\"^^xsd:dateTime"
+          ).toDF()
+        val yearDf =
+          df.select(FuncDates.year(col(df.columns.head)).as(yearColName))
+
+        yearDf
+          .select(col(yearColName))
+          .collect() shouldEqual expected
+      }
+    }
   }
 
 }
