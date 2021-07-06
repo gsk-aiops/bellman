@@ -196,6 +196,7 @@ object FindVariablesOnExpression {
         case STRUUID()                       => Set.empty[VARIABLE]
         case NOW()                           => Set.empty[VARIABLE]
         case YEAR(s)                         => s
+        case MONTH(s)                        => s
       }
 
     val eval =

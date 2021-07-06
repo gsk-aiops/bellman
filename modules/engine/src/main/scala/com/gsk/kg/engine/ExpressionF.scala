@@ -28,6 +28,7 @@ import com.gsk.kg.sparqlparser._
   */
 @deriveTraverse sealed trait ExpressionF[+A]
 
+// scalastyle:off
 object ExpressionF {
 
   final case class ADD[A](l: A, r: A)      extends ExpressionF[A]
@@ -103,6 +104,7 @@ object ExpressionF {
   final case class STRUUID[A]()                           extends ExpressionF[A]
   final case class NOW[A]()                               extends ExpressionF[A]
   final case class YEAR[A](e: A)                          extends ExpressionF[A]
+  final case class MONTH[A](e: A)                         extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
@@ -210,6 +212,7 @@ object ExpressionF {
       case BuiltInFunc.STRUUID()                       => STRUUID()
       case DateTimeFunc.NOW()                          => NOW()
       case DateTimeFunc.YEAR(s)                        => YEAR(s)
+      case DateTimeFunc.MONTH(s)                       => MONTH(s)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -336,6 +339,7 @@ object ExpressionF {
       case STRUUID()                  => BuiltInFunc.STRUUID()
       case NOW()                      => DateTimeFunc.NOW()
       case YEAR(s)                    => DateTimeFunc.YEAR(s)
+      case MONTH(s)                   => DateTimeFunc.MONTH(s)
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -424,6 +428,7 @@ object ExpressionF {
         case STRUUID() => FuncTerms.strUuid.pure[M]
         case NOW()     => FuncDates.now.pure[M]
         case YEAR(s)   => FuncDates.year(s).pure[M]
+        case MONTH(s)  => FuncDates.month(s).pure[M]
       }
     // scalastyle:on
 
@@ -438,3 +443,4 @@ object ExpressionF {
     )
 
 }
+// scalastyle:on

@@ -1,5 +1,7 @@
 package com.gsk.kg.engine.functions
 
+import org.apache.spark.sql.Column
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.functions.substring
@@ -8,6 +10,7 @@ import org.apache.spark.sql.functions.to_timestamp
 
 import com.gsk.kg.engine.compiler.SparkSpec
 
+import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -24,6 +27,11 @@ class FuncDatesSpec
   override implicit def enableHiveSupport: Boolean      = false
 
   "FuncDates" when {
+
+    implicit lazy val df: DataFrame =
+      List(
+        "\"2011-01-10T14:45:13.815-05:00\"^^xsd:dateTime"
+      ).toDF()
 
     "now function" should {
 
@@ -55,18 +63,28 @@ class FuncDatesSpec
       val expected    = Array(Row(2011))
 
       "year function returns year of datetime" in {
-        val df =
-          List(
-            "\"2011-01-10T14:45:13.815-05:00\"^^xsd:dateTime"
-          ).toDF()
-        val yearDf =
-          df.select(FuncDates.year(col(df.columns.head)).as(yearColName))
+        eval(FuncDates.year, expected)
+      }
+    }
 
-        yearDf
-          .select(col(yearColName))
-          .collect() shouldEqual expected
+    "month function" should {
+
+      val monthColName = "month"
+      val expected     = Array(Row(1))
+
+      "month function returns month of datetime" in {
+        eval(FuncDates.month, expected)
       }
     }
   }
 
+  private def eval(f: Column => Column, expected: Array[Row])(implicit
+      df: DataFrame
+  ): Assertion = {
+    val dfR =
+      df.select(f(col(df.columns.head)).as("r"))
+    dfR
+      .select(col("r"))
+      .collect() shouldEqual expected
+  }
 }

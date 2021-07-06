@@ -220,6 +220,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.STRUUID()   => Leaf("STRUUID")
           case ExpressionF.NOW()       => Leaf("NOW")
           case ExpressionF.YEAR(e)     => Node(s"YEAR", Stream(e))
+          case ExpressionF.MONTH(e)    => Node(s"MONTH", Stream(e))
         }
 
         val t = scheme.cata(alg)
