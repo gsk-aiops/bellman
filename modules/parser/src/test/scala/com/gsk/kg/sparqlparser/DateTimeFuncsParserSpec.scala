@@ -6,6 +6,7 @@ import com.gsk.kg.sparqlparser.DateTimeFunc.NOW
 import com.gsk.kg.sparqlparser.DateTimeFunc.YEAR
 import com.gsk.kg.sparqlparser.StringVal.STRING
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+
 import org.scalatest.flatspec.AnyFlatSpec
 
 class DateTimeFuncsParserSpec extends AnyFlatSpec {
