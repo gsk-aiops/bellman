@@ -6,10 +6,11 @@ import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.format_string
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{year => sYear}
-
+import org.apache.spark.sql.functions.{month => sMonth}
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isDateTimeLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
+import org.apache.spark.sql.types.IntegerType
 
 object FuncDates {
 
@@ -29,19 +30,13 @@ object FuncDates {
     * @param col
     * @return
     */
-  def year(col: Column): Column =
-    when(
-      isDateTimeLiteral(col),
-      sYear(
-        NumericLiteral(col).value
-      )
-    ).otherwise(nullLiteral)
+  def year(col: Column): Column = apply(sYear, col)
 
   /** Returns the month part of arg as an integer.
     * @param col
     * @return
     */
-  def month(col: Column): Column = ???
+  def month(col: Column): Column = apply(sMonth, col)
 
   /** Returns the day part of arg as an integer.
     * @param col
@@ -82,4 +77,10 @@ object FuncDates {
     * @return
     */
   def tz(col: Column): Column = ???
+
+  private def apply(f: Column => Column, col: Column): Column =
+    when(
+      isDateTimeLiteral(col),
+      f(NumericLiteral(col).value) //.cast(IntegerType)
+    ).otherwise(nullLiteral)
 }
