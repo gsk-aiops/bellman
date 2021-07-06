@@ -81,6 +81,6 @@ object FuncDates {
   private def apply(f: Column => Column, col: Column): Column =
     when(
       isDateTimeLiteral(col),
-      f(NumericLiteral(col).value) //.cast(IntegerType)
+      f(NumericLiteral(col).value)
     ).otherwise(nullLiteral)
 }
