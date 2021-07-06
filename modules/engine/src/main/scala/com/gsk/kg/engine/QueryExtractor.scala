@@ -280,6 +280,7 @@ object QueryExtractor {
       case FLOOR(e)                        => s"(floor $e)"
       case STRUUID()                       => "(struuid)"
       case NOW()                           => "(now)"
+      case YEAR(e)                         => s"(year $e)"
     }
 
   private val exprToString: Algebra[ExprF, String] =
