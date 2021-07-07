@@ -19,22 +19,26 @@ class StrlangSpec
   "perform STRLANG function correctly" should {
 
     "tag is es" in {
-      val str      = "\"chat\""
+      val str = "chat"
       val tag      = "es"
-      val expected = Row(s"$str@$tag")
-      val actual   = act(str, s"\"$tag\"")
+      val lit = quote(str)
+      val expected = Row(s"$lit@$tag")
+      val actual = act(str, tag)
       actual shouldEqual expected
     }
 
     "tag is en-US" in {
-      val str      = "\"chat\""
+      val str = "chat"
       val tag      = "en-US"
-      val expected = Row(s"$str@$tag")
-      val actual   = act(str, s"\"$tag\"")
+      val lit = quote(str)
+      val expected = Row(s"$lit@$tag")
+      val actual = act(str, tag)
       actual shouldEqual expected
     }
 
   }
+
+  private def quote(str: String): String = "\"" + str + "\""
 
   private def act(str: String, tag: String): Row = {
     val df = List(
@@ -51,16 +55,14 @@ class StrlangSpec
     ).toDF("s", "p", "o")
 
     val query =
-      s"""
-        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-        CONSTRUCT {
-          ?x foaf:strlang ?strlang .
-        }
-        WHERE {
-          ?x foaf:title ?title .
-          ?x foaf:name ?name .
-          BIND(STRLANG(?name, ?title) as ?strlang) .
-        }"""
+      """
+         |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+         |SELECT ?strlang
+         |WHERE {
+         |?x foaf:title ?title .
+         |?x foaf:name ?name .
+         |BIND(strlang(?name, ?title) as ?strlang)
+         |}""".stripMargin
 
     Compiler
       .compile(df, query, config)
