@@ -1,5 +1,7 @@
 package com.gsk.kg.sparqlparser
 
+import com.gsk.kg.sparqlparser.PropertyExpression._
+
 import fastparse.MultiLineWhitespace._
 import fastparse._
 

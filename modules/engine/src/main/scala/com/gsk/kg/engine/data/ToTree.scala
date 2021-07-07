@@ -15,6 +15,7 @@ import com.gsk.kg.sparqlparser.ConditionOrder.ASC
 import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.Expression
+import com.gsk.kg.sparqlparser.PropertyExpression.fixedpoint._
 
 import scala.collection.immutable.Nil
 
@@ -79,7 +80,17 @@ object ToTree extends LowPriorityToTreeInstances0 {
               Stream(Leaf(variable.toString), expression.toTree, r)
             )
           case DAG.Sequence(bps) => Node("Sequence", bps.toStream)
-          case DAG.BGP(quads)    => Node("BGP", Stream(quads.toTree))
+          case DAG.Path(s, p, o, g) =>
+            TreeRep.Node(
+              s"Path",
+              Stream(
+                s.s.toTree,
+                p.toTree,
+                o.s.toTree,
+                g.toString().toTree
+              )
+            )
+          case DAG.BGP(quads) => Node("BGP", Stream(quads.toTree))
           case DAG.LeftJoin(l, r, filters) =>
             Node("LeftJoin", Stream(l, r) #::: filters.map(_.toTree).toStream)
           case DAG.Union(l, r) => Node("Union", Stream(l, r))
@@ -231,6 +242,39 @@ object ToTree extends LowPriorityToTreeInstances0 {
 
     }
   // scalastyle:on
+
+  implicit def propExrpToTree[T: Basis[PropertyExpressionF, *]]: ToTree[T] =
+    new ToTree[T] {
+      def toTree(tree: T): TreeRep[String] = {
+        import TreeRep._
+        val alg = Algebra[PropertyExpressionF, TreeRep[String]] {
+          case AlternativeF(pel, per) =>
+            Node("Alternative", Stream(pel, per))
+          case ReverseF(e) => Node("Reverse", Stream(e))
+          case SeqExpressionF(pel, per) =>
+            Node("SeqExpression", Stream(pel, per))
+          case OneOrMoreF(e) => Node("OneOrMore", Stream(e))
+          case ZeroOrMoreF(e) =>
+            Node("ZeroOrMore", Stream(e))
+          case ZeroOrOneF(e) => Node("ZeroOrOne", Stream(e))
+          case NotOneOfF(es) =>
+            Node("NotOnOf", es.toStream)
+          case BetweenNAndMF(n, m, e) =>
+            Node("BetweenNAndM", Stream(Leaf(n.toString), Leaf(m.toString), e))
+          case ExactlyNF(n, e) =>
+            Node("ExactlyN", Stream(Leaf(n.toString), e))
+          case NOrMoreF(n, e) =>
+            Node("NOrMore", Stream(Leaf(n.toString), e))
+          case BetweenZeroAndNF(n, e) =>
+            Node("BetweenZeroAndN", Stream(Leaf(n.toString), e))
+          case UriF(s) => Node("Uri", Stream(Leaf(s)))
+        }
+
+        val t = scheme.cata[PropertyExpressionF, T, TreeRep[String]](alg)
+
+        t(tree)
+      }
+    }
 
   implicit def listToTree[A: ToTree]: ToTree[List[A]] =
     new ToTree[List[A]] {

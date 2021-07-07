@@ -47,7 +47,8 @@ object Engine {
       case DAG.Project(variables, r) => r.select(variables: _*).pure[M]
       case DAG.Bind(variable, expression, r) =>
         evaluateBind(variable, expression, r)
-      case DAG.Sequence(bps)           => notImplemented("sequence")
+      case DAG.Sequence(bps)           => evaluateSequence(bps)
+      case DAG.Path(s, p, o, g)        => evaluatePath(s, p, o, g)
       case DAG.BGP(quads)              => evaluateBGP(quads)
       case DAG.LeftJoin(l, r, filters) => evaluateLeftJoin(l, r, filters)
       case DAG.Union(l, r)             => evaluateUnion(l, r)
@@ -64,11 +65,6 @@ object Engine {
       case DAG.Exists(not, p, r)       => evaluateExists(not, p, r)
       case DAG.Noop(str)               => evaluateNoop(str)
     }
-
-  private def notImplemented(constructor: String): M[Multiset] =
-    M.liftF[Result, Config, Log, DataFrame, Multiset](
-      EngineError.General(s"$constructor not implemented").asLeft[Multiset]
-    )
 
   def evaluate[T: Basis[DAG, *]](
       dataframe: DataFrame,
@@ -137,18 +133,24 @@ object Engine {
     M.get[Result, Config, Log, DataFrame]
       .map { df =>
         quads
-          .mapChunks(applyChunkToDf(_, df))
+          .mapChunks { chunk =>
+            val condition = composedConditionFromChunk(df, chunk)
+            applyChunkToDf(chunk, condition, df)
+          }
           .foldLeft(Multiset.empty)((acc, other) => acc.union(other))
       }
       .flatMap(m => evaluateConstruct(bgp, m))
   }
 
-  private def applyChunkToDf(chunk: ChunkedList.Chunk[Quad], df: DataFrame)(
-      implicit sc: SQLContext
+  private def applyChunkToDf(
+      chunk: ChunkedList.Chunk[Quad],
+      condition: Column,
+      df: DataFrame
+  )(implicit
+      sc: SQLContext
   ): Multiset = {
     import sc.implicits._
-    val condition = composedConditionFromChunk(df, chunk)
-    val current   = df.filter(condition)
+    val current = df.filter(condition)
     val vars =
       chunk
         .map(_.getNamesAndPositions :+ (GRAPH_VARIABLE, "g"))
@@ -204,12 +206,39 @@ object Engine {
     )
   }.pure[M]
 
+  private def evaluateSequence(bps: List[Multiset])(implicit
+      sc: SQLContext
+  ): M[Multiset] =
+    Foldable[List].fold(bps).pure[M]
+
+  private def evaluatePath(
+      s: StringVal,
+      p: PropertyExpression,
+      o: StringVal,
+      g: List[StringVal]
+  )(implicit sc: SQLContext): M[Multiset] = {
+    M.get[Result, Config, Log, DataFrame].flatMap { df =>
+      M.ask[Result, Config, Log, DataFrame].flatMapF { config =>
+        PropertyExpressionF
+          .compile[PropertyExpression](p, config)
+          .apply(df)
+          .map { condition =>
+            val chunk = Chunk(Quad(s, StringVal.STRING(""), o, g))
+            applyChunkToDf(chunk, condition, df)
+          }
+      }
+    }
+  }
+
   private def evaluateBGP(
       quads: ChunkedList[Expr.Quad]
   )(implicit sc: SQLContext): M[Multiset] =
     M.get[Result, Config, Log, DataFrame].map { df =>
       Foldable[ChunkedList].fold(
-        quads.mapChunks(applyChunkToDf(_, df))
+        quads.mapChunks { chunk =>
+          val condition = composedConditionFromChunk(df, chunk)
+          applyChunkToDf(chunk, condition, df)
+        }
       )
     }
 

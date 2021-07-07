@@ -1,5 +1,7 @@
 package com.gsk.kg.sparqlparser
 
+import com.gsk.kg.sparqlparser.PropertyExpression._
+
 import org.scalatest.wordspec.AnyWordSpec
 
 class PropertyExpressionParserSpec extends AnyWordSpec {

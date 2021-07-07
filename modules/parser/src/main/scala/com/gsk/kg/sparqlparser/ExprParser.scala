@@ -76,9 +76,9 @@ object ExprParser {
 
   def bgpParen[_: P]: P[BGP] = P("(" ~ bgp ~ triple.rep(1) ~ ")").map(BGP)
 
-  def pathQuadParen[_: P]: P[PathQuad] = P(
+  def pathQuadParen[_: P]: P[Path] = P(
     "(" ~ path ~ StringValParser.tripleValParser ~ PropertyPathParser.parser ~ StringValParser.tripleValParser ~ ")"
-  ).map(p => PathQuad(p._1, p._2, p._3, GRAPH_VARIABLE :: Nil))
+  ).map(p => Path(p._1, p._2, p._3, GRAPH_VARIABLE :: Nil))
 
   def exprFunc[_: P]: P[Expression] =
     ConditionalParser.parser |
