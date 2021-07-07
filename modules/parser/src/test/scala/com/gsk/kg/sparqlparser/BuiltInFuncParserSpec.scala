@@ -184,7 +184,7 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
 
   "strlang function" should "return STRLANG type" in {
     val s = "(strlang \"chat\" \"en\")"
-    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    val p = fastparse.parse(s, BuiltInFuncParser.strlangParen(_))
     p.get.value match {
       case STRLANG(STRING("chat"), STRING("en")) =>
         succeed
