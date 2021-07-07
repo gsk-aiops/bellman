@@ -3,6 +3,7 @@ package com.gsk.kg.engine.functions
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
+import org.apache.spark.sql.functions.dayofmonth
 import org.apache.spark.sql.functions.format_string
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{month => sMonth}
@@ -42,7 +43,7 @@ object FuncDates {
     * @param col
     * @return
     */
-  def day(col: Column): Column = ???
+  def day(col: Column): Column = apply(dayofmonth, col)
 
   /** Returns the hours part of arg as an integer.
     * The value is as given in the lexical form of the XSD dateTime.
