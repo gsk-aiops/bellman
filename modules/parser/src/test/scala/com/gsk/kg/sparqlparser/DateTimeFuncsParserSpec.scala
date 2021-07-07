@@ -78,8 +78,8 @@ class DateTimeFuncsParserSpec extends AnyFlatSpec {
   "HOUR parser with string" should "return HOUR type" in {
     val p =
       fastparse.parse(
-        """(hour "x")""",
-        DateTimeFuncsParser.hourParen(_)
+        """(hours "x")""",
+        DateTimeFuncsParser.hoursParen(_)
       )
     p.get.value match {
       case HOUR(STRING("x")) =>
@@ -91,8 +91,8 @@ class DateTimeFuncsParserSpec extends AnyFlatSpec {
   "HOUR parser with variable" should "return HOUR type" in {
     val p =
       fastparse.parse(
-        """(hour ?d)""",
-        DateTimeFuncsParser.hourParen(_)
+        """(hours ?d)""",
+        DateTimeFuncsParser.hoursParen(_)
       )
     p.get.value match {
       case HOUR(VARIABLE("?d")) =>

@@ -4,11 +4,11 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.format_string
-import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.hour
+import org.apache.spark.sql.functions.to_utc_timestamp
+import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{month => sMonth}
 import org.apache.spark.sql.functions.{year => sYear}
-
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isDateTimeLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
@@ -50,7 +50,8 @@ object FuncDates {
     * @param col
     * @return
     */
-  def hours(col: Column): Column = apply(hour, col)
+  def hours(col: Column): Column =
+    hour(to_utc_timestamp(NumericLiteral(col).value, "Europe/Berlin"))
 
   /** Returns the minutes part of the lexical form of arg.
     * The value is as given in the lexical form of the XSD dateTime.
