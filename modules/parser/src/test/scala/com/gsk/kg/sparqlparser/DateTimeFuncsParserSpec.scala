@@ -1,11 +1,11 @@
 package com.gsk.kg.sparqlparser
 
+import com.gsk.kg.sparqlparser.DateTimeFunc.HOUR
 import com.gsk.kg.sparqlparser.DateTimeFunc.MONTH
 import com.gsk.kg.sparqlparser.DateTimeFunc.NOW
 import com.gsk.kg.sparqlparser.DateTimeFunc.YEAR
 import com.gsk.kg.sparqlparser.StringVal.STRING
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
-
 import org.scalatest.flatspec.AnyFlatSpec
 
 class DateTimeFuncsParserSpec extends AnyFlatSpec {
@@ -70,6 +70,32 @@ class DateTimeFuncsParserSpec extends AnyFlatSpec {
       )
     p.get.value match {
       case MONTH(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "HOUR parser with string" should "return HOUR type" in {
+    val p =
+      fastparse.parse(
+        """(hour "x")""",
+        DateTimeFuncsParser.hourParen(_)
+      )
+    p.get.value match {
+      case HOUR(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "HOUR parser with variable" should "return HOUR type" in {
+    val p =
+      fastparse.parse(
+        """(hour ?d)""",
+        DateTimeFuncsParser.hourParen(_)
+      )
+    p.get.value match {
+      case HOUR(VARIABLE("?d")) =>
         succeed
       case _ => fail
     }

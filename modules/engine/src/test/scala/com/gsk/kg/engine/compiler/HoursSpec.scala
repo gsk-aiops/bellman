@@ -69,10 +69,10 @@ class HoursSpec
         """
           |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
           |
-          |SELECT ?m
+          |SELECT ?h
           |WHERE  {
           |   ?x foaf:date ?date .
-          |   bind(hours(?date) as ?m)
+          |   bind(hours(?date) as ?h)
           |}
           |""".stripMargin
 
