@@ -66,7 +66,7 @@ object QueryExtractor {
       case JoinF(l, r)                       => l ++ r
       case LeftJoinF(l, r)                   => l ++ r
       case ProjectF(vars, r)                 => r
-      case PathQuadF(s, p, o, g)             => Nil
+      case PathF(s, p, o, g)                 => Nil
       case QuadF(s, p, o, g)                 => Nil
       case DistinctF(r)                      => r
       case ReducedF(r)                       => r
@@ -112,7 +112,7 @@ object QueryExtractor {
   private def printQuad(quad: Expr.Quad): String =
     s"(triple ${quad.s.s} ${quad.p.s} ${quad.o.s})"
 
-  private def printPathQuad(
+  private def printPath(
       s: StringVal,
       p: PropertyExpression,
       o: StringVal,
@@ -282,6 +282,7 @@ object QueryExtractor {
       case NOW()                           => "(now)"
       case YEAR(e)                         => s"(year $e)"
       case MONTH(e)                        => s"(month $e)"
+      case DAY(e)                          => s"(day $e)"
       case HOUR(e)                         => s"(hour $e)"
     }
 
@@ -298,7 +299,7 @@ object QueryExtractor {
       case JoinF(l, r)           => s"(join $l $r)"
       case LeftJoinF(l, r)       => s"(leftjoin $l $r)"
       case ProjectF(vars, r)     => r
-      case PathQuadF(s, p, o, g) => printPathQuad(s, p, o, g)
+      case PathF(s, p, o, g)     => printPath(s, p, o, g)
       case QuadF(s, p, o, g)     => s"(quadf s p o g)"
       case DistinctF(r)          => s"(distinct $r)"
       case ReducedF(r)           => s"(reduced $r)"

@@ -20,9 +20,7 @@ class PropertyPathsSpec
 
     "perform on simple queries" when {
 
-      // TODO: Un-ignore test when implemented support on property paths
-
-      "alternative | property path" ignore {
+      "alternative | property path" in {
 
         val df = List(
           (
@@ -34,6 +32,11 @@ class PropertyPathsSpec
             "<http://example.org/book2>",
             "<http://www.w3.org/2000/01/rdf-schema#label>",
             "From Earth To The Moon"
+          ),
+          (
+            "<http://example.org/book3>",
+            "<http://www.w3.org/2000/01/rdf-schema#label2>",
+            "Another title"
           )
         ).toDF("s", "p", "o")
 
@@ -50,8 +53,13 @@ class PropertyPathsSpec
 
         val result = Compiler.compile(df, query, config)
 
-        result.right.get.collect.toSet shouldEqual Set()
+        result.right.get.collect.toSet shouldEqual Set(
+          Row("<http://example.org/book1>", "\"SPARQL Tutorial\""),
+          Row("<http://example.org/book2>", "\"From Earth To The Moon\"")
+        )
       }
+
+      // TODO: Un-ignore test when implemented support on property paths
 
       "sequence / property path" ignore {
 

@@ -1,11 +1,13 @@
 package com.gsk.kg.sparqlparser
 
+import com.gsk.kg.sparqlparser.DateTimeFunc.DAY
 import com.gsk.kg.sparqlparser.DateTimeFunc.HOUR
 import com.gsk.kg.sparqlparser.DateTimeFunc.MONTH
 import com.gsk.kg.sparqlparser.DateTimeFunc.NOW
 import com.gsk.kg.sparqlparser.DateTimeFunc.YEAR
 import com.gsk.kg.sparqlparser.StringVal.STRING
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
+
 import org.scalatest.flatspec.AnyFlatSpec
 
 class DateTimeFuncsParserSpec extends AnyFlatSpec {
@@ -70,6 +72,32 @@ class DateTimeFuncsParserSpec extends AnyFlatSpec {
       )
     p.get.value match {
       case MONTH(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "DAY parser with string" should "return DAY type" in {
+    val p =
+      fastparse.parse(
+        """(day "x")""",
+        DateTimeFuncsParser.dayParen(_)
+      )
+    p.get.value match {
+      case DAY(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "DAY parser with variable" should "return DAY type" in {
+    val p =
+      fastparse.parse(
+        """(day ?d)""",
+        DateTimeFuncsParser.dayParen(_)
+      )
+    p.get.value match {
+      case DAY(VARIABLE("?d")) =>
         succeed
       case _ => fail
     }

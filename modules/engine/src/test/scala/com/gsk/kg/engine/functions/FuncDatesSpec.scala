@@ -7,9 +7,9 @@ import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.functions.substring
 import org.apache.spark.sql.functions.substring_index
 import org.apache.spark.sql.functions.to_timestamp
-import org.apache.spark.sql.functions.to_utc_timestamp
+
 import com.gsk.kg.engine.compiler.SparkSpec
-import com.gsk.kg.engine.functions.Literals.NumericLiteral
+
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -82,6 +82,17 @@ class FuncDatesSpec
       }
     }
 
+    "day function" should {
+      val expected = Array(
+        Row(10),
+        Row(9)
+      )
+
+      "day function returns day of datetime" in {
+        eval(FuncDates.day, expected)
+      }
+    }
+
     "hour function" should {
 
       val expected = Array(
@@ -100,18 +111,6 @@ class FuncDatesSpec
   ): Assertion = {
     val dfR =
       df.select(f(col(df.columns.head)).as("r"))
-
-    df.withColumn(
-      "timestamp",
-      to_timestamp(NumericLiteral(df(df.columns.head)).value)
-    ).withColumn(
-      "utc",
-      to_utc_timestamp(
-        NumericLiteral(df(df.columns.head)).value,
-        "Europe/Berlin"
-      )
-    ).show(false)
-    dfR.show(false)
 
     dfR
       .select(col("r"))
