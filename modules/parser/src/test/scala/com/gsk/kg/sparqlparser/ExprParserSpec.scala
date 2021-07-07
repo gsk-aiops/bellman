@@ -5,6 +5,7 @@ import com.gsk.kg.sparqlparser.ConditionOrder.ASC
 import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Conditional._
 import com.gsk.kg.sparqlparser.Expr._
+import com.gsk.kg.sparqlparser.PropertyExpression._
 import com.gsk.kg.sparqlparser.StringVal._
 
 import org.scalatest.wordspec.AnyWordSpec
@@ -1148,7 +1149,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?book"), VARIABLE("?displayString")),
-                PathQuad(
+                Path(
                   VARIABLE("?book"),
                   Alternative(
                     Uri("<http://purl.org/dc/elements/1.1/title>"),
@@ -1173,7 +1174,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?o"), VARIABLE("?s")),
-                PathQuad(
+                Path(
                   VARIABLE("?o"),
                   Reverse(Uri("<http://xmlns.org/foaf/0.1/mbox>")),
                   VARIABLE("?s"),
@@ -1195,7 +1196,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?o")),
-                PathQuad(
+                Path(
                   VARIABLE("?s"),
                   SeqExpression(
                     SeqExpression(
@@ -1223,7 +1224,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?s"), VARIABLE("?o")),
-                PathQuad(
+                Path(
                   VARIABLE("?s"),
                   OneOrMore(Uri("<http://xmlns.org/foaf/0.1/knows>")),
                   VARIABLE("?o"),
@@ -1245,7 +1246,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?s"), VARIABLE("?o")),
-                PathQuad(
+                Path(
                   VARIABLE("?s"),
                   ZeroOrMore(Uri("<http://xmlns.org/foaf/0.1/knows>")),
                   VARIABLE("?o"),
@@ -1267,7 +1268,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?s"), VARIABLE("?o")),
-                PathQuad(
+                Path(
                   VARIABLE("?s"),
                   ZeroOrOne(Uri("<http://xmlns.org/foaf/0.1/knows>")),
                   VARIABLE("?o"),
@@ -1289,7 +1290,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?s"), VARIABLE("?o")),
-                PathQuad(
+                Path(
                   VARIABLE("?s"),
                   NotOneOf(List(Uri("<http://xmlns.org/foaf/0.1/name>"))),
                   VARIABLE("?o"),
@@ -1311,7 +1312,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?s"), VARIABLE("?o")),
-                PathQuad(
+                Path(
                   VARIABLE("?s"),
                   BetweenNAndM(1, 2, Uri("<http://xmlns.org/foaf/0.1/knows>")),
                   VARIABLE("?o"),
@@ -1333,7 +1334,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?s"), VARIABLE("?o")),
-                PathQuad(
+                Path(
                   VARIABLE("?s"),
                   ExactlyN(1, Uri("<http://xmlns.org/foaf/0.1/knows>")),
                   VARIABLE("?o"),
@@ -1355,7 +1356,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?s"), VARIABLE("?o")),
-                PathQuad(
+                Path(
                   VARIABLE("?s"),
                   NOrMore(1, Uri("<http://xmlns.org/foaf/0.1/knows>")),
                   VARIABLE("?o"),
@@ -1377,7 +1378,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?s"), VARIABLE("?o")),
-                PathQuad(
+                Path(
                   VARIABLE("?s"),
                   BetweenZeroAndN(1, Uri("<http://xmlns.org/foaf/0.1/knows>")),
                   VARIABLE("?o"),
@@ -1402,7 +1403,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
         p.get.value match {
           case Project(
                 Seq(VARIABLE("?s"), VARIABLE("?o")),
-                PathQuad(
+                Path(
                   VARIABLE("?s"),
                   Alternative(
                     SeqExpression(
@@ -1436,7 +1437,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
                 Seq(VARIABLE("?s"), VARIABLE("?o")),
                 Sequence(
                   List(
-                    PathQuad(
+                    Path(
                       VARIABLE("?s"),
                       Alternative(
                         Alternative(
@@ -1448,7 +1449,7 @@ class ExprParserSpec extends AnyWordSpec with TestUtils {
                       VARIABLE("?o"),
                       List(GRAPH_VARIABLE)
                     ),
-                    PathQuad(
+                    Path(
                       VARIABLE("?s"),
                       Alternative(
                         SeqExpression(

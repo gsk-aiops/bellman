@@ -7,6 +7,7 @@ sealed trait EngineError
 object EngineError {
   final case class General(description: String)            extends EngineError
   final case class UnknownFunction(fn: String)             extends EngineError
+  final case class UnknownPropertyPath(pp: String)         extends EngineError
   final case class UnexpectedNegative(description: String) extends EngineError
   final case class NumericTypesDoNotMatch(description: String)
       extends EngineError

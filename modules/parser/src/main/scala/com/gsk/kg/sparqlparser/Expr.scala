@@ -41,7 +41,7 @@ object Query {
 object Expr {
   final case class Sequence(seq: List[Expr]) extends Expr
   final case class BGP(quads: Seq[Quad])     extends Expr
-  final case class PathQuad(
+  final case class Path(
       s: StringVal,
       p: PropertyExpression,
       o: StringVal,
