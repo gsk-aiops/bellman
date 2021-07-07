@@ -42,6 +42,7 @@ object ExpressionF {
   final case class STRENDS[A](s: A, f: String)   extends ExpressionF[A]
   final case class STRSTARTS[A](s: A, f: String) extends ExpressionF[A]
   final case class STRDT[A](s: A, uri: String)   extends ExpressionF[A]
+  final case class STRLANG[A](s: A, tag: String) extends ExpressionF[A]
   final case class STRAFTER[A](s: A, f: String)  extends ExpressionF[A]
   final case class STRBEFORE[A](s: A, f: String) extends ExpressionF[A]
   final case class SUBSTR[A](s: A, pos: Int, len: Option[Int])
@@ -179,6 +180,7 @@ object ExpressionF {
       case BuiltInFunc.STRSTARTS(s, t @ StringVal.DT_STRING(_, _)) =>
         STRSTARTS(s, StringVal.DT_STRING.toString(t))
       case BuiltInFunc.STRDT(s, StringVal.URIVAL(uri)) => STRDT(s, uri)
+      case BuiltInFunc.STRLANG(s, StringVal.STRING(l)) => STRLANG(s, l)
       case BuiltInFunc.ISBLANK(s)                      => ISBLANK(s)
       case BuiltInFunc.ISNUMERIC(s)                    => ISNUMERIC(s)
       case BuiltInFunc.ENCODE_FOR_URI(s)               => ENCODE_FOR_URI(s)
@@ -269,6 +271,11 @@ object ExpressionF {
         BuiltInFunc.STRDT(
           s,
           StringVal.URIVAL(uri)
+        )
+      case STRLANG(s, tag) =>
+        BuiltInFunc.STRLANG(
+          s,
+          StringVal.STRING(tag)
         )
       case URI(s) => BuiltInFunc.URI(s.asInstanceOf[StringLike])
       case CONCAT(appendTo, append) =>
@@ -394,6 +401,7 @@ object ExpressionF {
         case COALESCE(xs)               => FuncForms.coalesce(xs).pure[M]
         case STR(s)                     => FuncTerms.str(s).pure[M]
         case STRDT(e, uri)              => FuncTerms.strdt(e, uri).pure[M]
+        case STRLANG(e, tag)            => FuncTerms.strlang(e, tag).pure[M]
         case URI(s)                     => FuncTerms.iri(s).pure[M]
         case LANG(s)                    => FuncTerms.lang(s).pure[M]
         case ISLITERAL(s)               => FuncTerms.isLiteral(s).pure[M]

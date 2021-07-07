@@ -20,6 +20,7 @@ object BuiltInFuncParser {
   def strends[_: P]: P[Unit]      = P("strends")
   def strstarts[_: P]: P[Unit]    = P("strstarts")
   def strdt[_: P]: P[Unit]        = P("strdt")
+  def strlang[_: P]: P[Unit]      = P("strlang")
   def substr[_: P]: P[Unit]       = P("substr")
   def strlen[_: P]: P[Unit]       = P("strlen")
   def lcase[_: P]: P[Unit]        = P("lcase")
@@ -100,6 +101,10 @@ object BuiltInFuncParser {
   def strdtParen[_: P]: P[STRDT] =
     P("(" ~ strdt ~ ExpressionParser.parser ~ StringValParser.urival ~ ")")
       .map(f => STRDT(f._1, f._2))
+
+  def strlangParen[_: P]: P[STRLANG] =
+    P("(" ~ strlang ~ ExpressionParser.parser ~ StringValParser.plainString ~ ")")
+      .map(f => STRLANG(f._1, f._2))
 
   def substrParen[_: P]: P[SUBSTR] =
     P("(" ~ substr ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")

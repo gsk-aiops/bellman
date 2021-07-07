@@ -164,6 +164,7 @@ object FindVariablesOnExpression {
         case STRAFTER(s, f)                  => s
         case STRBEFORE(s, f)                 => s
         case STRDT(s, uri)                   => s
+        case STRLANG(s, tag)                 => s
         case SUBSTR(s, pos, len)             => s
         case STRLEN(s)                       => s
         case ISBLANK(s)                      => s

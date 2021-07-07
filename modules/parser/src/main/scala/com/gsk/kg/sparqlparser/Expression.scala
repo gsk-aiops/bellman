@@ -58,6 +58,7 @@ object BuiltInFunc {
   final case class STRSTARTS(s: Expression, f: Expression) extends BuiltInFunc
   final case class STRENDS(s: Expression, f: Expression)   extends BuiltInFunc
   final case class STRDT(s: Expression, uri: URIVAL)       extends BuiltInFunc
+  final case class STRLANG(s: Expression, l: Expression)   extends BuiltInFunc
   final case class STRLEN(s: Expression)                   extends BuiltInFunc
   final case class SUBSTR(
       s: Expression,
