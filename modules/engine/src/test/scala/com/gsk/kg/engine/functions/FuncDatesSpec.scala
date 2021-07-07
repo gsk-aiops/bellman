@@ -30,7 +30,8 @@ class FuncDatesSpec
 
     implicit lazy val df: DataFrame =
       List(
-        "\"2012-04-10T10:45:13.815-01:00\"^^xsd:dateTime"
+        "\"2012-04-10T10:45:13.815-01:00\"^^xsd:dateTime",
+        "\"2020-12-09T01:50:24.815Z\"^^xsd:dateTime"
       ).toDF()
 
     "now function" should {
@@ -59,8 +60,10 @@ class FuncDatesSpec
 
     "year function" should {
 
-      val yearColName = "year"
-      val expected    = Array(Row(2011))
+      val expected = Array(
+        Row(2012),
+        Row(2020)
+      )
 
       "year function returns year of datetime" in {
         eval(FuncDates.year, expected)
@@ -69,8 +72,10 @@ class FuncDatesSpec
 
     "month function" should {
 
-      val monthColName = "month"
-      val expected     = Array(Row(1))
+      val expected = Array(
+        Row(4),
+        Row(12)
+      )
 
       "month function returns month of datetime" in {
         eval(FuncDates.month, expected)
@@ -79,7 +84,10 @@ class FuncDatesSpec
 
     "hour function" should {
 
-      val expected = Array(Row(11))
+      val expected = Array(
+        Row(11),
+        Row(1)
+      )
 
       "hour function returns hour of datetime" in {
         eval(FuncDates.hours, expected)

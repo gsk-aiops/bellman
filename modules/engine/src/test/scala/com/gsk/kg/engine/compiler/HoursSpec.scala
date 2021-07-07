@@ -29,16 +29,16 @@ class HoursSpec
     (
       "_:b",
       "<http://xmlns.com/foaf/0.1/date>",
-      "\"2012-04-10T08:45:13.815-05:00\"^^xsd:dateTime"
+      "\"2012-04-10T08:45:13.815+01:00\"^^xsd:dateTime"
     ),
     (
       "_:c",
       "<http://xmlns.com/foaf/0.1/date>",
-      "\"2012-04-10T22:45:13.815-05:00\"^^xsd:dateTime"
+      "\"2012-04-10T22:45:13.815Z\"^^xsd:dateTime"
     )
   ).toDF("s", "p", "o")
 
-  val expected: List[Row] = List("14", "8", "22").map(Row(_))
+  val expected: List[Row] = List("19", "7", "22").map(Row(_))
 
   val projection: Option[Column] = None
 
