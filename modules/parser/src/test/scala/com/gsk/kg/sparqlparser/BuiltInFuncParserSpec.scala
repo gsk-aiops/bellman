@@ -37,7 +37,7 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     }
   }
 
-  it should "return COCANT type when multiple arguments" in {
+  it should "return CONCAT type when multiple arguments" in {
     val s = "(concat \"http://id.gsk.com/dm/1.0/\" ?src ?dst)"
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
@@ -176,6 +176,17 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case STRDT(VARIABLE("?c"), URIVAL("<http://geo.org#country>")) =>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "strlang function" should "return STRLANG type" in {
+    val s = "(strlang \"chat\" \"en\")"
+    val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
+    p.get.value match {
+      case STRLANG(STRING("chat"), STRING("en")) =>
         succeed
       case _ =>
         fail

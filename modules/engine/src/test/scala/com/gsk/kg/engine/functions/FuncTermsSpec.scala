@@ -80,6 +80,22 @@ class FuncTermsSpec
       }
     }
 
+    "FuncTerms.strlang" should {
+
+      "return a literal with lexical form and language tag" in {
+        val df = List("chat", "foo").toDF("s")
+        val result = df
+          .select(
+            FuncTerms.strlang(df("s"), "es")
+          ).collect()
+
+        result shouldEqual Array(
+          Row("\"chat\"@es"),
+          Row("\"foo\"@es")
+        )
+      }
+    }
+
     "FuncTerms.iri" should {
 
       "do nothing for IRIs" in {
