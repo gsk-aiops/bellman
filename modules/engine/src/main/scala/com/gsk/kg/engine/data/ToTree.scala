@@ -15,6 +15,7 @@ import com.gsk.kg.sparqlparser.ConditionOrder.ASC
 import com.gsk.kg.sparqlparser.ConditionOrder.DESC
 import com.gsk.kg.sparqlparser.Expr
 import com.gsk.kg.sparqlparser.Expression
+import com.gsk.kg.sparqlparser.PropertyExpression.fixedpoint._
 
 import scala.collection.immutable.Nil
 
@@ -246,29 +247,29 @@ object ToTree extends LowPriorityToTreeInstances0 {
       def toTree(tree: T): TreeRep[String] = {
         import TreeRep._
         val alg = Algebra[PropertyExpressionF, TreeRep[String]] {
-          case PropertyExpressionF.Alternative(pel, per) =>
+          case AlternativeF(pel, per) =>
             Node("Alternative", Stream(pel, per))
-          case PropertyExpressionF.Reverse(e) => Node("Reverse", Stream(e))
-          case PropertyExpressionF.SeqExpression(pel, per) =>
+          case ReverseF(e) => Node("Reverse", Stream(e))
+          case SeqExpressionF(pel, per) =>
             Node("SeqExpression", Stream(pel, per))
-          case PropertyExpressionF.OneOrMore(e) => Node("OneOrMore", Stream(e))
-          case PropertyExpressionF.ZeroOrMore(e) =>
+          case OneOrMoreF(e) => Node("OneOrMore", Stream(e))
+          case ZeroOrMoreF(e) =>
             Node("ZeroOrMore", Stream(e))
-          case PropertyExpressionF.ZeroOrOne(e) => Node("ZeroOrOne", Stream(e))
-          case PropertyExpressionF.NotOneOf(es) =>
+          case ZeroOrOneF(e) => Node("ZeroOrOne", Stream(e))
+          case NotOneOfF(es) =>
             Node("NotOnOf", es.toStream)
-          case PropertyExpressionF.BetweenNAndM(n, m, e) =>
+          case BetweenNAndMF(n, m, e) =>
             Node("BetweenNAndM", Stream(Leaf(n.toString), Leaf(m.toString), e))
-          case PropertyExpressionF.ExactlyN(n, e) =>
+          case ExactlyNF(n, e) =>
             Node("ExactlyN", Stream(Leaf(n.toString), e))
-          case PropertyExpressionF.NOrMore(n, e) =>
+          case NOrMoreF(n, e) =>
             Node("NOrMore", Stream(Leaf(n.toString), e))
-          case PropertyExpressionF.BetweenZeroAndN(n, e) =>
+          case BetweenZeroAndNF(n, e) =>
             Node("BetweenZeroAndN", Stream(Leaf(n.toString), e))
-          case PropertyExpressionF.Uri(s) => Node("Uri", Stream(Leaf(s)))
+          case UriF(s) => Node("Uri", Stream(Leaf(s)))
         }
 
-        val t = scheme.cata(alg)
+        val t = scheme.cata[PropertyExpressionF, T, TreeRep[String]](alg)
 
         t(tree)
       }
