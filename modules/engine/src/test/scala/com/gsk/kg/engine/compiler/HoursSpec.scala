@@ -34,7 +34,7 @@ class HoursSpec
     (
       "_:c",
       "<http://xmlns.com/foaf/0.1/date>",
-      "\"2013-12-22:45:13.815-05:00\"^^xsd:dateTime"
+      "\"2012-04-10T22:45:13.815-05:00\"^^xsd:dateTime"
     )
   ).toDF("s", "p", "o")
 
