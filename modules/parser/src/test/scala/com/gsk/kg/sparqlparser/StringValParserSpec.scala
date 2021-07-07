@@ -3,8 +3,9 @@ package com.gsk.kg.sparqlparser
 import com.gsk.kg.sparqlparser.StringVal._
 
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class StringValParserSpec extends AnyFlatSpec {
+class StringValParserSpec extends AnyFlatSpec with Matchers {
   "parse the string literal with tag" should "create proper STRING cass class" in {
     val s = "\"abc\"@en"
     val p = fastparse.parse(s, StringValParser.tripleValParser(_))
@@ -93,4 +94,102 @@ class StringValParserSpec extends AnyFlatSpec {
     }
   }
 
+  "parse string" should "parse nonempty strings correctly" in {
+    val strings: List[(String, StringVal.STRING)] =
+      List(
+        ("\"hello\"", StringVal.STRING("hello")),
+        ("\"hello goodbye\"", StringVal.STRING("hello goodbye"))
+      )
+
+    strings foreach { case (str, expected) =>
+      val p = fastparse.parse(str, StringValParser.plainString(_))
+
+      p.get.value shouldEqual expected
+    }
+  }
+
+  it should "parse strings containing whitespace correctly" in {
+    val strings: List[(String, StringVal.STRING)] =
+      List(
+        ("\" hello\"", StringVal.STRING(" hello")),
+        ("\" hello goodbye \"", StringVal.STRING(" hello goodbye "))
+      )
+
+    strings foreach { case (str, expected) =>
+      val p = fastparse.parse(str, StringValParser.plainString(_))
+
+      p.get.value shouldEqual expected
+    }
+  }
+
+  "parse typed literal" should "parse nonempty typed literals correctly" in {
+    val strings: List[(String, StringVal.DT_STRING)] =
+      List(
+        (
+          "\"hello\"^^<http://example.org/string>",
+          StringVal.DT_STRING("hello", "<http://example.org/string>")
+        ),
+        (
+          "\"hello goodbye\"^^<http://example.org/string>",
+          StringVal.DT_STRING("hello goodbye", "<http://example.org/string>")
+        )
+      )
+
+    strings foreach { case (str, expected) =>
+      val p = fastparse.parse(str, StringValParser.dataTypeString(_))
+
+      p.get.value shouldEqual expected
+    }
+  }
+
+  it should "parse strings containing whitespace correctly" in {
+    val strings: List[(String, StringVal.DT_STRING)] =
+      List(
+        (
+          "\" hello\"^^<http://example.org/string>",
+          StringVal.DT_STRING(" hello", "<http://example.org/string>")
+        ),
+        (
+          "\" hello goodbye \"^^<http://example.org/string>",
+          StringVal.DT_STRING(" hello goodbye ", "<http://example.org/string>")
+        )
+      )
+
+    strings foreach { case (str, expected) =>
+      val p = fastparse.parse(str, StringValParser.dataTypeString(_))
+
+      p.get.value shouldEqual expected
+    }
+  }
+
+  "parse l10n string" should "parse nonempty l10n strings correctly" in {
+    val strings: List[(String, StringVal.LANG_STRING)] =
+      List(
+        ("\"hello\"@en", StringVal.LANG_STRING("hello", "en")),
+        ("\"hello goodbye\"@en", StringVal.LANG_STRING("hello goodbye", "en"))
+      )
+
+    strings foreach { case (str, expected) =>
+      val p = fastparse.parse(str, StringValParser.langString(_))
+
+      p.get.value shouldEqual expected
+    }
+  }
+
+  it should "parse l10n strings with whitespace correctly" in {
+    val strings: List[(String, StringVal.LANG_STRING)] =
+      List(
+        ("\" hello\"@en", StringVal.LANG_STRING(" hello", "en")),
+        (
+          "\" hello goodbye \"@en",
+          StringVal.LANG_STRING(" hello goodbye ", "en")
+        )
+      )
+
+    strings foreach { case (str, expected) =>
+      val p = fastparse.parse(str, StringValParser.langString(_))
+
+      p.get.value shouldEqual expected
+    }
+  }
 }
