@@ -9,17 +9,13 @@ import com.gsk.kg.sparqlparser.TestConfig
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class MonthSpec
-    extends AnyWordSpec
-    with Matchers
-    with SparkSpec
-    with TestConfig {
+class DaySpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
 
   import sqlContext.implicits._
 
   /*
-  https://www.w3.org/TR/sparql11-query/#func-month
-  YEAR("2011-01-10T14:45:13.815-05:00"^^xsd:dateTime) -> 1
+  https://www.w3.org/TR/sparql11-query/#func-day
+  YEAR("2011-01-10T14:45:13.815-05:00"^^xsd:dateTime) -> 10
    */
 
   lazy val df: DataFrame = List(
@@ -31,27 +27,27 @@ class MonthSpec
     (
       "_:b",
       "<http://xmlns.com/foaf/0.1/date>",
-      "\"2012-04-10T14:45:13.815-05:00\"^^xsd:dateTime"
+      "\"2012-04-14T14:45:13.815-05:00\"^^xsd:dateTime"
     ),
     (
       "_:c",
       "<http://xmlns.com/foaf/0.1/date>",
-      "\"2013-12-10T14:45:13.815-05:00\"^^xsd:dateTime"
+      "\"2013-12-09T14:45:13.815-05:00\"^^xsd:dateTime"
     )
   ).toDF("s", "p", "o")
 
-  val expected: List[Row] = List("1", "4", "12").map(Row(_))
+  val expected: List[Row] = List("10", "14", "9").map(Row(_))
 
   val projection: Option[Column] = None
 
-  "perform month function correctly" when {
-    "select month response with a month of dateTime value" in {
+  "perform day function correctly" when {
+    "select day response with a day of dateTime value" in {
 
       val query =
         """
           |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
           |
-          |SELECT MONTH(?date)
+          |SELECT DAY(?date)
           |WHERE  {
           |   ?x foaf:date ?date
           |}
@@ -65,7 +61,7 @@ class MonthSpec
       )
     }
 
-    "bind month response with a month value" in {
+    "bind day response with a day value" in {
 
       val query =
         """
@@ -74,7 +70,7 @@ class MonthSpec
           |SELECT ?m
           |WHERE  {
           |   ?x foaf:date ?date .
-          |   bind(month(?date) as ?m)
+          |   bind(day(?date) as ?m)
           |}
           |""".stripMargin
 
