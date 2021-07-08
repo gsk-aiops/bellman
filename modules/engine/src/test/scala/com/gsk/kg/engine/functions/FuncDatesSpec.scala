@@ -31,7 +31,8 @@ class FuncDatesSpec
     implicit lazy val df: DataFrame =
       List(
         "\"2012-04-10T10:45:13.815-01:00\"^^xsd:dateTime",
-        "\"2020-12-09T01:50:24.815Z\"^^xsd:dateTime"
+        "\"2020-12-09T01:50:24.815Z\"^^xsd:dateTime",
+        "\"2019-02-25 03:50:24.815\"^^xsd:dateTime"
       ).toDF()
 
     "now function" should {
@@ -62,7 +63,8 @@ class FuncDatesSpec
 
       val expected = Array(
         Row(2012),
-        Row(2020)
+        Row(2020),
+        Row(2019)
       )
 
       "year function returns year of datetime" in {
@@ -74,7 +76,8 @@ class FuncDatesSpec
 
       val expected = Array(
         Row(4),
-        Row(12)
+        Row(12),
+        Row(2)
       )
 
       "month function returns month of datetime" in {
@@ -85,7 +88,8 @@ class FuncDatesSpec
     "day function" should {
       val expected = Array(
         Row(10),
-        Row(9)
+        Row(9),
+        Row(25)
       )
 
       "day function returns day of datetime" in {
@@ -96,8 +100,9 @@ class FuncDatesSpec
     "hour function" should {
 
       val expected = Array(
-        Row(11),
-        Row(1)
+        Row(10),
+        Row(1),
+        Row(3)
       )
 
       "hour function returns hour of datetime" in {
@@ -111,6 +116,8 @@ class FuncDatesSpec
   ): Assertion = {
     val dfR =
       df.select(f(col(df.columns.head)).as("r"))
+
+    dfR.show(false)
 
     dfR
       .select(col("r"))

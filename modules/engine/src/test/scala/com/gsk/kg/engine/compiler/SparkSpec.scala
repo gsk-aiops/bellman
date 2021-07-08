@@ -19,6 +19,7 @@ trait SparkSpec extends DataFrameSuiteBase { self: Suite =>
       .set("spark.driver.host", "localhost")
       .set("spark.sql.codegen.wholeStage", "false")
       .set("spark.sql.shuffle.partitions", "1")
+      .set("spark.sql.session.timeZone", "UTC")
   }
 
 }
