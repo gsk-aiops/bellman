@@ -216,6 +216,7 @@ object BuiltInFuncParser {
         | regexParen
         | regexWithFlagsParen
         | strdtParen
+        | strlangParen
         | strlenParen
         | lcaseParen
         | ucaseParen
