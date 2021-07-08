@@ -11,7 +11,7 @@ object StringValParser {
   // RDF string literal could have optional language or optional iri
 
   def langString[_: P]: P[LANG_STRING] = P(
-    "\"" ~ CharsWhile(_ != '\"').! ~ "\"" ~ lang
+    "\"" ~~ CharsWhile(_ != '\"').! ~~ "\"" ~ lang
   ).map { case (s, tag) =>
     LANG_STRING(s, tag)
   }
@@ -21,7 +21,7 @@ object StringValParser {
   ).map(tag => LANG_STRING("", tag))
 
   def dataTypeString[_: P]: P[DT_STRING] = P(
-    "\"" ~ CharsWhile(_ != '\"').! ~ "\"" ~ "^^" ~ iri
+    "\"" ~~ CharsWhile(_ != '\"').! ~~ "\"" ~ "^^" ~ iri
   ).map { case (s, tag) =>
     DT_STRING(s, tag)
   }
@@ -31,7 +31,7 @@ object StringValParser {
   ).map(tag => DT_STRING("", tag))
 
   def plainString[_: P]: P[STRING] = P(
-    "\"" ~ CharsWhile(_ != '\"').! ~ "\""
+    "\"" ~~ CharsWhile(_ != '\"').! ~~ "\""
   ).map { s =>
     STRING(s)
   }
