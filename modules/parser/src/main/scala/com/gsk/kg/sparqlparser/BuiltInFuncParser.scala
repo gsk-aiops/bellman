@@ -36,11 +36,6 @@ object BuiltInFuncParser {
   def sha384[_: P]: P[Unit]       = P("sha384" | "SHA384")
   def sha512[_: P]: P[Unit]       = P("sha512" | "SHA512")
   def uuid[_: P]: P[Unit]         = P("uuid")
-  def ceil[_: P]: P[Unit]         = P("ceil")
-  def round[_: P]: P[Unit]        = P("round")
-  def rand[_: P]: P[Unit]         = P("rand")
-  def abs[_: P]: P[Unit]          = P("abs")
-  def floor[_: P]: P[Unit]        = P("floor")
   def strUuid[_: P]: P[Unit]      = P("struuid")
 
   def uriParen[_: P]: P[URI] =
@@ -177,26 +172,6 @@ object BuiltInFuncParser {
     P("(" ~ uuid ~ ")")
       .map(f => UUID())
 
-  def ceilParen[_: P]: P[CEIL] =
-    P("(" ~ ceil ~ ExpressionParser.parser ~ ")")
-      .map(f => CEIL(f))
-
-  def roundParen[_: P]: P[ROUND] =
-    P("(" ~ round ~ ExpressionParser.parser ~ ")")
-      .map(f => ROUND(f))
-
-  def randParen[_: P]: P[RAND] =
-    P("(" ~ rand ~ ")")
-      .map(f => RAND())
-
-  def absParen[_: P]: P[ABS] =
-    P("(" ~ abs ~ ExpressionParser.parser ~ ")")
-      .map(f => ABS(f))
-
-  def floorParen[_: P]: P[FLOOR] =
-    P("(" ~ floor ~ ExpressionParser.parser ~ ")")
-      .map(f => FLOOR(f))
-
   def strUuidParen[_: P]: P[STRUUID] =
     P("(" ~ strUuid ~ ")")
       .map(f => STRUUID())
@@ -233,11 +208,6 @@ object BuiltInFuncParser {
         | sha384Paren
         | sha512Paren
         | uuidParen
-        | ceilParen
-        | roundParen
-        | randParen
-        | absParen
-        | floorParen
         | strUuidParen
     )
 //      | StringValParser.string
