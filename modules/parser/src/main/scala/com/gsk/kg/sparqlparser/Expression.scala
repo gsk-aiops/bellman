@@ -90,11 +90,11 @@ object BuiltInFunc {
 
 sealed trait MathFunc extends StringLike
 object MathFunc {
-  final case class CEIL(s: Expression)  extends BuiltInFunc
-  final case class ROUND(s: Expression) extends BuiltInFunc
-  final case class RAND()               extends BuiltInFunc
-  final case class ABS(s: Expression)   extends BuiltInFunc
-  final case class FLOOR(s: Expression) extends BuiltInFunc
+  final case class CEIL(s: Expression)  extends MathFunc
+  final case class ROUND(s: Expression) extends MathFunc
+  final case class RAND()               extends MathFunc
+  final case class ABS(s: Expression)   extends MathFunc
+  final case class FLOOR(s: Expression) extends MathFunc
 }
 
 sealed trait StringVal extends StringLike {
