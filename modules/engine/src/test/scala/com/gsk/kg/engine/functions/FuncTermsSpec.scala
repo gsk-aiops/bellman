@@ -87,7 +87,8 @@ class FuncTermsSpec
         val result = df
           .select(
             FuncTerms.strlang(df("s"), "es")
-          ).collect()
+          )
+          .collect()
 
         result shouldEqual Array(
           Row("\"chat\"@es"),

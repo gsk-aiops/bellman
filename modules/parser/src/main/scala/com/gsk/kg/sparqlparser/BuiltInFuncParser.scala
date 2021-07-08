@@ -103,7 +103,9 @@ object BuiltInFuncParser {
       .map(f => STRDT(f._1, f._2))
 
   def strlangParen[_: P]: P[STRLANG] =
-    P("(" ~ strlang ~ ExpressionParser.parser ~ StringValParser.plainString ~ ")")
+    P(
+      "(" ~ strlang ~ ExpressionParser.parser ~ StringValParser.plainString ~ ")"
+    )
       .map(f => STRLANG(f._1, f._2))
 
   def substrParen[_: P]: P[SUBSTR] =

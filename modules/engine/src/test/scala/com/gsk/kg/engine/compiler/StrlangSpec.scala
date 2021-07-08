@@ -9,7 +9,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class StrlangSpec
-  extends AnyWordSpec
+    extends AnyWordSpec
     with Matchers
     with SparkSpec
     with TestConfig {
@@ -19,18 +19,18 @@ class StrlangSpec
   "perform STRLANG function correctly" should {
 
     "tag is es" in {
-      val str = "chat"
-      val tag = "es"
+      val str      = "chat"
+      val tag      = "es"
       val expected = Row(s"${quote(str)}@$tag")
-      val actual = act(str, quote(tag))
+      val actual   = act(str, quote(tag))
       actual shouldEqual expected
     }
 
     "tag is en-US" in {
-      val str = "chat"
-      val tag = "en-US"
+      val str      = "chat"
+      val tag      = "en-US"
       val expected = Row(s"${quote(str)}@$tag")
-      val actual = act(str, quote(tag))
+      val actual   = act(str, quote(tag))
       actual shouldEqual expected
     }
 
@@ -60,7 +60,7 @@ class StrlangSpec
 
     (Compiler
       .compile(df, query, config) match {
-      case Left(l) => throw new Exception(l.toString)
+      case Left(l)  => throw new Exception(l.toString)
       case Right(r) => r
     }).head()
 
