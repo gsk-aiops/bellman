@@ -5,10 +5,14 @@ import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.dayofmonth
 import org.apache.spark.sql.functions.format_string
+import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.functions.minute
+import org.apache.spark.sql.functions.regexp_extract
+import org.apache.spark.sql.functions.substring
+import org.apache.spark.sql.functions.substring_index
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{month => sMonth}
 import org.apache.spark.sql.functions.{year => sYear}
-
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isDateTimeLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
@@ -57,7 +61,15 @@ object FuncDates {
     * @param col
     * @return
     */
-  def minutes(col: Column): Column = ???
+  def minutes(col: Column): Column = // apply(minute, col)
+//    regexp_extract(col, "[0-9]{1,4}:[0-9]{1,2}:[0-9]{1,2}", 0)
+//    regexp_extract(col, "T", 0)
+    when(
+      col.rlike(
+        "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}"
+      ),
+      substring(NumericLiteral(col).value, 15, 2)
+    ).otherwise(lit("ko"))
 
   /** Returns the seconds part of the lexical form of arg.
     * @param col

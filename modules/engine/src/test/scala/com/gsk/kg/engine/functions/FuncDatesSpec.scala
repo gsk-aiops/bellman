@@ -30,7 +30,7 @@ class FuncDatesSpec
 
     implicit lazy val df: DataFrame =
       List(
-        "\"2011-01-10T14:45:13.815-05:00\"^^xsd:dateTime"
+        "\"2011-01-10T14:45:13.815-05:09\"^^xsd:dateTime"
       ).toDF()
 
     "now function" should {
@@ -80,6 +80,14 @@ class FuncDatesSpec
         eval(FuncDates.day, expected)
       }
     }
+
+    "minutes function" should {
+      val expected = Array(Row(45))
+
+      "minutes function returns min of datetime" in {
+        eval(FuncDates.minutes, expected)
+      }
+    }
   }
 
   private def eval(f: Column => Column, expected: Array[Row])(implicit
@@ -87,6 +95,9 @@ class FuncDatesSpec
   ): Assertion = {
     val dfR =
       df.select(f(col(df.columns.head)).as("r"))
+
+    dfR.show(false)
+
     dfR
       .select(col("r"))
       .collect() shouldEqual expected
