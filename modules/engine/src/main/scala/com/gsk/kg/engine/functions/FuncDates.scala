@@ -5,7 +5,8 @@ import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.dayofmonth
 import org.apache.spark.sql.functions.format_string
-import org.apache.spark.sql.functions.substring
+import org.apache.spark.sql.functions.regexp_replace
+import org.apache.spark.sql.functions.split
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{month => sMonth}
 import org.apache.spark.sql.functions.{year => sYear}
@@ -17,8 +18,8 @@ import com.gsk.kg.engine.functions.Literals.nullLiteral
 
 object FuncDates {
 
-  val dateTimeRegex: String =
-    "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}"
+  private val Hours   = 3
+  private val Minutes = 4
 
   /** Returns an XSD dateTime value for the current query execution. All calls to this function in any one query
     * execution must return the same value. The exact moment returned is not specified.
@@ -56,7 +57,7 @@ object FuncDates {
     * @return
     */
   def hours(col: Column): Column =
-    getTimeFromDateTimeCol(col, "hours")
+    getTimeFromDateTimeCol(col, Hours)
 
   /** Returns the minutes part of the lexical form of arg.
     * The value is as given in the lexical form of the XSD dateTime.
@@ -64,7 +65,7 @@ object FuncDates {
     * @return
     */
   def minutes(col: Column): Column =
-    getTimeFromDateTimeCol(col, "minutes")
+    getTimeFromDateTimeCol(col, Minutes)
 
   /** Returns the seconds part of the lexical form of arg.
     * @param col
@@ -97,15 +98,21 @@ object FuncDates {
       f(NumericLiteral(col).value)
     ).otherwise(nullLiteral)
 
-  private def getTimeFromDateTimeCol(col: Column, pattern: String): Column = {
-    val pos = pattern match {
-      case "hours"   => 12
-      case "minutes" => 15
-    }
+  private def getTimeFromDateTimeCol(col: Column, pos: Int): Column = {
+    val dateTimeRegex: String =
+      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}"
     val len = 2
+
     when(
       col.rlike(dateTimeRegex),
-      substring(NumericLiteral(col).value, pos, len).cast(IntegerType)
+      split(
+        regexp_replace(
+          NumericLiteral(col).value,
+          "[:TZ]",
+          "-"
+        ),
+        "-"
+      ).getItem(pos).cast(IntegerType)
     ).otherwise(nullLiteral)
   }
 }
