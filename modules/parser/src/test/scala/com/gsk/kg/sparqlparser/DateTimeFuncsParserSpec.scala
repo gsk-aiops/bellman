@@ -4,6 +4,7 @@ import com.gsk.kg.sparqlparser.DateTimeFunc.DAY
 import com.gsk.kg.sparqlparser.DateTimeFunc.HOUR
 import com.gsk.kg.sparqlparser.DateTimeFunc.MONTH
 import com.gsk.kg.sparqlparser.DateTimeFunc.NOW
+import com.gsk.kg.sparqlparser.DateTimeFunc.SECONDS
 import com.gsk.kg.sparqlparser.DateTimeFunc.YEAR
 import com.gsk.kg.sparqlparser.StringVal.STRING
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
@@ -124,6 +125,32 @@ class DateTimeFuncsParserSpec extends AnyFlatSpec {
       )
     p.get.value match {
       case HOUR(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "SECONDS parser with string" should "return SECONDS type" in {
+    val p =
+      fastparse.parse(
+        """(seconds "x")""",
+        DateTimeFuncsParser.secondsParen(_)
+      )
+    p.get.value match {
+      case SECONDS(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "SECONDS parser with variable" should "return SECONDS type" in {
+    val p =
+      fastparse.parse(
+        """(seconds ?d)""",
+        DateTimeFuncsParser.secondsParen(_)
+      )
+    p.get.value match {
+      case SECONDS(VARIABLE("?d")) =>
         succeed
       case _ => fail
     }

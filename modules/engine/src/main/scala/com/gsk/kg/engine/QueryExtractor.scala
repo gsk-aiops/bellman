@@ -284,6 +284,7 @@ object QueryExtractor {
       case MONTH(e)                        => s"(month $e)"
       case DAY(e)                          => s"(day $e)"
       case HOUR(e)                         => s"(hour $e)"
+      case SECONDS(e)                      => s"(seconds $e)"
     }
 
   private val exprToString: Algebra[ExprF, String] =

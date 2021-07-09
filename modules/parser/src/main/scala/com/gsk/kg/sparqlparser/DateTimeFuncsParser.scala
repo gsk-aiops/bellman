@@ -10,11 +10,12 @@ import fastparse._
   */
 object DateTimeFuncsParser {
 
-  def now[_: P]: P[Unit]   = P("now")
-  def year[_: P]: P[Unit]  = P("year")
-  def month[_: P]: P[Unit] = P("month")
-  def day[_: P]: P[Unit]   = P("day")
-  def hours[_: P]: P[Unit] = P("hours")
+  def now[_: P]: P[Unit]     = P("now")
+  def year[_: P]: P[Unit]    = P("year")
+  def month[_: P]: P[Unit]   = P("month")
+  def day[_: P]: P[Unit]     = P("day")
+  def hours[_: P]: P[Unit]   = P("hours")
+  def seconds[_: P]: P[Unit] = P("seconds")
 
   def nowParen[_: P]: P[NOW] =
     P("(" ~ now ~ ")")
@@ -36,6 +37,10 @@ object DateTimeFuncsParser {
     P("(" ~ hours ~ ExpressionParser.parser ~ ")")
       .map(f => HOUR(f))
 
+  def secondsParen[_: P]: P[SECONDS] =
+    P("(" ~ seconds ~ ExpressionParser.parser ~ ")")
+      .map(f => SECONDS(f))
+
   def parser[_: P]: P[DateTimeFunc] =
     P(
       nowParen
@@ -43,5 +48,6 @@ object DateTimeFuncsParser {
         | monthParen
         | dayParen
         | hoursParen
+        | secondsParen
     )
 }
