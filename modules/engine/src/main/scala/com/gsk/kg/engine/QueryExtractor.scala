@@ -283,6 +283,7 @@ object QueryExtractor {
       case YEAR(e)                         => s"(year $e)"
       case MONTH(e)                        => s"(month $e)"
       case DAY(e)                          => s"(day $e)"
+      case MINUTES(e)                      => s"(minutes $e)"
     }
 
   private val exprToString: Algebra[ExprF, String] =

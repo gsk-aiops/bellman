@@ -5,19 +5,20 @@ import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.dayofmonth
 import org.apache.spark.sql.functions.format_string
-import org.apache.spark.sql.functions.lit
-import org.apache.spark.sql.functions.minute
-import org.apache.spark.sql.functions.regexp_extract
 import org.apache.spark.sql.functions.substring
-import org.apache.spark.sql.functions.substring_index
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{month => sMonth}
 import org.apache.spark.sql.functions.{year => sYear}
+import org.apache.spark.sql.types.IntegerType
+
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isDateTimeLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
 
 object FuncDates {
+
+  val dateTimeRegex: String =
+    "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}"
 
   /** Returns an XSD dateTime value for the current query execution. All calls to this function in any one query
     * execution must return the same value. The exact moment returned is not specified.
@@ -61,15 +62,14 @@ object FuncDates {
     * @param col
     * @return
     */
-  def minutes(col: Column): Column = // apply(minute, col)
-//    regexp_extract(col, "[0-9]{1,4}:[0-9]{1,2}:[0-9]{1,2}", 0)
-//    regexp_extract(col, "T", 0)
+  def minutes(col: Column): Column = {
+    val pos = 15
+    val len = 2
     when(
-      col.rlike(
-        "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}"
-      ),
-      substring(NumericLiteral(col).value, 15, 2)
-    ).otherwise(lit("ko"))
+      col.rlike(dateTimeRegex),
+      substring(NumericLiteral(col).value, pos, len).cast(IntegerType)
+    ).otherwise(nullLiteral)
+  }
 
   /** Returns the seconds part of the lexical form of arg.
     * @param col

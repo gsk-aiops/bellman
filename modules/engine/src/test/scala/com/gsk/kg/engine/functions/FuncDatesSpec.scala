@@ -96,8 +96,6 @@ class FuncDatesSpec
     val dfR =
       df.select(f(col(df.columns.head)).as("r"))
 
-    dfR.show(false)
-
     dfR
       .select(col("r"))
       .collect() shouldEqual expected
