@@ -39,9 +39,22 @@ object FuncTerms {
   def strdt(col: Column, uri: String): Column =
     cc(lit("\""), col, lit("\""), lit(s"^^$uri"))
 
+  /** Implementation of SparQL STRLANG on Spark dataframes.
+    * The STRLANG function constructs a literal with lexical form and language tag as specified by the arguments.
+    *
+    * Example:
+    * STRLANG("chat", "en") -> "chat"@en
+    *
+    * @param col
+    * @param tag
+    * @return
+    */
+  def strlang(col: Column, tag: String): Column =
+    cc(lit("\""), col, lit("\""), lit(s"@$tag"))
+
   /** The IRI function constructs an IRI by resolving the string
     * argument (see RFC 3986 and RFC 3987 or any later RFC that
-    * superceeds RFC 3986 or RFC 3987). The IRI is resolved against
+    * supersedes RFC 3986 or RFC 3987). The IRI is resolved against
     * the base IRI of the query and must result in an absolute IRI.
     *
     * The URI function is a synonym for IRI.

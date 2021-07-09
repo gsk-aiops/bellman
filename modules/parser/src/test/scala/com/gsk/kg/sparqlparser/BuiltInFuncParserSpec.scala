@@ -37,7 +37,7 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     }
   }
 
-  it should "return COCANT type when multiple arguments" in {
+  it should "return CONCAT type when multiple arguments" in {
     val s = "(concat \"http://id.gsk.com/dm/1.0/\" ?src ?dst)"
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
@@ -176,6 +176,17 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
     val p = fastparse.parse(s, BuiltInFuncParser.parser(_))
     p.get.value match {
       case STRDT(VARIABLE("?c"), URIVAL("<http://geo.org#country>")) =>
+        succeed
+      case _ =>
+        fail
+    }
+  }
+
+  "strlang function" should "return STRLANG type" in {
+    val s = "(strlang \"chat\" \"en\")"
+    val p = fastparse.parse(s, BuiltInFuncParser.strlangParen(_))
+    p.get.value match {
+      case STRLANG(STRING("chat"), STRING("en")) =>
         succeed
       case _ =>
         fail
@@ -464,123 +475,6 @@ class BuiltInFuncParserSpec extends AnyFlatSpec {
       )
     p.get.value match {
       case UUID() =>
-        succeed
-      case _ => fail
-    }
-  }
-
-  "CEIL parser with string" should "return CEIL type" in {
-    val p =
-      fastparse.parse(
-        """(ceil "x")""",
-        BuiltInFuncParser.ceilParen(_)
-      )
-    p.get.value match {
-      case CEIL(STRING("x")) =>
-        succeed
-      case _ => fail
-    }
-  }
-
-  "CEIL parser with variable" should "return CEIL type" in {
-    val p =
-      fastparse.parse(
-        """(ceil ?d)""",
-        BuiltInFuncParser.ceilParen(_)
-      )
-    p.get.value match {
-      case CEIL(VARIABLE("?d")) =>
-        succeed
-      case _ => fail
-    }
-  }
-
-  "ROUND parser with string" should "return ROUND type" in {
-    val p =
-      fastparse.parse(
-        """(round "x")""",
-        BuiltInFuncParser.roundParen(_)
-      )
-    p.get.value match {
-      case ROUND(STRING("x")) =>
-        succeed
-      case _ => fail
-    }
-  }
-
-  "ROUND parser with variable" should "return ROUND type" in {
-    val p =
-      fastparse.parse(
-        """(round ?d)""",
-        BuiltInFuncParser.roundParen(_)
-      )
-    p.get.value match {
-      case ROUND(VARIABLE("?d")) =>
-        succeed
-      case _ => fail
-    }
-  }
-
-  "RAND parser" should "return RAND type" in {
-    val p =
-      fastparse.parse(
-        """(rand)""",
-        BuiltInFuncParser.randParen(_)
-      )
-    p.get.value match {
-      case RAND() =>
-        succeed
-      case _ => fail
-    }
-  }
-
-  "ABS parser with string" should "return ABS type" in {
-    val p =
-      fastparse.parse(
-        """(abs "x")""",
-        BuiltInFuncParser.absParen(_)
-      )
-    p.get.value match {
-      case ABS(STRING("x")) =>
-        succeed
-      case _ => fail
-    }
-  }
-
-  "ABS parser with variable" should "return ABS type" in {
-    val p =
-      fastparse.parse(
-        """(abs ?d)""",
-        BuiltInFuncParser.absParen(_)
-      )
-    p.get.value match {
-      case ABS(VARIABLE("?d")) =>
-        succeed
-      case _ => fail
-    }
-  }
-
-  "FLOOR parser with string" should "return FLOOR type" in {
-    val p =
-      fastparse.parse(
-        """(floor "x")""",
-        BuiltInFuncParser.floorParen(_)
-      )
-    p.get.value match {
-      case FLOOR(STRING("x")) =>
-        succeed
-      case _ => fail
-    }
-  }
-
-  "FLOOR parser with variable" should "return FLOOR type" in {
-    val p =
-      fastparse.parse(
-        """(floor ?d)""",
-        BuiltInFuncParser.floorParen(_)
-      )
-    p.get.value match {
-      case FLOOR(VARIABLE("?d")) =>
         succeed
       case _ => fail
     }

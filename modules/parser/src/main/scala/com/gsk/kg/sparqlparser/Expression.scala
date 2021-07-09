@@ -58,6 +58,7 @@ object BuiltInFunc {
   final case class STRSTARTS(s: Expression, f: Expression) extends BuiltInFunc
   final case class STRENDS(s: Expression, f: Expression)   extends BuiltInFunc
   final case class STRDT(s: Expression, uri: URIVAL)       extends BuiltInFunc
+  final case class STRLANG(s: Expression, l: Expression)   extends BuiltInFunc
   final case class STRLEN(s: Expression)                   extends BuiltInFunc
   final case class SUBSTR(
       s: Expression,
@@ -82,14 +83,18 @@ object BuiltInFunc {
       s: Expression,
       pattern: Expression,
       flags: Expression = StringVal.STRING("")
-  )                                     extends BuiltInFunc
-  final case class UUID()               extends BuiltInFunc
-  final case class CEIL(s: Expression)  extends BuiltInFunc
-  final case class ROUND(s: Expression) extends BuiltInFunc
-  final case class RAND()               extends BuiltInFunc
-  final case class ABS(s: Expression)   extends BuiltInFunc
-  final case class FLOOR(s: Expression) extends BuiltInFunc
-  final case class STRUUID()            extends BuiltInFunc
+  )                          extends BuiltInFunc
+  final case class UUID()    extends BuiltInFunc
+  final case class STRUUID() extends BuiltInFunc
+}
+
+sealed trait MathFunc extends StringLike
+object MathFunc {
+  final case class CEIL(s: Expression)  extends MathFunc
+  final case class ROUND(s: Expression) extends MathFunc
+  final case class RAND()               extends MathFunc
+  final case class ABS(s: Expression)   extends MathFunc
+  final case class FLOOR(s: Expression) extends MathFunc
 }
 
 sealed trait StringVal extends StringLike {

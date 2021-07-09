@@ -85,7 +85,8 @@ object ExprParser {
       BuiltInFuncParser.parser |
       AggregateParser.parser |
       ArithmeticParser.parser |
-      DateTimeFuncsParser.parser
+      DateTimeFuncsParser.parser |
+      MathFuncParser.parser
 
   def filterExprList[_: P]: P[Seq[Expression]] =
     P("(" ~ exprList ~ exprFunc.rep(2) ~ ")")
