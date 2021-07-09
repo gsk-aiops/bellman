@@ -56,13 +56,11 @@ class StrlangSpec
          |BIND(strlang(?name, $tag) as ?strlang)
          |}""".stripMargin
 
-    print(query)
-
-    (Compiler
-      .compile(df, query, config) match {
-      case Left(l)  => throw new Exception(l.toString)
-      case Right(r) => r
-    }).head()
+    Compiler
+      .compile(df, query, config)
+      .right
+      .get
+      .head()
 
   }
 }
