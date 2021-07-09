@@ -55,21 +55,16 @@ object FuncDates {
     * @param col
     * @return
     */
-  def hours(col: Column): Column = ???
+  def hours(col: Column): Column =
+    getTimeFromDateTimeCol(col, "hours")
 
   /** Returns the minutes part of the lexical form of arg.
     * The value is as given in the lexical form of the XSD dateTime.
     * @param col
     * @return
     */
-  def minutes(col: Column): Column = {
-    val pos = 15
-    val len = 2
-    when(
-      col.rlike(dateTimeRegex),
-      substring(NumericLiteral(col).value, pos, len).cast(IntegerType)
-    ).otherwise(nullLiteral)
-  }
+  def minutes(col: Column): Column =
+    getTimeFromDateTimeCol(col, "minutes")
 
   /** Returns the seconds part of the lexical form of arg.
     * @param col
@@ -101,4 +96,16 @@ object FuncDates {
       isDateTimeLiteral(col),
       f(NumericLiteral(col).value)
     ).otherwise(nullLiteral)
+
+  private def getTimeFromDateTimeCol(col: Column, pattern: String): Column = {
+    val pos = pattern match {
+      case "hours"   => 12
+      case "minutes" => 15
+    }
+    val len = 2
+    when(
+      col.rlike(dateTimeRegex),
+      substring(NumericLiteral(col).value, pos, len).cast(IntegerType)
+    ).otherwise(nullLiteral)
+  }
 }

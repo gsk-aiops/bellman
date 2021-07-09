@@ -106,6 +106,7 @@ object ExpressionF {
   final case class YEAR[A](e: A)                          extends ExpressionF[A]
   final case class MONTH[A](e: A)                         extends ExpressionF[A]
   final case class DAY[A](e: A)                           extends ExpressionF[A]
+  final case class HOUR[A](e: A)                          extends ExpressionF[A]
   final case class MINUTES[A](e: A)                       extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
@@ -216,6 +217,7 @@ object ExpressionF {
       case DateTimeFunc.YEAR(s)                        => YEAR(s)
       case DateTimeFunc.MONTH(s)                       => MONTH(s)
       case DateTimeFunc.DAY(s)                         => DAY(s)
+      case DateTimeFunc.HOUR(s)                        => HOUR(s)
       case DateTimeFunc.MINUTES(s)                     => MINUTES(s)
     }
 
@@ -345,6 +347,7 @@ object ExpressionF {
       case YEAR(s)                    => DateTimeFunc.YEAR(s)
       case MONTH(s)                   => DateTimeFunc.MONTH(s)
       case DAY(s)                     => DateTimeFunc.DAY(s)
+      case HOUR(s)                    => DateTimeFunc.HOUR(s)
       case MINUTES(s)                 => DateTimeFunc.MINUTES(s)
     }
 
@@ -436,6 +439,7 @@ object ExpressionF {
         case YEAR(s)    => FuncDates.year(s).pure[M]
         case MONTH(s)   => FuncDates.month(s).pure[M]
         case DAY(s)     => FuncDates.day(s).pure[M]
+        case HOUR(s)    => FuncDates.hours(s).pure[M]
         case MINUTES(s) => FuncDates.minutes(s).pure[M]
       }
     // scalastyle:on
