@@ -9,13 +9,17 @@ import com.gsk.kg.sparqlparser.TestConfig
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class DaySpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
+class MinutesSpec
+    extends AnyWordSpec
+    with Matchers
+    with SparkSpec
+    with TestConfig {
 
   import sqlContext.implicits._
 
   /*
-  https://www.w3.org/TR/sparql11-query/#func-day
-  DAY("2011-01-10T14:45:13.815-05:00"^^xsd:dateTime) -> 10
+  https://www.w3.org/TR/sparql11-query/#func-minutes
+  MINUTES("2011-01-10T14:45:13.815-05:00"^^xsd:dateTime) -> 45
    */
 
   lazy val df: DataFrame = List(
@@ -27,27 +31,27 @@ class DaySpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
     (
       "_:b",
       "<http://xmlns.com/foaf/0.1/date>",
-      "\"2012-04-14T14:45:13.815-05:00\"^^xsd:dateTime"
+      "\"2012-04-14T14:38:13.815-05:00\"^^xsd:dateTime"
     ),
     (
       "_:c",
       "<http://xmlns.com/foaf/0.1/date>",
-      "\"2013-12-09T14:45:13.815-05:00\"^^xsd:dateTime"
+      "\"2013-12-09T14:09:13.815-05:00\"^^xsd:dateTime"
     )
   ).toDF("s", "p", "o")
 
-  val expected: List[Row] = List("10", "14", "9").map(Row(_))
+  val expected: List[Row] = List("45", "38", "9").map(Row(_))
 
   val projection: Option[Column] = None
 
-  "perform day function correctly" when {
-    "select day response with a day of dateTime value" in {
+  "perform minutes function correctly" when {
+    "select minutes response with a minutes of dateTime value" in {
 
       val query =
         """
           |PREFIX foaf: <http://xmlns.com/foaf/0.1/>
           |
-          |SELECT DAY(?date)
+          |SELECT MINUTES(?date)
           |WHERE  {
           |   ?x foaf:date ?date
           |}
@@ -61,7 +65,7 @@ class DaySpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
       )
     }
 
-    "bind day response with a day value" in {
+    "bind minutes response with a minutes value" in {
 
       val query =
         """
@@ -70,7 +74,7 @@ class DaySpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
           |SELECT ?m
           |WHERE  {
           |   ?x foaf:date ?date .
-          |   bind(day(?date) as ?m)
+          |   bind(minutes(?date) as ?m)
           |}
           |""".stripMargin
 

@@ -107,6 +107,7 @@ object ExpressionF {
   final case class MONTH[A](e: A)                         extends ExpressionF[A]
   final case class DAY[A](e: A)                           extends ExpressionF[A]
   final case class HOUR[A](e: A)                          extends ExpressionF[A]
+  final case class MINUTES[A](e: A)                       extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
     Coalgebra {
@@ -217,6 +218,7 @@ object ExpressionF {
       case DateTimeFunc.MONTH(s)                       => MONTH(s)
       case DateTimeFunc.DAY(s)                         => DAY(s)
       case DateTimeFunc.HOUR(s)                        => HOUR(s)
+      case DateTimeFunc.MINUTES(s)                     => MINUTES(s)
     }
 
   val toExpressionAlgebra: Algebra[ExpressionF, Expression] =
@@ -346,6 +348,7 @@ object ExpressionF {
       case MONTH(s)                   => DateTimeFunc.MONTH(s)
       case DAY(s)                     => DateTimeFunc.DAY(s)
       case HOUR(s)                    => DateTimeFunc.HOUR(s)
+      case MINUTES(s)                 => DateTimeFunc.MINUTES(s)
     }
 
   implicit val basis: Basis[ExpressionF, Expression] =
@@ -421,22 +424,23 @@ object ExpressionF {
         case NUM(s)                     => lit(s).pure[M]
         case VARIABLE(s) =>
           M.inspect[Result, Config, Log, DataFrame, Column](_(s))
-        case URIVAL(s) => lit(s).pure[M]
-        case BLANK(s)  => lit(s).pure[M]
-        case BOOL(s)   => lit(s).pure[M]
-        case ASC(e)    => unknownFunction("ASC")
-        case DESC(e)   => unknownFunction("DESC")
-        case CEIL(s)   => FuncNumerics.ceil(s).pure[M]
-        case ROUND(s)  => FuncNumerics.round(s).pure[M]
-        case RAND()    => FuncNumerics.rand.pure[M]
-        case ABS(s)    => FuncNumerics.abs(s).pure[M]
-        case FLOOR(s)  => FuncNumerics.floor(s).pure[M]
-        case STRUUID() => FuncTerms.strUuid.pure[M]
-        case NOW()     => FuncDates.now.pure[M]
-        case YEAR(s)   => FuncDates.year(s).pure[M]
-        case MONTH(s)  => FuncDates.month(s).pure[M]
-        case DAY(s)    => FuncDates.day(s).pure[M]
-        case HOUR(s)   => FuncDates.hours(s).pure[M]
+        case URIVAL(s)  => lit(s).pure[M]
+        case BLANK(s)   => lit(s).pure[M]
+        case BOOL(s)    => lit(s).pure[M]
+        case ASC(e)     => unknownFunction("ASC")
+        case DESC(e)    => unknownFunction("DESC")
+        case CEIL(s)    => FuncNumerics.ceil(s).pure[M]
+        case ROUND(s)   => FuncNumerics.round(s).pure[M]
+        case RAND()     => FuncNumerics.rand.pure[M]
+        case ABS(s)     => FuncNumerics.abs(s).pure[M]
+        case FLOOR(s)   => FuncNumerics.floor(s).pure[M]
+        case STRUUID()  => FuncTerms.strUuid.pure[M]
+        case NOW()      => FuncDates.now.pure[M]
+        case YEAR(s)    => FuncDates.year(s).pure[M]
+        case MONTH(s)   => FuncDates.month(s).pure[M]
+        case DAY(s)     => FuncDates.day(s).pure[M]
+        case HOUR(s)    => FuncDates.hours(s).pure[M]
+        case MINUTES(s) => FuncDates.minutes(s).pure[M]
       }
     // scalastyle:on
 
