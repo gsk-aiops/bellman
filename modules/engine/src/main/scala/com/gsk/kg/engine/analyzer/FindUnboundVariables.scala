@@ -208,6 +208,7 @@ object FindVariablesOnExpression {
         case YEAR(s)                         => s
         case MONTH(s)                        => s
         case DAY(s)                          => s
+        case HOUR(s)                         => s
       }
 
     val eval =

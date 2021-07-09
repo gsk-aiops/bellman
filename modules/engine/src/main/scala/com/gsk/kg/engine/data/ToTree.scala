@@ -235,6 +235,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.YEAR(e)     => Node(s"YEAR", Stream(e))
           case ExpressionF.MONTH(e)    => Node(s"MONTH", Stream(e))
           case ExpressionF.DAY(e)      => Node(s"DAY", Stream(e))
+          case ExpressionF.HOUR(e)     => Node(s"HOUR", Stream(e))
         }
 
         val t = scheme.cata(alg)
