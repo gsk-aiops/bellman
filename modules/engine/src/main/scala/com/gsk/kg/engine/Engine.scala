@@ -222,9 +222,29 @@ object Engine {
         PropertyExpressionF
           .compile[PropertyExpression](p, config)
           .apply(df)
-          .map { condition =>
-            val chunk = Chunk(Quad(s, StringVal.STRING(""), o, g))
-            applyChunkToDf(chunk, condition, df)
+          .map {
+            case Right(accDf) =>
+              val vars = Quad(
+                s,
+                STRING(""),
+                o,
+                g
+              ).getNamesAndPositions :+ (GRAPH_VARIABLE, "g")
+
+              Multiset(
+                vars.map {
+                  case (GRAPH_VARIABLE, _) =>
+                    VARIABLE(GRAPH_VARIABLE.s)
+                  case (other, _) =>
+                    other.asInstanceOf[VARIABLE]
+                }.toSet,
+                accDf
+                  .withColumnRenamed("s", s.s)
+                  .withColumnRenamed("o", o.s)
+              )
+            case Left(cond) =>
+              val chunk = Chunk(Quad(s, STRING(""), o, g))
+              applyChunkToDf(chunk, cond, df)
           }
       }
     }
@@ -237,7 +257,8 @@ object Engine {
       Foldable[ChunkedList].fold(
         quads.mapChunks { chunk =>
           val condition = composedConditionFromChunk(df, chunk)
-          applyChunkToDf(chunk, condition, df)
+          val a         = applyChunkToDf(chunk, condition, df)
+          a
         }
       )
     }
