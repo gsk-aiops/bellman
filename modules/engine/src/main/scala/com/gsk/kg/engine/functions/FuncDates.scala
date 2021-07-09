@@ -18,9 +18,6 @@ import com.gsk.kg.engine.functions.Literals.nullLiteral
 
 object FuncDates {
 
-  private val Hours   = 3
-  private val Minutes = 4
-
   /** Returns an XSD dateTime value for the current query execution. All calls to this function in any one query
     * execution must return the same value. The exact moment returned is not specified.
     * e.g. "2011-01-10T14:45:13.815-05:00"^^xsd:dateTime
@@ -56,16 +53,20 @@ object FuncDates {
     * @param col
     * @return
     */
-  def hours(col: Column): Column =
+  def hours(col: Column): Column = {
+    val Hours = 3
     getTimeFromDateTimeCol(col, Hours)
+  }
 
   /** Returns the minutes part of the lexical form of arg.
     * The value is as given in the lexical form of the XSD dateTime.
     * @param col
     * @return
     */
-  def minutes(col: Column): Column =
+  def minutes(col: Column): Column = {
+    val Minutes = 4
     getTimeFromDateTimeCol(col, Minutes)
+  }
 
   /** Returns the seconds part of the lexical form of arg.
     * @param col
