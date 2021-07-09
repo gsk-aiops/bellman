@@ -98,6 +98,12 @@ object FuncDates {
       f(NumericLiteral(col).value)
     ).otherwise(nullLiteral)
 
+  /** Get hours, minutes of dateTime column
+    * @param col
+    * @param pos
+    * @return Column with
+    *         Integer if hours or minutes
+    */
   private def getTimeFromDateTimeCol(col: Column, pos: Int): Column = {
     val dateTimeRegex: String =
       "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}"
