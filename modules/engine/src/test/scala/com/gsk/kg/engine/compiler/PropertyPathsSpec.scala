@@ -59,9 +59,7 @@ class PropertyPathsSpec
         )
       }
 
-      // TODO: Un-ignore test when implemented support on property paths
-
-      "sequence / property path" ignore {
+      "sequence / property path" in {
 
         val df = List(
           (
@@ -97,6 +95,8 @@ class PropertyPathsSpec
           Row("\"Charles\"")
         )
       }
+
+      // TODO: Un-ignore test when implemented support on property paths
 
       "inverse ^ property path" ignore {
 

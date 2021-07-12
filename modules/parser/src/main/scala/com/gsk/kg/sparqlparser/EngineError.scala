@@ -14,7 +14,8 @@ object EngineError {
   final case class FunctionError(description: String) extends EngineError
   final case class AnalyzerError(errors: NonEmptyChain[String])
       extends EngineError
-  final case class InvalidInputDataFrame(msg: String)  extends EngineError
-  final case class ParsingError(description: String)   extends EngineError
-  final case class UnExpectedType(description: String) extends EngineError
+  final case class InvalidInputDataFrame(msg: String)        extends EngineError
+  final case class InvalidPropertyPathArguments(msg: String) extends EngineError
+  final case class ParsingError(description: String)         extends EngineError
+  final case class UnExpectedType(description: String)       extends EngineError
 }
