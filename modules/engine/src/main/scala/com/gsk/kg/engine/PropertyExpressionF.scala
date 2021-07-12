@@ -6,6 +6,7 @@ import higherkindness.droste._
 
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SQLContext
 
 import com.gsk.kg.config.Config
 import com.gsk.kg.engine.properties.FuncProperty
@@ -15,35 +16,41 @@ import com.gsk.kg.sparqlparser.Result
 
 object PropertyExpressionF {
 
+  type ColOrDf = Either[Column, DataFrame]
+
   def compile[T](
       t: T,
       config: Config
-  )(implicit T: Basis[PropertyExpressionF, T]): DataFrame => Result[Column] =
+  )(implicit
+      T: Basis[PropertyExpressionF, T],
+      sc: SQLContext
+  ): DataFrame => Result[ColOrDf] =
     df => {
-      val algebraM: AlgebraM[M, PropertyExpressionF, Column] =
-        AlgebraM.apply[M, PropertyExpressionF, Column] {
+      val algebraM: AlgebraM[M, PropertyExpressionF, ColOrDf] =
+        AlgebraM.apply[M, PropertyExpressionF, ColOrDf] {
           case AlternativeF(pel, per) =>
-            FuncProperty.alternative(df, pel, per).pure[M]
-          case ReverseF(e)              => unknownPropertyPath("reverse")
-          case SeqExpressionF(pel, per) => unknownPropertyPath("seqExpression")
-          case OneOrMoreF(e)            => unknownPropertyPath("oneOrMore")
-          case ZeroOrMoreF(e)           => unknownPropertyPath("zeroOrMore")
-          case ZeroOrOneF(e)            => unknownPropertyPath("zeroOrOne")
-          case NotOneOfF(es)            => unknownPropertyPath("notOneOf")
-          case BetweenNAndMF(n, m, e)   => unknownPropertyPath("betweenNAndM")
-          case ExactlyNF(n, e)          => unknownPropertyPath("exactlyN")
-          case NOrMoreF(n, e)           => unknownPropertyPath("nOrMore")
-          case BetweenZeroAndNF(n, e)   => unknownPropertyPath("betweenZeroAndN")
-          case UriF(s)                  => FuncProperty.uri(s).pure[M]
+            M.liftF(FuncProperty.alternative(df, pel, per))
+          case ReverseF(e) => unknownPropertyPath("reverse")
+          case SeqExpressionF(pel, per) =>
+            M.liftF(FuncProperty.seq(df, pel, per))
+          case OneOrMoreF(e)          => unknownPropertyPath("oneOrMore")
+          case ZeroOrMoreF(e)         => unknownPropertyPath("zeroOrMore")
+          case ZeroOrOneF(e)          => unknownPropertyPath("zeroOrOne")
+          case NotOneOfF(es)          => unknownPropertyPath("notOneOf")
+          case BetweenNAndMF(n, m, e) => unknownPropertyPath("betweenNAndM")
+          case ExactlyNF(n, e)        => unknownPropertyPath("exactlyN")
+          case NOrMoreF(n, e)         => unknownPropertyPath("nOrMore")
+          case BetweenZeroAndNF(n, e) => unknownPropertyPath("betweenZeroAndN")
+          case UriF(s)                => FuncProperty.uri(s).pure[M]
         }
 
-      val eval = scheme.cataM[M, PropertyExpressionF, T, Column](algebraM)
+      val eval = scheme.cataM[M, PropertyExpressionF, T, ColOrDf](algebraM)
 
       eval(t).runA(config, df)
     }
 
-  private def unknownPropertyPath(name: String): M[Column] =
-    M.liftF[Result, Config, Log, DataFrame, Column](
-      EngineError.UnknownPropertyPath(name).asLeft[Column]
+  private def unknownPropertyPath(name: String): M[ColOrDf] =
+    M.liftF[Result, Config, Log, DataFrame, ColOrDf](
+      EngineError.UnknownPropertyPath(name).asLeft[ColOrDf]
     )
 }
