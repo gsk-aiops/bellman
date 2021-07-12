@@ -130,10 +130,10 @@ class FuncDatesSpec
 
     "timezone function" should {
       val expected = Array(
-        Row("-PT05H09M"),
-        Row("PT0S"),
-        Row("-PT05H09M"),
-        Row("PT05H09M")
+        Row("\"-PT05H09M\"^^xsd:dateTime"),
+        Row("\"PT0S\"^^xsd:dateTime"),
+        Row("\"-PT05H09M\"^^xsd:dateTime"),
+        Row("\"PT05H09M\"^^xsd:dateTime")
       )
 
       "timezone function returns min of datetime" in {
@@ -147,7 +147,7 @@ class FuncDatesSpec
   ): Assertion = {
     val dfR =
       df.select(f(col(df.columns.head)).as("r"))
-
+    dfR.show(false)
     dfR
       .select(col("r"))
       .collect() shouldEqual expected

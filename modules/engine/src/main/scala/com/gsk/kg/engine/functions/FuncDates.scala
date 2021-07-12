@@ -104,15 +104,24 @@ object FuncDates {
         val minutesTimeZone = substring(timeZone, 5, 2)
         when(
           sign.like("-"),
-          format_string("%sPT%sH%sM", sign, hoursTimeZone, minutesTimeZone)
+          format_string(
+            "\"%sPT%sH%sM\"^^xsd:dateTime",
+            sign,
+            hoursTimeZone,
+            minutesTimeZone
+          )
         )
           .otherwise(
-            format_string("PT%sH%sM", hoursTimeZone, minutesTimeZone)
+            format_string(
+              "\"PT%sH%sM\"^^xsd:dateTime",
+              hoursTimeZone,
+              minutesTimeZone
+            )
           )
       }
     ).when(
       col.rlike(dateTimeWithoutTimeZoneRegex),
-      lit("PT0S")
+      lit("\"PT0S\"^^xsd:dateTime")
     ).otherwise(nullLiteral)
   }
 
