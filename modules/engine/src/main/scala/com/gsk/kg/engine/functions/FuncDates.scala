@@ -1,7 +1,6 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
-import org.apache.spark.sql.functions
 import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.dayofmonth
@@ -15,6 +14,7 @@ import org.apache.spark.sql.functions.concat
 import org.apache.spark.sql.functions.{month => sMonth}
 import org.apache.spark.sql.functions.{year => sYear}
 import org.apache.spark.sql.types.IntegerType
+
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isDateTimeLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
@@ -126,23 +126,6 @@ object FuncDates {
           hoursTimeZone,
           minutesFormatted
         )
-
-//        when(
-//          sign.like("-"),
-//          format_string(
-//            "\"%sPT%sH%sM\"^^xsd:dateTime",
-//            sign,
-//            hoursTimeZone,
-//            minutesTimeZone
-//          )
-//        )
-//          .otherwise(
-//            format_string(
-//              "\"PT%sH%sM\"^^xsd:dateTime",
-//              hoursTimeZone,
-//              minutesTimeZone
-//            )
-//          )
       }
     ).when(
       col.rlike(dateTimeWithoutTimeZoneRegex),
