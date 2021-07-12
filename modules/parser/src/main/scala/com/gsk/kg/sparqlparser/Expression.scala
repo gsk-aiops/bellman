@@ -160,10 +160,11 @@ object ConditionOrder {
 
 sealed trait DateTimeFunc extends Expression
 object DateTimeFunc {
-  final case class NOW()                  extends DateTimeFunc
-  final case class YEAR(e: Expression)    extends DateTimeFunc
-  final case class MONTH(e: Expression)   extends DateTimeFunc
-  final case class DAY(e: Expression)     extends DateTimeFunc
-  final case class HOUR(e: Expression)    extends DateTimeFunc
-  final case class MINUTES(e: Expression) extends DateTimeFunc
+  final case class NOW()                   extends DateTimeFunc
+  final case class YEAR(e: Expression)     extends DateTimeFunc
+  final case class MONTH(e: Expression)    extends DateTimeFunc
+  final case class DAY(e: Expression)      extends DateTimeFunc
+  final case class HOUR(e: Expression)     extends DateTimeFunc
+  final case class MINUTES(e: Expression)  extends DateTimeFunc
+  final case class TIMEZONE(e: Expression) extends DateTimeFunc
 }

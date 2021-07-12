@@ -1,6 +1,7 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
+import org.apache.spark.sql.functions
 import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.dayofmonth
@@ -10,10 +11,10 @@ import org.apache.spark.sql.functions.regexp_replace
 import org.apache.spark.sql.functions.split
 import org.apache.spark.sql.functions.substring
 import org.apache.spark.sql.functions.when
+import org.apache.spark.sql.functions.concat
 import org.apache.spark.sql.functions.{month => sMonth}
 import org.apache.spark.sql.functions.{year => sYear}
 import org.apache.spark.sql.types.IntegerType
-
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isDateTimeLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
@@ -107,25 +108,41 @@ object FuncDates {
           PosTimeZone,
           LenTimeZone
         )
-        val sign            = substring(timeZone, PosSign, LenSign)
-        val hoursTimeZone   = substring(timeZone, PosHours, LenHoursMinutes)
-        val minutesTimeZone = substring(timeZone, PosMinutes, LenHoursMinutes)
-        when(
-          sign.like("-"),
-          format_string(
-            "\"%sPT%sH%sM\"^^xsd:dateTime",
-            sign,
-            hoursTimeZone,
-            minutesTimeZone
+        val sign = substring(timeZone, PosSign, LenSign)
+        val hoursTimeZone =
+          substring(timeZone, PosHours, LenHoursMinutes).cast(IntegerType)
+        val minutesTimeZone =
+          substring(timeZone, PosMinutes, LenHoursMinutes)
+
+        val signFormatted = when(sign.like("-"), sign).otherwise(lit(""))
+        val minutesFormatted =
+          when(minutesTimeZone.like("00"), lit("")).otherwise(
+            concat(minutesTimeZone.cast(IntegerType), lit("M"))
           )
+
+        format_string(
+          "\"%sPT%sH%s\"^^xsd:dateTime",
+          signFormatted,
+          hoursTimeZone,
+          minutesFormatted
         )
-          .otherwise(
-            format_string(
-              "\"PT%sH%sM\"^^xsd:dateTime",
-              hoursTimeZone,
-              minutesTimeZone
-            )
-          )
+
+//        when(
+//          sign.like("-"),
+//          format_string(
+//            "\"%sPT%sH%sM\"^^xsd:dateTime",
+//            sign,
+//            hoursTimeZone,
+//            minutesTimeZone
+//          )
+//        )
+//          .otherwise(
+//            format_string(
+//              "\"PT%sH%sM\"^^xsd:dateTime",
+//              hoursTimeZone,
+//              minutesTimeZone
+//            )
+//          )
       }
     ).when(
       col.rlike(dateTimeWithoutTimeZoneRegex),

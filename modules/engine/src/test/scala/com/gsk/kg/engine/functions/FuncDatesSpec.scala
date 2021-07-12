@@ -30,10 +30,11 @@ class FuncDatesSpec
 
     implicit lazy val df: DataFrame =
       List(
-        "\"2011-01-10T14:45:13.815-05:09\"^^xsd:dateTime",
+        "\"2011-01-10T14:45:13.815-05:29\"^^xsd:dateTime",
         "\"2020-12-09T01:50:24.815Z\"^^xsd:dateTime",
         "\"2011-01-10T14:45:13-05:09\"^^xsd:dateTime",
-        "\"2011-01-10T14:45:13.815+05:09\"^^xsd:dateTime"
+        "\"2011-01-10T14:45:13.815+05:09\"^^xsd:dateTime",
+        "\"2011-01-10T14:45:13.815+05:00\"^^xsd:dateTime"
       ).toDF()
 
     "now function" should {
@@ -66,6 +67,7 @@ class FuncDatesSpec
         Row(2011),
         Row(2020),
         Row(2011),
+        Row(2011),
         Row(2011)
       )
 
@@ -80,6 +82,7 @@ class FuncDatesSpec
         Row(1),
         Row(12),
         Row(1),
+        Row(1),
         Row(1)
       )
 
@@ -92,6 +95,7 @@ class FuncDatesSpec
       val expected = Array(
         Row(10),
         Row(9),
+        Row(10),
         Row(10),
         Row(10)
       )
@@ -107,6 +111,7 @@ class FuncDatesSpec
         Row(14),
         Row(1),
         Row(14),
+        Row(14),
         Row(14)
       )
 
@@ -120,6 +125,7 @@ class FuncDatesSpec
         Row(45),
         Row(50),
         Row(45),
+        Row(45),
         Row(45)
       )
 
@@ -130,10 +136,11 @@ class FuncDatesSpec
 
     "timezone function" should {
       val expected = Array(
-        Row("\"-PT05H09M\"^^xsd:dateTime"),
+        Row("\"-PT5H29M\"^^xsd:dateTime"),
         Row("\"PT0S\"^^xsd:dateTime"),
-        Row("\"-PT05H09M\"^^xsd:dateTime"),
-        Row("\"PT05H09M\"^^xsd:dateTime")
+        Row("\"-PT5H9M\"^^xsd:dateTime"),
+        Row("\"PT5H9M\"^^xsd:dateTime"),
+        Row("\"PT5H\"^^xsd:dateTime")
       )
 
       "timezone function returns min of datetime" in {
