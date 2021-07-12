@@ -257,8 +257,7 @@ object Engine {
       Foldable[ChunkedList].fold(
         quads.mapChunks { chunk =>
           val condition = composedConditionFromChunk(df, chunk)
-          val a         = applyChunkToDf(chunk, condition, df)
-          a
+          applyChunkToDf(chunk, condition, df)
         }
       )
     }
