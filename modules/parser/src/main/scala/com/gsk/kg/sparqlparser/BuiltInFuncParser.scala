@@ -20,6 +20,7 @@ object BuiltInFuncParser {
   def strends[_: P]: P[Unit]      = P("strends")
   def strstarts[_: P]: P[Unit]    = P("strstarts")
   def strdt[_: P]: P[Unit]        = P("strdt")
+  def strlang[_: P]: P[Unit]      = P("strlang")
   def substr[_: P]: P[Unit]       = P("substr")
   def strlen[_: P]: P[Unit]       = P("strlen")
   def lcase[_: P]: P[Unit]        = P("lcase")
@@ -35,11 +36,6 @@ object BuiltInFuncParser {
   def sha384[_: P]: P[Unit]       = P("sha384" | "SHA384")
   def sha512[_: P]: P[Unit]       = P("sha512" | "SHA512")
   def uuid[_: P]: P[Unit]         = P("uuid")
-  def ceil[_: P]: P[Unit]         = P("ceil")
-  def round[_: P]: P[Unit]        = P("round")
-  def rand[_: P]: P[Unit]         = P("rand")
-  def abs[_: P]: P[Unit]          = P("abs")
-  def floor[_: P]: P[Unit]        = P("floor")
   def strUuid[_: P]: P[Unit]      = P("struuid")
 
   def uriParen[_: P]: P[URI] =
@@ -100,6 +96,12 @@ object BuiltInFuncParser {
   def strdtParen[_: P]: P[STRDT] =
     P("(" ~ strdt ~ ExpressionParser.parser ~ StringValParser.urival ~ ")")
       .map(f => STRDT(f._1, f._2))
+
+  def strlangParen[_: P]: P[STRLANG] =
+    P(
+      "(" ~ strlang ~ ExpressionParser.parser ~ StringValParser.plainString ~ ")"
+    )
+      .map(f => STRLANG(f._1, f._2))
 
   def substrParen[_: P]: P[SUBSTR] =
     P("(" ~ substr ~ ExpressionParser.parser ~ ExpressionParser.parser ~ ")")
@@ -170,26 +172,6 @@ object BuiltInFuncParser {
     P("(" ~ uuid ~ ")")
       .map(f => UUID())
 
-  def ceilParen[_: P]: P[CEIL] =
-    P("(" ~ ceil ~ ExpressionParser.parser ~ ")")
-      .map(f => CEIL(f))
-
-  def roundParen[_: P]: P[ROUND] =
-    P("(" ~ round ~ ExpressionParser.parser ~ ")")
-      .map(f => ROUND(f))
-
-  def randParen[_: P]: P[RAND] =
-    P("(" ~ rand ~ ")")
-      .map(f => RAND())
-
-  def absParen[_: P]: P[ABS] =
-    P("(" ~ abs ~ ExpressionParser.parser ~ ")")
-      .map(f => ABS(f))
-
-  def floorParen[_: P]: P[FLOOR] =
-    P("(" ~ floor ~ ExpressionParser.parser ~ ")")
-      .map(f => FLOOR(f))
-
   def strUuidParen[_: P]: P[STRUUID] =
     P("(" ~ strUuid ~ ")")
       .map(f => STRUUID())
@@ -211,6 +193,7 @@ object BuiltInFuncParser {
         | regexParen
         | regexWithFlagsParen
         | strdtParen
+        | strlangParen
         | strlenParen
         | lcaseParen
         | ucaseParen
@@ -225,11 +208,6 @@ object BuiltInFuncParser {
         | sha384Paren
         | sha512Paren
         | uuidParen
-        | ceilParen
-        | roundParen
-        | randParen
-        | absParen
-        | floorParen
         | strUuidParen
     )
 //      | StringValParser.string

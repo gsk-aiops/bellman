@@ -42,6 +42,7 @@ object ExpressionF {
   final case class STRENDS[A](s: A, f: String)   extends ExpressionF[A]
   final case class STRSTARTS[A](s: A, f: String) extends ExpressionF[A]
   final case class STRDT[A](s: A, uri: String)   extends ExpressionF[A]
+  final case class STRLANG[A](s: A, tag: String) extends ExpressionF[A]
   final case class STRAFTER[A](s: A, f: String)  extends ExpressionF[A]
   final case class STRBEFORE[A](s: A, f: String) extends ExpressionF[A]
   final case class SUBSTR[A](s: A, pos: Int, len: Option[Int])
@@ -107,6 +108,7 @@ object ExpressionF {
   final case class MONTH[A](e: A)                         extends ExpressionF[A]
   final case class DAY[A](e: A)                           extends ExpressionF[A]
   final case class HOUR[A](e: A)                          extends ExpressionF[A]
+  final case class MINUTES[A](e: A)                       extends ExpressionF[A]
   final case class SECONDS[A](e: A)                       extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
@@ -181,6 +183,7 @@ object ExpressionF {
       case BuiltInFunc.STRSTARTS(s, t @ StringVal.DT_STRING(_, _)) =>
         STRSTARTS(s, StringVal.DT_STRING.toString(t))
       case BuiltInFunc.STRDT(s, StringVal.URIVAL(uri)) => STRDT(s, uri)
+      case BuiltInFunc.STRLANG(s, StringVal.STRING(l)) => STRLANG(s, l)
       case BuiltInFunc.ISBLANK(s)                      => ISBLANK(s)
       case BuiltInFunc.ISNUMERIC(s)                    => ISNUMERIC(s)
       case BuiltInFunc.ENCODE_FOR_URI(s)               => ENCODE_FOR_URI(s)
@@ -207,17 +210,18 @@ object ExpressionF {
       case ConditionOrder.ASC(e)                       => ASC(e)
       case ConditionOrder.DESC(e)                      => DESC(e)
       case BuiltInFunc.UUID()                          => UUID()
-      case BuiltInFunc.CEIL(s)                         => CEIL(s)
-      case BuiltInFunc.ROUND(s)                        => ROUND(s)
-      case BuiltInFunc.RAND()                          => RAND()
-      case BuiltInFunc.ABS(s)                          => ABS(s)
-      case BuiltInFunc.FLOOR(s)                        => FLOOR(s)
+      case MathFunc.CEIL(s)                            => CEIL(s)
+      case MathFunc.ROUND(s)                           => ROUND(s)
+      case MathFunc.RAND()                             => RAND()
+      case MathFunc.ABS(s)                             => ABS(s)
+      case MathFunc.FLOOR(s)                           => FLOOR(s)
       case BuiltInFunc.STRUUID()                       => STRUUID()
       case DateTimeFunc.NOW()                          => NOW()
       case DateTimeFunc.YEAR(s)                        => YEAR(s)
       case DateTimeFunc.MONTH(s)                       => MONTH(s)
       case DateTimeFunc.DAY(s)                         => DAY(s)
       case DateTimeFunc.HOUR(s)                        => HOUR(s)
+      case DateTimeFunc.MINUTES(s)                     => MINUTES(s)
       case DateTimeFunc.SECONDS(s)                     => SECONDS(s)
     }
 
@@ -273,6 +277,11 @@ object ExpressionF {
         BuiltInFunc.STRDT(
           s,
           StringVal.URIVAL(uri)
+        )
+      case STRLANG(s, tag) =>
+        BuiltInFunc.STRLANG(
+          s,
+          StringVal.STRING(tag)
         )
       case URI(s) => BuiltInFunc.URI(s.asInstanceOf[StringLike])
       case CONCAT(appendTo, append) =>
@@ -337,17 +346,18 @@ object ExpressionF {
       case ASC(e)                     => ConditionOrder.ASC(e)
       case DESC(e)                    => ConditionOrder.DESC(e)
       case UUID()                     => BuiltInFunc.UUID()
-      case CEIL(s)                    => BuiltInFunc.CEIL(s)
-      case ROUND(s)                   => BuiltInFunc.ROUND(s)
-      case RAND()                     => BuiltInFunc.RAND()
-      case ABS(s)                     => BuiltInFunc.ABS(s)
-      case FLOOR(s)                   => BuiltInFunc.FLOOR(s)
+      case CEIL(s)                    => MathFunc.CEIL(s)
+      case ROUND(s)                   => MathFunc.ROUND(s)
+      case RAND()                     => MathFunc.RAND()
+      case ABS(s)                     => MathFunc.ABS(s)
+      case FLOOR(s)                   => MathFunc.FLOOR(s)
       case STRUUID()                  => BuiltInFunc.STRUUID()
       case NOW()                      => DateTimeFunc.NOW()
       case YEAR(s)                    => DateTimeFunc.YEAR(s)
       case MONTH(s)                   => DateTimeFunc.MONTH(s)
       case DAY(s)                     => DateTimeFunc.DAY(s)
       case HOUR(s)                    => DateTimeFunc.HOUR(s)
+      case MINUTES(s)                 => DateTimeFunc.MINUTES(s)
       case SECONDS(s)                 => DateTimeFunc.SECONDS(s)
     }
 
@@ -400,6 +410,7 @@ object ExpressionF {
         case COALESCE(xs)               => FuncForms.coalesce(xs).pure[M]
         case STR(s)                     => FuncTerms.str(s).pure[M]
         case STRDT(e, uri)              => FuncTerms.strdt(e, uri).pure[M]
+        case STRLANG(e, tag)            => FuncTerms.strlang(e, tag).pure[M]
         case URI(s)                     => FuncTerms.iri(s).pure[M]
         case LANG(s)                    => FuncTerms.lang(s).pure[M]
         case ISLITERAL(s)               => FuncTerms.isLiteral(s).pure[M]
@@ -440,6 +451,7 @@ object ExpressionF {
         case MONTH(s)   => FuncDates.month(s).pure[M]
         case DAY(s)     => FuncDates.day(s).pure[M]
         case HOUR(s)    => FuncDates.hours(s).pure[M]
+        case MINUTES(s) => FuncDates.minutes(s).pure[M]
         case SECONDS(s) => FuncDates.seconds(s).pure[M]
       }
     // scalastyle:on

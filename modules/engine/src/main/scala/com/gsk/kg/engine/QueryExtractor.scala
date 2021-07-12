@@ -222,6 +222,7 @@ object QueryExtractor {
       case STRENDS(s, f)                   => s"(strends $s $f)"
       case STRSTARTS(s, f)                 => s"(strstarts $s $f)"
       case STRDT(s, uri)                   => s"(strdt $s $uri)"
+      case STRLANG(s, tag)                 => s"(strlang $s $tag)"
       case STRAFTER(s, f)                  => s"""(strafter $s "$f")"""
       case STRBEFORE(s, f)                 => s"(strbefore $s $f)"
       case SUBSTR(s, pos, len)             => s"(substr $s $pos $len)"
@@ -284,6 +285,7 @@ object QueryExtractor {
       case MONTH(e)                        => s"(month $e)"
       case DAY(e)                          => s"(day $e)"
       case HOUR(e)                         => s"(hour $e)"
+      case MINUTES(e)                      => s"(minutes $e)"
       case SECONDS(e)                      => s"(seconds $e)"
     }
 

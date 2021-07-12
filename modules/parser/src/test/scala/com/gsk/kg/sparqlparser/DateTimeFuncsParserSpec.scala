@@ -2,6 +2,7 @@ package com.gsk.kg.sparqlparser
 
 import com.gsk.kg.sparqlparser.DateTimeFunc.DAY
 import com.gsk.kg.sparqlparser.DateTimeFunc.HOUR
+import com.gsk.kg.sparqlparser.DateTimeFunc.MINUTES
 import com.gsk.kg.sparqlparser.DateTimeFunc.MONTH
 import com.gsk.kg.sparqlparser.DateTimeFunc.NOW
 import com.gsk.kg.sparqlparser.DateTimeFunc.SECONDS
@@ -125,6 +126,32 @@ class DateTimeFuncsParserSpec extends AnyFlatSpec {
       )
     p.get.value match {
       case HOUR(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "MINUTES parser with string" should "return MINUTES type" in {
+    val p =
+      fastparse.parse(
+        """(minutes "x")""",
+        DateTimeFuncsParser.minutesParen(_)
+      )
+    p.get.value match {
+      case MINUTES(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "MINUTES parser with variable" should "return MINUTES type" in {
+    val p =
+      fastparse.parse(
+        """(minutes ?d)""",
+        DateTimeFuncsParser.minutesParen(_)
+      )
+    p.get.value match {
+      case MINUTES(VARIABLE("?d")) =>
         succeed
       case _ => fail
     }

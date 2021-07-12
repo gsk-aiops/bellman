@@ -186,6 +186,8 @@ object ToTree extends LowPriorityToTreeInstances0 {
             Node("STRBEFORE", Stream(s, Leaf(f.toString)))
           case ExpressionF.STRDT(s, uri) =>
             Node("STRDT", Stream(s, Leaf(uri)))
+          case ExpressionF.STRLANG(s, tag) =>
+            Node("STRLANG", Stream(s, Leaf(tag)))
           case ExpressionF.SUBSTR(s, pos, len) =>
             Node(
               "SUBSTR",
@@ -234,6 +236,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.MONTH(e)    => Node(s"MONTH", Stream(e))
           case ExpressionF.DAY(e)      => Node(s"DAY", Stream(e))
           case ExpressionF.HOUR(e)     => Node(s"HOUR", Stream(e))
+          case ExpressionF.MINUTES(e)  => Node(s"MINUTES", Stream(e))
           case ExpressionF.SECONDS(e)  => Node(s"SECONDS", Stream(e))
         }
 

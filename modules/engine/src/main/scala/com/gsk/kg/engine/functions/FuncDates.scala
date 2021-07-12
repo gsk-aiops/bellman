@@ -1,10 +1,13 @@
 package com.gsk.kg.engine.functions
 
+import com.gsk.kg.engine.functions.FuncDates.Seconds
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.dayofmonth
 import org.apache.spark.sql.functions.format_string
+import org.apache.spark.sql.functions.regexp_replace
+import org.apache.spark.sql.functions.split
 import org.apache.spark.sql.functions.regexp_replace
 import org.apache.spark.sql.functions.split
 import org.apache.spark.sql.functions.substring
@@ -13,17 +16,11 @@ import org.apache.spark.sql.functions.{month => sMonth}
 import org.apache.spark.sql.functions.{year => sYear}
 import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.sql.types.IntegerType
-
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isDateTimeLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
 
 object FuncDates {
-
-  private val Seconds = 5
-
-  val dateTimeRegex: String =
-    "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}"
 
   /** Returns an XSD dateTime value for the current query execution. All calls to this function in any one query
     * execution must return the same value. The exact moment returned is not specified.
@@ -61,12 +58,8 @@ object FuncDates {
     * @return
     */
   def hours(col: Column): Column = {
-    val pos = 12
-    val len = 2
-    when(
-      col.rlike(dateTimeRegex),
-      substring(NumericLiteral(col).value, pos, len).cast(IntegerType)
-    ).otherwise(nullLiteral)
+    val Hours = 3
+    getTimeFromDateTimeCol(col, Hours)
   }
 
   /** Returns the minutes part of the lexical form of arg.
@@ -74,13 +67,19 @@ object FuncDates {
     * @param col
     * @return
     */
-  def minutes(col: Column): Column = ???
+  def minutes(col: Column): Column = {
+    val Minutes = 4
+    getTimeFromDateTimeCol(col, Minutes)
+  }
 
   /** Returns the seconds part of the lexical form of arg.
     * @param col
     * @return
     */
-  def seconds(col: Column): Column = getTimeFromDateTimeCol(col, Seconds)
+  def seconds(col: Column): Column = {
+    val Seconds = 5
+    getTimeFromDateTimeCol(col, Seconds)
+  }
 
   /** Returns the timezone part of arg as an xsd:dayTimeDuration.
     * Raises an error if there is no timezone.
@@ -107,10 +106,15 @@ object FuncDates {
       f(NumericLiteral(col).value)
     ).otherwise(nullLiteral)
 
+  /** Get hours, minutes of dateTime column
+    * @param col
+    * @param pos
+    * @return Column with
+    *         Integer if hours or minutes
+    */
   private def getTimeFromDateTimeCol(col: Column, pos: Int): Column = {
     val dateTimeRegex: String =
       "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}"
-    val len = 2
 
     when(
       col.rlike(dateTimeRegex),
