@@ -1,6 +1,7 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
+import org.apache.spark.sql.functions.concat
 import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.dayofmonth
@@ -10,7 +11,6 @@ import org.apache.spark.sql.functions.regexp_replace
 import org.apache.spark.sql.functions.split
 import org.apache.spark.sql.functions.substring
 import org.apache.spark.sql.functions.when
-import org.apache.spark.sql.functions.concat
 import org.apache.spark.sql.functions.{month => sMonth}
 import org.apache.spark.sql.functions.{year => sYear}
 import org.apache.spark.sql.types.IntegerType
