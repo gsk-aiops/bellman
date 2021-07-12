@@ -5,8 +5,10 @@ import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.dayofmonth
 import org.apache.spark.sql.functions.format_string
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.functions.regexp_replace
 import org.apache.spark.sql.functions.split
+import org.apache.spark.sql.functions.substring
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{month => sMonth}
 import org.apache.spark.sql.functions.{year => sYear}
@@ -79,7 +81,40 @@ object FuncDates {
     * @param col
     * @return
     */
-  def timezone(col: Column): Column = ???
+  def timezone(col: Column): Column = {
+
+    val dateTimeWithTimeZoneRegex: String =
+      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}[+-]{1}[0-9]{1,2}:[0-9]{1,2}"
+    val dateTimeWithTimeZoneWithoutDecimalSecondsRegex: String =
+      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}[+-]{1}[0-9]{1,2}:[0-9]{1,2}"
+    val dateTimeWithoutTimeZoneRegex: String =
+      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}Z"
+
+    when(
+      col.rlike(dateTimeWithTimeZoneRegex) || col.rlike(
+        dateTimeWithTimeZoneWithoutDecimalSecondsRegex
+      ), {
+        val timeZone = substring(
+          NumericLiteral(col).value,
+          -6,
+          6
+        )
+        val sign            = substring(timeZone, 1, 1)
+        val hoursTimeZone   = substring(timeZone, 2, 2)
+        val minutesTimeZone = substring(timeZone, 5, 2)
+        when(
+          sign.like("-"),
+          format_string("%sPT%sH%sM", sign, hoursTimeZone, minutesTimeZone)
+        )
+          .otherwise(
+            format_string("PT%sH%sM", hoursTimeZone, minutesTimeZone)
+          )
+      }
+    ).when(
+      col.rlike(dateTimeWithoutTimeZoneRegex),
+      lit("PT0S")
+    ).otherwise(nullLiteral)
+  }
 
   /** Returns the timezone part of arg as a simple literal.
     * Returns the empty string if there is no timezone.
