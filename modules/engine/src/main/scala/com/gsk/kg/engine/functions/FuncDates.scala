@@ -1,6 +1,5 @@
 package com.gsk.kg.engine.functions
 
-import com.gsk.kg.engine.functions.FuncDates.Seconds
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
@@ -8,19 +7,19 @@ import org.apache.spark.sql.functions.dayofmonth
 import org.apache.spark.sql.functions.format_string
 import org.apache.spark.sql.functions.regexp_replace
 import org.apache.spark.sql.functions.split
-import org.apache.spark.sql.functions.regexp_replace
-import org.apache.spark.sql.functions.split
-import org.apache.spark.sql.functions.substring
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{month => sMonth}
 import org.apache.spark.sql.functions.{year => sYear}
 import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.sql.types.IntegerType
+
 import com.gsk.kg.engine.functions.Literals.NumericLiteral
 import com.gsk.kg.engine.functions.Literals.isDateTimeLiteral
 import com.gsk.kg.engine.functions.Literals.nullLiteral
 
 object FuncDates {
+
+  private val Seconds = 5
 
   /** Returns an XSD dateTime value for the current query execution. All calls to this function in any one query
     * execution must return the same value. The exact moment returned is not specified.
@@ -76,10 +75,8 @@ object FuncDates {
     * @param col
     * @return
     */
-  def seconds(col: Column): Column = {
-    val Seconds = 5
+  def seconds(col: Column): Column =
     getTimeFromDateTimeCol(col, Seconds)
-  }
 
   /** Returns the timezone part of arg as an xsd:dayTimeDuration.
     * Raises an error if there is no timezone.
