@@ -90,18 +90,26 @@ object FuncDates {
     val dateTimeWithoutTimeZoneRegex: String =
       "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}Z"
 
+    val PosTimeZone     = -6
+    val PosSign         = 1
+    val PosHours        = 2
+    val PosMinutes      = 5
+    val LenTimeZone     = 6
+    val LenSign         = 1
+    val LenHoursMinutes = 2
+
     when(
       col.rlike(dateTimeWithTimeZoneRegex) || col.rlike(
         dateTimeWithTimeZoneWithoutDecimalSecondsRegex
       ), {
         val timeZone = substring(
           NumericLiteral(col).value,
-          -6,
-          6
+          PosTimeZone,
+          LenTimeZone
         )
-        val sign            = substring(timeZone, 1, 1)
-        val hoursTimeZone   = substring(timeZone, 2, 2)
-        val minutesTimeZone = substring(timeZone, 5, 2)
+        val sign            = substring(timeZone, PosSign, LenSign)
+        val hoursTimeZone   = substring(timeZone, PosHours, LenHoursMinutes)
+        val minutesTimeZone = substring(timeZone, PosMinutes, LenHoursMinutes)
         when(
           sign.like("-"),
           format_string(
