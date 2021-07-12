@@ -16,6 +16,7 @@ object DateTimeFuncsParser {
   def day[_: P]: P[Unit]     = P("day")
   def hours[_: P]: P[Unit]   = P("hours")
   def minutes[_: P]: P[Unit] = P("minutes")
+  def seconds[_: P]: P[Unit] = P("seconds")
 
   def nowParen[_: P]: P[NOW] =
     P("(" ~ now ~ ")")
@@ -41,6 +42,10 @@ object DateTimeFuncsParser {
     P("(" ~ minutes ~ ExpressionParser.parser ~ ")")
       .map(f => MINUTES(f))
 
+  def secondsParen[_: P]: P[SECONDS] =
+    P("(" ~ seconds ~ ExpressionParser.parser ~ ")")
+      .map(f => SECONDS(f))
+
   def parser[_: P]: P[DateTimeFunc] =
     P(
       nowParen
@@ -49,5 +54,6 @@ object DateTimeFuncsParser {
         | dayParen
         | hoursParen
         | minutesParen
+        | secondsParen
     )
 }
