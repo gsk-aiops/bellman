@@ -1,17 +1,7 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
-import org.apache.spark.sql.functions.current_timestamp
-import org.apache.spark.sql.functions.date_format
-import org.apache.spark.sql.functions.dayofmonth
-import org.apache.spark.sql.functions.format_string
-import org.apache.spark.sql.functions.lit
-import org.apache.spark.sql.functions.regexp_replace
-import org.apache.spark.sql.functions.split
-import org.apache.spark.sql.functions.substring
-import org.apache.spark.sql.functions.when
-import org.apache.spark.sql.functions.{month => sMonth}
-import org.apache.spark.sql.functions.{year => sYear}
+import org.apache.spark.sql.functions.{month => sMonth, year => sYear, _}
 import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.sql.types.IntegerType
 
@@ -85,7 +75,56 @@ object FuncDates {
     * @param col
     * @return
     */
-  def timezone(col: Column): Column = ???
+  def timezone(col: Column): Column = {
+
+    val dateTimeWithTimeZoneRegex: String =
+      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}[+-]{1}[0-9]{1,2}:[0-9]{1,2}"
+    val dateTimeWithTimeZoneWithoutDecimalSecondsRegex: String =
+      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}[+-]{1}[0-9]{1,2}:[0-9]{1,2}"
+    val dateTimeWithoutTimeZoneRegex: String =
+      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}(.[0-9]{1,3})?Z"
+
+    val PosTimeZone     = -6
+    val PosSign         = 1
+    val PosHours        = 2
+    val PosMinutes      = 5
+    val LenTimeZone     = 6
+    val LenSign         = 1
+    val LenHoursMinutes = 2
+
+    when(
+      col.rlike(dateTimeWithTimeZoneRegex) || col.rlike(
+        dateTimeWithTimeZoneWithoutDecimalSecondsRegex
+      ), {
+        val timeZone = substring(
+          NumericLiteral(col).value,
+          PosTimeZone,
+          LenTimeZone
+        )
+        val sign = substring(timeZone, PosSign, LenSign)
+        val hoursTimeZone =
+          substring(timeZone, PosHours, LenHoursMinutes).cast(IntegerType)
+        val minutesTimeZone =
+          substring(timeZone, PosMinutes, LenHoursMinutes)
+
+        val signFormatted = when(sign.like("-"), sign).otherwise(lit(""))
+        val minutesFormatted =
+          when(minutesTimeZone.like("00"), lit("")).otherwise(
+            concat(minutesTimeZone.cast(IntegerType), lit("M"))
+          )
+
+        format_string(
+          "\"%sPT%sH%s\"^^xsd:dateTime",
+          signFormatted,
+          hoursTimeZone,
+          minutesFormatted
+        )
+      }
+    ).when(
+      col.rlike(dateTimeWithoutTimeZoneRegex),
+      lit("\"PT0S\"^^xsd:dateTime")
+    ).otherwise(nullLiteral)
+  }
 
   /** Returns the timezone part of arg as a simple literal.
     * Returns the empty string if there is no timezone.

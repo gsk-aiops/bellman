@@ -177,6 +177,32 @@ class DateTimeFuncsParserSpec extends AnyFlatSpec {
     }
   }
 
+  "TIMEZONE parser with string" should "return TIMEZONE type" in {
+    val p =
+      fastparse.parse(
+        """(timezone "x")""",
+        DateTimeFuncsParser.timezoneParen(_)
+      )
+    p.get.value match {
+      case TIMEZONE(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "TIMEZONE parser with variable" should "return TIMEZONE type" in {
+    val p =
+      fastparse.parse(
+        """(timezone ?d)""",
+        DateTimeFuncsParser.timezoneParen(_)
+      )
+    p.get.value match {
+      case TIMEZONE(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
   "TZ parser with string" should "return TZ type" in {
     val p =
       fastparse.parse(
