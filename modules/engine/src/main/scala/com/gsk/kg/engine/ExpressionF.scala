@@ -109,6 +109,7 @@ object ExpressionF {
   final case class DAY[A](e: A)                           extends ExpressionF[A]
   final case class HOUR[A](e: A)                          extends ExpressionF[A]
   final case class MINUTES[A](e: A)                       extends ExpressionF[A]
+  final case class SECONDS[A](e: A)                       extends ExpressionF[A]
   final case class TIMEZONE[A](e: A)                      extends ExpressionF[A]
 
   val fromExpressionCoalg: Coalgebra[ExpressionF, Expression] =
@@ -222,6 +223,7 @@ object ExpressionF {
       case DateTimeFunc.DAY(s)                         => DAY(s)
       case DateTimeFunc.HOUR(s)                        => HOUR(s)
       case DateTimeFunc.MINUTES(s)                     => MINUTES(s)
+      case DateTimeFunc.SECONDS(s)                     => SECONDS(s)
       case DateTimeFunc.TIMEZONE(s)                    => TIMEZONE(s)
     }
 
@@ -358,6 +360,7 @@ object ExpressionF {
       case DAY(s)                     => DateTimeFunc.DAY(s)
       case HOUR(s)                    => DateTimeFunc.HOUR(s)
       case MINUTES(s)                 => DateTimeFunc.MINUTES(s)
+      case SECONDS(s)                 => DateTimeFunc.SECONDS(s)
       case TIMEZONE(s)                => DateTimeFunc.TIMEZONE(s)
     }
 
@@ -452,6 +455,7 @@ object ExpressionF {
         case DAY(s)      => FuncDates.day(s).pure[M]
         case HOUR(s)     => FuncDates.hours(s).pure[M]
         case MINUTES(s)  => FuncDates.minutes(s).pure[M]
+        case SECONDS(s)  => FuncDates.seconds(s).pure[M]
         case TIMEZONE(s) => FuncDates.timezone(s).pure[M]
       }
     // scalastyle:on

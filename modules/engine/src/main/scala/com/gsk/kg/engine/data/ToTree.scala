@@ -237,6 +237,7 @@ object ToTree extends LowPriorityToTreeInstances0 {
           case ExpressionF.DAY(e)      => Node(s"DAY", Stream(e))
           case ExpressionF.HOUR(e)     => Node(s"HOUR", Stream(e))
           case ExpressionF.MINUTES(e)  => Node(s"MINUTES", Stream(e))
+          case ExpressionF.SECONDS(e)  => Node(s"SECONDS", Stream(e))
           case ExpressionF.TIMEZONE(e) => Node(s"TIMEZONE", Stream(e))
         }
 

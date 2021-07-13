@@ -210,6 +210,7 @@ object FindVariablesOnExpression {
         case DAY(s)                          => s
         case HOUR(s)                         => s
         case MINUTES(s)                      => s
+        case SECONDS(s)                      => s
         case TIMEZONE(s)                     => s
       }
 

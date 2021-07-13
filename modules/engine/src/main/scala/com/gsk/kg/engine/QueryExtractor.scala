@@ -286,6 +286,7 @@ object QueryExtractor {
       case DAY(e)                          => s"(day $e)"
       case HOUR(e)                         => s"(hour $e)"
       case MINUTES(e)                      => s"(minutes $e)"
+      case SECONDS(e)                      => s"(seconds $e)"
       case TIMEZONE(e)                     => s"(timezone $e)"
     }
 
