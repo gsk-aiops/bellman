@@ -6,6 +6,7 @@ import com.gsk.kg.sparqlparser.DateTimeFunc.MINUTES
 import com.gsk.kg.sparqlparser.DateTimeFunc.MONTH
 import com.gsk.kg.sparqlparser.DateTimeFunc.NOW
 import com.gsk.kg.sparqlparser.DateTimeFunc.SECONDS
+import com.gsk.kg.sparqlparser.DateTimeFunc.TIMEZONE
 import com.gsk.kg.sparqlparser.DateTimeFunc.YEAR
 import com.gsk.kg.sparqlparser.StringVal.STRING
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
@@ -178,6 +179,32 @@ class DateTimeFuncsParserSpec extends AnyFlatSpec {
       )
     p.get.value match {
       case SECONDS(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "TIMEZONE parser with string" should "return TIMEZONE type" in {
+    val p =
+      fastparse.parse(
+        """(timezone "x")""",
+        DateTimeFuncsParser.timezoneParen(_)
+      )
+    p.get.value match {
+      case TIMEZONE(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "TIMEZONE parser with variable" should "return TIMEZONE type" in {
+    val p =
+      fastparse.parse(
+        """(timezone ?d)""",
+        DateTimeFuncsParser.timezoneParen(_)
+      )
+    p.get.value match {
+      case TIMEZONE(VARIABLE("?d")) =>
         succeed
       case _ => fail
     }
