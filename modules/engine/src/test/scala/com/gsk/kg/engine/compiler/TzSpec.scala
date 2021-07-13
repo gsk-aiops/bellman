@@ -15,7 +15,7 @@ class TzSpec extends AnyWordSpec with Matchers with SparkSpec with TestConfig {
 
   /*
   https://www.w3.org/TR/sparql11-query/#func-tz
-  MINUTES("2011-01-10T14:45:13.815-05:00"^^xsd:dateTime) -> "-05:00"
+  TZ("2011-01-10T14:45:13.815-05:00"^^xsd:dateTime) -> "-05:00"
    */
 
   lazy val df: DataFrame = List(
