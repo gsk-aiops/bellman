@@ -77,53 +77,26 @@ object FuncDates {
     */
   def timezone(col: Column): Column = {
 
-    val dateTimeWithTimeZoneRegex: String =
-      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}[+-]{1}[0-9]{1,2}:[0-9]{1,2}"
-    val dateTimeWithTimeZoneWithoutDecimalSecondsRegex: String =
-      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}[+-]{1}[0-9]{1,2}:[0-9]{1,2}"
-    val dateTimeWithoutTimeZoneRegex: String =
-      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}(.[0-9]{1,3})?Z"
+    val timeZone = getTimeZoneComponents(col)
+    when(timeZone.isNull, nullLiteral)
+      .when(timeZone.like("Z"), lit("\"PT0S\"^^xsd:dateTime"))
+      .when(
+        timeZone.rlike("-[0-9]{1,2}:[0-9]{1,2}"), {
+          val PosSign    = 1
+          val PosHours   = 2
+          val PosMinutes = 5
+          buildTimeZone(timeZone, Some(PosSign), PosHours, PosMinutes)
 
-    val PosTimeZone     = -6
-    val PosSign         = 1
-    val PosHours        = 2
-    val PosMinutes      = 5
-    val LenTimeZone     = 6
-    val LenSign         = 1
-    val LenHoursMinutes = 2
-
-    when(
-      col.rlike(dateTimeWithTimeZoneRegex) || col.rlike(
-        dateTimeWithTimeZoneWithoutDecimalSecondsRegex
-      ), {
-        val timeZone = substring(
-          NumericLiteral(col).value,
-          PosTimeZone,
-          LenTimeZone
-        )
-        val sign = substring(timeZone, PosSign, LenSign)
-        val hoursTimeZone =
-          substring(timeZone, PosHours, LenHoursMinutes).cast(IntegerType)
-        val minutesTimeZone =
-          substring(timeZone, PosMinutes, LenHoursMinutes)
-
-        val signFormatted = when(sign.like("-"), sign).otherwise(lit(""))
-        val minutesFormatted =
-          when(minutesTimeZone.like("00"), lit("")).otherwise(
-            concat(minutesTimeZone.cast(IntegerType), lit("M"))
-          )
-
-        format_string(
-          "\"%sPT%sH%s\"^^xsd:dateTime",
-          signFormatted,
-          hoursTimeZone,
-          minutesFormatted
-        )
-      }
-    ).when(
-      col.rlike(dateTimeWithoutTimeZoneRegex),
-      lit("\"PT0S\"^^xsd:dateTime")
-    ).otherwise(nullLiteral)
+        }
+      )
+      .when(
+        timeZone.rlike("[0-9]{1,2}:[0-9]{1,2}"), {
+          val PosSign    = None
+          val PosHours   = 1
+          val PosMinutes = 4
+          buildTimeZone(timeZone, None, PosHours, PosMinutes)
+        }
+      )
   }
 
   /** Returns the timezone part of arg as a simple literal.
@@ -153,6 +126,7 @@ object FuncDates {
     * @param pos
     * @return Column with
     *         Integer if hours or minutes
+    * usage: getTimeFromDateTimeCol(2011-01-10T14:45:13.815-05:29, 3) = 14
     */
   private def getTimeFromDateTimeCol(col: Column, pos: Int): Column = {
     val dateTimeRegex: String =
@@ -175,6 +149,14 @@ object FuncDates {
     ).otherwise(nullLiteral)
   }
 
+  /** Get timezone of a datetime input in multiples formats
+    * @param col
+    * @return timezone formatted
+    *         usage
+    *         getTimeZoneComponents(2020-12-09T01:50:24.888Z) = Z
+    *         getTimeZoneComponents(2011-01-10T14:45:13.815-05:29) = -05:29
+    *         getTimeZoneComponents(2011-01-10T14:45:13.815+05:09) = 05:29
+    */
   private def getTimeZoneComponents(col: Column): Column = {
     val dateTimeWithTimeZoneRegex: String =
       "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}[+-]{1}[0-9]{1,2}:[0-9]{1,2}"
@@ -219,5 +201,44 @@ object FuncDates {
       col.rlike(dateTimeWithoutTimeZoneRegex),
       lit("Z")
     ).otherwise(nullLiteral)
+  }
+
+  /** Build a timezone depends of the input format
+    * @param timeZone
+    * @param PosSignOpt
+    * @param PosHours
+    * @param PosMinutes
+    * @return timezone formatted
+    *         usage
+    *         buildTimeZone(-05:29) = "\"-PT5H29M\"^^xsd:dateTime"
+    *         buildTimeZone(05:00)  = "\"PT5H\"^^xsd:dateTime"
+    */
+  private def buildTimeZone(
+      timeZone: Column,
+      PosSignOpt: Option[Int],
+      PosHours: Int,
+      PosMinutes: Int
+  ): Column = {
+    val LenSign         = 1
+    val LenHoursMinutes = 2
+
+    val sign = PosSignOpt
+      .map(posSing => substring(timeZone, posSing, LenSign))
+      .getOrElse(lit(""))
+    val signFormatted = when(sign.like("-"), sign).otherwise(lit(""))
+    val hoursTimeZone =
+      substring(timeZone, PosHours, LenHoursMinutes).cast(IntegerType)
+    val minutesTimeZone = substring(timeZone, PosMinutes, LenHoursMinutes)
+    val minutesFormatted =
+      when(minutesTimeZone.like("00"), lit("")).otherwise(
+        concat(minutesTimeZone.cast(IntegerType), lit("M"))
+      )
+
+    format_string(
+      "\"%sPT%sH%s\"^^xsd:dateTime",
+      signFormatted,
+      hoursTimeZone,
+      minutesFormatted
+    )
   }
 }

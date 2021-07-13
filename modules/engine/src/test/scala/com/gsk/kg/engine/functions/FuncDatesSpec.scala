@@ -175,7 +175,11 @@ class FuncDatesSpec
 
       val expected = Array(
         Row("-05:29"),
-        Row("Z")
+        Row("Z"),
+        Row("Z"),
+        Row("-05:09"),
+        Row("05:09"),
+        Row("05:00")
       )
 
       "tz function returns tz of datetime" in {
