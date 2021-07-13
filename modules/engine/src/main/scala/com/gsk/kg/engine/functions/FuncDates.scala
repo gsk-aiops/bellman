@@ -93,7 +93,7 @@ object FuncDates {
     val dateTimeWithTimeZoneWithoutDecimalSecondsRegex: String =
       "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}[+-]{1}[0-9]{1,2}:[0-9]{1,2}"
     val dateTimeWithoutTimeZoneRegex: String =
-      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}Z"
+      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}(.[0-9]{1,3})?Z"
 
     val PosTimeZone     = -6
     val PosSign         = 1
