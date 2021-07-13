@@ -1,12 +1,6 @@
 package com.gsk.kg.sparqlparser
 
-import com.gsk.kg.sparqlparser.DateTimeFunc.DAY
-import com.gsk.kg.sparqlparser.DateTimeFunc.HOUR
-import com.gsk.kg.sparqlparser.DateTimeFunc.MINUTES
-import com.gsk.kg.sparqlparser.DateTimeFunc.MONTH
-import com.gsk.kg.sparqlparser.DateTimeFunc.NOW
-import com.gsk.kg.sparqlparser.DateTimeFunc.SECONDS
-import com.gsk.kg.sparqlparser.DateTimeFunc.YEAR
+import com.gsk.kg.sparqlparser.DateTimeFunc._
 import com.gsk.kg.sparqlparser.StringVal.STRING
 import com.gsk.kg.sparqlparser.StringVal.VARIABLE
 
@@ -178,6 +172,32 @@ class DateTimeFuncsParserSpec extends AnyFlatSpec {
       )
     p.get.value match {
       case SECONDS(VARIABLE("?d")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "TZ parser with string" should "return TZ type" in {
+    val p =
+      fastparse.parse(
+        """(tz "x")""",
+        DateTimeFuncsParser.tzParen(_)
+      )
+    p.get.value match {
+      case TZ(STRING("x")) =>
+        succeed
+      case _ => fail
+    }
+  }
+
+  "TZ parser with variable" should "return TZ type" in {
+    val p =
+      fastparse.parse(
+        """(tz ?d)""",
+        DateTimeFuncsParser.tzParen(_)
+      )
+    p.get.value match {
+      case TZ(VARIABLE("?d")) =>
         succeed
       case _ => fail
     }

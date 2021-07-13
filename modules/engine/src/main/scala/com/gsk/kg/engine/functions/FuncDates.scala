@@ -1,12 +1,15 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
+import org.apache.spark.sql.functions.concat
 import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.dayofmonth
 import org.apache.spark.sql.functions.format_string
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.functions.regexp_replace
 import org.apache.spark.sql.functions.split
+import org.apache.spark.sql.functions.substring
 import org.apache.spark.sql.functions.when
 import org.apache.spark.sql.functions.{month => sMonth}
 import org.apache.spark.sql.functions.{year => sYear}
@@ -90,7 +93,11 @@ object FuncDates {
     * @param col
     * @return
     */
-  def tz(col: Column): Column = ???
+  def tz(col: Column): Column = {
+    val timeZone = getTimeZoneComponents(col)
+    when(timeZone.isNull, lit(""))
+      .otherwise(timeZone)
+  }
 
   /** Check if col is a xsd:dateTime type and apply function in case true
     * @param f
@@ -127,6 +134,52 @@ object FuncDates {
           case Seconds => DoubleType
           case _       => IntegerType
         })
+    ).otherwise(nullLiteral)
+  }
+
+  private def getTimeZoneComponents(col: Column): Column = {
+    val dateTimeWithTimeZoneRegex: String =
+      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}[+-]{1}[0-9]{1,2}:[0-9]{1,2}"
+    val dateTimeWithTimeZoneWithoutDecimalSecondsRegex: String =
+      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}[+-]{1}[0-9]{1,2}:[0-9]{1,2}"
+    val dateTimeWithoutTimeZoneRegex: String =
+      "[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}(.[0-9]{1,3})?Z"
+
+    val PosTimeZone     = -6
+    val PosSign         = 1
+    val PosHours        = 2
+    val PosMinutes      = 5
+    val LenTimeZone     = 6
+    val LenSign         = 1
+    val LenHoursMinutes = 2
+
+    when(
+      col.rlike(dateTimeWithTimeZoneRegex) || col.rlike(
+        dateTimeWithTimeZoneWithoutDecimalSecondsRegex
+      ), {
+        val timeZone = substring(
+          NumericLiteral(col).value,
+          PosTimeZone,
+          LenTimeZone
+        )
+        val sign = substring(timeZone, PosSign, LenSign)
+        val hoursTimeZone =
+          substring(timeZone, PosHours, LenHoursMinutes)
+        val minutesTimeZone =
+          substring(timeZone, PosMinutes, LenHoursMinutes)
+
+        val signFormatted = when(sign.like("-"), sign).otherwise(lit(""))
+
+        format_string(
+          "%s%s:%s",
+          signFormatted,
+          hoursTimeZone,
+          minutesTimeZone
+        )
+      }
+    ).when(
+      col.rlike(dateTimeWithoutTimeZoneRegex),
+      lit("Z")
     ).otherwise(nullLiteral)
   }
 }
