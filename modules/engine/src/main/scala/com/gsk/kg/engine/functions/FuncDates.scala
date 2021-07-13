@@ -1,7 +1,6 @@
 package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
-import org.apache.spark.sql.functions.concat
 import org.apache.spark.sql.functions.current_timestamp
 import org.apache.spark.sql.functions.date_format
 import org.apache.spark.sql.functions.dayofmonth
