@@ -168,4 +168,5 @@ object DateTimeFunc {
   final case class MINUTES(e: Expression)  extends DateTimeFunc
   final case class SECONDS(e: Expression)  extends DateTimeFunc
   final case class TIMEZONE(e: Expression) extends DateTimeFunc
+  final case class TZ(e: Expression)       extends DateTimeFunc
 }
