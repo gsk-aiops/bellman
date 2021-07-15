@@ -1,5 +1,6 @@
 package com.gsk.kg.engine
 
+import org.apache.jena.graph.Node
 import org.apache.jena.riot.RDFParser
 import org.apache.jena.riot.lang.CollectorStreamTriples
 
@@ -17,13 +18,19 @@ import org.scalatest.wordspec.AnyWordSpec
 package object compiler {
 
   def readNTtoDF(path: String)(implicit sc: SQLContext): DataFrame = {
-
     import scala.collection.JavaConverters._
     import sc.implicits._
 
-    val filename                            = s"modules/engine/src/test/resources/$path"
+    val resource                            = this.getClass().getClassLoader.getResource(path)
     val inputStream: CollectorStreamTriples = new CollectorStreamTriples()
-    RDFParser.source(filename).parse(inputStream)
+    RDFParser.source(resource.getPath()).parse(inputStream)
+
+    def jenaNodeToString(n: Node): String =
+      if (n.isURI) {
+        "<" + n.toString + ">"
+      } else {
+        n.toString
+      }
 
     inputStream
       .getCollected()
@@ -31,9 +38,9 @@ package object compiler {
       .toList
       .map(triple =>
         (
-          triple.getSubject().toString(),
-          triple.getPredicate().toString(),
-          triple.getObject().toString()
+          jenaNodeToString(triple.getSubject()),
+          jenaNodeToString(triple.getPredicate()),
+          jenaNodeToString(triple.getObject())
         )
       )
       .toDF("s", "p", "o")

@@ -18,6 +18,7 @@ lazy val Versions = Map(
   "scalatestplus"        -> "3.2.3.0",
   "sansa"                -> "0.7.1",
   "monocle"              -> "1.5.0",
+  "frameless"            -> "0.8.0",
   "discipline"           -> "1.1.2",
   "discipline-scalatest" -> "2.0.1",
   "reftree"              -> "1.4.0",
@@ -130,6 +131,7 @@ lazy val `bellman-spark-engine` = project
   .settings(
     libraryDependencies ++= Seq(
       "io.verizon.quiver"          %% "core"         % Versions("quiver"),
+      "org.typelevel"              %% "frameless-dataset" % Versions("frameless"),
       "org.apache.spark"           %% "spark-sql"    % Versions("spark") % Provided,
       "com.github.julien-truffaut" %% "monocle-core" % Versions("monocle"),
       "com.github.julien-truffaut" %% "monocle-macro" % Versions("monocle"),

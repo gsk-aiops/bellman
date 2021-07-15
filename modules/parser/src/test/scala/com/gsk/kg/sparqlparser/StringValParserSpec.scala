@@ -192,4 +192,36 @@ class StringValParserSpec extends AnyFlatSpec with Matchers {
       p.get.value shouldEqual expected
     }
   }
+
+  "parse blank node" should "work correctly" in {
+    val strings = List(
+      (
+        "_:Ncdddad69172c41bf841e9974021ec93c",
+        StringVal.BLANK("Ncdddad69172c41bf841e9974021ec93c")
+      ),
+      (
+        "_:Nd399f2f35123439ab23ffa6f842467a7",
+        StringVal.BLANK("Nd399f2f35123439ab23ffa6f842467a7")
+      ),
+      (
+        "_:Nf40a89247d7d46a99bdc6302aac23dd4",
+        StringVal.BLANK("Nf40a89247d7d46a99bdc6302aac23dd4")
+      ),
+      (
+        "_:N91f8124526c2476c9d06f5854727c7fc",
+        StringVal.BLANK("N91f8124526c2476c9d06f5854727c7fc")
+      ),
+      (
+        "_:Nb757b546a3454984a69a66bcd3a4b6c1",
+        StringVal.BLANK("Nb757b546a3454984a69a66bcd3a4b6c1")
+      )
+    )
+
+    strings foreach { case (str, expected) =>
+      val p = fastparse.parse(str, StringValParser.blankNode(_))
+
+      p.get.value shouldEqual expected
+    }
+
+  }
 }
