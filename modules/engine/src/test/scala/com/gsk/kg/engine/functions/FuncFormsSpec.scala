@@ -5,8 +5,9 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.functions.lit
-
+import org.apache.spark.sql.functions.when
 import com.gsk.kg.engine.compiler.SparkSpec
+import com.gsk.kg.engine.functions.Literals.TypedLiteral
 import com.gsk.kg.engine.scalacheck.CommonGenerators
 
 import java.time.LocalDateTime
@@ -14,7 +15,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAccessor
-
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -1679,13 +1679,23 @@ class FuncFormsSpec
 
         val df = List(
           ("\"hello\"@en", "\"hello\"@en", true),
-          ("\"hello\"@en", "hello", true),
+          ("\"hello\"@en", "hello", false),
           ("\"hello\"@en", "\"hello\"@es", false),
           ("\"hello\"@en", "\"hi\"@en", false),
           ("\"1\"^^xsd:int", "\"1\"^^xsd:int", true),
-          ("\"1\"^^xsd:int", "1", true),
+          ("\"1\"^^xsd:int", "1", false),
           ("\"1\"^^xsd:int", "\"1\"^^xsd:integer", false),
-          ("\"1\"^^xsd:int", "\"2\"^^xsd:int", false)
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:int", false),
+          ("\"1.0\"^^xsd:double", "1.0", false),
+          ("\"1.0\"^^xsd:decimal", "1.0", true),
+          ("\"1.0\"^^xsd:string", "1.0", false),
+          ("\"1.0\"^^xsd:string", "\"1.0\"", true),
+          ("\"1.0\"^^xsd:decimal", "\"1.0\"", false),
+          (
+            "\"value\"^^<http://www.w3.org/2001/XMLSchema#string>",
+            "\"value\"",
+            true
+          )
         ).toDF("expr1", "expr2", "expected")
 
         val result =

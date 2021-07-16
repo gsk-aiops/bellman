@@ -1,5 +1,6 @@
 package com.gsk.kg.engine.functions
 
+import com.gsk.kg.engine.RdfFormatter
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.StringType
@@ -267,6 +268,26 @@ object Literals {
       val typed = TypedLiteral(col)
       typed.value.cast("int").isNotNull && !typed.value.contains(".")
     }
+  }
+
+  def inferType(col: Column): Column = {
+    when(
+      RdfFormatter.isQuoted(col),
+      format_string(
+        "\"%s\"^^%s",
+        extractStringLiteral(col),
+        lit("xsd:string")
+      )
+    )
+      .when(
+        isPlainNumericNotFloatingPoint(col),
+        format_string("\"%s\"^^%s", col, lit("xsd:integer"))
+      )
+      .when(
+        isPlainNumericFloatingPoint(col),
+        format_string("\"%s\"^^%s", col, lit("xsd:decimal"))
+      )
+      .otherwise(format_string("\"%s\"^^%s", col, lit("xsd:string")))
   }
 
   def isStringLiteral(col: Column): Column = {

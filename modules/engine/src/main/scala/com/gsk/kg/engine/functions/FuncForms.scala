@@ -186,9 +186,9 @@ object FuncForms {
       l === rLocalized.value
     }
 
-    val leftAndRightTyped = {
-      val lDataTyped = TypedLiteral(l)
-      val rDataTyped = TypedLiteral(r)
+    def leftAndRightTyped(left: Column, right: Column): Column = {
+      val lDataTyped = TypedLiteral(left)
+      val rDataTyped = TypedLiteral(right)
       when(
         lDataTyped.tag === rDataTyped.tag,
         lDataTyped.value === rDataTyped.value
@@ -208,22 +208,27 @@ object FuncForms {
     when(
       RdfFormatter.isLocalizedString(l) && RdfFormatter.isLocalizedString(r),
       leftAndRightLocalized
-    ).when(
-      RdfFormatter.isLocalizedString(l),
-      leftLocalized
-    ).when(
-      RdfFormatter.isLocalizedString(r),
-      rightLocalized
-    ).when(
-      RdfFormatter.isDatatypeLiteral(l) && RdfFormatter.isDatatypeLiteral(r),
-      leftAndRightTyped
-    ).when(
-      RdfFormatter.isDatatypeLiteral(l),
-      leftTyped
-    ).when(
-      RdfFormatter.isDatatypeLiteral(r),
-      rightTyped
-    ).otherwise(l === r)
+    )
+//      .when(
+//      RdfFormatter.isLocalizedString(l),
+//      leftLocalized
+//    ).when(
+//      RdfFormatter.isLocalizedString(r),
+//      rightLocalized
+//    )
+      .when(
+        RdfFormatter.isDatatypeLiteral(l) && RdfFormatter.isDatatypeLiteral(r),
+        leftAndRightTyped(l, r)
+      )
+      .when(
+        RdfFormatter.isDatatypeLiteral(l),
+        leftAndRightTyped(l, Literals.inferType(r))
+      )
+      .when(
+        RdfFormatter.isDatatypeLiteral(r),
+        leftAndRightTyped(Literals.inferType(l), r)
+      )
+      .otherwise(l === r)
   }
 
   /** The IF function form evaluates the first argument, interprets it as a effective boolean value,

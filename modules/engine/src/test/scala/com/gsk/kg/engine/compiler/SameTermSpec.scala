@@ -2,10 +2,15 @@ package com.gsk.kg.engine.compiler
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
-
 import com.gsk.kg.engine.Compiler
+import com.gsk.kg.engine.RdfFormatter
+import com.gsk.kg.engine.functions.Literals
 import com.gsk.kg.sparqlparser.TestConfig
-
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.substring_index
+import org.apache.spark.sql.functions.trim
+import org.apache.spark.sql.functions.when
+import org.apache.spark.sql.types.StringType
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -136,6 +141,42 @@ class SameTermSpec
           Row("\"Container 1\"", "\"Container 2\""),
           Row("\"Container 2\"", "\"Container 1\"")
         )
+      }
+
+      "simple query 2" in {
+
+        val df: DataFrame = List(
+          (
+            "<http://example.org/ns#a>",
+            "<http://example.org/ns#p>",
+            "\"3\"^^xsd:integer"
+          ),
+          (
+            "<http://example.org/ns#b>",
+            "<http://example.org/ns#p>",
+            "\"3\""
+          ),
+          (
+            "<http://example.org/ns#b>",
+            "<http://example.org/ns#p>",
+            "3"
+          )
+        ).toDF("s", "p", "o")
+
+        val query =
+          """
+            |PREFIX ns:   <http://example.org/ns#>
+            |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+            |
+            |SELECT ?s
+            |WHERE { ?x ns:p ?y .
+            |        bind(sameTerm("3"^^xsd:string, ?y) as ?s)
+            |        }
+            |""".stripMargin
+
+        val result = Compiler.compile(df, query, config)
+
+        result.right.get.show(false)
       }
     }
   }
