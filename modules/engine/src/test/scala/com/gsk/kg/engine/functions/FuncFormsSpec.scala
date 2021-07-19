@@ -1721,8 +1721,6 @@ class FuncFormsSpec
           )
         ).toDF("expr1", "expr2", "expected")
 
-        df.withColumn("boolean", Literals.inferType(col("expr2"))).show(false)
-
         val result =
           df.select(FuncForms.sameTerm(df("expr1"), df("expr2"))).collect
         val expected = df.select(df("expected")).collect()
