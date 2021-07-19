@@ -176,6 +176,11 @@ object FuncForms {
       ).otherwise(lit(false))
     }
 
+    /** Return if two type of columns are similar
+      * @param l
+      * @param r
+      * @return
+      */
     def isSameTag(l: Column, r: Column): Column =
       when(isStringLiteral(l) && isStringLiteral(r), lit(true))
         .otherwise(TypedLiteral(l).tag === TypedLiteral(r).tag)

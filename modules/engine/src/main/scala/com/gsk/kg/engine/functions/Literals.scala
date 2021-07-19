@@ -270,6 +270,14 @@ object Literals {
     }
   }
 
+  /** This function is used to infer schema of data according to jena executions:
+    * @param col
+    * @return
+    * "value"   -> string
+    * "3"       -> integer
+    * "3.0"     -> decimal, be careful because "3.0" is decimal, not double
+    * "\"3.0\"" -> string
+    */
   def inferType(col: Column): Column = {
     when(
       RdfFormatter.isQuoted(col),
