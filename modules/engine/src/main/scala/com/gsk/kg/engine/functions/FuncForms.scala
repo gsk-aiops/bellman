@@ -141,22 +141,22 @@ object FuncForms {
     */
   def in(e: Column, xs: List[Column]): Column = {
 
-    val anyEqualsExpr = xs.foldLeft(lit(false)) { case (acc, x) =>
+    val anyEqualsExpr = xs.foldLeft(FalseCol) { case (acc, x) =>
       acc || (e === x)
     }
 
-    val anyIsNull = xs.foldLeft(lit(false)) { case (acc, x) =>
+    val anyIsNull = xs.foldLeft(FalseCol) { case (acc, x) =>
       acc || x.isNull
     }
 
     when(
       anyEqualsExpr,
-      lit(true)
+      TrueCol
     ).otherwise(
       when(
         anyIsNull,
         Literals.nullLiteral
-      ).otherwise(lit(false))
+      ).otherwise(FalseCol)
     )
   }
 
@@ -173,7 +173,7 @@ object FuncForms {
       when(
         lLocalized.tag === rLocalized.tag,
         lLocalized.value === rLocalized.value
-      ).otherwise(lit(false))
+      ).otherwise(FalseCol)
     }
 
     /** Return if two type of columns are similar
@@ -182,7 +182,7 @@ object FuncForms {
       * @return
       */
     def isSameTag(l: Column, r: Column): Column = {
-      val True = lit(true)
+      val True = TrueCol
       when(isStringLiteral(l) && isStringLiteral(r), True)
         .when(isBooleanLiteral(l) && isBooleanLiteral(r), True)
         .otherwise(TypedLiteral(l).tag === TypedLiteral(r).tag)
@@ -194,7 +194,7 @@ object FuncForms {
       when(
         isSameTag(left, right),
         lDataTyped.value === rDataTyped.value
-      ).otherwise(lit(false))
+      ).otherwise(FalseCol)
     }
 
     when(
@@ -263,43 +263,43 @@ object FuncForms {
 
     lazy val ifBooleanLit = when(
       typed.value =!= lit("true") && typed.value =!= "false",
-      lit(false)
+      FalseCol
     ).otherwise(
       typed.value.cast("boolean")
     )
 
     lazy val ifNumericLit = when(
       typed.value.cast("double").isNull,
-      lit(false)
+      FalseCol
     ).otherwise {
       val double = typed.value.cast("double")
       when(
         isnan(double) || double === lit(0.0),
-        lit(false)
-      ).otherwise(lit(true))
+        FalseCol
+      ).otherwise(TrueCol)
     }
 
     lazy val ifPlainLit = when(
-      typed.value === lit(""),
-      lit(false)
+      typed.value === EmptyStringCol,
+      FalseCol
     ).when(
       typed.value.cast("boolean").isNotNull,
       typed.value.cast("boolean")
     ).when(
       typed.value.cast("double").isNull,
-      lit(true)
+      TrueCol
     ).otherwise {
       val double = typed.value.cast("double")
       when(
         isnan(double) || double === lit(0.0),
-        lit(false)
-      ).otherwise(lit(true))
+        FalseCol
+      ).otherwise(TrueCol)
     }
 
     lazy val ifStringLit = when(
-      typed.value === lit(""),
-      lit(false)
-    ).otherwise(lit(true))
+      typed.value === EmptyStringCol,
+      FalseCol
+    ).otherwise(TrueCol)
 
     when(
       isBooleanLiteral(col),
@@ -308,7 +308,7 @@ object FuncForms {
       isNumericLiteral(col),
       ifNumericLit
     ).when(
-      typed.tag === lit(""),
+      typed.tag === EmptyStringCol,
       ifPlainLit
     ).when(
       isStringLiteral(col),

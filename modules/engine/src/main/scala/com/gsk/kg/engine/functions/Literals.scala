@@ -4,12 +4,16 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.{concat => cc, _}
 import org.apache.spark.sql.types.BooleanType
 import org.apache.spark.sql.types.StringType
+
 import com.gsk.kg.engine.RdfFormatter
 
 object Literals {
 
   // scalastyle:off
-  val nullLiteral = lit(null)
+  val nullLiteral    = lit(null)
+  val TrueCol        = lit(true)
+  val FalseCol       = lit(false)
+  val EmptyStringCol = lit("")
   // scalastyle:on
 
   sealed trait Literal {
@@ -635,7 +639,7 @@ object Literals {
     def formatTyped(t: TypedLiteral, s: String, typedFormat: String)(
         f: (Column, String) => Column
     ): Column = when(
-      f(t.value, s) === lit(""),
+      f(t.value, s) === EmptyStringCol,
       f(t.value, s)
     ).otherwise(
       cc(
@@ -656,7 +660,7 @@ object Literals {
       */
     def parseDateFromRDFDateTime(col: Column): Column =
       when(
-        regexp_extract(col, ExtractDateTime, 1) =!= lit(""),
+        regexp_extract(col, ExtractDateTime, 1) =!= EmptyStringCol,
         to_timestamp(regexp_extract(col, ExtractDateTime, 1))
       ).otherwise(nullLiteral)
 
@@ -664,8 +668,16 @@ object Literals {
         operator: (Column, Column) => Column
     ): Column =
       when(
-        regexp_extract(l.cast(StringType), ExtractDateTime, 1) =!= lit("") &&
-          regexp_extract(r.cast(StringType), ExtractDateTime, 1) =!= lit(""),
+        regexp_extract(
+          l.cast(StringType),
+          ExtractDateTime,
+          1
+        ) =!= EmptyStringCol &&
+          regexp_extract(
+            r.cast(StringType),
+            ExtractDateTime,
+            1
+          ) =!= EmptyStringCol,
         operator(
           parseDateFromRDFDateTime(l.cast(StringType)),
           parseDateFromRDFDateTime(r.cast(StringType))
