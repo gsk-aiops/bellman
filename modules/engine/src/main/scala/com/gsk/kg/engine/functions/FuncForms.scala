@@ -186,11 +186,15 @@ object FuncForms {
       l === rLocalized.value
     }
 
+    def isSameTag(l: Column, r: Column): Column =
+      when(isStringLiteral(l) && isStringLiteral(r), lit(true))
+        .otherwise(TypedLiteral(l).tag === TypedLiteral(r).tag)
+
     def leftAndRightTyped(left: Column, right: Column): Column = {
       val lDataTyped = TypedLiteral(left)
       val rDataTyped = TypedLiteral(right)
       when(
-        lDataTyped.tag === rDataTyped.tag,
+        isSameTag(left, right),
         lDataTyped.value === rDataTyped.value
       ).otherwise(lit(false))
     }

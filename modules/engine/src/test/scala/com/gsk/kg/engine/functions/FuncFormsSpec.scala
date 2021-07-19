@@ -1684,6 +1684,7 @@ class FuncFormsSpec
           ("\"hello\"@en", "\"hi\"@en", false),
           ("\"1\"^^xsd:int", "\"1\"^^xsd:int", true),
           ("\"1\"^^xsd:int", "1", false),
+          ("\"1\"^^xsd:integer", "1", true),
           ("\"1\"^^xsd:int", "\"1\"^^xsd:integer", false),
           ("\"1\"^^xsd:int", "\"2\"^^xsd:int", false),
           ("\"1.0\"^^xsd:double", "1.0", false),
