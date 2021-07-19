@@ -1678,6 +1678,7 @@ class FuncFormsSpec
       "return expected results" in {
 
         val df = List(
+          ("\"hello\"", "\"hello\"", true),
           ("\"hello\"@en", "\"hello\"@en", true),
           ("\"hello\"@en", "hello", false),
           ("\"hello\"@en", "\"hello\"@es", false),
@@ -1686,6 +1687,7 @@ class FuncFormsSpec
           ("\"1\"^^xsd:int", "1", false),
           ("\"1\"^^xsd:integer", "1", true),
           ("\"1\"^^xsd:int", "\"1\"^^xsd:integer", false),
+          ("\"1\"^^xsd:string", "\"1\"^^xsd:integer", false),
           ("\"1\"^^xsd:int", "\"2\"^^xsd:int", false),
           ("\"1.0\"^^xsd:double", "1.0", false),
           ("\"1.0\"^^xsd:decimal", "1.0", true),

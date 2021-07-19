@@ -44,7 +44,7 @@ class SyntacticSugarSpec
       "\"3\"^^xsd:integer"
     ),
     (
-      "<http://example.org/ns#e>",
+      "<http://example.org/ns#f>",
       "<http://example.org/ns#p>",
       "\"3\""
     )
@@ -62,7 +62,7 @@ class SyntacticSugarSpec
         |PREFIX ns:   <http://example.org/ns#>
         |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
         |
-        |SELECT ?x 
+        |SELECT ?x
         |WHERE { ?x ns:p "value" }
         |""".stripMargin
 
@@ -81,7 +81,7 @@ class SyntacticSugarSpec
         |PREFIX ns:   <http://example.org/ns#>
         |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
         |
-        |SELECT ?x 
+        |SELECT ?x
         |WHERE { ?x ns:p "value"^^xsd:string }
         |""".stripMargin
 
@@ -100,10 +100,10 @@ class SyntacticSugarSpec
         |PREFIX ns:   <http://example.org/ns#>
         |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
         |
-        |SELECT ?x 
-        |WHERE { 
-        |   ?x ns:p ?y 
-        |   FILTER (?y = "value") 
+        |SELECT ?x
+        |WHERE {
+        |   ?x ns:p ?y
+        |   FILTER (?y = "value")
         |}
         |""".stripMargin
 
@@ -122,9 +122,9 @@ class SyntacticSugarSpec
         |PREFIX ns:   <http://example.org/ns#>
         |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
         |
-        |SELECT ?x 
-        |WHERE { 
-        |   ?x ns:p ?y 
+        |SELECT ?x
+        |WHERE {
+        |   ?x ns:p ?y
         |   FILTER (?y = "value"^^xsd:string)
         |}
         |""".stripMargin
@@ -144,10 +144,10 @@ class SyntacticSugarSpec
         |PREFIX ns:   <http://example.org/ns#>
         |PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
         |
-        |SELECT ?x 
-        |WHERE { 
-        |   ?x ns:p ?y 
-        |   FILTER (sameTerm(?y, "value")) 
+        |SELECT ?x
+        |WHERE {
+        |   ?x ns:p ?y
+        |   FILTER (sameTerm(?y, "value"))
         |}
         |""".stripMargin
 
@@ -194,6 +194,9 @@ class SyntacticSugarSpec
         |   FILTER (sameTerm(?y, 3)) 
         |}
         |""".stripMargin
+
+    val expected: List[Row] =
+      List(Row("<http://example.org/ns#e>"))
 
     Evaluation.eval(
       df,

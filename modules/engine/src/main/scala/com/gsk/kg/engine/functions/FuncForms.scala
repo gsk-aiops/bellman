@@ -176,16 +176,6 @@ object FuncForms {
       ).otherwise(lit(false))
     }
 
-    val leftLocalized = {
-      val lLocalized = LocalizedLiteral(l)
-      lLocalized.value === r
-    }
-
-    val rightLocalized = {
-      val rLocalized = LocalizedLiteral(r)
-      l === rLocalized.value
-    }
-
     def isSameTag(l: Column, r: Column): Column =
       when(isStringLiteral(l) && isStringLiteral(r), lit(true))
         .otherwise(TypedLiteral(l).tag === TypedLiteral(r).tag)
@@ -199,27 +189,10 @@ object FuncForms {
       ).otherwise(lit(false))
     }
 
-    val leftTyped = {
-      val lTyped = TypedLiteral(l)
-      lTyped.value === r
-    }
-
-    val rightTyped = {
-      val rTyped = TypedLiteral(r)
-      l === rTyped.value
-    }
-
     when(
       RdfFormatter.isLocalizedString(l) && RdfFormatter.isLocalizedString(r),
       leftAndRightLocalized
     )
-//      .when(
-//      RdfFormatter.isLocalizedString(l),
-//      leftLocalized
-//    ).when(
-//      RdfFormatter.isLocalizedString(r),
-//      rightLocalized
-//    )
       .when(
         RdfFormatter.isDatatypeLiteral(l) && RdfFormatter.isDatatypeLiteral(r),
         leftAndRightTyped(l, r)
@@ -232,7 +205,7 @@ object FuncForms {
         RdfFormatter.isDatatypeLiteral(r),
         leftAndRightTyped(Literals.inferType(l), r)
       )
-      .otherwise(l === r)
+      .otherwise(Literals.inferType(l) === Literals.inferType(r))
   }
 
   /** The IF function form evaluates the first argument, interprets it as a effective boolean value,
