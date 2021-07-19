@@ -1708,8 +1708,20 @@ class FuncFormsSpec
             "\"value\"^^<http://www.w3.org/2001/XMLSchema#string>",
             "\"value\"",
             true
+          ),
+          (
+            "\"2011-01-10T14:45:13.815-05:00\"^^xsd:dateTime",
+            "\"2011-01-10T14:45:13.815-05:00\"^^xsd:dateTime",
+            true
+          ),
+          (
+            "\"2011-01-10T14:45:13.815-05:00\"^^xsd:dateTime",
+            "2011-01-10T14:45:13.815-05:00",
+            false
           )
         ).toDF("expr1", "expr2", "expected")
+
+        df.withColumn("boolean", Literals.inferType(col("expr2"))).show(false)
 
         val result =
           df.select(FuncForms.sameTerm(df("expr1"), df("expr2"))).collect
