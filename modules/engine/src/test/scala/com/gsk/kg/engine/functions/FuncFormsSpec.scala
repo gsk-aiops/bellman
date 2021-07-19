@@ -1694,6 +1694,16 @@ class FuncFormsSpec
           ("\"1.0\"^^xsd:string", "1.0", false),
           ("\"1.0\"^^xsd:string", "\"1.0\"", true),
           ("\"1.0\"^^xsd:decimal", "\"1.0\"", false),
+          ("true", "true", true),
+          ("\"true\"^^xsd:boolean", "false", false),
+          ("\"true\"^^xsd:boolean", "true", true),
+          ("\"true\"^^xsd:boolean", "\"true\"^^xsd:boolean", true),
+          ("\"true\"^^xsd:boolean", "\"false\"^^xsd:boolean", false),
+          (
+            "\"true\"^^<http://www.w3.org/2001/XMLSchema#boolean>",
+            "true",
+            true
+          ),
           (
             "\"value\"^^<http://www.w3.org/2001/XMLSchema#string>",
             "\"value\"",

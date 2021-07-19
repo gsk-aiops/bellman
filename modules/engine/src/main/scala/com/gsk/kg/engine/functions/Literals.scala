@@ -2,8 +2,8 @@ package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.{concat => cc, _}
+import org.apache.spark.sql.types.BooleanType
 import org.apache.spark.sql.types.StringType
-
 import com.gsk.kg.engine.RdfFormatter
 
 object Literals {
@@ -271,6 +271,12 @@ object Literals {
     }
   }
 
+  def isPlainBoolean(col: Column): Column =
+    isPlainLiteral(col) && {
+      val typed = TypedLiteral(col)
+      typed.value.cast(BooleanType).isNotNull && !typed.value.contains(".")
+    }
+
   /** This function is used to infer schema of data according to jena executions:
     * @param col
     * @return
@@ -295,6 +301,10 @@ object Literals {
       .when(
         isPlainNumericFloatingPoint(col),
         format_string("\"%s\"^^%s", col, lit("xsd:decimal"))
+      )
+      .when(
+        isPlainBoolean(col),
+        format_string("\"%s\"^^%s", col, lit("xsd:boolean"))
       )
       .otherwise(format_string("\"%s\"^^%s", col, lit("xsd:string")))
   }

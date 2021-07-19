@@ -181,9 +181,12 @@ object FuncForms {
       * @param r
       * @return
       */
-    def isSameTag(l: Column, r: Column): Column =
-      when(isStringLiteral(l) && isStringLiteral(r), lit(true))
+    def isSameTag(l: Column, r: Column): Column = {
+      val True = lit(true)
+      when(isStringLiteral(l) && isStringLiteral(r), True)
+        .when(isBooleanLiteral(l) && isBooleanLiteral(r), True)
         .otherwise(TypedLiteral(l).tag === TypedLiteral(r).tag)
+    }
 
     def leftAndRightTyped(left: Column, right: Column): Column = {
       val lDataTyped = TypedLiteral(left)
