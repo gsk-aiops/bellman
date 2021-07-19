@@ -33,7 +33,8 @@ object PropertyExpressionF {
           case ReverseF(e) => unknownPropertyPath("reverse")
           case SeqExpressionF(pel, per) =>
             M.liftF(FuncProperty.seq(df, pel, per))
-          case OneOrMoreF(e)          => unknownPropertyPath("oneOrMore")
+          case OneOrMoreF(e) =>
+            M.liftF(FuncProperty.oneOrMore(df, e))
           case ZeroOrMoreF(e)         => unknownPropertyPath("zeroOrMore")
           case ZeroOrOneF(e)          => unknownPropertyPath("zeroOrOne")
           case NotOneOfF(es)          => unknownPropertyPath("notOneOf")
