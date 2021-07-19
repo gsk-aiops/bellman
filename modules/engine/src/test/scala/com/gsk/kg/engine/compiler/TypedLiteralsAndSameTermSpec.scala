@@ -9,7 +9,7 @@ import com.gsk.kg.sparqlparser.TestConfig
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class SyntacticSugarSpec
+class TypedLiteralsAndSameTermSpec
     extends AnyWordSpec
     with Matchers
     with SparkSpec
