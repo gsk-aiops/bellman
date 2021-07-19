@@ -2,6 +2,7 @@ package com.gsk.kg.engine.compiler
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
+
 import com.gsk.kg.engine.Compiler
 import com.gsk.kg.sparqlparser.TestConfig
 
