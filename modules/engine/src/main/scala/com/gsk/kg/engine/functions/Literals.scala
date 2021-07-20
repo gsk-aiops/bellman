@@ -10,10 +10,10 @@ import com.gsk.kg.engine.RdfFormatter
 object Literals {
 
   // scalastyle:off
-  val nullLiteral    = lit(null)
-  val TrueCol        = lit(true)
-  val FalseCol       = lit(false)
-  val EmptyStringCol = lit("")
+  val nullLiteral: Column    = lit(null)
+  val TrueCol: Column        = lit(true)
+  val FalseCol: Column       = lit(false)
+  val EmptyStringCol: Column = lit("")
   // scalastyle:on
 
   sealed trait Literal {
