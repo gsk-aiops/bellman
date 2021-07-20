@@ -2,12 +2,18 @@ package com.gsk.kg.engine.functions
 
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.{concat => cc, _}
+import org.apache.spark.sql.types.BooleanType
 import org.apache.spark.sql.types.StringType
+
+import com.gsk.kg.engine.RdfFormatter
 
 object Literals {
 
   // scalastyle:off
-  val nullLiteral = lit(null)
+  val nullLiteral: Column    = lit(null)
+  val TrueCol: Column        = lit(true)
+  val FalseCol: Column       = lit(false)
+  val EmptyStringCol: Column = lit("")
   // scalastyle:on
 
   sealed trait Literal {
@@ -267,6 +273,44 @@ object Literals {
       val typed = TypedLiteral(col)
       typed.value.cast("int").isNotNull && !typed.value.contains(".")
     }
+  }
+
+  def isPlainBoolean(col: Column): Column =
+    isPlainLiteral(col) && {
+      val typed = TypedLiteral(col)
+      typed.value.cast(BooleanType).isNotNull && !typed.value.contains(".")
+    }
+
+  /** This function is used to infer schema of data according to jena executions:
+    * @param col
+    * @return
+    * "value"   -> string
+    * "3"       -> integer
+    * "3.0"     -> decimal, be careful because "3.0" is decimal, not double
+    * "\"3.0\"" -> string
+    */
+  def inferType(col: Column): Column = {
+    when(
+      RdfFormatter.isQuoted(col),
+      format_string(
+        "\"%s\"^^%s",
+        extractStringLiteral(col),
+        lit("xsd:string")
+      )
+    )
+      .when(
+        isPlainNumericNotFloatingPoint(col),
+        format_string("\"%s\"^^%s", col, lit("xsd:integer"))
+      )
+      .when(
+        isPlainNumericFloatingPoint(col),
+        format_string("\"%s\"^^%s", col, lit("xsd:decimal"))
+      )
+      .when(
+        isPlainBoolean(col),
+        format_string("\"%s\"^^%s", col, lit("xsd:boolean"))
+      )
+      .otherwise(format_string("\"%s\"^^%s", col, lit("xsd:string")))
   }
 
   def isStringLiteral(col: Column): Column = {
@@ -595,7 +639,7 @@ object Literals {
     def formatTyped(t: TypedLiteral, s: String, typedFormat: String)(
         f: (Column, String) => Column
     ): Column = when(
-      f(t.value, s) === lit(""),
+      f(t.value, s) === EmptyStringCol,
       f(t.value, s)
     ).otherwise(
       cc(
@@ -616,7 +660,7 @@ object Literals {
       */
     def parseDateFromRDFDateTime(col: Column): Column =
       when(
-        regexp_extract(col, ExtractDateTime, 1) =!= lit(""),
+        regexp_extract(col, ExtractDateTime, 1) =!= EmptyStringCol,
         to_timestamp(regexp_extract(col, ExtractDateTime, 1))
       ).otherwise(nullLiteral)
 
@@ -624,8 +668,16 @@ object Literals {
         operator: (Column, Column) => Column
     ): Column =
       when(
-        regexp_extract(l.cast(StringType), ExtractDateTime, 1) =!= lit("") &&
-          regexp_extract(r.cast(StringType), ExtractDateTime, 1) =!= lit(""),
+        regexp_extract(
+          l.cast(StringType),
+          ExtractDateTime,
+          1
+        ) =!= EmptyStringCol &&
+          regexp_extract(
+            r.cast(StringType),
+            ExtractDateTime,
+            1
+          ) =!= EmptyStringCol,
         operator(
           parseDateFromRDFDateTime(l.cast(StringType)),
           parseDateFromRDFDateTime(r.cast(StringType))

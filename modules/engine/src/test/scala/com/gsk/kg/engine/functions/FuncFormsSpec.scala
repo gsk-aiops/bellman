@@ -1678,14 +1678,47 @@ class FuncFormsSpec
       "return expected results" in {
 
         val df = List(
+          ("\"hello\"", "\"hello\"", true),
           ("\"hello\"@en", "\"hello\"@en", true),
-          ("\"hello\"@en", "hello", true),
+          ("\"hello\"@en", "hello", false),
           ("\"hello\"@en", "\"hello\"@es", false),
           ("\"hello\"@en", "\"hi\"@en", false),
           ("\"1\"^^xsd:int", "\"1\"^^xsd:int", true),
-          ("\"1\"^^xsd:int", "1", true),
+          ("\"1\"^^xsd:int", "1", false),
+          ("\"1\"^^xsd:integer", "1", true),
           ("\"1\"^^xsd:int", "\"1\"^^xsd:integer", false),
-          ("\"1\"^^xsd:int", "\"2\"^^xsd:int", false)
+          ("\"1\"^^xsd:string", "\"1\"^^xsd:integer", false),
+          ("\"1\"^^xsd:int", "\"2\"^^xsd:int", false),
+          ("\"1.0\"^^xsd:double", "1.0", false),
+          ("\"1.0\"^^xsd:decimal", "1.0", true),
+          ("\"1.0\"^^xsd:string", "1.0", false),
+          ("\"1.0\"^^xsd:string", "\"1.0\"", true),
+          ("\"1.0\"^^xsd:decimal", "\"1.0\"", false),
+          ("true", "true", true),
+          ("\"true\"^^xsd:boolean", "false", false),
+          ("\"true\"^^xsd:boolean", "true", true),
+          ("\"true\"^^xsd:boolean", "\"true\"^^xsd:boolean", true),
+          ("\"true\"^^xsd:boolean", "\"false\"^^xsd:boolean", false),
+          (
+            "\"true\"^^<http://www.w3.org/2001/XMLSchema#boolean>",
+            "true",
+            true
+          ),
+          (
+            "\"value\"^^<http://www.w3.org/2001/XMLSchema#string>",
+            "\"value\"",
+            true
+          ),
+          (
+            "\"2011-01-10T14:45:13.815-05:00\"^^xsd:dateTime",
+            "\"2011-01-10T14:45:13.815-05:00\"^^xsd:dateTime",
+            true
+          ),
+          (
+            "\"2011-01-10T14:45:13.815-05:00\"^^xsd:dateTime",
+            "2011-01-10T14:45:13.815-05:00",
+            false
+          )
         ).toDF("expr1", "expr2", "expected")
 
         val result =
