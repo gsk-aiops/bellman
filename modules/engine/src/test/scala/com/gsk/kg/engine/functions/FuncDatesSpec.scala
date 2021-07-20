@@ -170,6 +170,22 @@ class FuncDatesSpec
         eval(FuncDates.timezone, expected)
       }
     }
+
+    "tz function" should {
+
+      val expected = Array(
+        Row("-05:29"),
+        Row("Z"),
+        Row("Z"),
+        Row("-05:09"),
+        Row("05:09"),
+        Row("05:00")
+      )
+
+      "tz function returns tz of datetime" in {
+        eval(FuncDates.tz, expected)
+      }
+    }
   }
 
   private def eval(f: Column => Column, expected: Array[Row])(implicit

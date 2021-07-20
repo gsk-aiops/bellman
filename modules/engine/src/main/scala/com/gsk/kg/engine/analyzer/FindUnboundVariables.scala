@@ -212,6 +212,7 @@ object FindVariablesOnExpression {
         case MINUTES(s)                      => s
         case SECONDS(s)                      => s
         case TIMEZONE(s)                     => s
+        case TZ(s)                           => s
       }
 
     val eval =
